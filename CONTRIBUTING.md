@@ -1,4 +1,4 @@
-# Contributing to thi Containers Group Project 
+# Contributing to the Containers Group Project
 
 We'd love to have you join the community! Below summarizes the processes
 that we follow.
