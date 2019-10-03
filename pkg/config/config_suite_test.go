@@ -1,0 +1,33 @@
+package config_test
+
+import (
+	"testing"
+
+	"github.com/containers/common/pkg/config"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+func TestConfig(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Config Suite")
+}
+
+const (
+	validFilePath = "/bin/sh"
+	invalidPath   = "/wrong"
+)
+
+var (
+	sut *config.Config
+)
+
+func beforeEach() {
+	sut = defaultConfig()
+}
+
+func defaultConfig() *config.Config {
+	c := config.DefaultConfig()
+	Expect(c).NotTo(BeNil())
+	return c
+}
