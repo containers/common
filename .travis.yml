@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - tip
+
+script:
+      - make install.tools
+      - make validate
+      - make vendor
+      - make test
