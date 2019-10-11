@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/BurntSushi/toml"
-	"github.com/containers/buildah/pkg/unshare"
+	"github.com/containers/common/pkg/unshare"
 	"github.com/containers/image/pkg/sysregistriesv2"
 	"github.com/containers/image/types"
 	units "github.com/docker/go-units"
