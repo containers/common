@@ -23,7 +23,7 @@ const (
 	DefaultApparmorProfile = "container-default"
 	// DefaultPidsLimit is the default value for maximum number of processes
 	// allowed inside a container
-	DefaultPidsLimit = 1024
+	DefaultPidsLimit = 2048
 	// DefaultLogSizeMax is the default value for the maximum log size
 	// allowed for a container. Negative values mean that no limit is imposed.
 	DefaultLogSizeMax = -1
@@ -128,7 +128,7 @@ var DefaultCapabilities = []string{
 }
 
 // DefaultHooksDirs defines the default hooks directory
-var DefaultHooksDirs = []string{"/etc/containers/oci/hooks.d"}
+var DefaultHooksDirs = []string{"/usr/share/containers/oci/hooks.d"}
 
 // New generates a Config from the containers.conf file path
 func New(path string) (*Config, error) {
@@ -184,6 +184,7 @@ func DefaultConfig() *Config {
 			SeccompProfile:      DefaultSeccompPath,
 			SELinux:             selinuxEnabled(),
 			ShmSize:             DefaultShmSize,
+			HooksDir:            DefaultHooksDirs,
 		},
 		NetworkConfig: NetworkConfig{
 			NetworkDir: cniConfigDir,
