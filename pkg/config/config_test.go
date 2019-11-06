@@ -25,10 +25,18 @@ var _ = Describe("Config", func() {
 
 		It("should succeed with additional devices", func() {
 			// Given
+			validDirPath, err := ioutil.TempDir("", "config-empty")
+			if err != nil {
+				panic(err)
+			}
+			defer os.RemoveAll(validDirPath)
+
+			sut.HooksDir = []string{validDirPath}
+
 			sut.AdditionalDevices = []string{"/dev/null:/dev/null:rw"}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, true)
+			err = sut.ContainersConfig.Validate(nil, true)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -364,16 +372,6 @@ var _ = Describe("Config", func() {
 	})
 
 	Describe("New", func() {
-		It("should return default configuration if pass nil path", func() {
-			// Given
-			// When
-			config, err := config.New("")
-			// Then
-			Expect(err).To(BeNil())
-			Expect(config.CgroupManager).To(Equal("systemd"))
-			Expect(config.PidsLimit).To(BeEquivalentTo(1024))
-		})
-
 		It("should success with valid user file path", func() {
 			// Given
 			// When
