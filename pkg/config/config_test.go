@@ -17,67 +17,27 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			err := sut.Validate(nil, false)
+			defaultConfig, err := config.New("")
 
 			// Then
 			Expect(err).To(BeNil())
+			Expect(defaultConfig.CgroupManager).To(Equal("systemd"))
+			Expect(defaultConfig.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
 		It("should succeed with additional devices", func() {
 			// Given
-			validDirPath, err := ioutil.TempDir("", "config-empty")
-			if err != nil {
-				panic(err)
+			sut.AdditionalDevices = []string{"/dev/null:/dev/null:rw",
+				"/dev/sdc/",
+				"/dev/sdc:/dev/xvdc",
+				"/dev/sdc:rm",
 			}
-			defer os.RemoveAll(validDirPath)
-
-			sut.HooksDir = []string{validDirPath}
-
-			sut.AdditionalDevices = []string{"/dev/null:/dev/null:rw"}
 
 			// When
-			err = sut.ContainersConfig.Validate(nil, true)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).To(BeNil())
-		})
-
-		It("should succeed with hooks directories", func() {
-			validDirPath, err := ioutil.TempDir("", "config-empty")
-			if err != nil {
-				panic(err)
-			}
-			defer os.RemoveAll(validDirPath)
-			// Given
-			sut.HooksDir = []string{validDirPath}
-
-			// When
-			err = sut.ContainersConfig.Validate(nil, true)
-
-			// Then
-			Expect(err).To(BeNil())
-		})
-
-		It("should fail on invalid hooks directory", func() {
-			// Given
-			sut.HooksDir = []string{invalidPath}
-
-			// When
-			err := sut.ContainersConfig.Validate(nil, true)
-
-			// Then
-			Expect(err).NotTo(BeNil())
-		})
-
-		It("should fail if the hooks directory is not a directory", func() {
-			// Given
-			sut.HooksDir = []string{validFilePath}
-
-			// When
-			err := sut.ContainersConfig.Validate(nil, true)
-
-			// Then
-			Expect(err).NotTo(BeNil())
 		})
 
 		It("should fail on wrong DefaultUlimits", func() {
@@ -85,7 +45,7 @@ var _ = Describe("Config", func() {
 			sut.DefaultUlimits = []string{invalidPath}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, false)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -96,7 +56,7 @@ var _ = Describe("Config", func() {
 			sut.AdditionalDevices = []string{"::::"}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, false)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -107,7 +67,7 @@ var _ = Describe("Config", func() {
 			sut.AdditionalDevices = []string{invalidPath}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, false)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -118,7 +78,7 @@ var _ = Describe("Config", func() {
 			sut.AdditionalDevices = []string{"/dev/null:/dev/null:abc"}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, false)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -129,7 +89,7 @@ var _ = Describe("Config", func() {
 			sut.AdditionalDevices = []string{"wrong:/dev/null:rw"}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, false)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -140,7 +100,7 @@ var _ = Describe("Config", func() {
 			sut.AdditionalDevices = []string{"/dev/null:wrong:rw"}
 
 			// When
-			err := sut.ContainersConfig.Validate(nil, false)
+			err := sut.ContainersConfig.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -151,7 +111,7 @@ var _ = Describe("Config", func() {
 			sut.LogSizeMax = 1
 
 			// When
-			err := sut.Validate(nil, false)
+			err := sut.Validate(true)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -162,7 +122,7 @@ var _ = Describe("Config", func() {
 			sut.ShmSize = "1024"
 
 			// When
-			err := sut.Validate(nil, false)
+			err := sut.Validate(true)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -171,7 +131,7 @@ var _ = Describe("Config", func() {
 			sut.ShmSize = "64m"
 
 			// When
-			err = sut.Validate(nil, false)
+			err = sut.Validate(true)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -182,7 +142,7 @@ var _ = Describe("Config", func() {
 			sut.ShmSize = "-2"
 
 			// When
-			err := sut.Validate(nil, false)
+			err := sut.Validate(true)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -372,6 +332,16 @@ var _ = Describe("Config", func() {
 	})
 
 	Describe("New", func() {
+		It("should success with default config", func() {
+			// Given
+			// When
+			config, err := config.New("")
+			// Then
+			Expect(err).To(BeNil())
+			Expect(config.CgroupManager).To(Equal("systemd"))
+			Expect(config.PidsLimit).To(BeEquivalentTo(2048))
+		})
+
 		It("should success with valid user file path", func() {
 			// Given
 			// When

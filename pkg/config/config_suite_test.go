@@ -14,8 +14,7 @@ func TestConfig(t *testing.T) {
 }
 
 const (
-	validFilePath = "/bin/sh"
-	invalidPath   = "/wrong"
+	invalidPath = "/wrong"
 )
 
 var (
