@@ -17,11 +17,11 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			defaultConfig, err := config.New("")
+			defaultConfig, err := config.NewConfig("")
 
 			// Then
 			Expect(err).To(BeNil())
-			Expect(defaultConfig.CgroupManager).To(Equal("systemd"))
+			Expect(defaultConfig.ApparmorProfile).To(Equal("container-default"))
 			Expect(defaultConfig.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
@@ -167,9 +167,9 @@ var _ = Describe("Config", func() {
 			}
 			defer os.RemoveAll(validDirPath)
 			// Given
-			sut.NetworkConfig.NetworkDir = validDirPath
+			sut.NetworkConfig.NetworkConfigDir = validDirPath
 			tmpDir := path.Join(os.TempDir(), "cni-test")
-			sut.NetworkConfig.PluginDirs = []string{tmpDir}
+			sut.NetworkConfig.CNIPluginDirs = []string{tmpDir}
 			defer os.RemoveAll(tmpDir)
 
 			// When
@@ -179,7 +179,7 @@ var _ = Describe("Config", func() {
 			Expect(err).To(BeNil())
 		})
 
-		It("should create the  NetworkDir", func() {
+		It("should create the  NetworkConfigDir", func() {
 			validDirPath, err := ioutil.TempDir("", "config-empty")
 			if err != nil {
 				panic(err)
@@ -187,8 +187,8 @@ var _ = Describe("Config", func() {
 			defer os.RemoveAll(validDirPath)
 			// Given
 			tmpDir := path.Join(os.TempDir(), invalidPath)
-			sut.NetworkConfig.NetworkDir = tmpDir
-			sut.NetworkConfig.PluginDirs = []string{validDirPath}
+			sut.NetworkConfig.NetworkConfigDir = tmpDir
+			sut.NetworkConfig.CNIPluginDirs = []string{validDirPath}
 
 			// When
 			err = sut.NetworkConfig.Validate(true)
@@ -198,15 +198,15 @@ var _ = Describe("Config", func() {
 			os.RemoveAll(tmpDir)
 		})
 
-		It("should fail on invalid NetworkDir", func() {
+		It("should fail on invalid NetworkConfigDir", func() {
 			// Given
 			tmpfile := path.Join(os.TempDir(), "wrong-file")
 			file, err := os.Create(tmpfile)
 			Expect(err).To(BeNil())
 			file.Close()
 			defer os.Remove(tmpfile)
-			sut.NetworkConfig.NetworkDir = tmpfile
-			sut.NetworkConfig.PluginDirs = []string{}
+			sut.NetworkConfig.NetworkConfigDir = tmpfile
+			sut.NetworkConfig.CNIPluginDirs = []string{}
 
 			// When
 			err = sut.NetworkConfig.Validate(true)
@@ -215,60 +215,21 @@ var _ = Describe("Config", func() {
 			Expect(err).NotTo(BeNil())
 		})
 
-		It("should fail on invalid PluginDirs", func() {
+		It("should fail on invalid CNIPluginDirs", func() {
 			validDirPath, err := ioutil.TempDir("", "config-empty")
 			if err != nil {
 				panic(err)
 			}
 			defer os.RemoveAll(validDirPath)
 			// Given
-			sut.NetworkConfig.NetworkDir = validDirPath
-			sut.NetworkConfig.PluginDirs = []string{invalidPath}
+			sut.NetworkConfig.NetworkConfigDir = validDirPath
+			sut.NetworkConfig.CNIPluginDirs = []string{invalidPath}
 
 			// When
 			err = sut.NetworkConfig.Validate(true)
 
 			// Then
 			Expect(err).NotTo(BeNil())
-		})
-
-		It("should succeed on having PluginDir", func() {
-			validDirPath, err := ioutil.TempDir("", "config-empty")
-			if err != nil {
-				panic(err)
-			}
-			defer os.RemoveAll(validDirPath)
-			// Given
-			sut.NetworkConfig.NetworkDir = validDirPath
-			sut.NetworkConfig.PluginDir = validDirPath
-			sut.NetworkConfig.PluginDirs = []string{}
-
-			// When
-			err = sut.NetworkConfig.Validate(true)
-
-			// Then
-			Expect(err).To(BeNil())
-		})
-
-		It("should succeed in appending PluginDir to PluginDirs", func() {
-
-			validDirPath, err := ioutil.TempDir("", "config-empty")
-			if err != nil {
-				panic(err)
-			}
-			defer os.RemoveAll(validDirPath)
-
-			// Given
-			sut.NetworkConfig.NetworkDir = validDirPath
-			sut.NetworkConfig.PluginDir = validDirPath
-			sut.NetworkConfig.PluginDirs = []string{}
-
-			// When
-			err = sut.NetworkConfig.Validate(true)
-
-			// Then
-			Expect(err).To(BeNil())
-			Expect(sut.NetworkConfig.PluginDirs[0]).To(Equal(validDirPath))
 		})
 
 		It("should fail in validating invalid PluginDir", func() {
@@ -278,9 +239,8 @@ var _ = Describe("Config", func() {
 			}
 			defer os.RemoveAll(validDirPath)
 			// Given
-			sut.NetworkConfig.NetworkDir = validDirPath
-			sut.NetworkConfig.PluginDir = invalidPath
-			sut.NetworkConfig.PluginDirs = []string{}
+			sut.NetworkConfig.NetworkConfigDir = validDirPath
+			sut.NetworkConfig.CNIPluginDirs = []string{invalidPath}
 
 			// When
 			err = sut.NetworkConfig.Validate(true)
@@ -291,22 +251,53 @@ var _ = Describe("Config", func() {
 
 	})
 
-	Describe("UpdateFromFile", func() {
+	Describe("ReadConfigFromFile", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			err := sut.UpdateFromFile("testdata/containers_default.conf")
+			defaultConfig, err := config.ReadConfigFromFile("testdata/containers_default.conf")
+
+			OCIRuntimeMap := map[string][]string{
+				"runc": []string{
+					"/usr/bin/runc",
+					"/usr/sbin/runc",
+					"/usr/local/bin/runc",
+					"/usr/local/sbin/runc",
+					"/sbin/runc",
+					"/bin/runc",
+					"/usr/lib/cri-o-runc/sbin/runc",
+				},
+				"crun": []string{
+					"/usr/bin/crun",
+					"/usr/local/bin/crun",
+				},
+			}
+
+			pluginDirs := []string{
+				"/usr/libexec/cni",
+				"/usr/lib/cni",
+				"/usr/local/lib/cni",
+				"/opt/cni/bin",
+			}
+
+			envs := []string{
+				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			}
 
 			// Then
 			Expect(err).To(BeNil())
-			Expect(sut.CgroupManager).To(Equal("systemd"))
-			Expect(sut.PidsLimit).To(BeEquivalentTo(1024))
+			Expect(defaultConfig.CgroupManager).To(Equal("systemd"))
+			Expect(defaultConfig.Env).To(BeEquivalentTo(envs))
+			Expect(defaultConfig.PidsLimit).To(BeEquivalentTo(2048))
+			Expect(defaultConfig.CNIPluginDirs).To(Equal(pluginDirs))
+			Expect(defaultConfig.NumLocks).To(BeEquivalentTo(2048))
+			Expect(defaultConfig.OCIRuntimes).To(Equal(OCIRuntimeMap))
 		})
 
 		It("should succeed with commented out configuration", func() {
 			// Given
 			// When
-			err := sut.UpdateFromFile("testdata/containers_comment.conf")
+			_, err := config.ReadConfigFromFile("testdata/containers_comment.conf")
 
 			// Then
 			Expect(err).To(BeNil())
@@ -315,7 +306,7 @@ var _ = Describe("Config", func() {
 		It("should fail when file does not exist", func() {
 			// Given
 			// When
-			err := sut.UpdateFromFile("/invalid/file")
+			_, err := config.ReadConfigFromFile("/invalid/file")
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -324,38 +315,75 @@ var _ = Describe("Config", func() {
 		It("should fail when toml decode fails", func() {
 			// Given
 			// When
-			err := sut.UpdateFromFile("config.go")
+			_, err := config.ReadConfigFromFile("config.go")
 
 			// Then
 			Expect(err).NotTo(BeNil())
 		})
 	})
 
-	Describe("New", func() {
+	Describe("NewConfig", func() {
 		It("should success with default config", func() {
 			// Given
+			OCIRuntimeMap := map[string][]string{
+				"runc": []string{
+					"/usr/bin/runc",
+					"/usr/sbin/runc",
+					"/usr/local/bin/runc",
+					"/usr/local/sbin/runc",
+					"/sbin/runc",
+					"/bin/runc",
+					"/usr/lib/cri-o-runc/sbin/runc",
+					"/run/current-system/sw/bin/runc",
+				},
+				"crun": []string{
+					"/usr/bin/crun",
+					"/usr/sbin/crun",
+					"/usr/local/bin/crun",
+					"/usr/local/sbin/crun",
+					"/sbin/crun",
+					"/bin/crun",
+					"/run/current-system/sw/bin/crun",
+				},
+			}
+
+			pluginDirs := []string{
+				"/usr/libexec/cni",
+				"/usr/lib/cni",
+				"/usr/local/lib/cni",
+				"/opt/cni/bin",
+			}
+
+			envs := []string{
+				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			}
+
 			// When
-			config, err := config.New("")
+			config, err := config.NewConfig("")
 			// Then
 			Expect(err).To(BeNil())
-			Expect(config.CgroupManager).To(Equal("systemd"))
+			Expect(config.ApparmorProfile).To(Equal("container-default"))
 			Expect(config.PidsLimit).To(BeEquivalentTo(2048))
+			Expect(config.Env).To(BeEquivalentTo(envs))
+			Expect(config.CNIPluginDirs).To(Equal(pluginDirs))
+			Expect(config.NumLocks).To(BeEquivalentTo(2048))
+			Expect(config.OCIRuntimes["runc"]).To(Equal(OCIRuntimeMap["runc"]))
 		})
 
 		It("should success with valid user file path", func() {
 			// Given
 			// When
-			config, err := config.New("testdata/containers_default.conf")
+			config, err := config.NewConfig("testdata/containers_default.conf")
 			// Then
 			Expect(err).To(BeNil())
-			Expect(config.CgroupManager).To(Equal("systemd"))
-			Expect(config.PidsLimit).To(BeEquivalentTo(1024))
+			Expect(config.ApparmorProfile).To(Equal("container-default"))
+			Expect(config.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
 		It("should fail with invalid value", func() {
 			// Given
 			// When
-			config, err := config.New("testdata/containers_invalid.conf")
+			config, err := config.NewConfig("testdata/containers_invalid.conf")
 			// Then
 			Expect(err).ToNot(BeNil())
 			Expect(config).To(BeNil())

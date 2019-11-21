@@ -2,7 +2,8 @@ language: go
 
 go:
   - tip
-
+before_install:
+    - sudo apt-get -qq install libdevmapper-dev
 script:
       - make install.tools
       - make validate
