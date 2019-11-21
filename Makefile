@@ -34,7 +34,7 @@ docs:
 
 .PHONY: validate
 validate:
-	golangci-lint run
+	golangci-lint run -c ./.golangci.yml
 
 .PHONY: vendor
 vendor:
