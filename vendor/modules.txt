@@ -2,18 +2,18 @@
 github.com/BurntSushi/toml
 # github.com/Microsoft/go-winio v0.4.12
 github.com/Microsoft/go-winio
-# github.com/containers/image v3.0.2+incompatible
-github.com/containers/image/pkg/sysregistriesv2
-github.com/containers/image/types
-github.com/containers/image/docker/reference
 # github.com/containers/storage v1.13.2
 github.com/containers/storage/pkg/idtools
 github.com/containers/storage/pkg/reexec
 github.com/containers/storage/pkg/system
 github.com/containers/storage/pkg/mount
 github.com/containers/storage/pkg/fileutils
+# github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f
+github.com/coreos/go-systemd/dbus
 # github.com/docker/go-units v0.4.0
 github.com/docker/go-units
+# github.com/godbus/dbus v0.0.0-20190422162347-ade71ed3457e
+github.com/godbus/dbus
 # github.com/hpcloud/tail v1.0.0
 github.com/hpcloud/tail
 github.com/hpcloud/tail/ratelimiter
@@ -54,11 +54,6 @@ github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
 github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
-# github.com/opencontainers/go-digest v1.0.0-rc1
-github.com/opencontainers/go-digest
-# github.com/opencontainers/image-spec v1.0.1
-github.com/opencontainers/image-spec/specs-go/v1
-github.com/opencontainers/image-spec/specs-go
 # github.com/opencontainers/runc v1.0.0-rc8.0.20190827142921-dd075602f158
 github.com/opencontainers/runc/libcontainer/user
 # github.com/opencontainers/runtime-spec v0.1.2-0.20190618234442-a950415649c7

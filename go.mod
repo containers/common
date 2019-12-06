@@ -4,13 +4,13 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/containers/image v3.0.2+incompatible
 	github.com/containers/storage v1.13.2
+	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f
 	github.com/docker/go-units v0.4.0
+	github.com/godbus/dbus v0.0.0-20190422162347-ade71ed3457e
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/onsi/ginkgo v1.10.2
 	github.com/onsi/gomega v1.7.0
-	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v1.0.0-rc8.0.20190827142921-dd075602f158 // indirect
 	github.com/opencontainers/runtime-spec v0.1.2-0.20190618234442-a950415649c7
 	github.com/opencontainers/selinux v1.3.0
