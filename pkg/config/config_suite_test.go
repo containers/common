@@ -26,7 +26,8 @@ func beforeEach() {
 }
 
 func defaultConfig() *config.Config {
-	c := config.DefaultConfig()
+	c, err := config.DefaultConfig()
+	Expect(err).To(BeNil())
 	Expect(c).NotTo(BeNil())
 	return c
 }
