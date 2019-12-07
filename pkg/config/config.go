@@ -477,6 +477,13 @@ func ReadConfigFromFile(path string) (*Config, error) {
 
 func systemConfigs() ([]string, error) {
 	configs := []string{}
+	path := os.Getenv("CONTAINERS_CONF")
+	if path != "" {
+		if _, err := os.Stat(path); err != nil {
+			return nil, errors.Wrap(err, "failed to stat of %s from CONTAINERS_CONF environment variable")
+		}
+		return append(configs, path), nil
+	}
 	if unshare.IsRootless() {
 		path, err := rootlessConfigPath()
 		if err != nil {
