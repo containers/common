@@ -205,6 +205,16 @@ conmon_path=[
   By default this will be configured relative to where containers/storage stores containers.
   This convention is followed by the default volume driver, but may not be by other drivers.
 
+# FILES
+Distributions often provide a `/usr/share/containers/containers.conf` file to
+define default container configuration. Administrators can override this file
+by creating `/etc/containers/containers.conf` to specify their own
+configuration. Rootless users can fursther override the config by creating a config file stored in the `$HOME/.config/containers/containers.conf` file.
+
+If the `CONTAINERS_CONF` path environment variable is set, just
+this path will be used.  This is primarily used for testing.
+
+
 # SEE ALSO
 containers-storage.conf(5), containers-policy.json(5), containers-registries.conf(5)
 
