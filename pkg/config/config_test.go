@@ -1,11 +1,10 @@
-package config_test
+package config
 
 import (
 	"io/ioutil"
 	"os"
 	"path"
 
-	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -17,24 +16,24 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			defaultConfig, err := config.NewConfig("")
+			defaultConfig, err := NewConfig("")
 
 			// Then
 			Expect(err).To(BeNil())
-			Expect(defaultConfig.ApparmorProfile).To(Equal("container-default"))
-			Expect(defaultConfig.PidsLimit).To(BeEquivalentTo(2048))
+			Expect(defaultConfig.Containers.ApparmorProfile).To(Equal("container-default"))
+			Expect(defaultConfig.Containers.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
 		It("should succeed with additional devices", func() {
 			// Given
-			sut.AdditionalDevices = []string{"/dev/null:/dev/null:rw",
+			sut.Containers.AdditionalDevices = []string{"/dev/null:/dev/null:rw",
 				"/dev/sdc/",
 				"/dev/sdc:/dev/xvdc",
 				"/dev/sdc:rm",
 			}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).To(BeNil())
@@ -42,10 +41,10 @@ var _ = Describe("Config", func() {
 
 		It("should fail on wrong DefaultUlimits", func() {
 			// Given
-			sut.DefaultUlimits = []string{invalidPath}
+			sut.Containers.DefaultUlimits = []string{invalidPath}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -53,10 +52,10 @@ var _ = Describe("Config", func() {
 
 		It("should fail on wrong invalid device specification", func() {
 			// Given
-			sut.AdditionalDevices = []string{"::::"}
+			sut.Containers.AdditionalDevices = []string{"::::"}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -64,10 +63,10 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid device", func() {
 			// Given
-			sut.AdditionalDevices = []string{invalidPath}
+			sut.Containers.AdditionalDevices = []string{invalidPath}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -75,10 +74,10 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid device mode", func() {
 			// Given
-			sut.AdditionalDevices = []string{"/dev/null:/dev/null:abc"}
+			sut.Containers.AdditionalDevices = []string{"/dev/null:/dev/null:abc"}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -86,10 +85,10 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid first device", func() {
 			// Given
-			sut.AdditionalDevices = []string{"wrong:/dev/null:rw"}
+			sut.Containers.AdditionalDevices = []string{"wrong:/dev/null:rw"}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -97,10 +96,10 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid second device", func() {
 			// Given
-			sut.AdditionalDevices = []string{"/dev/null:wrong:rw"}
+			sut.Containers.AdditionalDevices = []string{"/dev/null:wrong:rw"}
 
 			// When
-			err := sut.ContainersConfig.Validate()
+			err := sut.Containers.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -108,7 +107,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail wrong max log size", func() {
 			// Given
-			sut.LogSizeMax = 1
+			sut.Containers.LogSizeMax = 1
 
 			// When
 			err := sut.Validate(true)
@@ -119,7 +118,7 @@ var _ = Describe("Config", func() {
 
 		It("should succeed with valid shm size", func() {
 			// Given
-			sut.ShmSize = "1024"
+			sut.Containers.ShmSize = "1024"
 
 			// When
 			err := sut.Validate(true)
@@ -128,7 +127,7 @@ var _ = Describe("Config", func() {
 			Expect(err).To(BeNil())
 
 			// Given
-			sut.ShmSize = "64m"
+			sut.Containers.ShmSize = "64m"
 
 			// When
 			err = sut.Validate(true)
@@ -139,7 +138,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail wrong shm size", func() {
 			// Given
-			sut.ShmSize = "-2"
+			sut.Containers.ShmSize = "-2"
 
 			// When
 			err := sut.Validate(true)
@@ -154,7 +153,7 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			err := sut.NetworkConfig.Validate(false)
+			err := sut.Network.Validate(false)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -167,13 +166,13 @@ var _ = Describe("Config", func() {
 			}
 			defer os.RemoveAll(validDirPath)
 			// Given
-			sut.NetworkConfig.NetworkConfigDir = validDirPath
+			sut.Network.NetworkConfigDir = validDirPath
 			tmpDir := path.Join(os.TempDir(), "cni-test")
-			sut.NetworkConfig.CNIPluginDirs = []string{tmpDir}
+			sut.Network.CNIPluginDirs = []string{tmpDir}
 			defer os.RemoveAll(tmpDir)
 
 			// When
-			err = sut.NetworkConfig.Validate(true)
+			err = sut.Network.Validate(true)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -187,11 +186,11 @@ var _ = Describe("Config", func() {
 			defer os.RemoveAll(validDirPath)
 			// Given
 			tmpDir := path.Join(os.TempDir(), invalidPath)
-			sut.NetworkConfig.NetworkConfigDir = tmpDir
-			sut.NetworkConfig.CNIPluginDirs = []string{validDirPath}
+			sut.Network.NetworkConfigDir = tmpDir
+			sut.Network.CNIPluginDirs = []string{validDirPath}
 
 			// When
-			err = sut.NetworkConfig.Validate(true)
+			err = sut.Network.Validate(true)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -205,11 +204,11 @@ var _ = Describe("Config", func() {
 			Expect(err).To(BeNil())
 			file.Close()
 			defer os.Remove(tmpfile)
-			sut.NetworkConfig.NetworkConfigDir = tmpfile
-			sut.NetworkConfig.CNIPluginDirs = []string{}
+			sut.Network.NetworkConfigDir = tmpfile
+			sut.Network.CNIPluginDirs = []string{}
 
 			// When
-			err = sut.NetworkConfig.Validate(true)
+			err = sut.Network.Validate(true)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -222,11 +221,11 @@ var _ = Describe("Config", func() {
 			}
 			defer os.RemoveAll(validDirPath)
 			// Given
-			sut.NetworkConfig.NetworkConfigDir = validDirPath
-			sut.NetworkConfig.CNIPluginDirs = []string{invalidPath}
+			sut.Network.NetworkConfigDir = validDirPath
+			sut.Network.CNIPluginDirs = []string{invalidPath}
 
 			// When
-			err = sut.NetworkConfig.Validate(true)
+			err = sut.Network.Validate(true)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -239,11 +238,11 @@ var _ = Describe("Config", func() {
 			}
 			defer os.RemoveAll(validDirPath)
 			// Given
-			sut.NetworkConfig.NetworkConfigDir = validDirPath
-			sut.NetworkConfig.CNIPluginDirs = []string{invalidPath}
+			sut.Network.NetworkConfigDir = validDirPath
+			sut.Network.CNIPluginDirs = []string{invalidPath}
 
 			// When
-			err = sut.NetworkConfig.Validate(true)
+			err = sut.Network.Validate(true)
 
 			// Then
 			Expect(err).ToNot(BeNil())
@@ -255,7 +254,8 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			defaultConfig, err := config.ReadConfigFromFile("testdata/containers_default.conf")
+			conf, _ := DefaultConfig()
+			defaultConfig, err := ReadConfigFromFile("testdata/containers_default.conf", conf)
 
 			OCIRuntimeMap := map[string][]string{
 				"runc": []string{
@@ -286,18 +286,19 @@ var _ = Describe("Config", func() {
 
 			// Then
 			Expect(err).To(BeNil())
-			Expect(defaultConfig.CgroupManager).To(Equal("systemd"))
-			Expect(defaultConfig.Env).To(BeEquivalentTo(envs))
-			Expect(defaultConfig.PidsLimit).To(BeEquivalentTo(2048))
-			Expect(defaultConfig.CNIPluginDirs).To(Equal(pluginDirs))
-			Expect(defaultConfig.NumLocks).To(BeEquivalentTo(2048))
-			Expect(defaultConfig.OCIRuntimes).To(Equal(OCIRuntimeMap))
+			Expect(defaultConfig.Containers.CgroupManager).To(Equal("systemd"))
+			Expect(defaultConfig.Containers.Env).To(BeEquivalentTo(envs))
+			Expect(defaultConfig.Containers.PidsLimit).To(BeEquivalentTo(2048))
+			Expect(defaultConfig.Network.CNIPluginDirs).To(Equal(pluginDirs))
+			Expect(defaultConfig.Libpod.NumLocks).To(BeEquivalentTo(2048))
+			Expect(defaultConfig.Libpod.OCIRuntimes).To(Equal(OCIRuntimeMap))
 		})
 
 		It("should succeed with commented out configuration", func() {
 			// Given
 			// When
-			_, err := config.ReadConfigFromFile("testdata/containers_comment.conf")
+			conf := Config{}
+			_, err := ReadConfigFromFile("testdata/containers_comment.conf", &conf)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -306,7 +307,8 @@ var _ = Describe("Config", func() {
 		It("should fail when file does not exist", func() {
 			// Given
 			// When
-			_, err := config.ReadConfigFromFile("/invalid/file")
+			conf := Config{}
+			_, err := ReadConfigFromFile("/invalid/file", &conf)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -315,7 +317,8 @@ var _ = Describe("Config", func() {
 		It("should fail when toml decode fails", func() {
 			// Given
 			// When
-			_, err := config.ReadConfigFromFile("config.go")
+			conf := Config{}
+			_, err := ReadConfigFromFile("config.go", &conf)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -359,31 +362,31 @@ var _ = Describe("Config", func() {
 			}
 
 			// When
-			config, err := config.NewConfig("")
+			config, err := NewConfig("")
 			// Then
 			Expect(err).To(BeNil())
-			Expect(config.ApparmorProfile).To(Equal("container-default"))
-			Expect(config.PidsLimit).To(BeEquivalentTo(2048))
-			Expect(config.Env).To(BeEquivalentTo(envs))
-			Expect(config.CNIPluginDirs).To(Equal(pluginDirs))
-			Expect(config.NumLocks).To(BeEquivalentTo(2048))
-			Expect(config.OCIRuntimes["runc"]).To(Equal(OCIRuntimeMap["runc"]))
+			Expect(config.Containers.ApparmorProfile).To(Equal("container-default"))
+			Expect(config.Containers.PidsLimit).To(BeEquivalentTo(2048))
+			Expect(config.Containers.Env).To(BeEquivalentTo(envs))
+			Expect(config.Network.CNIPluginDirs).To(Equal(pluginDirs))
+			Expect(config.Libpod.NumLocks).To(BeEquivalentTo(2048))
+			Expect(config.Libpod.OCIRuntimes["runc"]).To(Equal(OCIRuntimeMap["runc"]))
 		})
 
 		It("should success with valid user file path", func() {
 			// Given
 			// When
-			config, err := config.NewConfig("testdata/containers_default.conf")
+			config, err := NewConfig("testdata/containers_default.conf")
 			// Then
 			Expect(err).To(BeNil())
-			Expect(config.ApparmorProfile).To(Equal("container-default"))
-			Expect(config.PidsLimit).To(BeEquivalentTo(2048))
+			Expect(config.Containers.ApparmorProfile).To(Equal("container-default"))
+			Expect(config.Containers.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
 		It("should fail with invalid value", func() {
 			// Given
 			// When
-			config, err := config.NewConfig("testdata/containers_invalid.conf")
+			config, err := NewConfig("testdata/containers_invalid.conf")
 			// Then
 			Expect(err).ToNot(BeNil())
 			Expect(config).To(BeNil())
