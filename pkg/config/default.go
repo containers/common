@@ -114,19 +114,19 @@ func DefaultConfig() (*Config, error) {
 
 	return &Config{
 		ContainersConfig: ContainersConfig{
-			AdditionalDevices:   []string{},
-			ApparmorProfile:     DefaultApparmorProfile,
-			CgroupManager:       SystemdCgroupsManager,
-			DefaultCapabilities: DefaultCapabilities,
-			DefaultSysctls:      []string{},
-			DefaultUlimits:      []string{},
-			EnableLabeling:      NewOptionalBool(selinuxEnabled()),
+			AdditionalDevices:      []string{},
+			ApparmorProfile:        DefaultApparmorProfile,
+			CgroupManager:          SystemdCgroupsManager,
+			DefaultCapabilities:    DefaultCapabilities,
+			DefaultSysctls:         []string{},
+			DefaultUlimits:         []string{},
+			optionalEnableLabeling: newOptionalBool(selinuxEnabled()),
 			Env: []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 			},
 			HooksDir:            DefaultHooksDirs,
 			HTTPProxy:           []string{},
-			Init:                NewOptionalBool(false),
+			optionalInit:        newOptionalBool(false),
 			LogSizeMax:          DefaultLogSizeMax,
 			PidsLimit:           DefaultPidsLimit,
 			SeccompProfile:      SeccompDefaultPath,
@@ -215,15 +215,15 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 	}
 	c.RuntimeSupportsNoCgroups = []string{"crun"}
 	c.InitPath = DefaultInitPath
-	c.NoPivotRoot = NewOptionalBool(false)
+	c.optionalNoPivotRoot = newOptionalBool(false)
 
 	c.InfraCommand = DefaultInfraCommand
 	c.InfraImage = DefaultInfraImage
-	c.EnablePortReservation = NewOptionalBool(true)
+	c.optionalEnablePortReservation = newOptionalBool(true)
 	c.NumLocks = 2048
 	c.EventsLogger = "file"
 	c.DetachKeys = DefaultDetachKeys
-	c.SDNotify = NewOptionalBool(false)
+	c.optionalSDNotify = newOptionalBool(false)
 	// TODO - ideally we should expose a `type LockType string` along with
 	// constants.
 	c.LockType = "shm"

@@ -159,14 +159,14 @@ func TestMergeBools(t *testing.T) {
 
 func TestMergeOptionalBools(t *testing.T) {
 	testData := []struct {
-		a   OptionalBool
-		b   OptionalBool
-		res OptionalBool
+		a   optionalBool
+		b   optionalBool
+		res optionalBool
 	}{
-		{OptionalBoolUndefined, OptionalBoolTrue, OptionalBoolTrue},
-		{OptionalBoolFalse, OptionalBoolTrue, OptionalBoolFalse},
-		{OptionalBoolTrue, OptionalBoolFalse, OptionalBoolTrue},
-		{OptionalBoolUndefined, OptionalBoolUndefined, OptionalBoolUndefined},
+		{optionalBoolUndefined, optionalBoolTrue, optionalBoolTrue},
+		{optionalBoolFalse, optionalBoolTrue, optionalBoolFalse},
+		{optionalBoolTrue, optionalBoolFalse, optionalBoolTrue},
+		{optionalBoolUndefined, optionalBoolUndefined, optionalBoolUndefined},
 	}
 	for _, data := range testData {
 		res := mergeOptionalBools(data.a, data.b)
