@@ -54,11 +54,11 @@ func (c *Config) mergeConfig(other *Config) error {
 	c.NumLocks = mergeUint32s(c.NumLocks, other.NumLocks)
 
 	// bools
-	c.EnableLabeling = mergeOptionalBools(c.EnableLabeling, other.EnableLabeling)
-	c.EnablePortReservation = mergeOptionalBools(c.EnablePortReservation, other.EnablePortReservation)
-	c.Init = mergeOptionalBools(c.Init, other.Init)
-	c.NoPivotRoot = mergeOptionalBools(c.NoPivotRoot, other.NoPivotRoot)
-	c.SDNotify = mergeOptionalBools(c.SDNotify, other.SDNotify)
+	c.optionalEnableLabeling = mergeOptionalBools(c.optionalEnableLabeling, other.optionalEnableLabeling)
+	c.optionalEnablePortReservation = mergeOptionalBools(c.optionalEnablePortReservation, other.optionalEnablePortReservation)
+	c.optionalInit = mergeOptionalBools(c.optionalInit, other.optionalInit)
+	c.optionalNoPivotRoot = mergeOptionalBools(c.optionalNoPivotRoot, other.optionalNoPivotRoot)
+	c.optionalSDNotify = mergeOptionalBools(c.optionalSDNotify, other.optionalSDNotify)
 
 	// state type
 	if c.StateType == InvalidStateStore {
@@ -131,8 +131,8 @@ func mergeBools(a, b bool) bool {
 	return a
 }
 
-func mergeOptionalBools(a, b OptionalBool) OptionalBool {
-	if a == OptionalBoolUndefined {
+func mergeOptionalBools(a, b optionalBool) optionalBool {
+	if a == optionalBoolUndefined {
 		return b
 	}
 	return a

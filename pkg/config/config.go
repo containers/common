@@ -46,41 +46,41 @@ const (
 	BoltDBStateStore RuntimeStateStore = iota
 )
 
-// OptionalBool is a boolean with an additional undefined value, which is meant
+// optionalBool is a boolean with an additional undefined value, which is meant
 // to be used in the context of user input to distinguish between a
 // user-specified value and a default value.
-type OptionalBool byte
+type optionalBool byte
 
 const (
-	// OptionalBoolUndefined indicates that the OptionalBoolean hasn't been written.
-	OptionalBoolUndefined OptionalBool = iota
-	// OptionalBoolTrue represents the boolean true.
-	OptionalBoolTrue
-	// OptionalBoolFalse represents the boolean false.
-	OptionalBoolFalse
+	// optionalBoolUndefined indicates that the OptionalBoolean hasn't been written.
+	optionalBoolUndefined optionalBool = iota
+	// optionalBoolTrue represents the boolean true.
+	optionalBoolTrue
+	// optionalBoolFalse represents the boolean false.
+	optionalBoolFalse
 )
 
-// NewOptionalBool converts the input bool into either OptionalBoolTrue or
-// OptionalBoolFalse.  The function is meant to avoid boilerplate code of users.
-func NewOptionalBool(b bool) OptionalBool {
-	o := OptionalBoolFalse
+// newOptionalBool converts the input bool into either optionalBoolTrue or
+// optionalBoolFalse.  The function is meant to avoid boilerplate code of users.
+func newOptionalBool(b bool) optionalBool {
+	o := optionalBoolFalse
 	if b {
-		o = OptionalBoolTrue
+		o = optionalBoolTrue
 	}
 	return o
 }
 
 // UnmarshalText customs marshaling rules for OptionalBool type
-func (o *OptionalBool) UnmarshalText(text []byte) error {
+func (o *optionalBool) UnmarshalText(text []byte) error {
 	b, err := strconv.ParseBool(string(text))
 	if err != nil {
-		*o = OptionalBoolUndefined
+		*o = optionalBoolUndefined
 		return err
 	}
 	if b {
-		*o = OptionalBoolTrue
+		*o = optionalBoolTrue
 	} else {
-		*o = OptionalBoolFalse
+		*o = optionalBoolFalse
 	}
 	return err
 }
@@ -129,8 +129,7 @@ type ContainersConfig struct {
 	// DefaultUlimits specifies the default ulimits to apply to containers
 	DefaultUlimits []string `toml:"default_ulimits"`
 
-	// EnableLabeling indicates whether the container tool will support container labeling.
-	EnableLabeling OptionalBool `toml:"label"`
+	optionalEnableLabeling optionalBool `toml:"label"`
 
 	// Env is the environment variable list for container process.
 	Env []string `toml:"env"`
@@ -142,7 +141,7 @@ type ContainersConfig struct {
 	HooksDir []string `toml:"hooks_dir"`
 
 	// Run an init inside the container that forwards signals and reaps processes.
-	Init OptionalBool `toml:"init"`
+	optionalInit optionalBool `toml:"init"`
 
 	// HTTPProxy is the proxy environment variable list to apply to container process
 	HTTPProxy []string `toml:"http_proxy"`
@@ -192,7 +191,7 @@ type LibpodConfig struct {
 	// programs on the host. However, this can cause significant memory usage if
 	// a container has many ports forwarded to it. Disabling this can save
 	// memory.
-	EnablePortReservation OptionalBool `toml:"enable_port_reservation"`
+	optionalEnablePortReservation optionalBool `toml:"enable_port_reservation"`
 
 	// EventsLogFilePath is where the events log is stored.
 	EventsLogFilePath string `toml:"events_logfile_path"`
@@ -229,7 +228,7 @@ type LibpodConfig struct {
 	NetworkCmdPath string `toml:"network_cmd_path"`
 
 	// NoPivotRoot sets whether to set no-pivot-root in the OCI runtime.
-	NoPivotRoot OptionalBool `toml:"no_pivot_root"`
+	optionalNoPivotRoot optionalBool `toml:"no_pivot_root"`
 
 	// NumLocks is the number of locks to make available for containers and
 	// pods.
@@ -262,9 +261,9 @@ type LibpodConfig struct {
 	// backwards compat with older version of libpod and Podman.
 	SetOptions
 
-	// SDNotify tells Libpod to allow containers to notify the host systemd of
+	// SDNotify tells container engine to allow containers to notify the host systemd of
 	// readiness using the SD_NOTIFY mechanism.
-	SDNotify OptionalBool
+	optionalSDNotify optionalBool
 
 	// StateType is the type of the backing state store. Avoid using multiple
 	// values for this with the same containers/storage configuration on the
@@ -553,7 +552,7 @@ func (c *Config) Validate(onExecution bool) error {
 			return errors.Wrapf(err, "network config")
 		}
 	}
-	if c.EnableLabeling != OptionalBoolTrue {
+	if c.EnableLabeling() {
 		selinux.SetDisabled()
 	}
 
@@ -702,6 +701,33 @@ func (c *Config) MergeDBConfig(dbConfig *DBConfig) error {
 		c.VolumePath = dbConfig.VolumePath
 	}
 	return nil
+}
+
+// EnableLabeling indicates whether or not labeling is enabled
+func (c *Config) EnableLabeling() bool {
+	return c.optionalEnableLabeling == optionalBoolTrue
+}
+
+// NoPivotRoot sets whether to set no-pivot-root in the OCI runtime.
+func (c *Config) NoPivotRoot() bool {
+	return c.optionalNoPivotRoot == optionalBoolTrue
+}
+
+// SDNotify tells container engine to allow containers to notify the host systemd of
+// readiness using the SD_NOTIFY mechanism.
+func (c *Config) SDNotify() bool {
+	return c.optionalSDNotify == optionalBoolTrue
+}
+
+// EnablePortReservation determines whether libpod will reserve ports on the
+// host when they are forwarded to containers.
+func (c *Config) EnablePortReservation() bool {
+	return c.optionalEnablePortReservation == optionalBoolTrue
+}
+
+// EnableInit run an init inside the container that forwards signals and reaps processes.
+func (c *Config) Init() bool {
+	return c.optionalInit == optionalBoolTrue
 }
 
 // FindConmon iterates over (*Config).ConmonPath and returns the path to first
