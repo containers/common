@@ -1,9 +1,8 @@
-package config_test
+package config
 
 import (
 	"testing"
 
-	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -18,15 +17,15 @@ const (
 )
 
 var (
-	sut *config.Config
+	sut *Config
 )
 
 func beforeEach() {
 	sut = defaultConfig()
 }
 
-func defaultConfig() *config.Config {
-	c, err := config.DefaultConfig()
+func defaultConfig() *Config {
+	c, err := DefaultConfig()
 	Expect(err).To(BeNil())
 	Expect(c).NotTo(BeNil())
 	return c

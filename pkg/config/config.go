@@ -2,11 +2,9 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"syscall"
 
@@ -46,59 +44,14 @@ const (
 	BoltDBStateStore RuntimeStateStore = iota
 )
 
-// optionalBool is a boolean with an additional undefined value, which is meant
-// to be used in the context of user input to distinguish between a
-// user-specified value and a default value.
-type optionalBool byte
-
-const (
-	// optionalBoolUndefined indicates that the OptionalBoolean hasn't been written.
-	optionalBoolUndefined optionalBool = iota
-	// optionalBoolTrue represents the boolean true.
-	optionalBoolTrue
-	// optionalBoolFalse represents the boolean false.
-	optionalBoolFalse
-)
-
-// newOptionalBool converts the input bool into either optionalBoolTrue or
-// optionalBoolFalse.  The function is meant to avoid boilerplate code of users.
-func newOptionalBool(b bool) optionalBool {
-	o := optionalBoolFalse
-	if b {
-		o = optionalBoolTrue
-	}
-	return o
-}
-
-// UnmarshalText customs marshaling rules for OptionalBool type
-func (o *optionalBool) UnmarshalText(text []byte) error {
-	b, err := strconv.ParseBool(string(text))
-	if err != nil {
-		*o = optionalBoolUndefined
-		return err
-	}
-	if b {
-		*o = optionalBoolTrue
-	} else {
-		*o = optionalBoolFalse
-	}
-	return err
-}
-
-// tomlConfig is another way of looking at a Config, which is
-// TOML-friendly (it has all of the explicit tables). It's just used for
-// conversions.
-type tomlConfig struct {
-	Containers struct{ ContainersConfig } `toml:"containers"`
-	Libpod     struct{ LibpodConfig }     `toml:"libpod"`
-	Network    struct{ NetworkConfig }    `toml:"network"`
-}
-
 // Config contains configuration options for container tools
 type Config struct {
-	ContainersConfig
-	LibpodConfig
-	NetworkConfig
+	// Containers specify settings that configure how containers will run ont the system
+	Containers ContainersConfig `toml:"containers"`
+	// Libpod specifies how the container engine based on Libpod will run
+	Libpod LibpodConfig `toml:"libpod"`
+	// Network section defines the configuration of CNI Plugins
+	Network NetworkConfig `toml:"network"`
 }
 
 // ContainersConfig represents the "containers" TOML config table
@@ -129,7 +82,9 @@ type ContainersConfig struct {
 	// DefaultUlimits specifies the default ulimits to apply to containers
 	DefaultUlimits []string `toml:"default_ulimits"`
 
-	optionalEnableLabeling optionalBool `toml:"label"`
+	// EnableLabeling tells the container engines whether to use MAC
+	// Labeling to separate containers (SELinux)
+	EnableLabeling bool `toml:"label"`
 
 	// Env is the environment variable list for container process.
 	Env []string `toml:"env"`
@@ -141,7 +96,7 @@ type ContainersConfig struct {
 	HooksDir []string `toml:"hooks_dir"`
 
 	// Run an init inside the container that forwards signals and reaps processes.
-	optionalInit optionalBool `toml:"init"`
+	Init bool `toml:"init"`
 
 	// HTTPProxy is the proxy environment variable list to apply to container process
 	HTTPProxy []string `toml:"http_proxy"`
@@ -191,7 +146,7 @@ type LibpodConfig struct {
 	// programs on the host. However, this can cause significant memory usage if
 	// a container has many ports forwarded to it. Disabling this can save
 	// memory.
-	optionalEnablePortReservation optionalBool `toml:"enable_port_reservation"`
+	EnablePortReservation bool `toml:"enable_port_reservation"`
 
 	// EventsLogFilePath is where the events log is stored.
 	EventsLogFilePath string `toml:"events_logfile_path"`
@@ -228,7 +183,7 @@ type LibpodConfig struct {
 	NetworkCmdPath string `toml:"network_cmd_path"`
 
 	// NoPivotRoot sets whether to set no-pivot-root in the OCI runtime.
-	optionalNoPivotRoot optionalBool `toml:"no_pivot_root"`
+	NoPivotRoot bool `toml:"no_pivot_root"`
 
 	// NumLocks is the number of locks to make available for containers and
 	// pods.
@@ -263,7 +218,7 @@ type LibpodConfig struct {
 
 	// SDNotify tells container engine to allow containers to notify the host systemd of
 	// readiness using the SD_NOTIFY mechanism.
-	optionalSDNotify optionalBool
+	SDNotify bool
 
 	// StateType is the type of the backing state store. Avoid using multiple
 	// values for this with the same containers/storage configuration on the
@@ -347,26 +302,6 @@ type NetworkConfig struct {
 	NetworkConfigDir string `toml:"network_config_dir"`
 }
 
-// DefaultCapabilities for the default_capabilities option in the containers.conf file
-var DefaultCapabilities = []string{
-	"CAP_AUDIT_WRITE",
-	"CAP_CHOWN",
-	"CAP_DAC_OVERRIDE",
-	"CAP_FOWNER",
-	"CAP_FSETID",
-	"CAP_KILL",
-	"CAP_MKNOD",
-	"CAP_NET_BIND_SERVICE",
-	"CAP_NET_RAW",
-	"CAP_SETGID",
-	"CAP_SETPCAP",
-	"CAP_SETUID",
-	"CAP_SYS_CHROOT",
-}
-
-// DefaultHooksDirs defines the default hooks directory
-var DefaultHooksDirs = []string{"/usr/share/containers/oci/hooks.d"}
-
 // NewConfig creates a new Config. It starts with an empty config and, if
 // specified, merges the config at `userConfigPath` path.  Depending if we're
 // running as root or rootless, we then merge the system configuration followed
@@ -376,44 +311,38 @@ var DefaultHooksDirs = []string{"/usr/share/containers/oci/hooks.d"}
 // might change in the future.
 func NewConfig(userConfigPath string) (*Config, error) {
 
-	config := &Config{} // start with an empty config
+	// Genereate the default config for the system
+	config, err := DefaultConfig()
+	if err != nil {
+		return nil, err
+	}
 
-	// First, try to read the user-specified config
+	// If the caller specified a config path to use, then we read this
+	// rather then using the system defaults.
 	if userConfigPath != "" {
 		var err error
-		config, err = ReadConfigFromFile(userConfigPath)
+		// ReadConfigFromFile reads in container config in the specified
+		// file and then merge changes with the current defauls.
+		config, err = ReadConfigFromFile(userConfigPath, config)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error reading user config %q", userConfigPath)
 		}
 	}
 
-	// Now, check if the user can access system configs and merge them if needed.
+	// Now, gather the system configs and merge them as needed.
 	configs, err := systemConfigs()
 	if err != nil {
 		return nil, errors.Wrapf(err, "error finding config on system")
 	}
 	for _, path := range configs {
-		systemConfig, err := ReadConfigFromFile(path)
+		// Merge changes in later configs with the previous configs.
+		// Each config file that specified fields, will override the
+		// previous fields.
+		config, err := ReadConfigFromFile(path, config)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error reading system config %q", path)
 		}
-		// Merge the it into the config. Any unset field in config will be
-		// over-written by the systemConfig.
-		if err := config.mergeConfig(systemConfig); err != nil {
-			return nil, errors.Wrapf(err, "error merging system config")
-		}
 		logrus.Debugf("Merged system config %q: %v", path, config)
-	}
-
-	// Finally, create a default config from memory and forcefully merge it into
-	// the config. This way we try to make sure that all fields are properly set
-	// and that user AND system config can partially set.
-	defaultConfig, err := DefaultConfig()
-	if err != nil {
-		return nil, errors.Wrapf(err, "error generating default config from memory")
-	}
-	if err := config.mergeConfig(defaultConfig); err != nil {
-		return nil, errors.Wrapf(err, "error merging default config from memory")
 	}
 
 	config.checkCgroupsAndAdjustConfig()
@@ -426,54 +355,32 @@ func NewConfig(userConfigPath string) (*Config, error) {
 	return config, nil
 }
 
-func (t *tomlConfig) toConfig(c *Config) {
-	c.ContainersConfig = t.Containers.ContainersConfig
-	c.LibpodConfig = t.Libpod.LibpodConfig
-	c.NetworkConfig = t.Network.NetworkConfig
-}
-
-func (t *tomlConfig) fromConfig(c *Config) {
-	t.Containers.ContainersConfig = c.ContainersConfig
-	t.Libpod.LibpodConfig = c.LibpodConfig
-	t.Network.NetworkConfig = c.NetworkConfig
-}
-
 // ReadConfigFromFile reads the specified config file at `path` and attempts to
-// unmarshal its content into a Config.
-func ReadConfigFromFile(path string) (*Config, error) {
-	var config Config
-	t := new(tomlConfig)
-	t.fromConfig(&config)
-
-	configBytes, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
+// unmarshal its content into a Config. The config param specifies the previos
+// default config.  If the path, only specifies a few fields in the Toml file
+// the defaults from the config paramater will be used for all other fields.
+func ReadConfigFromFile(path string, config *Config) (*Config, error) {
 	logrus.Debugf("Reading configuration file %q", path)
-	_, err = toml.Decode(string(configBytes), t)
+	_, err := toml.DecodeFile(path, config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode configuration %v: %v", path, err)
 	}
-	t.toConfig(&config)
-
-	// For the sake of backwards compat we need to check if the config fields
-	// with *Set suffix are set in the config.  Note that the storage-related
-	// fields are NOT set in the config here but in the storage.conf OR directly
-	// by the user.
-	if config.VolumePath != "" {
-		config.VolumePathSet = true
+	if config.Libpod.VolumePath != "" {
+		config.Libpod.VolumePathSet = true
 	}
-	if config.StaticDir != "" {
-		config.StaticDirSet = true
+	if config.Libpod.StaticDir != "" {
+		config.Libpod.StaticDirSet = true
 	}
-	if config.TmpDir != "" {
-		config.TmpDirSet = true
+	if config.Libpod.TmpDir != "" {
+		config.Libpod.TmpDirSet = true
 	}
 
-	return &config, err
+	return config, err
 }
 
+// Returns the list of configuration files, if they exist in order of hierarchy.
+// The files are read in order and each new file can/will override previous
+// file settings.
 func systemConfigs() ([]string, error) {
 	configs := []string{}
 	path := os.Getenv("CONTAINERS_CONF")
@@ -482,6 +389,12 @@ func systemConfigs() ([]string, error) {
 			return nil, errors.Wrap(err, "failed to stat of %s from CONTAINERS_CONF environment variable")
 		}
 		return append(configs, path), nil
+	}
+	if _, err := os.Stat(DefaultContainersConfig); err == nil {
+		configs = append(configs, DefaultContainersConfig)
+	}
+	if _, err := os.Stat(OverrideContainersConfig); err == nil {
+		configs = append(configs, OverrideContainersConfig)
 	}
 	if unshare.IsRootless() {
 		path, err := rootlessConfigPath()
@@ -492,12 +405,6 @@ func systemConfigs() ([]string, error) {
 			configs = append(configs, path)
 		}
 	}
-	if _, err := os.Stat(OverrideContainersConfig); err == nil {
-		configs = append(configs, OverrideContainersConfig)
-	}
-	if _, err := os.Stat(DefaultContainersConfig); err == nil {
-		configs = append(configs, DefaultContainersConfig)
-	}
 	return configs, nil
 }
 
@@ -505,7 +412,7 @@ func systemConfigs() ([]string, error) {
 // cgroup manager. In case the user session isn't available, we're switching the
 // cgroup manager to cgroupfs.  Note, this only applies to rootless.
 func (c *Config) checkCgroupsAndAdjustConfig() {
-	if !unshare.IsRootless() || c.CgroupManager != SystemdCgroupsManager {
+	if !unshare.IsRootless() || c.Containers.CgroupManager != SystemdCgroupsManager {
 		return
 	}
 
@@ -521,7 +428,7 @@ func (c *Config) checkCgroupsAndAdjustConfig() {
 		logrus.Warningf("For using systemd, you may need to login using an user session")
 		logrus.Warningf("Alternatively, you can enable lingering with: `loginctl enable-linger %d` (possibly as root)", unshare.GetRootlessUID())
 		logrus.Warningf("Falling back to --cgroup-manager=cgroupfs")
-		c.CgroupManager = CgroupfsCgroupsManager
+		c.Containers.CgroupManager = CgroupfsCgroupsManager
 	}
 }
 
@@ -532,8 +439,8 @@ func (c *Config) addCAPPrefix() {
 		}
 		return cap
 	}
-	for i, cap := range c.ContainersConfig.DefaultCapabilities {
-		c.ContainersConfig.DefaultCapabilities[i] = toCAPPrefixed(cap)
+	for i, cap := range c.Containers.DefaultCapabilities {
+		c.Containers.DefaultCapabilities[i] = toCAPPrefixed(cap)
 	}
 }
 
@@ -543,16 +450,16 @@ func (c *Config) addCAPPrefix() {
 // `nil`.
 func (c *Config) Validate(onExecution bool) error {
 
-	if err := c.ContainersConfig.Validate(); err != nil {
+	if err := c.Containers.Validate(); err != nil {
 		return errors.Wrapf(err, "containers config")
 	}
 
 	if !unshare.IsRootless() {
-		if err := c.NetworkConfig.Validate(onExecution); err != nil {
+		if err := c.Network.Validate(onExecution); err != nil {
 			return errors.Wrapf(err, "network config")
 		}
 	}
-	if c.EnableLabeling() {
+	if c.Containers.EnableLabeling {
 		selinux.SetDisabled()
 	}
 
@@ -652,82 +559,55 @@ type DBConfig struct {
 // MergeDBConfig merges the configuration from the database.
 func (c *Config) MergeDBConfig(dbConfig *DBConfig) error {
 
-	if !c.StorageConfigRunRootSet && dbConfig.StorageTmp != "" {
-		if c.StorageConfig.RunRoot != dbConfig.StorageTmp &&
-			c.StorageConfig.RunRoot != "" {
+	if !c.Libpod.StorageConfigRunRootSet && dbConfig.StorageTmp != "" {
+		if c.Libpod.StorageConfig.RunRoot != dbConfig.StorageTmp &&
+			c.Libpod.StorageConfig.RunRoot != "" {
 			logrus.Debugf("Overriding run root %q with %q from database",
-				c.StorageConfig.RunRoot, dbConfig.StorageTmp)
+				c.Libpod.StorageConfig.RunRoot, dbConfig.StorageTmp)
 		}
-		c.StorageConfig.RunRoot = dbConfig.StorageTmp
+		c.Libpod.StorageConfig.RunRoot = dbConfig.StorageTmp
 	}
 
-	if !c.StorageConfigGraphRootSet && dbConfig.StorageRoot != "" {
-		if c.StorageConfig.GraphRoot != dbConfig.StorageRoot &&
-			c.StorageConfig.GraphRoot != "" {
+	if !c.Libpod.StorageConfigGraphRootSet && dbConfig.StorageRoot != "" {
+		if c.Libpod.StorageConfig.GraphRoot != dbConfig.StorageRoot &&
+			c.Libpod.StorageConfig.GraphRoot != "" {
 			logrus.Debugf("Overriding graph root %q with %q from database",
-				c.StorageConfig.GraphRoot, dbConfig.StorageRoot)
+				c.Libpod.StorageConfig.GraphRoot, dbConfig.StorageRoot)
 		}
-		c.StorageConfig.GraphRoot = dbConfig.StorageRoot
+		c.Libpod.StorageConfig.GraphRoot = dbConfig.StorageRoot
 	}
 
-	if !c.StorageConfigGraphDriverNameSet && dbConfig.GraphDriver != "" {
-		if c.StorageConfig.GraphDriverName != dbConfig.GraphDriver &&
-			c.StorageConfig.GraphDriverName != "" {
+	if !c.Libpod.StorageConfigGraphDriverNameSet && dbConfig.GraphDriver != "" {
+		if c.Libpod.StorageConfig.GraphDriverName != dbConfig.GraphDriver &&
+			c.Libpod.StorageConfig.GraphDriverName != "" {
 			logrus.Errorf("User-selected graph driver %q overwritten by graph driver %q from database - delete libpod local files to resolve",
-				c.StorageConfig.GraphDriverName, dbConfig.GraphDriver)
+				c.Libpod.StorageConfig.GraphDriverName, dbConfig.GraphDriver)
 		}
-		c.StorageConfig.GraphDriverName = dbConfig.GraphDriver
+		c.Libpod.StorageConfig.GraphDriverName = dbConfig.GraphDriver
 	}
 
-	if !c.StaticDirSet && dbConfig.LibpodRoot != "" {
-		if c.StaticDir != dbConfig.LibpodRoot && c.StaticDir != "" {
-			logrus.Debugf("Overriding static dir %q with %q from database", c.StaticDir, dbConfig.LibpodRoot)
+	if !c.Libpod.StaticDirSet && dbConfig.LibpodRoot != "" {
+		if c.Libpod.StaticDir != dbConfig.LibpodRoot && c.Libpod.StaticDir != "" {
+			logrus.Debugf("Overriding static dir %q with %q from database", c.Libpod.StaticDir, dbConfig.LibpodRoot)
 		}
-		c.StaticDir = dbConfig.LibpodRoot
+		c.Libpod.StaticDir = dbConfig.LibpodRoot
 	}
 
-	if !c.TmpDirSet && dbConfig.LibpodTmp != "" {
-		if c.TmpDir != dbConfig.LibpodTmp && c.TmpDir != "" {
-			logrus.Debugf("Overriding tmp dir %q with %q from database", c.TmpDir, dbConfig.LibpodTmp)
+	if !c.Libpod.TmpDirSet && dbConfig.LibpodTmp != "" {
+		if c.Libpod.TmpDir != dbConfig.LibpodTmp && c.Libpod.TmpDir != "" {
+			logrus.Debugf("Overriding tmp dir %q with %q from database", c.Libpod.TmpDir, dbConfig.LibpodTmp)
 		}
-		c.TmpDir = dbConfig.LibpodTmp
-		c.EventsLogFilePath = filepath.Join(dbConfig.LibpodTmp, "events", "events.log")
+		c.Libpod.TmpDir = dbConfig.LibpodTmp
+		c.Libpod.EventsLogFilePath = filepath.Join(dbConfig.LibpodTmp, "events", "events.log")
 	}
 
-	if !c.VolumePathSet && dbConfig.VolumePath != "" {
-		if c.VolumePath != dbConfig.VolumePath && c.VolumePath != "" {
-			logrus.Debugf("Overriding volume path %q with %q from database", c.VolumePath, dbConfig.VolumePath)
+	if !c.Libpod.VolumePathSet && dbConfig.VolumePath != "" {
+		if c.Libpod.VolumePath != dbConfig.VolumePath && c.Libpod.VolumePath != "" {
+			logrus.Debugf("Overriding volume path %q with %q from database", c.Libpod.VolumePath, dbConfig.VolumePath)
 		}
-		c.VolumePath = dbConfig.VolumePath
+		c.Libpod.VolumePath = dbConfig.VolumePath
 	}
 	return nil
-}
-
-// EnableLabeling indicates whether or not labeling is enabled
-func (c *Config) EnableLabeling() bool {
-	return c.optionalEnableLabeling == optionalBoolTrue
-}
-
-// NoPivotRoot sets whether to set no-pivot-root in the OCI runtime.
-func (c *Config) NoPivotRoot() bool {
-	return c.optionalNoPivotRoot == optionalBoolTrue
-}
-
-// SDNotify tells container engine to allow containers to notify the host systemd of
-// readiness using the SD_NOTIFY mechanism.
-func (c *Config) SDNotify() bool {
-	return c.optionalSDNotify == optionalBoolTrue
-}
-
-// EnablePortReservation determines whether libpod will reserve ports on the
-// host when they are forwarded to containers.
-func (c *Config) EnablePortReservation() bool {
-	return c.optionalEnablePortReservation == optionalBoolTrue
-}
-
-// EnableInit run an init inside the container that forwards signals and reaps processes.
-func (c *Config) Init() bool {
-	return c.optionalInit == optionalBoolTrue
 }
 
 // FindConmon iterates over (*Config).ConmonPath and returns the path to first
@@ -735,7 +615,7 @@ func (c *Config) Init() bool {
 // of "conmon".
 func (c *Config) FindConmon() (string, error) {
 	foundOutdatedConmon := false
-	for _, path := range c.ConmonPath {
+	for _, path := range c.Libpod.ConmonPath {
 		stat, err := os.Stat(path)
 		if err != nil {
 			continue
@@ -771,7 +651,7 @@ func (c *Config) FindConmon() (string, error) {
 
 	return "", errors.Wrapf(ErrInvalidArg,
 		"could not find a working conmon binary (configured options: %v)",
-		c.ConmonPath)
+		c.Libpod.ConmonPath)
 }
 
 // Device parses device mapping string to a src, dest & permissions string

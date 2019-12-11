@@ -58,6 +58,24 @@ var (
 	ErrConmonOutdated = errors.New("outdated conmon version")
 	// ErrInvalidArg indicates that an invalid argument was passed
 	ErrInvalidArg = errors.New("invalid argument")
+	// DefaultHooksDirs defines the default hooks directory
+	DefaultHooksDirs = []string{"/usr/share/containers/oci/hooks.d"}
+	// DefaultCapabilities for the default_capabilities option in the containers.conf file
+	DefaultCapabilities = []string{
+		"CAP_AUDIT_WRITE",
+		"CAP_CHOWN",
+		"CAP_DAC_OVERRIDE",
+		"CAP_FOWNER",
+		"CAP_FSETID",
+		"CAP_KILL",
+		"CAP_MKNOD",
+		"CAP_NET_BIND_SERVICE",
+		"CAP_NET_RAW",
+		"CAP_SETGID",
+		"CAP_SETPCAP",
+		"CAP_SETUID",
+		"CAP_SYS_CHROOT",
+	}
 )
 
 const (
@@ -113,32 +131,32 @@ func DefaultConfig() (*Config, error) {
 	}
 
 	return &Config{
-		ContainersConfig: ContainersConfig{
-			AdditionalDevices:      []string{},
-			ApparmorProfile:        DefaultApparmorProfile,
-			CgroupManager:          SystemdCgroupsManager,
-			DefaultCapabilities:    DefaultCapabilities,
-			DefaultSysctls:         []string{},
-			DefaultUlimits:         []string{},
-			optionalEnableLabeling: newOptionalBool(selinuxEnabled()),
+		Containers: ContainersConfig{
+			AdditionalDevices:   []string{},
+			ApparmorProfile:     DefaultApparmorProfile,
+			CgroupManager:       SystemdCgroupsManager,
+			DefaultCapabilities: DefaultCapabilities,
+			DefaultSysctls:      []string{},
+			DefaultUlimits:      []string{},
+			EnableLabeling:      selinuxEnabled(),
 			Env: []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 			},
 			HooksDir:            DefaultHooksDirs,
 			HTTPProxy:           []string{},
-			optionalInit:        newOptionalBool(false),
+			Init:                false,
 			LogSizeMax:          DefaultLogSizeMax,
 			PidsLimit:           DefaultPidsLimit,
 			SeccompProfile:      SeccompDefaultPath,
 			ShmSize:             DefaultShmSize,
 			SignaturePolicyPath: signaturePolicyPath,
 		},
-		NetworkConfig: NetworkConfig{
+		Network: NetworkConfig{
 			DefaultNetwork:   "podman",
 			NetworkConfigDir: cniConfigDir,
 			CNIPluginDirs:    cniBinDir,
 		},
-		LibpodConfig: *defaultLibpodConfig,
+		Libpod: *defaultLibpodConfig,
 	}, nil
 }
 
@@ -215,15 +233,15 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 	}
 	c.RuntimeSupportsNoCgroups = []string{"crun"}
 	c.InitPath = DefaultInitPath
-	c.optionalNoPivotRoot = newOptionalBool(false)
+	c.NoPivotRoot = false
 
 	c.InfraCommand = DefaultInfraCommand
 	c.InfraImage = DefaultInfraImage
-	c.optionalEnablePortReservation = newOptionalBool(true)
+	c.EnablePortReservation = true
 	c.NumLocks = 2048
-	c.EventsLogger = "file"
+	c.EventsLogger = "journald"
 	c.DetachKeys = DefaultDetachKeys
-	c.optionalSDNotify = newOptionalBool(false)
+	c.SDNotify = false
 	// TODO - ideally we should expose a `type LockType string` along with
 	// constants.
 	c.LockType = "shm"
