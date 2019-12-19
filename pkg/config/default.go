@@ -91,17 +91,20 @@ const (
 	DefaultApparmorProfile = "container-default"
 	// SystemdCgroupsManager represents systemd native cgroup manager
 	SystemdCgroupsManager = "systemd"
+	// DefaultLogDriver is the default type of log files
+	DefaultLogDriver = "k8s-file"
 	// DefaultLogSizeMax is the default value for the maximum log size
 	// allowed for a container. Negative values mean that no limit is imposed.
 	DefaultLogSizeMax = -1
 	// DefaultPidsLimit is the default value for maximum number of processes
 	// allowed inside a container
 	DefaultPidsLimit = 2048
-	// DefaultRootlessSignaturePolicyPath points to the default path of the
 	// rootless policy.json file.
 	DefaultRootlessSignaturePolicyPath = ".config/containers/policy.json"
 	// DefaultShmSize default value
 	DefaultShmSize = "65536k"
+	// DefaultUserNSSize default value
+	DefaultUserNSSize = 65536
 	// OCIBufSize limits maximum LogSizeMax
 	OCIBufSize = 8192
 	// SeccompOverridePath if this exists it overrides the default seccomp path.
@@ -133,23 +136,38 @@ func DefaultConfig() (*Config, error) {
 	return &Config{
 		Containers: ContainersConfig{
 			AdditionalDevices:   []string{},
+			AdditionalVolumes:   []string{},
 			ApparmorProfile:     DefaultApparmorProfile,
 			CgroupManager:       SystemdCgroupsManager,
+			CgroupNS:            "private",
 			DefaultCapabilities: DefaultCapabilities,
 			DefaultSysctls:      []string{},
 			DefaultUlimits:      []string{},
+			DNS:                 "",
+			DNSOptions:          []string{},
+			DNSSearches:         []string{},
 			EnableLabeling:      selinuxEnabled(),
 			Env: []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 			},
+			EnvHost:             false,
 			HooksDir:            DefaultHooksDirs,
 			HTTPProxy:           []string{},
 			Init:                false,
+			InitPath:            "",
+			IPCNS:               "private",
+			LogDriver:           DefaultLogDriver,
 			LogSizeMax:          DefaultLogSizeMax,
+			NetNS:               "private",
+			NoHost:              false,
 			PidsLimit:           DefaultPidsLimit,
+			PidNS:               "private",
 			SeccompProfile:      SeccompDefaultPath,
 			ShmSize:             DefaultShmSize,
 			SignaturePolicyPath: signaturePolicyPath,
+			UTSNS:               "private",
+			UserNS:              "private",
+			UserNSSize:          DefaultUserNSSize,
 		},
 		Network: NetworkConfig{
 			DefaultNetwork:   "podman",

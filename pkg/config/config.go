@@ -58,8 +58,11 @@ type Config struct {
 // containers global options for containers tools
 type ContainersConfig struct {
 
-	// Devices to add to containers
+	// Devices to add to all containers
 	AdditionalDevices []string `toml:"additional_devices"`
+
+	// Volumes to add to all containers
+	AdditionalVolumes []string `toml:"additional_volumes"`
 
 	// ApparmorProfile is the apparmor profile name which is used as the
 	// default for the runtime.
@@ -69,18 +72,26 @@ type ContainersConfig struct {
 	// and "systemd".
 	CgroupManager string `toml:"cgroup_manager"`
 
+	// Default way to create a cgroup namespace for the container
+	CgroupNS string `toml:"cgroupns"`
+
 	// Capabilities to add to all containers.
 	DefaultCapabilities []string `toml:"default_capabilities"`
-
-	// DefaultMountsFile is the path to the default mounts file for testing
-	// purposes only.
-	DefaultMountsFile string `toml:"-"`
 
 	// Sysctls to add to all containers.
 	DefaultSysctls []string `toml:"default_sysctls"`
 
 	// DefaultUlimits specifies the default ulimits to apply to containers
 	DefaultUlimits []string `toml:"default_ulimits"`
+
+	// DNS set default DNS servers.
+	DNS string `toml:"default_ulimits"`
+
+	// DNSOptions set default DNS options.
+	DNSOptions []string `toml:"dns_options"`
+
+	// DNSSearches set default DNS search domains.
+	DNSSearches []string `toml:"dns_searches"`
 
 	// EnableLabeling tells the container engines whether to use MAC
 	// Labeling to separate containers (SELinux)
@@ -89,17 +100,30 @@ type ContainersConfig struct {
 	// Env is the environment variable list for container process.
 	Env []string `toml:"env"`
 
+	// EnvHost Pass all host environment variables into the container.
+	EnvHost bool `toml:"env_host"`
+
 	// HooksDir holds paths to the directories containing hooks
 	// configuration files. When the same filename is present in in
 	// multiple directories, the file in the directory listed last in
 	// this slice takes precedence.
 	HooksDir []string `toml:"hooks_dir"`
 
-	// Run an init inside the container that forwards signals and reaps processes.
-	Init bool `toml:"init"`
-
 	// HTTPProxy is the proxy environment variable list to apply to container process
 	HTTPProxy []string `toml:"http_proxy"`
+
+	// Init tells container runtimes whether to run init inside the
+	// container that forwards signals and reaps processes.
+	Init bool `toml:"init"`
+
+	// InitPath is the path for init to run if the Init bool is enabled
+	InitPath string `toml:"init_path"`
+
+	// IPCNS way to to create a ipc namespace for the container
+	IPCNS string `toml:"ipcns"`
+
+	// LogDriver  for the container.  For example: k8s-file and journald
+	LogDriver string `toml:"log_driver"`
 
 	// LogSizeMax is the maximum number of bytes after which the log file
 	// will be truncated. It can be expressed as a human-friendly string
@@ -107,9 +131,18 @@ type ContainersConfig struct {
 	// Negative values indicate that the log file won't be truncated.
 	LogSizeMax int64 `toml:"log_size_max"`
 
+	// NetNS indicates how to create a network namespace for the container
+	NetNS string `toml:"netns"`
+
+	// NoHost tells container engine whether to create its own /etc/hosts
+	NoHost bool `toml:"no_host"`
+
 	// PidsLimit is the number of processes each container is restricted to
 	// by the cgroup process number controller.
 	PidsLimit int64 `toml:"pids_limit"`
+
+	// PidNS indicates how to create a pid namespace for the container
+	PidNS string `toml:"pidns"`
 
 	// SeccompProfile is the seccomp.json profile path which is used as the
 	// default for the runtime.
@@ -121,7 +154,16 @@ type ContainersConfig struct {
 	// SignaturePolicyPath is the path to a signature policy to use for
 	// validating images. If left empty, the containers/image default signature
 	// policy will be used.
-	SignaturePolicyPath string `toml:"signature_policy_path,omitempty"`
+	SignaturePolicyPath string `toml:"_"`
+
+	// UTSNS indicates how to create a UTS namespace for the container
+	UTSNS string `toml:"utsns"`
+
+	// UserNS indicates how to create a User namespace for the container
+	UserNS string `toml:"userns"`
+
+	// UserNSSize how many UIDs to allocate for automatically created UserNS
+	UserNSSize int `toml:"userns_size"`
 }
 
 // LibpodConfig contains configuration options used to set up a libpod runtime
