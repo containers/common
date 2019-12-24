@@ -195,6 +195,10 @@ type LibpodConfig struct {
 	// OCIRuntimes are the set of configured OCI runtimes (default is runc).
 	OCIRuntimes map[string][]string `toml:"runtimes"`
 
+	// RooltessStoragePath path to storage for rootless users (default is $HOME/.config/containers/storage)
+
+	RootlessStoragePath string `toml:"rootless_storage_path"`
+
 	// RuntimePath is the path to OCI runtime binary for launching containers.
 	// The first path pointing to a valid file will be used This is used only
 	// when there are no OCIRuntime/OCIRuntimes defined.  It is used only to be
@@ -652,6 +656,31 @@ func (c *Config) FindConmon() (string, error) {
 	return "", errors.Wrapf(ErrInvalidArg,
 		"could not find a working conmon binary (configured options: %v)",
 		c.Libpod.ConmonPath)
+}
+
+func (c *Config) RootlessHomeStorage() (string, error) {
+	home, err := unshare.HomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	if c.Libpod.RootlessStoragePath == "" {
+		opts, err := storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
+		if err != nil {
+			return "", err
+		}
+		return opts.GraphRoot, nil
+	}
+
+	rootlessStorage := strings.Replace(c.Libpod.RootlessStoragePath, "$HOME", home, -1)
+	uid := unshare.GetRootlessUID()
+	rootlessStorage = strings.Replace(c.Libpod.RootlessStoragePath, "$UID", string(uid), -1)
+	user, err := unshare.UserName()
+	if err != nil {
+		return "", err
+	}
+	rootlessStorage = strings.Replace(c.Libpod.RootlessStoragePath, "$USER", user, -1)
+	return rootlessStorage, nil
 }
 
 // Device parses device mapping string to a src, dest & permissions string

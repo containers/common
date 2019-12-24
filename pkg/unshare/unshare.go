@@ -20,3 +20,12 @@ func HomeDir() (string, error) {
 	}
 	return home, nil
 }
+
+// UserName returns the user name for the rootless user.
+func UserName() (string, error) {
+	usr, err := user.LookupId(fmt.Sprintf("%d", GetRootlessUID()))
+	if err != nil {
+		return "", errors.Wrapf(err, "unable to resolve HOME directory")
+	}
+	return usr.Name, nil
+}
