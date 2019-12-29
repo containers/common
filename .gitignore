@@ -1,0 +1,13 @@
+/.artifacts/
+/_output/
+/docs/*.[158]
+/docs/*.[158].gz
+*.o
+*.rej
+*.orig
+.gopathok
+.idea*
+.vscode*
+contrib/spec/podman.spec
+*.rpm
+*~
