@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -371,6 +372,30 @@ var _ = Describe("Config", func() {
 			Expect(config.Network.CNIPluginDirs).To(Equal(pluginDirs))
 			Expect(config.Libpod.NumLocks).To(BeEquivalentTo(2048))
 			Expect(config.Libpod.OCIRuntimes["runc"]).To(Equal(OCIRuntimeMap["runc"]))
+		})
+
+		It("verify getDefaultEnv", func() {
+			envs := []string{
+				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			}
+
+			// When
+			config, err := NewConfig("")
+			// Then
+			Expect(err).To(BeNil())
+			Expect(config.GetDefaultEnv()).To(BeEquivalentTo(envs))
+			config.Containers.HTTPProxy = true
+			Expect(config.GetDefaultEnv()).To(BeEquivalentTo(envs))
+			os.Setenv("HTTP_PROXY", "localhost")
+			os.Setenv("FOO", "BAR")
+			newenvs := []string{"HTTP_PROXY=localhost"}
+			envs = append(newenvs, envs...)
+			Expect(config.GetDefaultEnv()).To(BeEquivalentTo(envs))
+			config.Containers.HTTPProxy = false
+			config.Containers.EnvHost = true
+			envString := strings.Join(config.GetDefaultEnv(), ",")
+			Expect(envString).To(ContainSubstring("FOO=BAR"))
+			Expect(envString).To(ContainSubstring("HTTP_PROXY=localhost"))
 		})
 
 		It("should success with valid user file path", func() {
