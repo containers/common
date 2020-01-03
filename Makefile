@@ -7,6 +7,8 @@ ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
 	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
 endif
 DESTDIR ?=
+PREFIX := /usr/local
+CONFIGDIR := ${PREFIX}/share/containers
 PROJECT := github.com/containers/common
 
 # If GOPATH not specified, use one in the local directory
@@ -57,6 +59,13 @@ install.tools: .install.golangci-lint .install.md2man
 		   $(call go-get,github.com/cpuguy83/go-md2man); \
 	fi
 
+.PHONY: install
+install:
+	install -d ${DESTDIR}/${CONFIGDIR}
+	install -m 0644 pkg/config/containers.conf ${DESTDIR}/${CONFIGDIR}/containers.conf
+
+	$(MAKE) -C docs install
+
 .PHONY: test
 test: test-unit
 
@@ -66,7 +75,5 @@ test-unit:
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean
-	rm -rf \
-		bin
 	find . -name \*~ -delete
 	find . -name \#\* -delete

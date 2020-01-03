@@ -84,8 +84,8 @@ type ContainersConfig struct {
 	// DefaultUlimits specifies the default ulimits to apply to containers
 	DefaultUlimits []string `toml:"default_ulimits"`
 
-	// DNS set default DNS servers.
-	DNS string `toml:"default_ulimits"`
+	// DNSServers set default DNS servers.
+	DNSServers []string `toml:"dns_servers"`
 
 	// DNSOptions set default DNS options.
 	DNSOptions []string `toml:"dns_options"`
@@ -110,7 +110,7 @@ type ContainersConfig struct {
 	HooksDir []string `toml:"hooks_dir"`
 
 	// HTTPProxy is the proxy environment variable list to apply to container process
-	HTTPProxy []string `toml:"http_proxy"`
+	HTTPProxy bool `toml:"http_proxy"`
 
 	// Init tells container runtimes whether to run init inside the
 	// container that forwards signals and reaps processes.
@@ -134,8 +134,8 @@ type ContainersConfig struct {
 	// NetNS indicates how to create a network namespace for the container
 	NetNS string `toml:"netns"`
 
-	// NoHost tells container engine whether to create its own /etc/hosts
-	NoHost bool `toml:"no_host"`
+	// NoHosts tells container engine whether to create its own /etc/hosts
+	NoHosts bool `toml:"no_hosts"`
 
 	// PidsLimit is the number of processes each container is restricted to
 	// by the cgroup process number controller.
@@ -236,12 +236,6 @@ type LibpodConfig struct {
 
 	// OCIRuntimes are the set of configured OCI runtimes (default is runc).
 	OCIRuntimes map[string][]string `toml:"runtimes"`
-
-	// RuntimePath is the path to OCI runtime binary for launching containers.
-	// The first path pointing to a valid file will be used This is used only
-	// when there are no OCIRuntime/OCIRuntimes defined.  It is used only to be
-	// backward compatible with older versions of Podman.
-	RuntimePath []string `toml:"runtime_path"`
 
 	// RuntimeSupportsJSON is the list of the OCI runtimes that support
 	// --format=json.
@@ -694,6 +688,24 @@ func (c *Config) FindConmon() (string, error) {
 	return "", errors.Wrapf(ErrInvalidArg,
 		"could not find a working conmon binary (configured options: %v)",
 		c.Libpod.ConmonPath)
+}
+
+// GetDefaultEnv returns the environment variables for the container.
+// It will checn the HTTPProxy and HostEnv booleans and add the appropriate
+// environment variables to the container.
+func (c *Config) GetDefaultEnv() []string {
+	var env []string
+	if c.Containers.EnvHost {
+		env = append(env, os.Environ()...)
+	} else if c.Containers.HTTPProxy {
+		proxy := []string{"http_proxy", "https_proxy", "ftp_proxy", "no_proxy", "HTTP_PROXY", "HTTPS_PROXY", "FTP_PROXY", "NO_PROXY"}
+		for _, p := range proxy {
+			if val, ok := os.LookupEnv(p); ok {
+				env = append(env, fmt.Sprintf("%s=%s", p, val))
+			}
+		}
+	}
+	return append(env, c.Containers.Env...)
 }
 
 // Device parses device mapping string to a src, dest & permissions string
