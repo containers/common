@@ -8,6 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	selinux "github.com/opencontainers/selinux/go-selinux"
 )
 
 var _ = Describe("Config", func() {
@@ -146,6 +147,19 @@ var _ = Describe("Config", func() {
 
 			// Then
 			Expect(err).NotTo(BeNil())
+		})
+
+		It("Check SELinux settings", func() {
+			if selinux.GetEnabled() {
+				sut.Containers.EnableLabeling = true
+				Expect(sut.Containers.Validate()).To(BeNil())
+				Expect(selinux.GetEnabled()).To(BeTrue())
+
+				sut.Containers.EnableLabeling = false
+				Expect(sut.Containers.Validate()).To(BeNil())
+				Expect(selinux.GetEnabled()).To(BeFalse())
+			}
+
 		})
 
 	})

@@ -84,6 +84,9 @@ type ContainersConfig struct {
 	// DefaultUlimits specifies the default ulimits to apply to containers
 	DefaultUlimits []string `toml:"default_ulimits"`
 
+	// DefaultMountsFile is the path to the default mounts file for testing
+	DefaultMountsFile string `toml:"-"`
+
 	// DNSServers set default DNS servers.
 	DNSServers []string `toml:"dns_servers"`
 
@@ -495,7 +498,7 @@ func (c *Config) Validate(onExecution bool) error {
 			return errors.Wrapf(err, "network config")
 		}
 	}
-	if c.Containers.EnableLabeling {
+	if !c.Containers.EnableLabeling {
 		selinux.SetDisabled()
 	}
 
