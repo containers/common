@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/BurntSushi/toml"
+	"github.com/containers/common/pkg/caps"
 	"github.com/containers/common/pkg/unshare"
 	"github.com/containers/storage"
 	units "github.com/docker/go-units"
@@ -708,6 +709,49 @@ func (c *Config) GetDefaultEnv() []string {
 		}
 	}
 	return append(env, c.Containers.Env...)
+}
+
+// Capabilities returns the capabilities parses the Add and Drop capability
+// list from the default capabiltiies for the container
+func (c *Config) Capabilities(user string, addCapabilities, dropCapabilities []string) []string {
+
+	userNotRoot := func(user string) bool {
+		if user == "" || user == "root" || user == "0" {
+			return false
+		}
+		return true
+	}
+
+	var capabilities []string
+	defaultCapabilities := c.Containers.DefaultCapabilities
+	if userNotRoot(user) {
+		defaultCapabilities = []string{}
+	}
+
+	mapCap := make(map[string]bool, len(defaultCapabilities))
+	for _, c := range addCapabilities {
+		if strings.ToLower(c) == "all" {
+			defaultCapabilities = caps.GetAllCapabilities()
+			addCapabilities = nil
+			break
+		}
+	}
+
+	for _, c := range append(defaultCapabilities, addCapabilities...) {
+		mapCap[c] = true
+	}
+	for _, c := range dropCapabilities {
+		if "all" == strings.ToLower(c) {
+			return capabilities
+		}
+		mapCap[c] = false
+	}
+	for cap, add := range mapCap {
+		if add {
+			capabilities = append(capabilities, cap)
+		}
+	}
+	return capabilities
 }
 
 // Device parses device mapping string to a src, dest & permissions string
