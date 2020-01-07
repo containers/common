@@ -106,12 +106,6 @@ type ContainersConfig struct {
 	// EnvHost Pass all host environment variables into the container.
 	EnvHost bool `toml:"env_host"`
 
-	// HooksDir holds paths to the directories containing hooks
-	// configuration files. When the same filename is present in in
-	// multiple directories, the file in the directory listed last in
-	// this slice takes precedence.
-	HooksDir []string `toml:"hooks_dir"`
-
 	// HTTPProxy is the proxy environment variable list to apply to container process
 	HTTPProxy bool `toml:"http_proxy"`
 
@@ -198,6 +192,11 @@ type LibpodConfig struct {
 
 	// EventsLogger determines where events should be logged.
 	EventsLogger string `toml:"events_logger"`
+
+	// configuration files. When the same filename is present in in
+	// multiple directories, the file in the directory listed last in
+	// this slice takes precedence.
+	HooksDir []string `toml:"hooks_dir"`
 
 	// ImageDefaultTransport is the default transport method used to fetch
 	// images.
