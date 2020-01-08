@@ -151,7 +151,6 @@ func DefaultConfig() (*Config, error) {
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 			},
 			EnvHost:             false,
-			HooksDir:            DefaultHooksDirs,
 			HTTPProxy:           false,
 			Init:                false,
 			InitPath:            "",
@@ -202,6 +201,7 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 	c.VolumePath = filepath.Join(storeOpts.GraphRoot, "volumes")
 	c.StorageConfig = storeOpts
 
+	c.HooksDir = DefaultHooksDirs
 	c.ImageDefaultTransport = _defaultTransport
 	c.StateType = BoltDBStateStore
 

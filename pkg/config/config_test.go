@@ -4,8 +4,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
+	dcaps "github.com/containers/common/pkg/caps"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	selinux "github.com/opencontainers/selinux/go-selinux"
@@ -429,6 +431,57 @@ var _ = Describe("Config", func() {
 			// Then
 			Expect(err).ToNot(BeNil())
 			Expect(config).To(BeNil())
+		})
+
+		It("Test Capabilties call", func() {
+			// Given
+			// When
+			config, err := NewConfig("")
+			// Then
+			Expect(err).To(BeNil())
+			var addcaps, dropcaps []string
+			caps := config.Capabilities("0", addcaps, dropcaps)
+			sort.Strings(caps)
+			defaultCaps := config.Containers.DefaultCapabilities
+			sort.Strings(defaultCaps)
+			Expect(caps).To(BeEquivalentTo(defaultCaps))
+
+			// Add all caps
+			addcaps = []string{"all"}
+			caps = config.Capabilities("root", addcaps, dropcaps)
+			sort.Strings(caps)
+			Expect(caps).ToNot(BeEquivalentTo(dcaps.GetAllCapabilities()))
+
+			// Drop all caps
+			dropcaps = []string{"all"}
+			caps = config.Capabilities("", addcaps, dropcaps)
+			sort.Strings(caps)
+			Expect(caps).ToNot(BeEquivalentTo([]string{}))
+
+			config.Containers.DefaultCapabilities = []string{
+				"CAP_AUDIT_WRITE",
+				"CAP_CHOWN",
+				"CAP_DAC_OVERRIDE",
+				"CAP_FOWNER",
+			}
+
+			expectedCaps := []string{
+				"CAP_AUDIT_WRITE",
+				"CAP_DAC_OVERRIDE",
+				"CAP_NET_ADMIN",
+				"CAP_SYS_ADMIN",
+			}
+
+			// Add all caps
+			addcaps = []string{"CAP_NET_ADMIN", "CAP_SYS_ADMIN"}
+			dropcaps = []string{"CAP_FOWNER", "CAP_CHOWN"}
+			caps = config.Capabilities("", addcaps, dropcaps)
+			sort.Strings(caps)
+			Expect(caps).To(BeEquivalentTo(expectedCaps))
+
+			caps = config.Capabilities("notroot", addcaps, dropcaps)
+			sort.Strings(caps)
+			Expect(caps).To(BeEquivalentTo(addcaps))
 		})
 	})
 })
