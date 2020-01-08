@@ -433,7 +433,7 @@ var _ = Describe("Config", func() {
 			Expect(config).To(BeNil())
 		})
 
-		It("Test Capabilties call", func() {
+		It("Test Capabilities call", func() {
 			// Given
 			// When
 			config, err := NewConfig("")
