@@ -9,7 +9,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/containers/common/pkg/unshare"
+	"github.com/containers/common/pkg/rootless"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +25,7 @@ func getRuntimeDir() (string, error) {
 
 	rootlessRuntimeDirOnce.Do(func() {
 		runtimeDir := os.Getenv("XDG_RUNTIME_DIR")
-		uid := fmt.Sprintf("%d", unshare.GetRootlessUID())
+		uid := fmt.Sprintf("%d", rootless.GetRootlessUID())
 		if runtimeDir == "" {
 			tmpDir := filepath.Join("/run", "user", uid)
 			if err := os.MkdirAll(tmpDir, 0700); err != nil {

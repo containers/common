@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/containers/common/pkg/unshare"
+	"github.com/containers/common/pkg/rootless"
 	systemdDbus "github.com/coreos/go-systemd/dbus"
 	"github.com/godbus/dbus"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
@@ -342,7 +342,7 @@ func Load(path string) (*CgroupControl, error) {
 			p := control.getCgroupv1Path(name)
 			if _, err := os.Stat(p); err != nil {
 				if os.IsNotExist(err) {
-					if unshare.IsRootless() {
+					if rootless.IsRootless() {
 						return nil, ErrCgroupV1Rootless
 					}
 					// compatible with the error code

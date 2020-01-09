@@ -10,7 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/pkg/caps"
-	"github.com/containers/common/pkg/unshare"
+	"github.com/containers/common/pkg/rootless"
 	"github.com/containers/storage"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
@@ -435,7 +435,7 @@ func systemConfigs() ([]string, error) {
 	if _, err := os.Stat(OverrideContainersConfig); err == nil {
 		configs = append(configs, OverrideContainersConfig)
 	}
-	if unshare.IsRootless() {
+	if rootless.IsRootless() {
 		path, err := rootlessConfigPath()
 		if err != nil {
 			return nil, err
@@ -451,7 +451,7 @@ func systemConfigs() ([]string, error) {
 // cgroup manager. In case the user session isn't available, we're switching the
 // cgroup manager to cgroupfs.  Note, this only applies to rootless.
 func (c *Config) checkCgroupsAndAdjustConfig() {
-	if !unshare.IsRootless() || c.Containers.CgroupManager != SystemdCgroupsManager {
+	if !rootless.IsRootless() || c.Containers.CgroupManager != SystemdCgroupsManager {
 		return
 	}
 
@@ -465,7 +465,7 @@ func (c *Config) checkCgroupsAndAdjustConfig() {
 	if !hasSession {
 		logrus.Warningf("The cgroups manager is set to systemd but there is no systemd user session available")
 		logrus.Warningf("For using systemd, you may need to login using an user session")
-		logrus.Warningf("Alternatively, you can enable lingering with: `loginctl enable-linger %d` (possibly as root)", unshare.GetRootlessUID())
+		logrus.Warningf("Alternatively, you can enable lingering with: `loginctl enable-linger %d` (possibly as root)", rootless.GetRootlessUID())
 		logrus.Warningf("Falling back to --cgroup-manager=cgroupfs")
 		c.Containers.CgroupManager = CgroupfsCgroupsManager
 	}
@@ -493,7 +493,7 @@ func (c *Config) Validate(onExecution bool) error {
 		return errors.Wrapf(err, "containers config")
 	}
 
-	if !unshare.IsRootless() {
+	if !rootless.IsRootless() {
 		if err := c.Network.Validate(onExecution); err != nil {
 			return errors.Wrapf(err, "network config")
 		}
@@ -838,7 +838,7 @@ func IsDirectory(path string) error {
 }
 
 func rootlessConfigPath() (string, error) {
-	home, err := unshare.HomeDir()
+	home, err := rootless.HomeDir()
 	if err != nil {
 		return "", err
 	}

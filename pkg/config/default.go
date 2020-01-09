@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/containers/common/pkg/cgroups"
-	"github.com/containers/common/pkg/unshare"
+	"github.com/containers/common/pkg/rootless"
 	"github.com/containers/storage"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -122,8 +122,8 @@ func DefaultConfig() (*Config, error) {
 	}
 
 	var signaturePolicyPath string
-	if unshare.IsRootless() {
-		home, err := unshare.HomeDir()
+	if rootless.IsRootless() {
+		home, err := rootless.HomeDir()
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +189,7 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
 
-	storeOpts, err := storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
+	storeOpts, err := storage.DefaultStoreOptions(rootless.IsRootless(), rootless.GetRootlessUID())
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +268,7 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 }
 
 func defaultTmpDir() (string, error) {
-	if !unshare.IsRootless() {
+	if !rootless.IsRootless() {
 		return "/var/run/libpod", nil
 	}
 
