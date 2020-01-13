@@ -44,7 +44,7 @@ var (
 	// DefaultInfraImage to use for infra container
 	DefaultInfraImage = "k8s.gcr.io/pause:3.1"
 	// DefaultInfraCommand to be run in an infra container
-	DefaultInfraCommand = "/pause"
+	DefaultInfraCommand = ""
 	// DefaultRootlessSHMLockPath is the default path for rootless SHM locks
 	DefaultRootlessSHMLockPath = "/libpod_rootless_lock"
 	// DefaultDetachKeys is the default keys sequence for detaching a

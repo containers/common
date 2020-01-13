@@ -268,7 +268,7 @@ Disabling this can save memory.
 **image_default_transport**="docker://"
   Default transport method for pulling and pushing images.
 
-**infra_command**="/pause"
+**infra_command**=""
   Command to run the infra container.
 
 **infra_image**="k8s.gcr.io/pause:3.1"
