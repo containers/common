@@ -114,7 +114,7 @@ var _ = Describe("Config", func() {
 			sut.Containers.LogSizeMax = 1
 
 			// When
-			err := sut.Validate(true)
+			err := sut.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -125,7 +125,7 @@ var _ = Describe("Config", func() {
 			sut.Containers.ShmSize = "1024"
 
 			// When
-			err := sut.Validate(true)
+			err := sut.Validate()
 
 			// Then
 			Expect(err).To(BeNil())
@@ -134,7 +134,7 @@ var _ = Describe("Config", func() {
 			sut.Containers.ShmSize = "64m"
 
 			// When
-			err = sut.Validate(true)
+			err = sut.Validate()
 
 			// Then
 			Expect(err).To(BeNil())
@@ -145,7 +145,7 @@ var _ = Describe("Config", func() {
 			sut.Containers.ShmSize = "-2"
 
 			// When
-			err := sut.Validate(true)
+			err := sut.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -170,13 +170,13 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			err := sut.Network.Validate(false)
+			err := sut.Network.Validate()
 
 			// Then
 			Expect(err).To(BeNil())
 		})
 
-		It("should succeed during runtime", func() {
+		It("should fail during runtime", func() {
 			validDirPath, err := ioutil.TempDir("", "config-empty")
 			if err != nil {
 				panic(err)
@@ -189,29 +189,10 @@ var _ = Describe("Config", func() {
 			defer os.RemoveAll(tmpDir)
 
 			// When
-			err = sut.Network.Validate(true)
+			err = sut.Network.Validate()
 
 			// Then
-			Expect(err).To(BeNil())
-		})
-
-		It("should create the  NetworkConfigDir", func() {
-			validDirPath, err := ioutil.TempDir("", "config-empty")
-			if err != nil {
-				panic(err)
-			}
-			defer os.RemoveAll(validDirPath)
-			// Given
-			tmpDir := path.Join(os.TempDir(), invalidPath)
-			sut.Network.NetworkConfigDir = tmpDir
-			sut.Network.CNIPluginDirs = []string{validDirPath}
-
-			// When
-			err = sut.Network.Validate(true)
-
-			// Then
-			Expect(err).To(BeNil())
-			os.RemoveAll(tmpDir)
+			Expect(err).ToNot(BeNil())
 		})
 
 		It("should fail on invalid NetworkConfigDir", func() {
@@ -225,7 +206,7 @@ var _ = Describe("Config", func() {
 			sut.Network.CNIPluginDirs = []string{}
 
 			// When
-			err = sut.Network.Validate(true)
+			err = sut.Network.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -242,7 +223,7 @@ var _ = Describe("Config", func() {
 			sut.Network.CNIPluginDirs = []string{invalidPath}
 
 			// When
-			err = sut.Network.Validate(true)
+			err = sut.Network.Validate()
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -259,7 +240,7 @@ var _ = Describe("Config", func() {
 			sut.Network.CNIPluginDirs = []string{invalidPath}
 
 			// When
-			err = sut.Network.Validate(true)
+			err = sut.Network.Validate()
 
 			// Then
 			Expect(err).ToNot(BeNil())
@@ -267,12 +248,12 @@ var _ = Describe("Config", func() {
 
 	})
 
-	Describe("ReadConfigFromFile", func() {
+	Describe("readConfigFromFile", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
 			conf, _ := DefaultConfig()
-			defaultConfig, err := ReadConfigFromFile("testdata/containers_default.conf", conf)
+			defaultConfig, err := readConfigFromFile("testdata/containers_default.conf", conf)
 
 			OCIRuntimeMap := map[string][]string{
 				"runc": []string{
@@ -315,7 +296,7 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			conf := Config{}
-			_, err := ReadConfigFromFile("testdata/containers_comment.conf", &conf)
+			_, err := readConfigFromFile("testdata/containers_comment.conf", &conf)
 
 			// Then
 			Expect(err).To(BeNil())
@@ -325,7 +306,7 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			conf := Config{}
-			_, err := ReadConfigFromFile("/invalid/file", &conf)
+			_, err := readConfigFromFile("/invalid/file", &conf)
 
 			// Then
 			Expect(err).NotTo(BeNil())
@@ -335,7 +316,7 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			conf := Config{}
-			_, err := ReadConfigFromFile("config.go", &conf)
+			_, err := readConfigFromFile("config.go", &conf)
 
 			// Then
 			Expect(err).NotTo(BeNil())
