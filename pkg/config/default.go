@@ -141,7 +141,7 @@ func DefaultConfig() (*Config, error) {
 			CgroupNS:            "private",
 			DefaultCapabilities: DefaultCapabilities,
 			DefaultSysctls:      []string{},
-			DefaultUlimits:      []string{},
+			DefaultUlimits:      getDefaultProcessLimits(),
 			DNSServers:          []string{},
 			DNSOptions:          []string{},
 			DNSSearches:         []string{},
