@@ -30,6 +30,20 @@ define go-get
 		$(GO) get -u ${1}
 endef
 
+.PHONY: all
+all: build-amd64 build-386
+
+.PHONY: build
+build: build-amd64 build-386
+
+.PHONY: build-amd64
+build-amd64:
+	GOARCH=amd64 $(GO_BUILD) ./...
+
+.PHONY: build-386
+build-386:
+	GOARCH=386 $(GO_BUILD) ./...
+
 .PHONY: docs
 docs:
 	$(MAKE) -C docs
