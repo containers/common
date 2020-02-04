@@ -2,10 +2,14 @@ language: go
 
 go:
   - tip
+  - 1.13
+
 before_install:
-    - sudo apt-get -qq install libdevmapper-dev
+  - sudo apt-get -qq install libdevmapper-dev
+
 script:
-      - make install.tools
-      - make validate
-      - make vendor
-      - make test
+  - make build
+  - make install.tools
+  - make validate
+  - make vendor
+  - make test
