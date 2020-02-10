@@ -377,7 +377,7 @@ var _ = Describe("Config", func() {
 			}
 
 			// When
-			config, err := NewConfig("")
+			config, err := Default()
 			// Then
 			Expect(err).To(BeNil())
 			Expect(config.GetDefaultEnv()).To(BeEquivalentTo(envs))
