@@ -251,8 +251,8 @@ type LibpodConfig struct {
 
 	// SetOptions contains a subset of config options. It's used to indicate if
 	// a given option has either been set by the user or by a parsed libpod
-	// configuration file.  If not, the corresponding option might be
-	// overwritten by values from the database.  This behavior guarantess
+	// configuration file. If not, the corresponding option might be
+	// overwritten by values from the database. This behavior guarantees
 	// backwards compat with older version of libpod and Podman.
 	SetOptions
 
@@ -288,8 +288,8 @@ type LibpodConfig struct {
 
 // SetOptions contains a subset of options in a Config. It's used to indicate if
 // a given option has either been set by the user or by a parsed libpod
-// configuration file.  If not, the corresponding option might be overwritten by
-// values from the database.  This behavior guarantess backwards compat with
+// configuration file. If not, the corresponding option might be overwritten by
+// values from the database. This behavior guarantees backwards compat with
 // older version of libpod and Podman.
 type SetOptions struct {
 	// StorageConfigRunRootSet indicates if the RunRoot has been explicitly set
