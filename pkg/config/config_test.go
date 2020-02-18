@@ -256,7 +256,7 @@ var _ = Describe("Config", func() {
 			defaultConfig, err := readConfigFromFile("testdata/containers_default.conf", conf)
 
 			OCIRuntimeMap := map[string][]string{
-				"runc": []string{
+				"runc": {
 					"/usr/bin/runc",
 					"/usr/sbin/runc",
 					"/usr/local/bin/runc",
@@ -265,7 +265,7 @@ var _ = Describe("Config", func() {
 					"/bin/runc",
 					"/usr/lib/cri-o-runc/sbin/runc",
 				},
-				"crun": []string{
+				"crun": {
 					"/usr/bin/crun",
 					"/usr/local/bin/crun",
 				},
@@ -327,7 +327,7 @@ var _ = Describe("Config", func() {
 		It("should success with default config", func() {
 			// Given
 			OCIRuntimeMap := map[string][]string{
-				"runc": []string{
+				"runc": {
 					"/usr/bin/runc",
 					"/usr/sbin/runc",
 					"/usr/local/bin/runc",
@@ -337,7 +337,7 @@ var _ = Describe("Config", func() {
 					"/usr/lib/cri-o-runc/sbin/runc",
 					"/run/current-system/sw/bin/runc",
 				},
-				"crun": []string{
+				"crun": {
 					"/usr/bin/crun",
 					"/usr/sbin/crun",
 					"/usr/local/bin/crun",

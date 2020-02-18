@@ -70,6 +70,9 @@ type ContainersConfig struct {
 	// default for the runtime.
 	ApparmorProfile string `toml:"apparmor_profile"`
 
+	// Annotation to add to all containers
+	AdditionalAnnotations []string `toml:"additional_annotations"`
+
 	// CGroupManager is the CGroup Manager to use Valid values are "cgroupfs"
 	// and "systemd".
 	CgroupManager string `toml:"cgroup_manager"`
@@ -251,8 +254,8 @@ type LibpodConfig struct {
 
 	// SetOptions contains a subset of config options. It's used to indicate if
 	// a given option has either been set by the user or by a parsed libpod
-	// configuration file.  If not, the corresponding option might be
-	// overwritten by values from the database.  This behavior guarantess
+	// configuration file. If not, the corresponding option might be
+	// overwritten by values from the database. This behavior guarantees
 	// backwards compat with older version of libpod and Podman.
 	SetOptions
 
@@ -288,8 +291,8 @@ type LibpodConfig struct {
 
 // SetOptions contains a subset of options in a Config. It's used to indicate if
 // a given option has either been set by the user or by a parsed libpod
-// configuration file.  If not, the corresponding option might be overwritten by
-// values from the database.  This behavior guarantess backwards compat with
+// configuration file. If not, the corresponding option might be overwritten by
+// values from the database. This behavior guarantees backwards compat with
 // older version of libpod and Podman.
 type SetOptions struct {
 	// StorageConfigRunRootSet indicates if the RunRoot has been explicitly set
@@ -397,7 +400,7 @@ func NewConfig(userConfigPath string) (*Config, error) {
 
 // readConfigFromFile reads the specified config file at `path` and attempts to
 // unmarshal its content into a Config. The config param specifies the previous
-// default config.  If the path, only specifies a few fields in the Toml file
+// default config. If the path, only specifies a few fields in the Toml file
 // the defaults from the config parameter will be used for all other fields.
 func readConfigFromFile(path string, config *Config) (*Config, error) {
 	logrus.Debugf("Reading configuration file %q", path)
