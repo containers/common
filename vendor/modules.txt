@@ -26,6 +26,12 @@ github.com/Microsoft/hcsshim/internal/wclayer
 github.com/Microsoft/hcsshim/osversion
 # github.com/containerd/cgroups v0.0.0-20190919134610-bf292b21730f
 github.com/containerd/cgroups/stats/v1
+# github.com/containers/image/v5 v5.2.1
+github.com/containers/image/v5/docker/reference
+github.com/containers/image/v5/pkg/compression/internal
+github.com/containers/image/v5/pkg/compression/types
+github.com/containers/image/v5/pkg/sysregistriesv2
+github.com/containers/image/v5/types
 # github.com/containers/storage v1.15.8
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -65,6 +71,9 @@ github.com/containers/storage/pkg/stringutils
 github.com/containers/storage/pkg/system
 github.com/containers/storage/pkg/tarlog
 github.com/containers/storage/pkg/truncindex
+# github.com/docker/distribution v2.7.1+incompatible
+github.com/docker/distribution/digestset
+github.com/docker/distribution/reference
 # github.com/docker/go-units v0.4.0
 github.com/docker/go-units
 # github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
@@ -128,6 +137,9 @@ github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
 # github.com/opencontainers/go-digest v1.0.0-rc1
 github.com/opencontainers/go-digest
+# github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6
+github.com/opencontainers/image-spec/specs-go
+github.com/opencontainers/image-spec/specs-go/v1
 # github.com/opencontainers/runc v1.0.0-rc9
 github.com/opencontainers/runc/libcontainer/system
 github.com/opencontainers/runc/libcontainer/user
