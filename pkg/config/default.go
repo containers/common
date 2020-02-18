@@ -15,7 +15,6 @@ import (
 )
 
 const (
-
 	// _conmonMinMajorVersion is the major version required for conmon.
 	_conmonMinMajorVersion = 2
 
@@ -137,18 +136,19 @@ func DefaultConfig() (*Config, error) {
 
 	return &Config{
 		Containers: ContainersConfig{
-			AdditionalDevices:   []string{},
-			AdditionalVolumes:   []string{},
-			ApparmorProfile:     DefaultApparmorProfile,
-			CgroupManager:       SystemdCgroupsManager,
-			CgroupNS:            "private",
-			DefaultCapabilities: DefaultCapabilities,
-			DefaultSysctls:      []string{},
-			DefaultUlimits:      getDefaultProcessLimits(),
-			DNSServers:          []string{},
-			DNSOptions:          []string{},
-			DNSSearches:         []string{},
-			EnableLabeling:      selinuxEnabled(),
+			AdditionalDevices:    []string{},
+			AdditionalVolumes:    []string{},
+			AdditionalAnnotaions: []string{},
+			ApparmorProfile:      DefaultApparmorProfile,
+			CgroupManager:        SystemdCgroupsManager,
+			CgroupNS:             "private",
+			DefaultCapabilities:  DefaultCapabilities,
+			DefaultSysctls:       []string{},
+			DefaultUlimits:       getDefaultProcessLimits(),
+			DNSServers:           []string{},
+			DNSOptions:           []string{},
+			DNSSearches:          []string{},
+			EnableLabeling:       selinuxEnabled(),
 			Env: []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 			},
