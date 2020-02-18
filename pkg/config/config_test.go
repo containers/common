@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	dcaps "github.com/containers/common/pkg/caps"
+	"github.com/containers/common/pkg/capabilities"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	selinux "github.com/opencontainers/selinux/go-selinux"
@@ -431,7 +431,7 @@ var _ = Describe("Config", func() {
 			addcaps = []string{"all"}
 			caps = config.Capabilities("root", addcaps, dropcaps)
 			sort.Strings(caps)
-			Expect(caps).ToNot(BeEquivalentTo(dcaps.GetAllCapabilities()))
+			Expect(caps).ToNot(BeEquivalentTo(capabilities.AllCapabilities()))
 
 			// Drop all caps
 			dropcaps = []string{"all"}
