@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/BurntSushi/toml"
-	"github.com/containers/common/pkg/caps"
+	"github.com/containers/common/pkg/capabilities"
 	"github.com/containers/common/pkg/unshare"
 	"github.com/containers/storage"
 	units "github.com/docker/go-units"
@@ -714,7 +714,7 @@ func (c *Config) Capabilities(user string, addCapabilities, dropCapabilities []s
 		return true
 	}
 
-	var capabilities []string
+	var caps []string
 	defaultCapabilities := c.Containers.DefaultCapabilities
 	if userNotRoot(user) {
 		defaultCapabilities = []string{}
@@ -723,7 +723,7 @@ func (c *Config) Capabilities(user string, addCapabilities, dropCapabilities []s
 	mapCap := make(map[string]bool, len(defaultCapabilities))
 	for _, c := range addCapabilities {
 		if strings.ToLower(c) == "all" {
-			defaultCapabilities = caps.GetAllCapabilities()
+			defaultCapabilities = capabilities.AllCapabilities()
 			addCapabilities = nil
 			break
 		}
@@ -734,16 +734,16 @@ func (c *Config) Capabilities(user string, addCapabilities, dropCapabilities []s
 	}
 	for _, c := range dropCapabilities {
 		if "all" == strings.ToLower(c) {
-			return capabilities
+			return caps
 		}
 		mapCap[c] = false
 	}
 	for cap, add := range mapCap {
 		if add {
-			capabilities = append(capabilities, cap)
+			caps = append(caps, cap)
 		}
 	}
-	return capabilities
+	return caps
 }
 
 // Device parses device mapping string to a src, dest & permissions string
