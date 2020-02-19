@@ -28,9 +28,9 @@ var _ = Describe("Config", func() {
 			Expect(defaultConfig.Containers.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
-		It("should succeed with additional devices", func() {
+		It("should succeed with devices", func() {
 			// Given
-			sut.Containers.AdditionalDevices = []string{"/dev/null:/dev/null:rw",
+			sut.Containers.Devices = []string{"/dev/null:/dev/null:rw",
 				"/dev/sdc/",
 				"/dev/sdc:/dev/xvdc",
 				"/dev/sdc:rm",
@@ -56,7 +56,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail on wrong invalid device specification", func() {
 			// Given
-			sut.Containers.AdditionalDevices = []string{"::::"}
+			sut.Containers.Devices = []string{"::::"}
 
 			// When
 			err := sut.Containers.Validate()
@@ -67,7 +67,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid device", func() {
 			// Given
-			sut.Containers.AdditionalDevices = []string{invalidPath}
+			sut.Containers.Devices = []string{invalidPath}
 
 			// When
 			err := sut.Containers.Validate()
@@ -78,7 +78,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid device mode", func() {
 			// Given
-			sut.Containers.AdditionalDevices = []string{"/dev/null:/dev/null:abc"}
+			sut.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
 
 			// When
 			err := sut.Containers.Validate()
@@ -89,7 +89,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid first device", func() {
 			// Given
-			sut.Containers.AdditionalDevices = []string{"wrong:/dev/null:rw"}
+			sut.Containers.Devices = []string{"wrong:/dev/null:rw"}
 
 			// When
 			err := sut.Containers.Validate()
@@ -100,7 +100,7 @@ var _ = Describe("Config", func() {
 
 		It("should fail on invalid second device", func() {
 			// Given
-			sut.Containers.AdditionalDevices = []string{"/dev/null:wrong:rw"}
+			sut.Containers.Devices = []string{"/dev/null:wrong:rw"}
 
 			// When
 			err := sut.Containers.Validate()

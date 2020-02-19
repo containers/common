@@ -61,17 +61,17 @@ type Config struct {
 type ContainersConfig struct {
 
 	// Devices to add to all containers
-	AdditionalDevices []string `toml:"additional_devices"`
+	Devices []string `toml:"devices"`
 
 	// Volumes to add to all containers
-	AdditionalVolumes []string `toml:"additional_volumes"`
+	Volumes []string `toml:"volumes"`
 
 	// ApparmorProfile is the apparmor profile name which is used as the
 	// default for the runtime.
 	ApparmorProfile string `toml:"apparmor_profile"`
 
 	// Annotation to add to all containers
-	AdditionalAnnotations []string `toml:"additional_annotations"`
+	Annotations []string `toml:"annotations"`
 
 	// CGroupManager is the CGroup Manager to use Valid values are "cgroupfs"
 	// and "systemd".
@@ -535,7 +535,7 @@ func (c *ContainersConfig) Validate() error {
 		}
 	}
 
-	for _, d := range c.AdditionalDevices {
+	for _, d := range c.Devices {
 		_, _, _, err := Device(d)
 		if err != nil {
 			return err
