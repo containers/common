@@ -46,13 +46,13 @@ TOML can be simplified to:
 The containers table contains settings pertaining to the OCI runtime that can
 configure and manage the OCI runtime.
 
-**additional_devices**=[]
-  List of additional devices.
+**devices**=[]
+  List of devices.
   Specified as 'device-on-host:device-on-container:permissions',
   for example: "/dev/sdc:/dev/xvdc:rwm".
 
-**additional_volumes**=[]
-  List of additional volumes.
+**volumes**=[]
+  List of volumes.
   Specified as "directory-on-host:directory-in-container:options",
   for example:  "/db:/var/lib/db:ro".
 
