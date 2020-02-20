@@ -284,7 +284,7 @@ var _ = Describe("Config", func() {
 
 			// Then
 			Expect(err).To(BeNil())
-			Expect(defaultConfig.Containers.CgroupManager).To(Equal("systemd"))
+			Expect(defaultConfig.Libpod.CgroupManager).To(Equal("systemd"))
 			Expect(defaultConfig.Containers.Env).To(BeEquivalentTo(envs))
 			Expect(defaultConfig.Containers.PidsLimit).To(BeEquivalentTo(2048))
 			Expect(defaultConfig.Network.CNIPluginDirs).To(Equal(pluginDirs))

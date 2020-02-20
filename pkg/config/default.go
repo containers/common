@@ -69,11 +69,11 @@ var (
 		"CAP_MKNOD",
 		"CAP_NET_BIND_SERVICE",
 		"CAP_NET_RAW",
+		"CAP_SETFCAP",
 		"CAP_SETGID",
 		"CAP_SETPCAP",
 		"CAP_SETUID",
 		"CAP_SYS_CHROOT",
-		"CAP_SETFCAP",
 	}
 )
 
@@ -141,7 +141,6 @@ func DefaultConfig() (*Config, error) {
 			Volumes:             []string{},
 			Annotations:         []string{},
 			ApparmorProfile:     DefaultApparmorProfile,
-			CgroupManager:       SystemdCgroupsManager,
 			CgroupNS:            "private",
 			DefaultCapabilities: DefaultCapabilities,
 			DefaultSysctls:      []string{},
@@ -213,6 +212,7 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 	if onCgroupsv2, _ := isCgroup2UnifiedMode(); onCgroupsv2 {
 		c.OCIRuntime = "crun"
 	}
+	c.CgroupManager = SystemdCgroupsManager
 
 	c.OCIRuntimes = map[string][]string{
 		"runc": {

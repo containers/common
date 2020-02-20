@@ -66,10 +66,6 @@ The default profile name is "container-default".
     `private` Create private Cgroup Namespace for the container.
     `host`    Share host Cgroup Namespace with the container.
 
-**cgroup_manager**="systemd"
-  The cgroup management implementation used for the runtime. Supports `cgroupfs`
-and `systemd`.
-
 **default_capabilities**=[]
   List of default capabilities for containers.
 
@@ -223,6 +219,10 @@ plugins.
 
 ## LIBPOD TABLE
 The `libpod` table contains configuration options used to set up a libpod runtime.
+
+**cgroup_manager**="systemd"
+  The cgroup management implementation used for the runtime. Supports `cgroupfs`
+and `systemd`.
 
 **conmon_env_vars**=[]
   Environment variables to pass into Conmon.
