@@ -73,6 +73,7 @@ var (
 		"CAP_SETPCAP",
 		"CAP_SETUID",
 		"CAP_SYS_CHROOT",
+		"CAP_SETFCAP",
 	}
 )
 
