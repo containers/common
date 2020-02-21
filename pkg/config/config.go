@@ -274,6 +274,10 @@ type LibpodConfig struct {
 	// files.
 	StaticDir string `toml:"static_dir"`
 
+	// StopTimeout is the number of seconds to wait for container to exit
+	// before sending kill signal.
+	StopTimeout uint `toml:"stop_timeout"`
+
 	// StorageConfig is the configuration used by containers/storage Not
 	// included in the on-disk config, use the dedicated containers/storage
 	// configuration file instead.

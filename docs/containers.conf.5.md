@@ -315,6 +315,9 @@ refer to a member of the runtimes table.
 By default this will be configured relative to where containers/storage
 stores containers.
 
+**stop_timeout**=10
+  Number of seconds to wait for container to exit before sending kill signal.
+
 **tmp_dir**="/var/run/libpod"
   The path to a temporary directory to store per-boot container.
 Must be a tmpfs (wiped after reboot).

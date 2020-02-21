@@ -213,6 +213,7 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 		c.OCIRuntime = "crun"
 	}
 	c.CgroupManager = SystemdCgroupsManager
+	c.StopTimeout = uint(10)
 
 	c.OCIRuntimes = map[string][]string{
 		"runc": {
