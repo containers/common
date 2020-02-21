@@ -52,6 +52,9 @@ docs:
 validate:
 	golangci-lint run
 
+vendor-in-container:
+	podman run --privileged --rm --env HOME=/root -v `pwd`:/src -w /src golang make vendor
+
 .PHONY: vendor
 vendor:
 	export GO111MODULE=on \
