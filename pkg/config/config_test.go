@@ -464,5 +464,20 @@ var _ = Describe("Config", func() {
 			sort.Strings(caps)
 			Expect(caps).To(BeEquivalentTo(addcaps))
 		})
+
+		It("should succeed with default pull_policy", func() {
+			err := sut.Libpod.Validate()
+			Expect(err).To(BeNil())
+			Expect(sut.Libpod.PullPolicy).To(Equal("missing"))
+
+			sut.Libpod.PullPolicy = DefaultPullPolicy
+			err = sut.Libpod.Validate()
+			Expect(err).To(BeNil())
+		})
+		It("should fail with invalid pull_policy", func() {
+			sut.Libpod.PullPolicy = "invalidPullPolicy"
+			err := sut.Libpod.Validate()
+			Expect(err).ToNot(BeNil())
+		})
 	})
 })

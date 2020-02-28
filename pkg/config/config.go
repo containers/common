@@ -46,6 +46,18 @@ const (
 	BoltDBStateStore RuntimeStateStore = iota
 )
 
+// PullPolicy whether to pull new image
+type PullPolicy int
+
+const (
+	// PullImageAlways always try to pull new image when create or run
+	PullImageAlways PullPolicy = iota
+	// PullImageMissing pulls image if it is not locally
+	PullImageMissing
+	// PullImageNever will never pull new image
+	PullImageNever
+)
+
 // Config contains configuration options for container tools
 type Config struct {
 	// Containers specify settings that configure how containers will run ont the system
@@ -243,6 +255,10 @@ type LibpodConfig struct {
 
 	// OCIRuntimes are the set of configured OCI runtimes (default is runc).
 	OCIRuntimes map[string][]string `toml:"runtimes"`
+
+	// PullPolicy determines whether to pull image before creating or running a container
+	// default is "missing"
+	PullPolicy string `toml:"pull_policy"`
 
 	// RuntimeSupportsJSON is the list of the OCI runtimes that support
 	// --format=json.
@@ -521,6 +537,13 @@ func (c *LibpodConfig) Validate() error {
 	if !filepath.IsAbs(c.VolumePath) {
 		return fmt.Errorf("volume path must be an absolute path - instead got %q", c.VolumePath)
 	}
+
+	// Check if the pullPolicy from containers.conf is valid
+	// if it is invalid returns the error
+	pullPolicy := strings.ToLower(c.PullPolicy)
+	if _, err := ValidatePullPolicy(pullPolicy); err != nil {
+		return errors.Wrapf(err, "invalid pull type from containers.conf %q", c.PullPolicy)
+	}
 	return nil
 }
 
@@ -581,6 +604,23 @@ func (c *NetworkConfig) Validate() error {
 	}
 
 	return errors.Errorf("invalid cni_plugin_dirs: %s", strings.Join(c.CNIPluginDirs, ","))
+}
+
+// ValidatePullPolicy check if the pullPolicy from CLI is valid and returns the valid enum type
+// if the value from CLI or containers.conf is invalid returns the error
+func ValidatePullPolicy(pullPolicy string) (PullPolicy, error) {
+	switch pullPolicy {
+	case "always":
+		return PullImageAlways, nil
+	case "missing":
+		return PullImageMissing, nil
+	case "never":
+		return PullImageNever, nil
+	case "":
+		return PullImageMissing, nil
+	default:
+		return PullImageMissing, errors.Errorf("invalid pull policy %q", pullPolicy)
+	}
 }
 
 // DBConfig is a set of Libpod runtime configuration settings that are saved in
