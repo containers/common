@@ -274,7 +274,7 @@ Disabling this can save memory.
 **infra_image**="k8s.gcr.io/pause:3.1"
   Infra (pause) container image name for pod infra containers.  When running a
 pod, we start a `pause` process in a container to hold open the namespaces
-associated with the  pod.  This container does nothing other then sleep, 
+associated with the  pod.  This container does nothing other then sleep,
 reserving the pods resources for the lifetime of the pod.
 
 **lock_type**="shm"
@@ -299,6 +299,13 @@ and pods are visible.
 pod consumes one lock.  The default number available is 2048.  If this is
 changed, a lock renumbering must be performed, using the
 `podman system renumber` command.
+
+**pull_policy**="always"|"missing"|"never"
+Pull image before running or creating a container. The default is **missing**.
+
+- **missing**: attempt to pull the latest image from the registries listed in registries.conf if a local image does not exist. Raise an error if the image is not in any listed registry and is not present locally.
+- **always**: pull the image from the first registry it is found in as listed in registries.conf. Raise an error if not found in the registries, even if the image is present locally.
+- **never**: do not pull the image from the registry, use only the local version. Raise an error if the image is not present locally.
 
 **runtime**="crun"
   Default OCI specific runtime in runtimes that will be used by default. Must
