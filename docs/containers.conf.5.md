@@ -220,6 +220,9 @@ plugins.
 ## LIBPOD TABLE
 The `libpod` table contains configuration options used to set up a libpod runtime.
 
+**cgroup_check**=false
+CgroupCheck indicates the configuration has been rewritten after an upgrade to Fedora 31 to change the default OCI runtime for cgroupsv2.
+
 **cgroup_manager**="systemd"
   The cgroup management implementation used for the runtime. Supports `cgroupfs`
 and `systemd`.
