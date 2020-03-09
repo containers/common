@@ -405,6 +405,24 @@ var _ = Describe("Config", func() {
 			Expect(config.Containers.PidsLimit).To(BeEquivalentTo(2048))
 		})
 
+		It("contents of passed-in file should override others", func() {
+			// Given we do
+			oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
+			os.Setenv("CONTAINERS_CONF", "containers.conf")
+			// When
+			config, err := NewConfig("testdata/containers_override.conf")
+			// Undo that
+			if envSet {
+				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
+			// Then
+			Expect(err).To(BeNil())
+			Expect(config).ToNot(BeNil())
+			Expect(config.Containers.ApparmorProfile).To(Equal("overridden-default"))
+		})
+
 		It("should fail with invalid value", func() {
 			// Given
 			// When

@@ -394,18 +394,6 @@ func NewConfig(userConfigPath string) (*Config, error) {
 		logrus.Errorf("error reading libpod.conf: %v", err)
 	}
 
-	// If the caller specified a config path to use, then we read this
-	// rather then using the system defaults.
-	if userConfigPath != "" {
-		var err error
-		// readConfigFromFile reads in container config in the specified
-		// file and then merge changes with the current default.
-		config, err = readConfigFromFile(userConfigPath, config)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error reading user config %q", userConfigPath)
-		}
-	}
-
 	// Now, gather the system configs and merge them as needed.
 	configs, err := systemConfigs()
 	if err != nil {
@@ -420,6 +408,19 @@ func NewConfig(userConfigPath string) (*Config, error) {
 			return nil, errors.Wrapf(err, "error reading system config %q", path)
 		}
 		logrus.Debugf("Merged system config %q: %v", path, config)
+	}
+
+	// If the caller specified a config path to use, then we read it to
+	// override the system defaults.
+	if userConfigPath != "" {
+		var err error
+		// readConfigFromFile reads in container config in the specified
+		// file and then merge changes with the current default.
+		config, err = readConfigFromFile(userConfigPath, config)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error reading user config %q", userConfigPath)
+		}
+		logrus.Debugf("Merged user config %q: %v", userConfigPath, config)
 	}
 
 	config.checkCgroupsAndAdjustConfig()
