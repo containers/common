@@ -178,6 +178,10 @@ type ContainersConfig struct {
 
 // LibpodConfig contains configuration options used to set up a libpod runtime
 type LibpodConfig struct {
+	// CgroupCheck indicates the configuration has been rewritten after an
+	// upgrade to Fedora 31 to change the default OCI runtime for cgroupsv2.
+	CgroupCheck bool `toml:"cgroup_check,omitempty"`
+
 	// CGroupManager is the CGroup Manager to use Valid values are "cgroupfs"
 	// and "systemd".
 	CgroupManager string `toml:"cgroup_manager"`
@@ -259,6 +263,11 @@ type LibpodConfig struct {
 	// PullPolicy determines whether to pull image before creating or running a container
 	// default is "missing"
 	PullPolicy string `toml:"pull_policy"`
+	// RuntimePath is the path to OCI runtime binary for launching containers.
+	// The first path pointing to a valid file will be used This is used only
+	// when there are no OCIRuntime/OCIRuntimes defined.  It is used only to be
+	// backward compatible with older versions of Podman.
+	RuntimePath []string `toml:"runtime_path,omitempty"`
 
 	// RuntimeSupportsJSON is the list of the OCI runtimes that support
 	// --format=json.
@@ -378,6 +387,11 @@ func NewConfig(userConfigPath string) (*Config, error) {
 	config, err := DefaultConfig()
 	if err != nil {
 		return nil, err
+	}
+
+	// read libpod.conf and convert the config to *Config
+	if err = newLibpodConfig(config); err != nil && !os.IsNotExist(err) {
+		logrus.Errorf("error reading libpod.conf: %v", err)
 	}
 
 	// If the caller specified a config path to use, then we read this
@@ -511,11 +525,19 @@ func (c *Config) addCAPPrefix() {
 func (c *Config) Validate() error {
 
 	if err := c.Containers.Validate(); err != nil {
-		return errors.Wrapf(err, "containers config")
+		return errors.Wrapf(err, " error validating containers config")
 	}
 
 	if !c.Containers.EnableLabeling {
 		selinux.SetDisabled()
+	}
+
+	if err := c.Libpod.Validate(); err != nil {
+		return errors.Wrapf(err, "error validating libpod configs")
+	}
+
+	if err := c.Network.Validate(); err != nil {
+		return errors.Wrapf(err, "error validating network configs")
 	}
 
 	return nil
