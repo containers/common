@@ -422,7 +422,6 @@ func NewConfig(userConfigPath string) (*Config, error) {
 		logrus.Debugf("Merged system config %q: %v", path, config)
 	}
 
-	config.checkCgroupsAndAdjustConfig()
 	config.addCAPPrefix()
 
 	if err := config.Validate(); err != nil {
@@ -485,10 +484,10 @@ func systemConfigs() ([]string, error) {
 	return configs, nil
 }
 
-// checkCgroupsAndAdjustConfig checks if we're running rootless with the systemd
+// CheckCgroupsAndAdjustConfig checks if we're running rootless with the systemd
 // cgroup manager. In case the user session isn't available, we're switching the
 // cgroup manager to cgroupfs.  Note, this only applies to rootless.
-func (c *Config) checkCgroupsAndAdjustConfig() {
+func (c *Config) CheckCgroupsAndAdjustConfig() {
 	if !unshare.IsRootless() || c.Libpod.CgroupManager != SystemdCgroupsManager {
 		return
 	}
