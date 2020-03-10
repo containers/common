@@ -267,7 +267,9 @@ func systemLibpodConfigs() ([]string, error) {
 			if err != nil {
 				containersConfPath = filepath.Join("$HOME", UserOverrideContainersConfig)
 			}
-			logrus.Warnf("Found deprecated file %s, please remove. Use %s to override defaults.\n", path, containersConfPath)
+			// TODO: Raise to Warnf, when Podman is updated to
+			// remove libpod.conf by default
+			logrus.Debugf("Found deprecated file %s, please remove. Use %s to override defaults.\n", path, containersConfPath)
 			return []string{path}, nil
 		}
 		return nil, err
@@ -275,11 +277,15 @@ func systemLibpodConfigs() ([]string, error) {
 
 	configs := []string{}
 	if _, err := os.Stat(_rootConfigPath); err == nil {
-		logrus.Warnf("Found deprecated file %s, please remove. Use %s to override defaults.\n", _rootConfigPath, OverrideContainersConfig)
+		// TODO: Raise to Warnf, when Podman is updated to
+		// remove libpod.conf by default
+		logrus.Debugf("Found deprecated file %s, please remove. Use %s to override defaults.\n", _rootConfigPath, OverrideContainersConfig)
 		configs = append(configs, _rootConfigPath)
 	}
 	if _, err := os.Stat(_rootOverrideConfigPath); err == nil {
-		logrus.Warnf("Found deprecated file %s, please remove. Use %s to override defaults.\n", _rootOverrideConfigPath, OverrideContainersConfig)
+		// TODO: Raise to Warnf, when Podman is updated to
+		// remove libpod.conf by default
+		logrus.Debugf("Found deprecated file %s, please remove. Use %s to override defaults.\n", _rootOverrideConfigPath, OverrideContainersConfig)
 		configs = append(configs, _rootOverrideConfigPath)
 	}
 	return configs, nil
