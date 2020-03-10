@@ -9,9 +9,7 @@ import (
 	"strconv"
 
 	"github.com/containers/common/pkg/unshare"
-	"github.com/containers/storage"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -27,9 +25,6 @@ const (
 	// _conmonVersionFormatErr is used when the expected versio-format of conmon
 	// has changed.
 	_conmonVersionFormatErr = "conmon version changed format"
-
-	// _defaultGraphRoot points to the default path of the graph root.
-	_defaultGraphRoot = "/var/lib/containers/storage"
 
 	// _defaultTransport is a prefix that we apply to an image name to check
 	// docker hub first for the image.
@@ -56,6 +51,11 @@ var (
 	ErrConmonOutdated = errors.New("outdated conmon version")
 	// ErrInvalidArg indicates that an invalid argument was passed
 	ErrInvalidArg = errors.New("invalid argument")
+	//DefaultStaticDir is the default location to store container engines
+	//database.
+	DefaultStaticDir = "/var/lib/containers/storage/libpod"
+	//DefaultVolumePath is the default location to store volumes
+	DefaultVolumePath = "/var/lib/containers/storage/volumes"
 	// DefaultHooksDirs defines the default hooks directory
 	DefaultHooksDirs = []string{"/usr/share/containers/oci/hooks.d"}
 	// DefaultCapabilities for the default_capabilities option in the containers.conf file
@@ -182,7 +182,7 @@ func DefaultConfig() (*Config, error) {
 }
 
 // defaultConfigFromMemory returns a default libpod configuration. Note that the
-// config is different for root and rootless. It also parses the storage.conf.
+// config is different for root and rootless.
 func defaultConfigFromMemory() (*LibpodConfig, error) {
 	c := new(LibpodConfig)
 	tmp, err := defaultTmpDir()
@@ -193,18 +193,8 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
 
-	storeOpts, err := storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
-	if err != nil {
-		return nil, err
-	}
-	if storeOpts.GraphRoot == "" {
-		logrus.Warnf("Storage configuration is unset - using hardcoded default graph root %q", _defaultGraphRoot)
-		storeOpts.GraphRoot = _defaultGraphRoot
-	}
-	c.StaticDir = filepath.Join(storeOpts.GraphRoot, "libpod")
-	c.VolumePath = filepath.Join(storeOpts.GraphRoot, "volumes")
-	c.StorageConfig = storeOpts
-
+	c.StaticDir = DefaultStaticDir
+	c.VolumePath = DefaultVolumePath
 	c.HooksDir = DefaultHooksDirs
 	c.ImageDefaultTransport = _defaultTransport
 	c.StateType = BoltDBStateStore

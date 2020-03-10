@@ -16,8 +16,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/containers/storage/pkg/idtools"
-	"github.com/containers/storage/pkg/reexec"
+	"github.com/containers/common/pkg/idtools"
+	"github.com/containers/common/pkg/reexec"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

@@ -5,7 +5,7 @@ package unshare
 import (
 	"os"
 
-	"github.com/containers/storage/pkg/idtools"
+	"github.com/containers/common/pkg/idtools"
 	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
