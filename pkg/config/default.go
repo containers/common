@@ -9,9 +9,7 @@ import (
 	"strconv"
 
 	"github.com/containers/common/pkg/unshare"
-	"github.com/containers/storage"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -182,7 +180,7 @@ func DefaultConfig() (*Config, error) {
 }
 
 // defaultConfigFromMemory returns a default libpod configuration. Note that the
-// config is different for root and rootless. It also parses the storage.conf.
+// config is different for root and rootless.
 func defaultConfigFromMemory() (*LibpodConfig, error) {
 	c := new(LibpodConfig)
 	tmp, err := defaultTmpDir()
@@ -192,18 +190,6 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 	c.TmpDir = tmp
 
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
-
-	storeOpts, err := storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
-	if err != nil {
-		return nil, err
-	}
-	if storeOpts.GraphRoot == "" {
-		logrus.Warnf("Storage configuration is unset - using hardcoded default graph root %q", _defaultGraphRoot)
-		storeOpts.GraphRoot = _defaultGraphRoot
-	}
-	c.StaticDir = filepath.Join(storeOpts.GraphRoot, "libpod")
-	c.VolumePath = filepath.Join(storeOpts.GraphRoot, "volumes")
-	c.StorageConfig = storeOpts
 
 	c.HooksDir = DefaultHooksDirs
 	c.ImageDefaultTransport = _defaultTransport

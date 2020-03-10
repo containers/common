@@ -12,7 +12,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/pkg/capabilities"
 	"github.com/containers/common/pkg/unshare"
-	"github.com/containers/storage"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
 	"github.com/pkg/errors"
@@ -302,11 +301,6 @@ type LibpodConfig struct {
 	// StopTimeout is the number of seconds to wait for container to exit
 	// before sending kill signal.
 	StopTimeout uint `toml:"stop_timeout"`
-
-	// StorageConfig is the configuration used by containers/storage Not
-	// included in the on-disk config, use the dedicated containers/storage
-	// configuration file instead.
-	StorageConfig storage.StoreOptions `toml:"-"`
 
 	// TmpDir is the path to a temporary directory to store per-boot container
 	// files. Must be stored in a tmpfs.
@@ -653,60 +647,6 @@ type DBConfig struct {
 	StorageTmp  string
 	GraphDriver string
 	VolumePath  string
-}
-
-// MergeDBConfig merges the configuration from the database.
-func (c *Config) MergeDBConfig(dbConfig *DBConfig) error {
-
-	if !c.Libpod.StorageConfigRunRootSet && dbConfig.StorageTmp != "" {
-		if c.Libpod.StorageConfig.RunRoot != dbConfig.StorageTmp &&
-			c.Libpod.StorageConfig.RunRoot != "" {
-			logrus.Debugf("Overriding run root %q with %q from database",
-				c.Libpod.StorageConfig.RunRoot, dbConfig.StorageTmp)
-		}
-		c.Libpod.StorageConfig.RunRoot = dbConfig.StorageTmp
-	}
-
-	if !c.Libpod.StorageConfigGraphRootSet && dbConfig.StorageRoot != "" {
-		if c.Libpod.StorageConfig.GraphRoot != dbConfig.StorageRoot &&
-			c.Libpod.StorageConfig.GraphRoot != "" {
-			logrus.Debugf("Overriding graph root %q with %q from database",
-				c.Libpod.StorageConfig.GraphRoot, dbConfig.StorageRoot)
-		}
-		c.Libpod.StorageConfig.GraphRoot = dbConfig.StorageRoot
-	}
-
-	if !c.Libpod.StorageConfigGraphDriverNameSet && dbConfig.GraphDriver != "" {
-		if c.Libpod.StorageConfig.GraphDriverName != dbConfig.GraphDriver &&
-			c.Libpod.StorageConfig.GraphDriverName != "" {
-			logrus.Errorf("User-selected graph driver %q overwritten by graph driver %q from database - delete libpod local files to resolve",
-				c.Libpod.StorageConfig.GraphDriverName, dbConfig.GraphDriver)
-		}
-		c.Libpod.StorageConfig.GraphDriverName = dbConfig.GraphDriver
-	}
-
-	if !c.Libpod.StaticDirSet && dbConfig.LibpodRoot != "" {
-		if c.Libpod.StaticDir != dbConfig.LibpodRoot && c.Libpod.StaticDir != "" {
-			logrus.Debugf("Overriding static dir %q with %q from database", c.Libpod.StaticDir, dbConfig.LibpodRoot)
-		}
-		c.Libpod.StaticDir = dbConfig.LibpodRoot
-	}
-
-	if !c.Libpod.TmpDirSet && dbConfig.LibpodTmp != "" {
-		if c.Libpod.TmpDir != dbConfig.LibpodTmp && c.Libpod.TmpDir != "" {
-			logrus.Debugf("Overriding tmp dir %q with %q from database", c.Libpod.TmpDir, dbConfig.LibpodTmp)
-		}
-		c.Libpod.TmpDir = dbConfig.LibpodTmp
-		c.Libpod.EventsLogFilePath = filepath.Join(dbConfig.LibpodTmp, "events", "events.log")
-	}
-
-	if !c.Libpod.VolumePathSet && dbConfig.VolumePath != "" {
-		if c.Libpod.VolumePath != dbConfig.VolumePath && c.Libpod.VolumePath != "" {
-			logrus.Debugf("Overriding volume path %q with %q from database", c.Libpod.VolumePath, dbConfig.VolumePath)
-		}
-		c.Libpod.VolumePath = dbConfig.VolumePath
-	}
-	return nil
 }
 
 // FindConmon iterates over (*Config).ConmonPath and returns the path
