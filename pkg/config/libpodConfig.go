@@ -307,33 +307,33 @@ func (c *Config) libpodConfig() *ConfigFromLibpod {
 		MaxLogSize:          c.Containers.LogSizeMax,
 		EnableLabeling:      c.Containers.EnableLabeling,
 
-		SetOptions:               c.Libpod.SetOptions,
-		VolumePath:               c.Libpod.VolumePath,
-		ImageDefaultTransport:    c.Libpod.ImageDefaultTransport,
-		OCIRuntime:               c.Libpod.OCIRuntime,
-		OCIRuntimes:              c.Libpod.OCIRuntimes,
-		RuntimeSupportsJSON:      c.Libpod.RuntimeSupportsJSON,
-		RuntimeSupportsNoCgroups: c.Libpod.RuntimeSupportsNoCgroups,
-		RuntimePath:              c.Libpod.RuntimePath,
-		ConmonPath:               c.Libpod.ConmonPath,
-		ConmonEnvVars:            c.Libpod.ConmonEnvVars,
-		CgroupManager:            c.Libpod.CgroupManager,
-		StaticDir:                c.Libpod.StaticDir,
-		TmpDir:                   c.Libpod.TmpDir,
-		NoPivotRoot:              c.Libpod.NoPivotRoot,
-		HooksDir:                 c.Libpod.HooksDir,
-		Namespace:                c.Libpod.Namespace,
-		InfraImage:               c.Libpod.InfraImage,
-		InfraCommand:             c.Libpod.InfraCommand,
-		EnablePortReservation:    c.Libpod.EnablePortReservation,
-		NetworkCmdPath:           c.Libpod.NetworkCmdPath,
-		NumLocks:                 c.Libpod.NumLocks,
-		LockType:                 c.Libpod.LockType,
-		EventsLogger:             c.Libpod.EventsLogger,
-		EventsLogFilePath:        c.Libpod.EventsLogFilePath,
-		DetachKeys:               c.Libpod.DetachKeys,
-		SDNotify:                 c.Libpod.SDNotify,
-		CgroupCheck:              c.Libpod.CgroupCheck,
+		SetOptions:               c.Engine.SetOptions,
+		VolumePath:               c.Engine.VolumePath,
+		ImageDefaultTransport:    c.Engine.ImageDefaultTransport,
+		OCIRuntime:               c.Engine.OCIRuntime,
+		OCIRuntimes:              c.Engine.OCIRuntimes,
+		RuntimeSupportsJSON:      c.Engine.RuntimeSupportsJSON,
+		RuntimeSupportsNoCgroups: c.Engine.RuntimeSupportsNoCgroups,
+		RuntimePath:              c.Engine.RuntimePath,
+		ConmonPath:               c.Engine.ConmonPath,
+		ConmonEnvVars:            c.Engine.ConmonEnvVars,
+		CgroupManager:            c.Engine.CgroupManager,
+		StaticDir:                c.Engine.StaticDir,
+		TmpDir:                   c.Engine.TmpDir,
+		NoPivotRoot:              c.Engine.NoPivotRoot,
+		HooksDir:                 c.Engine.HooksDir,
+		Namespace:                c.Engine.Namespace,
+		InfraImage:               c.Engine.InfraImage,
+		InfraCommand:             c.Engine.InfraCommand,
+		EnablePortReservation:    c.Engine.EnablePortReservation,
+		NetworkCmdPath:           c.Engine.NetworkCmdPath,
+		NumLocks:                 c.Engine.NumLocks,
+		LockType:                 c.Engine.LockType,
+		EventsLogger:             c.Engine.EventsLogger,
+		EventsLogFilePath:        c.Engine.EventsLogFilePath,
+		DetachKeys:               c.Engine.DetachKeys,
+		SDNotify:                 c.Engine.SDNotify,
+		CgroupCheck:              c.Engine.CgroupCheck,
 
 		CNIConfigDir:      c.Network.NetworkConfigDir,
 		CNIPluginDir:      c.Network.CNIPluginDirs,
@@ -348,33 +348,33 @@ func (c *Config) libpodToContainersConfig(libpodConf *ConfigFromLibpod) {
 	c.Containers.LogSizeMax = libpodConf.MaxLogSize
 	c.Containers.EnableLabeling = libpodConf.EnableLabeling
 
-	c.Libpod.SetOptions = libpodConf.SetOptions
-	c.Libpod.VolumePath = libpodConf.VolumePath
-	c.Libpod.ImageDefaultTransport = libpodConf.ImageDefaultTransport
-	c.Libpod.OCIRuntime = libpodConf.OCIRuntime
-	c.Libpod.OCIRuntimes = libpodConf.OCIRuntimes
-	c.Libpod.RuntimeSupportsJSON = libpodConf.RuntimeSupportsJSON
-	c.Libpod.RuntimeSupportsNoCgroups = libpodConf.RuntimeSupportsNoCgroups
-	c.Libpod.RuntimePath = libpodConf.RuntimePath
-	c.Libpod.ConmonPath = libpodConf.ConmonPath
-	c.Libpod.ConmonEnvVars = libpodConf.ConmonEnvVars
-	c.Libpod.CgroupManager = libpodConf.CgroupManager
-	c.Libpod.StaticDir = libpodConf.StaticDir
-	c.Libpod.TmpDir = libpodConf.TmpDir
-	c.Libpod.NoPivotRoot = libpodConf.NoPivotRoot
-	c.Libpod.HooksDir = libpodConf.HooksDir
-	c.Libpod.Namespace = libpodConf.Namespace
-	c.Libpod.InfraImage = libpodConf.InfraImage
-	c.Libpod.InfraCommand = libpodConf.InfraCommand
-	c.Libpod.EnablePortReservation = libpodConf.EnablePortReservation
-	c.Libpod.NetworkCmdPath = libpodConf.NetworkCmdPath
-	c.Libpod.NumLocks = libpodConf.NumLocks
-	c.Libpod.LockType = libpodConf.LockType
-	c.Libpod.EventsLogger = libpodConf.EventsLogger
-	c.Libpod.EventsLogFilePath = libpodConf.EventsLogFilePath
-	c.Libpod.DetachKeys = libpodConf.DetachKeys
-	c.Libpod.SDNotify = libpodConf.SDNotify
-	c.Libpod.CgroupCheck = libpodConf.CgroupCheck
+	c.Engine.SetOptions = libpodConf.SetOptions
+	c.Engine.VolumePath = libpodConf.VolumePath
+	c.Engine.ImageDefaultTransport = libpodConf.ImageDefaultTransport
+	c.Engine.OCIRuntime = libpodConf.OCIRuntime
+	c.Engine.OCIRuntimes = libpodConf.OCIRuntimes
+	c.Engine.RuntimeSupportsJSON = libpodConf.RuntimeSupportsJSON
+	c.Engine.RuntimeSupportsNoCgroups = libpodConf.RuntimeSupportsNoCgroups
+	c.Engine.RuntimePath = libpodConf.RuntimePath
+	c.Engine.ConmonPath = libpodConf.ConmonPath
+	c.Engine.ConmonEnvVars = libpodConf.ConmonEnvVars
+	c.Engine.CgroupManager = libpodConf.CgroupManager
+	c.Engine.StaticDir = libpodConf.StaticDir
+	c.Engine.TmpDir = libpodConf.TmpDir
+	c.Engine.NoPivotRoot = libpodConf.NoPivotRoot
+	c.Engine.HooksDir = libpodConf.HooksDir
+	c.Engine.Namespace = libpodConf.Namespace
+	c.Engine.InfraImage = libpodConf.InfraImage
+	c.Engine.InfraCommand = libpodConf.InfraCommand
+	c.Engine.EnablePortReservation = libpodConf.EnablePortReservation
+	c.Engine.NetworkCmdPath = libpodConf.NetworkCmdPath
+	c.Engine.NumLocks = libpodConf.NumLocks
+	c.Engine.LockType = libpodConf.LockType
+	c.Engine.EventsLogger = libpodConf.EventsLogger
+	c.Engine.EventsLogFilePath = libpodConf.EventsLogFilePath
+	c.Engine.DetachKeys = libpodConf.DetachKeys
+	c.Engine.SDNotify = libpodConf.SDNotify
+	c.Engine.CgroupCheck = libpodConf.CgroupCheck
 
 	c.Network.NetworkConfigDir = libpodConf.CNIConfigDir
 	c.Network.CNIPluginDirs = libpodConf.CNIPluginDir

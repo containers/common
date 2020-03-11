@@ -217,8 +217,8 @@ plugins.
 **network_config_dir**="/etc/cni/net.d/"
   Path to the directory where CNI configuration files are located.
 
-## LIBPOD TABLE
-The `libpod` table contains configuration options used to set up a libpod runtime.
+## ENGINE TABLE
+The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
 
 **cgroup_check**=false
 CgroupCheck indicates the configuration has been rewritten after an upgrade to Fedora 31 to change the default OCI runtime for cgroupsv2.
@@ -257,7 +257,7 @@ Format is a single character `[a-Z]` or a comma separated sequence of
 `a-z`, `@`, `^`, `[`, `\`, `]`, `^` or `_`
 
 **enable_port_reservation**=true
-  Determines whether libpod will reserve ports on the host when they are
+  Determines whether the engine will reserve ports on the host when they are
 forwarded to containers. When enabled, when ports are forwarded to containers,
 they are held open by conmon as long as the container is running, ensuring that
 they cannot be reused by other programs on the host. However, this can cause
@@ -288,7 +288,7 @@ faster "shm" lock type.  You may need to run "podman system renumber" after you
 change the lock type.
 
 **namespace**=""
-  Default libpod namespace. If libpod is joined to a namespace, it will see
+  Default engine namespace. If the engine is joined to a namespace, it will see
 only containers and pods that were created in the same namespace, and will
 create new containers and pods in that namespace.  The default namespace is "",
  which corresponds to no namespace. When no namespace is set, all containers

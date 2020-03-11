@@ -118,7 +118,7 @@ const (
 // DefaultConfig defines the default values from containers.conf
 func DefaultConfig() (*Config, error) {
 
-	defaultLibpodConfig, err := defaultConfigFromMemory()
+	defaultEngineConfig, err := defaultConfigFromMemory()
 	if err != nil {
 		return nil, err
 	}
@@ -177,14 +177,14 @@ func DefaultConfig() (*Config, error) {
 			NetworkConfigDir: cniConfigDir,
 			CNIPluginDirs:    cniBinDir,
 		},
-		Libpod: *defaultLibpodConfig,
+		Engine: *defaultEngineConfig,
 	}, nil
 }
 
-// defaultConfigFromMemory returns a default libpod configuration. Note that the
+// defaultConfigFromMemory returns a default engine configuration. Note that the
 // config is different for root and rootless. It also parses the storage.conf.
-func defaultConfigFromMemory() (*LibpodConfig, error) {
-	c := new(LibpodConfig)
+func defaultConfigFromMemory() (*EngineConfig, error) {
+	c := new(EngineConfig)
 	tmp, err := defaultTmpDir()
 	if err != nil {
 		return nil, err
