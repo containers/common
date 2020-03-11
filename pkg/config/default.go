@@ -203,7 +203,6 @@ func defaultConfigFromMemory() (*LibpodConfig, error) {
 	}
 	c.StaticDir = filepath.Join(storeOpts.GraphRoot, "libpod")
 	c.VolumePath = filepath.Join(storeOpts.GraphRoot, "volumes")
-	c.StorageConfig = storeOpts
 
 	c.HooksDir = DefaultHooksDirs
 	c.ImageDefaultTransport = _defaultTransport
