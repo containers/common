@@ -284,12 +284,12 @@ var _ = Describe("Config", func() {
 
 			// Then
 			Expect(err).To(BeNil())
-			Expect(defaultConfig.Libpod.CgroupManager).To(Equal("systemd"))
+			Expect(defaultConfig.Engine.CgroupManager).To(Equal("systemd"))
 			Expect(defaultConfig.Containers.Env).To(BeEquivalentTo(envs))
 			Expect(defaultConfig.Containers.PidsLimit).To(BeEquivalentTo(2048))
 			Expect(defaultConfig.Network.CNIPluginDirs).To(Equal(pluginDirs))
-			Expect(defaultConfig.Libpod.NumLocks).To(BeEquivalentTo(2048))
-			Expect(defaultConfig.Libpod.OCIRuntimes).To(Equal(OCIRuntimeMap))
+			Expect(defaultConfig.Engine.NumLocks).To(BeEquivalentTo(2048))
+			Expect(defaultConfig.Engine.OCIRuntimes).To(Equal(OCIRuntimeMap))
 		})
 
 		It("should succeed with commented out configuration", func() {
@@ -367,8 +367,8 @@ var _ = Describe("Config", func() {
 			Expect(config.Containers.PidsLimit).To(BeEquivalentTo(2048))
 			Expect(config.Containers.Env).To(BeEquivalentTo(envs))
 			Expect(config.Network.CNIPluginDirs).To(Equal(pluginDirs))
-			Expect(config.Libpod.NumLocks).To(BeEquivalentTo(2048))
-			Expect(config.Libpod.OCIRuntimes["runc"]).To(Equal(OCIRuntimeMap["runc"]))
+			Expect(config.Engine.NumLocks).To(BeEquivalentTo(2048))
+			Expect(config.Engine.OCIRuntimes["runc"]).To(Equal(OCIRuntimeMap["runc"]))
 		})
 
 		It("verify getDefaultEnv", func() {
@@ -484,17 +484,17 @@ var _ = Describe("Config", func() {
 		})
 
 		It("should succeed with default pull_policy", func() {
-			err := sut.Libpod.Validate()
+			err := sut.Engine.Validate()
 			Expect(err).To(BeNil())
-			Expect(sut.Libpod.PullPolicy).To(Equal("missing"))
+			Expect(sut.Engine.PullPolicy).To(Equal("missing"))
 
-			sut.Libpod.PullPolicy = DefaultPullPolicy
-			err = sut.Libpod.Validate()
+			sut.Engine.PullPolicy = DefaultPullPolicy
+			err = sut.Engine.Validate()
 			Expect(err).To(BeNil())
 		})
 		It("should fail with invalid pull_policy", func() {
-			sut.Libpod.PullPolicy = "invalidPullPolicy"
-			err := sut.Libpod.Validate()
+			sut.Engine.PullPolicy = "invalidPullPolicy"
+			err := sut.Engine.Validate()
 			Expect(err).ToNot(BeNil())
 		})
 	})
