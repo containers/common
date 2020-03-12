@@ -543,13 +543,13 @@ func (c *EngineConfig) Validate() error {
 	// Relative paths can cause nasty bugs, because core paths we use could
 	// shift between runs (or even parts of the program - the OCI runtime
 	// uses a different working directory than we do, for example.
-	if !filepath.IsAbs(c.StaticDir) {
+	if c.StaticDir != "" && !filepath.IsAbs(c.StaticDir) {
 		return fmt.Errorf("static directory must be an absolute path - instead got %q", c.StaticDir)
 	}
-	if !filepath.IsAbs(c.TmpDir) {
+	if c.TmpDir != "" && !filepath.IsAbs(c.TmpDir) {
 		return fmt.Errorf("temporary directory must be an absolute path - instead got %q", c.TmpDir)
 	}
-	if !filepath.IsAbs(c.VolumePath) {
+	if c.VolumePath != "" && !filepath.IsAbs(c.VolumePath) {
 		return fmt.Errorf("volume path must be an absolute path - instead got %q", c.VolumePath)
 	}
 
