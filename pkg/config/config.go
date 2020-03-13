@@ -827,6 +827,9 @@ func isDirectory(path string) error {
 }
 
 func rootlessConfigPath() (string, error) {
+	if configHome := os.Getenv("XDG_CONFIG_HOME"); configHome != "" {
+		return filepath.Join(configHome, UserOverrideContainersConfig), nil
+	}
 	home, err := unshare.HomeDir()
 	if err != nil {
 		return "", err
