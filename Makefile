@@ -6,6 +6,7 @@ GO_BUILD=$(GO) build
 ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
 	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
 endif
+BUILDTAGS := ""
 DESTDIR ?=
 PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
@@ -29,6 +30,20 @@ define go-get
 	env GO111MODULE=off \
 		$(GO) get -u ${1}
 endef
+
+define go-build
+	GOOS=$(1) GOARCH=$(2) $(GO) build -tags $(BUILDTAGS) ./...
+endef
+
+.PHONY:
+build-cross:
+	$(call go-build,linux,386)
+	$(call go-build,linux,arm)
+	$(call go-build,linux,arm64)
+	$(call go-build,linux,ppc64le)
+	$(call go-build,linux,s390x)
+	$(call go-build,windows,amd64)
+	$(call go-build,windows,386)
 
 .PHONY: all
 all: build-amd64 build-386
