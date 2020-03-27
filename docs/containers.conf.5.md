@@ -314,7 +314,7 @@ Pull image before running or creating a container. The default is **missing**.
   Default OCI specific runtime in runtimes that will be used by default. Must
 refer to a member of the runtimes table.
 
-**runtime_supports_json**=["crun", "runc"]
+**runtime_supports_json**=["crun", "runc", "kata"]
   The list of the OCI runtimes that support `--format=json`.
 
 **runtime_supports_nocgroups**=["crun"]
