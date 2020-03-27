@@ -256,6 +256,15 @@ var _ = Describe("Config", func() {
 			defaultConfig, err := readConfigFromFile("testdata/containers_default.conf", conf)
 
 			OCIRuntimeMap := map[string][]string{
+				"kata": {
+
+					"/usr/bin/kata-runtime",
+					"/usr/sbin/kata-runtime",
+					"/usr/local/bin/kata-runtime",
+					"/usr/local/sbin/kata-runtime",
+					"/sbin/kata-runtime",
+					"/bin/kata-runtime",
+				},
 				"runc": {
 					"/usr/bin/runc",
 					"/usr/sbin/runc",

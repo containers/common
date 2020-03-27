@@ -234,6 +234,14 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 			"/bin/crun",
 			"/run/current-system/sw/bin/crun",
 		},
+		"kata": {
+			"/usr/bin/kata-runtime",
+			"/usr/sbin/kata-runtime",
+			"/usr/local/bin/kata-runtime",
+			"/usr/local/sbin/kata-runtime",
+			"/sbin/kata-runtime",
+			"/bin/kata-runtime",
+		},
 	}
 	c.ConmonEnvVars = []string{
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
