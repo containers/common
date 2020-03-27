@@ -274,7 +274,7 @@ Disabling this can save memory.
 **infra_command**="/pause"
   Command to run the infra container.
 
-**infra_image**="k8s.gcr.io/pause:3.1"
+**infra_image**="k8s.gcr.io/pause:3.2"
   Infra (pause) container image name for pod infra containers.  When running a
 pod, we start a `pause` process in a container to hold open the namespaces
 associated with the  pod.  This container does nothing other then sleep,

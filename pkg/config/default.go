@@ -40,7 +40,7 @@ var (
 	// DefaultInitPath is the default path to the container-init binary
 	DefaultInitPath = "/usr/libexec/podman/catatonit"
 	// DefaultInfraImage to use for infra container
-	DefaultInfraImage = "k8s.gcr.io/pause:3.1"
+	DefaultInfraImage = "k8s.gcr.io/pause:3.2"
 	// DefaultInfraCommand to be run in an infra container
 	DefaultInfraCommand = "/pause"
 	// DefaultRootlessSHMLockPath is the default path for rootless SHM locks
