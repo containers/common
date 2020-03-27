@@ -20,7 +20,7 @@ func TestMergeCapabilitiesDropVerify(t *testing.T) {
 	base := []string{"CHOWN"}
 	caps, err := MergeCapabilities(base, adds, drops)
 	require.Nil(t, err)
-	assert.Equal(t, caps, []string{"CAP_SYS_ADMIN", "CAP_SETUID"})
+	assert.Equal(t, []string{"CAP_SYS_ADMIN", "CAP_SETUID"}, caps)
 }
 
 func TestMergeCapabilitiesDropAddConflict(t *testing.T) {
@@ -37,7 +37,7 @@ func TestMergeCapabilitiesDrop(t *testing.T) {
 	base := []string{"CHOWN"}
 	caps, err := MergeCapabilities(base, adds, drops)
 	require.Nil(t, err)
-	assert.Equal(t, caps, []string{"CAP_SYS_ADMIN"})
+	assert.Equal(t, []string{"CAP_SYS_ADMIN"}, caps)
 }
 
 func TestMergeCapabilitiesDropAll(t *testing.T) {
