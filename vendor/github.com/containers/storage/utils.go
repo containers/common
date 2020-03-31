@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/BurntSushi/toml"
 	"github.com/containers/storage/pkg/homedir"
 	"github.com/containers/storage/pkg/idtools"
 	"github.com/containers/storage/pkg/system"
@@ -146,6 +147,7 @@ func getRootlessStorageOpts(rootlessUID int) (StoreOptions, error) {
 	}
 	opts.RunRoot = rootlessRuntime
 	opts.GraphRoot = filepath.Join(dataDir, "containers", "storage")
+	opts.RootlessStoragePath = opts.GraphRoot
 	if path, err := exec.LookPath("fuse-overlayfs"); err == nil {
 		opts.GraphDriverName = "overlay"
 		opts.GraphDriverOptions = []string{fmt.Sprintf("overlay.mount_program=%s", path)}
@@ -153,22 +155,6 @@ func getRootlessStorageOpts(rootlessUID int) (StoreOptions, error) {
 		opts.GraphDriverName = "vfs"
 	}
 	return opts, nil
-}
-
-func getTomlStorage(storeOptions *StoreOptions) *tomlConfig {
-	config := new(tomlConfig)
-
-	config.Storage.Driver = storeOptions.GraphDriverName
-	config.Storage.RunRoot = storeOptions.RunRoot
-	config.Storage.GraphRoot = storeOptions.GraphRoot
-	for _, i := range storeOptions.GraphDriverOptions {
-		s := strings.Split(i, "=")
-		if s[0] == "overlay.mount_program" {
-			config.Storage.Options.MountProgram = s[1]
-		}
-	}
-
-	return config
 }
 
 func getRootlessUID() int {
@@ -213,7 +199,7 @@ func DefaultStoreOptions(rootless bool, rootlessUID int) (StoreOptions, error) {
 		defaultRootlessRunRoot = storageOpts.RunRoot
 		defaultRootlessGraphRoot = storageOpts.GraphRoot
 		storageOpts = StoreOptions{}
-		ReloadConfigurationFile(storageConf, &storageOpts)
+		reloadConfigurationFileIfNeeded(storageConf, &storageOpts)
 	}
 
 	if rootless && rootlessUID != 0 {
@@ -227,24 +213,38 @@ func DefaultStoreOptions(rootless bool, rootlessUID int) (StoreOptions, error) {
 			if storageOpts.GraphRoot == "" {
 				storageOpts.GraphRoot = defaultRootlessGraphRoot
 			}
-		} else {
-			if err := os.MkdirAll(filepath.Dir(storageConf), 0755); err != nil {
-				return storageOpts, errors.Wrapf(err, "cannot make directory %s", filepath.Dir(storageConf))
-			}
-			file, err := os.OpenFile(storageConf, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
-			if err != nil {
-				return storageOpts, errors.Wrapf(err, "cannot open %s", storageConf)
-			}
-
-			tomlConfiguration := getTomlStorage(&storageOpts)
-			defer file.Close()
-			enc := toml.NewEncoder(file)
-			if err := enc.Encode(tomlConfiguration); err != nil {
-				os.Remove(storageConf)
-
-				return storageOpts, errors.Wrapf(err, "failed to encode %s", storageConf)
+			if storageOpts.RootlessStoragePath != "" {
+				if err = validRootlessStoragePathFormat(storageOpts.RootlessStoragePath); err != nil {
+					return storageOpts, err
+				}
+				rootlessStoragePath := strings.Replace(storageOpts.RootlessStoragePath, "$HOME", homedir.Get(), -1)
+				rootlessStoragePath = strings.Replace(rootlessStoragePath, "$UID", strconv.Itoa(rootlessUID), -1)
+				usr, err := user.LookupId(strconv.Itoa(rootlessUID))
+				if err != nil {
+					return storageOpts, err
+				}
+				rootlessStoragePath = strings.Replace(rootlessStoragePath, "$USER", usr.Username, -1)
+				storageOpts.GraphRoot = rootlessStoragePath
 			}
 		}
 	}
 	return storageOpts, nil
+}
+
+// validRootlessStoragePathFormat checks if the environments contained in the path are accepted
+func validRootlessStoragePathFormat(path string) error {
+	if !strings.Contains(path, "$") {
+		return nil
+	}
+
+	splitPaths := strings.SplitAfter(path, "$")
+	validEnv := regexp.MustCompile(`^(HOME|USER|UID)([^a-zA-Z]|$)`).MatchString
+	if len(splitPaths) > 1 {
+		for _, p := range splitPaths[1:] {
+			if !validEnv(p) {
+				return errors.Errorf("Unrecognized environment variable")
+			}
+		}
+	}
+	return nil
 }

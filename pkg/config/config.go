@@ -11,7 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/pkg/capabilities"
-	"github.com/containers/common/pkg/unshare"
+	"github.com/containers/storage/pkg/unshare"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
 	"github.com/pkg/errors"
@@ -816,7 +816,7 @@ func resolveHomeDir(path string) (string, error) {
 		// path does not reference home dir -> Nothing to do
 		return path, nil
 	}
-	
+
 	// only get HomeDir when necessary
 	home, err := unshare.HomeDir()
 	if err != nil {
