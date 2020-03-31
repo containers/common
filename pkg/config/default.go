@@ -211,7 +211,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	if onCgroupsv2, _ := isCgroup2UnifiedMode(); onCgroupsv2 {
 		c.OCIRuntime = "crun"
 	}
-	c.CgroupManager = SystemdCgroupsManager
+	c.CgroupManager = defaultCgroupManager()
 	c.StopTimeout = uint(10)
 
 	c.OCIRuntimes = map[string][]string{
@@ -269,7 +269,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.InfraImage = DefaultInfraImage
 	c.EnablePortReservation = true
 	c.NumLocks = 2048
-	c.EventsLogger = "journald"
+	c.EventsLogger = defaultEventsLogger()
 	c.DetachKeys = DefaultDetachKeys
 	c.SDNotify = false
 	// TODO - ideally we should expose a `type LockType string` along with
