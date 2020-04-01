@@ -69,6 +69,8 @@ github.com/containers/storage/pkg/truncindex
 github.com/containers/storage/pkg/unshare
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/docker/docker v1.4.2-0.20191219165747-a9416c67da9f
+github.com/docker/docker/pkg/parsers
 # github.com/docker/go-units v0.4.0
 github.com/docker/go-units
 # github.com/gogo/protobuf v1.2.1
@@ -137,8 +139,12 @@ github.com/onsi/gomega/types
 # github.com/opencontainers/go-digest v1.0.0-rc1
 github.com/opencontainers/go-digest
 # github.com/opencontainers/runc v1.0.0-rc9
+github.com/opencontainers/runc/libcontainer/apparmor
+github.com/opencontainers/runc/libcontainer/cgroups
+github.com/opencontainers/runc/libcontainer/configs
 github.com/opencontainers/runc/libcontainer/system
 github.com/opencontainers/runc/libcontainer/user
+github.com/opencontainers/runc/libcontainer/utils
 # github.com/opencontainers/runtime-spec v0.1.2-0.20190618234442-a950415649c7
 github.com/opencontainers/runtime-spec/specs-go
 # github.com/opencontainers/selinux v1.4.0
