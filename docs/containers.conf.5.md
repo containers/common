@@ -320,6 +320,9 @@ refer to a member of the runtimes table.
 **runtime_supports_nocgroups**=["crun"]
   The list of OCI runtimes that support running containers without CGroups.
 
+**runtime_supports_kvm**=["kata"]
+  The list of OCI runtimes that support running containers with KVM separation.
+
 **static_dir**="/var/lib/containers/storage/libpod"
   Directory for persistent libpod files (database, etc).
 By default this will be configured relative to where containers/storage
