@@ -1,11 +1,17 @@
 export GO111MODULE=off
 
 GO ?= go
-GO_BUILD=$(GO) build
+GOGET:=GO111MODULE=off $(GO) get -u 
+define go-get
+	$(GOGET) ${1}
+endef
+
 # Go module support: set `-mod=vendor` to use the vendored sources
 ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
-	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
+	GO:=GO111MODULE=on $(GO)
+	MOD_VENDOR=-mod=vendor
 endif
+
 BUILDTAGS := ""
 DESTDIR ?=
 PREFIX := /usr/local
@@ -25,11 +31,6 @@ GOBIN := $(shell $(GO) env GOBIN)
 ifeq ($(GOBIN),)
 GOBIN := $(FIRST_GOPATH)/bin
 endif
-
-define go-get
-	env GO111MODULE=off \
-		$(GO) get -u ${1}
-endef
 
 define go-build
 	GOOS=$(1) GOARCH=$(2) $(GO) build -tags $(BUILDTAGS) ./...
@@ -53,11 +54,11 @@ build: build-amd64 build-386
 
 .PHONY: build-amd64
 build-amd64:
-	GOARCH=amd64 $(GO_BUILD) ./...
+	GOARCH=amd64 $(GO) build $(MOD_VENDOR) ./...
 
 .PHONY: build-386
 build-386:
-	GOARCH=386 $(GO_BUILD) ./...
+	GOARCH=386 $(GO) build $(MOD_VENDOR) ./...
 
 .PHONY: docs
 docs:
@@ -72,9 +73,9 @@ vendor-in-container:
 
 .PHONY: vendor
 vendor:
-	GO111MODULE=on $(GO) mod tidy
-	GO111MODULE=on $(GO) mod vendor
-	GO111MODULE=on $(GO) mod verify
+	$(GO) mod tidy
+	$(GO) mod vendor
+	$(GO) mod verify
 
 .PHONY: install.tools
 install.tools: .install.golangci-lint .install.md2man
