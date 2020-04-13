@@ -66,6 +66,13 @@ The default profile name is "container-default".
     `private` Create private Cgroup Namespace for the container.
     `host`    Share host Cgroup Namespace with the container.
 
+**cgroups**="enabled"
+  Determines  whether  the  container will create CGroups.
+  Options are:
+    `enabled`   Enable cgroup support within container
+    `disabled`  Disable cgroup support, will inherit cgroups from parent
+    `no-conmon` Container engine runs run without conmon
+
 **default_capabilities**=[]
   List of default capabilities for containers.
 
