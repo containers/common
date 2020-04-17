@@ -16,9 +16,11 @@ Please do **not** create a public issue.
 
 ## Security Announcements
 
-The podman@lists.podman.io email list is used for messages about 
-security and major API announcements.  You can join the list [here](https://lists.podman.io/admin/lists/podman.lists.podman.io/)
-or by sending an email to [podman-join@lists.podman.io](podman-join@lists.podman.io?subject=subscribe)
+The [podman@lists.podman.io](mailto:podman@lists.podman.io) email list is used for messages about
+Podman security announcements as well as general announcements and
+discussions.
+You can join the list [here](https://lists.podman.io/admin/lists/podman.lists.podman.io/)
+or by sending an email to [podman-join@lists.podman.io](mailto:podman-join@lists.podman.io?subject=subscribe)
 with the word "subscribe" in the subject.
 
 ## Security Vulnerability Response
