@@ -264,6 +264,8 @@ var _ = Describe("Config", func() {
 					"/usr/local/sbin/kata-runtime",
 					"/sbin/kata-runtime",
 					"/bin/kata-runtime",
+					"/usr/bin/kata-qemu",
+					"/usr/bin/kata-fc",
 				},
 				"runc": {
 					"/usr/bin/runc",
