@@ -172,7 +172,7 @@ func DefaultConfig() (*Config, error) {
 			SeccompProfile: SeccompDefaultPath,
 			ShmSize:        DefaultShmSize,
 			UTSNS:          "private",
-			UserNS:         "private",
+			UserNS:         "host",
 			UserNSSize:     DefaultUserNSSize,
 		},
 		Network: NetworkConfig{
@@ -246,6 +246,8 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 			"/usr/local/sbin/kata-runtime",
 			"/sbin/kata-runtime",
 			"/bin/kata-runtime",
+			"/usr/bin/kata-qemu",
+			"/usr/bin/kata-fc",
 		},
 	}
 	c.ConmonEnvVars = []string{
