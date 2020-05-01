@@ -450,7 +450,8 @@ var _ = Describe("Config", func() {
 			// Then
 			Expect(err).To(BeNil())
 			var addcaps, dropcaps []string
-			caps := config.Capabilities("0", addcaps, dropcaps)
+			caps, err := config.Capabilities("0", addcaps, dropcaps)
+			Expect(err).To(BeNil())
 			sort.Strings(caps)
 			defaultCaps := config.Containers.DefaultCapabilities
 			sort.Strings(defaultCaps)
@@ -458,13 +459,15 @@ var _ = Describe("Config", func() {
 
 			// Add all caps
 			addcaps = []string{"all"}
-			caps = config.Capabilities("root", addcaps, dropcaps)
+			caps, err = config.Capabilities("root", addcaps, dropcaps)
+			Expect(err).To(BeNil())
 			sort.Strings(caps)
-			Expect(caps).ToNot(BeEquivalentTo(capabilities.AllCapabilities()))
+			Expect(caps).To(BeEquivalentTo(capabilities.AllCapabilities()))
 
 			// Drop all caps
 			dropcaps = []string{"all"}
-			caps = config.Capabilities("", addcaps, dropcaps)
+			caps, err = config.Capabilities("", addcaps, dropcaps)
+			Expect(err).To(BeNil())
 			sort.Strings(caps)
 			Expect(caps).ToNot(BeEquivalentTo([]string{}))
 
@@ -485,13 +488,23 @@ var _ = Describe("Config", func() {
 			// Add all caps
 			addcaps = []string{"CAP_NET_ADMIN", "CAP_SYS_ADMIN"}
 			dropcaps = []string{"CAP_FOWNER", "CAP_CHOWN"}
-			caps = config.Capabilities("", addcaps, dropcaps)
+			caps, err = config.Capabilities("", addcaps, dropcaps)
+			Expect(err).To(BeNil())
 			sort.Strings(caps)
 			Expect(caps).To(BeEquivalentTo(expectedCaps))
 
-			caps = config.Capabilities("notroot", addcaps, dropcaps)
+			addcaps = []string{"NET_ADMIN", "cap_sys_admin"}
+			dropcaps = []string{"FOWNER", "chown"}
+			caps, err = config.Capabilities("", addcaps, dropcaps)
+			Expect(err).To(BeNil())
 			sort.Strings(caps)
-			Expect(caps).To(BeEquivalentTo(addcaps))
+			Expect(caps).To(BeEquivalentTo(expectedCaps))
+
+			expectedCaps = []string{"CAP_NET_ADMIN", "CAP_SYS_ADMIN"}
+			caps, err = config.Capabilities("notroot", addcaps, dropcaps)
+			Expect(err).To(BeNil())
+			sort.Strings(caps)
+			Expect(caps).To(BeEquivalentTo(expectedCaps))
 		})
 
 		It("should succeed with default pull_policy", func() {
