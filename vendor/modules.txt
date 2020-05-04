@@ -51,7 +51,7 @@ github.com/containers/image/v5/types
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.2
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.19.0
+# github.com/containers/storage v1.19.1
 github.com/containers/storage
 github.com/containers/storage/drivers
 github.com/containers/storage/drivers/aufs
@@ -142,7 +142,7 @@ github.com/hpcloud/tail/ratelimiter
 github.com/hpcloud/tail/util
 github.com/hpcloud/tail/watch
 github.com/hpcloud/tail/winfile
-# github.com/klauspost/compress v1.10.4
+# github.com/klauspost/compress v1.10.5
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
