@@ -1,4 +1,4 @@
-# Containers Projects Security and Disclosure Information
+# Security and Disclosure Information Policy for the Containers Projects
 
  * [Reporting a Vulnerability](#Reporting-a-Vulnerability)
  * [Security Announcements](#Security-Announcements)
