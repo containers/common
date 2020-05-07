@@ -7,7 +7,8 @@ import (
 )
 
 // LoginOptions represents common flags in login
-// caller should define bool or optionalBool fields for flags --get-login and --tls-verify
+// In addition, the caller should probably provide a --tls-verify flag (that affects the provided
+// *types.SystemContest)
 type LoginOptions struct {
 	// CLI flags managed by the FlagSet returned by GetLoginFlags
 	AuthFile      string
@@ -15,8 +16,8 @@ type LoginOptions struct {
 	Password      string
 	Username      string
 	StdinPassword bool
+	GetLoginSet   bool
 	// Options caller can set
-	GetLoginSet               bool      // set to true if --get-login is explicitly set
 	Stdin                     io.Reader // set to os.Stdin
 	Stdout                    io.Writer // set to os.Stdout
 	AcceptUnspecifiedRegistry bool      // set to true if allows login with unspecified registry
@@ -41,6 +42,7 @@ func GetLoginFlags(flags *LoginOptions) *pflag.FlagSet {
 	fs.StringVarP(&flags.Password, "password", "p", "", "Password for registry")
 	fs.StringVarP(&flags.Username, "username", "u", "", "Username for registry")
 	fs.BoolVar(&flags.StdinPassword, "password-stdin", false, "Take the password from stdin")
+	fs.BoolVar(&flags.GetLoginSet, "get-login", false, "Return the current login user for the registry")
 	return &fs
 }
 
