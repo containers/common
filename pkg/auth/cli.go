@@ -29,7 +29,6 @@ type LogoutOptions struct {
 	AuthFile string
 	All      bool
 	// Options caller can set
-	Stdin                     io.Reader // set to os.Stdin
 	Stdout                    io.Writer // set to os.Stdout
 	AcceptUnspecifiedRegistry bool      // set to true if allows logout with unspecified registry
 }
