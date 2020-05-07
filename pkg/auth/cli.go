@@ -11,6 +11,8 @@ import (
 // *types.SystemContest)
 type LoginOptions struct {
 	// CLI flags managed by the FlagSet returned by GetLoginFlags
+	// Callers that use GetLoginFlags should not need to touch these values at all; callers that use
+	// other CLI frameworks should set them based on user input.
 	AuthFile      string
 	CertDir       string
 	Password      string
@@ -26,6 +28,8 @@ type LoginOptions struct {
 // LogoutOptions represents the results for flags in logout
 type LogoutOptions struct {
 	// CLI flags managed by the FlagSet returned by GetLogoutFlags
+	// Callers that use GetLogoutFlags should not need to touch these values at all; callers that use
+	// other CLI frameworks should set them based on user input.
 	AuthFile string
 	All      bool
 	// Options caller can set
