@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 )
 
 func TestConfig(t *testing.T) {
-	RegisterFailHandler(Fail)
+	gomega.RegisterFailHandler(Fail)
 	RunSpecs(t, "Config Suite")
 }
 
@@ -26,7 +26,7 @@ func beforeEach() {
 
 func defaultConfig() *Config {
 	c, err := DefaultConfig()
-	Expect(err).To(BeNil())
-	Expect(c).NotTo(BeNil())
+	gomega.Expect(err).To(gomega.BeNil())
+	gomega.Expect(c).NotTo(gomega.BeNil())
 	return c
 }
