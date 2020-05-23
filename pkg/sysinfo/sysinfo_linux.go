@@ -231,6 +231,7 @@ func checkCgroupPids(quiet bool) cgroupPids {
 	cgroup2, err := cgroupv2.Enabled()
 	if err != nil {
 		logrus.Errorf("Failed to check cgroups version: %v", err)
+		return cgroupPids{}
 	}
 	if !cgroup2 {
 		_, err := cgroups.FindCgroupMountpoint("", "pids")
