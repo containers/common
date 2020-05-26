@@ -878,3 +878,16 @@ func Default() (*Config, error) {
 	})
 	return config, err
 }
+
+func Path() string {
+	if path := os.Getenv("CONTAINERS_CONF"); path != "" {
+		return path
+	}
+	if unshare.IsRootless() {
+		if rpath, err := rootlessConfigPath(); err == nil {
+			return rpath
+		}
+		return "$HOME/" + UserOverrideContainersConfig
+	}
+	return OverrideContainersConfig
+}
