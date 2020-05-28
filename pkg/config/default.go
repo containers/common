@@ -239,6 +239,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.CgroupManager = defaultCgroupManager()
 	c.StopTimeout = uint(10)
 
+	c.Remote = isRemote()
 	c.OCIRuntimes = map[string][]string{
 		"runc": {
 			"/usr/bin/runc",
