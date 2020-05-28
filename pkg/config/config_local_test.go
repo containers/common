@@ -199,5 +199,4 @@ var _ = Describe("Config Local", func() {
 			os.Unsetenv("CONTAINERS_CONF")
 		}
 	})
-
 })
