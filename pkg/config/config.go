@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/pkg/capabilities"
@@ -540,17 +539,8 @@ func (c *Config) Validate() error {
 // It returns an `error` on validation failure, otherwise
 // `nil`.
 func (c *EngineConfig) Validate() error {
-	// Relative paths can cause nasty bugs, because core paths we use could
-	// shift between runs (or even parts of the program - the OCI runtime
-	// uses a different working directory than we do, for example.
-	if c.StaticDir != "" && !filepath.IsAbs(c.StaticDir) {
-		return fmt.Errorf("static directory must be an absolute path - instead got %q", c.StaticDir)
-	}
-	if c.TmpDir != "" && !filepath.IsAbs(c.TmpDir) {
-		return fmt.Errorf("temporary directory must be an absolute path - instead got %q", c.TmpDir)
-	}
-	if c.VolumePath != "" && !filepath.IsAbs(c.VolumePath) {
-		return fmt.Errorf("volume path must be an absolute path - instead got %q", c.VolumePath)
+	if err := c.validatePaths(); err != nil {
+		return err
 	}
 
 	// Check if the pullPolicy from containers.conf is valid
@@ -566,22 +556,13 @@ func (c *EngineConfig) Validate() error {
 // It returns an `error` on validation failure, otherwise
 // `nil`.
 func (c *ContainersConfig) Validate() error {
-	for _, u := range c.DefaultUlimits {
-		ul, err := units.ParseUlimit(u)
-		if err != nil {
-			return fmt.Errorf("unrecognized ulimit %s: %v", u, err)
-		}
-		_, err = ul.GetRlimit()
-		if err != nil {
-			return err
-		}
+
+	if err := c.validateUlimits(); err != nil {
+		return err
 	}
 
-	for _, d := range c.Devices {
-		_, _, _, err := Device(d)
-		if err != nil {
-			return err
-		}
+	if err := c.validateDevices(); err != nil {
+		return err
 	}
 
 	if c.LogSizeMax >= 0 && c.LogSizeMax < OCIBufSize {
@@ -600,8 +581,7 @@ func (c *ContainersConfig) Validate() error {
 // execution checks. It returns an `error` on validation failure, otherwise
 // `nil`.
 func (c *NetworkConfig) Validate() error {
-
-	if c.NetworkConfigDir != cniConfigDir {
+	if c.NetworkConfigDir != _cniConfigDir {
 		err := isDirectory(c.NetworkConfigDir)
 		if err != nil {
 			return errors.Wrapf(err, "invalid network_config_dir: %s", c.NetworkConfigDir)
@@ -801,31 +781,6 @@ func resolveHomeDir(path string) (string, error) {
 
 	// replace the first "~" (start of path) with the HomeDir to resolve "~"
 	return strings.Replace(path, "~", home, 1), nil
-}
-
-// isDirectory tests whether the given path exists and is a directory. It
-// follows symlinks.
-func isDirectory(path string) error {
-	path, err := resolveHomeDir(path)
-	if err != nil {
-		return err
-	}
-
-	info, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-
-	if !info.Mode().IsDir() {
-		// Return a PathError to be consistent with os.Stat().
-		return &os.PathError{
-			Op:   "stat",
-			Path: path,
-			Err:  syscall.ENOTDIR,
-		}
-	}
-
-	return nil
 }
 
 func rootlessConfigPath() (string, error) {
