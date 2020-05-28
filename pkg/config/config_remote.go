@@ -8,6 +8,10 @@ func isDirectory(path string) error {
 	return nil
 }
 
+func isRemote() bool {
+	return true
+}
+
 func (c *EngineConfig) validatePaths() error {
 	return nil
 }

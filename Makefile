@@ -103,6 +103,7 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go test -v $(PROJECT)/pkg/...
+	go test --tags remote -v $(PROJECT)/pkg/...
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean

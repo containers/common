@@ -262,6 +262,13 @@ type EngineConfig struct {
 	// PullPolicy determines whether to pull image before creating or running a container
 	// default is "missing"
 	PullPolicy string `toml:"pull_policy"`
+
+	// Indicates whether the application should be running in Remote mode
+	Remote bool `toml:"_"`
+
+	// RemoteURI containers connection information used to connect to remote system.
+	RemoteURI string `toml:"remote_uri,omitempty"`
+
 	// RuntimePath is the path to OCI runtime binary for launching containers.
 	// The first path pointing to a valid file will be used This is used only
 	// when there are no OCIRuntime/OCIRuntimes defined.  It is used only to be

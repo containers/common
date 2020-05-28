@@ -75,3 +75,7 @@ func (c *ContainersConfig) validateUlimits() error {
 	}
 	return nil
 }
+
+func isRemote() bool {
+	return false
+}
