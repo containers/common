@@ -10,7 +10,7 @@ require (
 	github.com/docker/go-units v0.4.0
 	github.com/onsi/ginkgo v1.12.2
 	github.com/onsi/gomega v1.10.1
-	github.com/opencontainers/runc v1.0.0-rc9
+	github.com/opencontainers/runc v1.0.0-rc90
 	github.com/opencontainers/runtime-spec v0.1.2-0.20190618234442-a950415649c7 // indirect
 	github.com/opencontainers/selinux v1.5.2
 	github.com/pkg/errors v0.9.1
