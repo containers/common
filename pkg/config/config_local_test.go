@@ -1,14 +1,15 @@
 // +build !remote
 
-package config
+package config_test
 
 import (
 	"io/ioutil"
 	"os"
 	"path"
 
+	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Config Local", func() {
@@ -18,7 +19,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		tmpfile := path.Join(os.TempDir(), "wrong-file")
 		file, err := os.Create(tmpfile)
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 		file.Close()
 		defer os.Remove(tmpfile)
 		sut.Network.NetworkConfigDir = tmpfile
@@ -28,7 +29,7 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail on invalid CNIPluginDirs", func() {
@@ -45,7 +46,7 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail in validating invalid PluginDir", func() {
@@ -62,7 +63,7 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).ToNot(gomega.BeNil())
+		Expect(err).ToNot(BeNil())
 	})
 
 	It("should fail on invalid CNIPluginDirs", func() {
@@ -79,7 +80,7 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail during runtime", func() {
@@ -98,7 +99,7 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).ToNot(gomega.BeNil())
+		Expect(err).ToNot(BeNil())
 	})
 
 	It("should fail on invalid device mode", func() {
@@ -109,7 +110,7 @@ var _ = Describe("Config Local", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail on invalid first device", func() {
@@ -120,7 +121,7 @@ var _ = Describe("Config Local", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail on invalid second device", func() {
@@ -131,7 +132,7 @@ var _ = Describe("Config Local", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail on invalid device", func() {
@@ -142,7 +143,7 @@ var _ = Describe("Config Local", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail on wrong invalid device specification", func() {
@@ -153,7 +154,7 @@ var _ = Describe("Config Local", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("should fail on wrong DefaultUlimits", func() {
@@ -164,24 +165,24 @@ var _ = Describe("Config Local", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		Expect(err).NotTo(BeNil())
 	})
 
 	It("Expect Remote to be False", func() {
 		// Given
 		// When
-		config, err := NewConfig("")
+		config, err := config.NewConfig("")
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.Remote).To(gomega.BeFalse())
+		Expect(err).To(BeNil())
+		Expect(config.Engine.Remote).To(BeFalse())
 	})
 
 	It("write", func() {
 		tmpfile := "containers.conf.test"
 		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
 		os.Setenv("CONTAINERS_CONF", tmpfile)
-		config, err := ReadCustomConfig()
-		gomega.Expect(err).To(gomega.BeNil())
+		config, err := config.ReadCustomConfig()
+		Expect(err).To(BeNil())
 		config.Containers.Devices = []string{"/dev/null:/dev/null:rw",
 			"/dev/sdc/",
 			"/dev/sdc:/dev/xvdc",
@@ -190,7 +191,7 @@ var _ = Describe("Config Local", func() {
 
 		err = config.Write()
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 		defer os.Remove(tmpfile)
 		// Undo that
 		if envSet {

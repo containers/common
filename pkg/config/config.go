@@ -879,6 +879,7 @@ func ReadCustomConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// hack since Ommitempty does not seem to work with Write
 	c, err := Default()
 	if err != nil {

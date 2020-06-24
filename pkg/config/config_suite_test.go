@@ -1,14 +1,15 @@
-package config
+package config_test
 
 import (
 	"testing"
 
+	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 func TestConfig(t *testing.T) {
-	gomega.RegisterFailHandler(Fail)
+	RegisterFailHandler(Fail)
 	RunSpecs(t, "Config Suite")
 }
 
@@ -17,16 +18,16 @@ const (
 )
 
 var (
-	sut *Config
+	sut *config.Config
 )
 
 func beforeEach() {
 	sut = defaultConfig()
 }
 
-func defaultConfig() *Config {
-	c, err := DefaultConfig()
-	gomega.Expect(err).To(gomega.BeNil())
-	gomega.Expect(c).NotTo(gomega.BeNil())
+func defaultConfig() *config.Config {
+	c, err := config.DefaultConfig()
+	Expect(err).To(BeNil())
+	Expect(c).NotTo(BeNil())
 	return c
 }

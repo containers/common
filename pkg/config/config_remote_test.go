@@ -1,13 +1,13 @@
 // +build remote
 
-package config
+package config_test
 
 import (
 	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Config Remote", func() {
@@ -27,7 +27,7 @@ var _ = Describe("Config Remote", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed on invalid device mode", func() {
@@ -38,7 +38,7 @@ var _ = Describe("Config Remote", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed on invalid first device", func() {
@@ -49,7 +49,7 @@ var _ = Describe("Config Remote", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed on invalid second device", func() {
@@ -60,7 +60,7 @@ var _ = Describe("Config Remote", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed on invalid device", func() {
@@ -71,7 +71,7 @@ var _ = Describe("Config Remote", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed on wrong invalid device specification", func() {
@@ -82,7 +82,7 @@ var _ = Describe("Config Remote", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("Expect Remote to be true", func() {
@@ -90,8 +90,8 @@ var _ = Describe("Config Remote", func() {
 		// When
 		config, err := NewConfig("")
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.Remote).To(gomega.BeTrue())
+		Expect(err).To(BeNil())
+		Expect(config.Engine.Remote).To(BeTrue())
 	})
 
 	It("should succeed on wrong DefaultUlimits", func() {
@@ -102,7 +102,7 @@ var _ = Describe("Config Remote", func() {
 		err := sut.Containers.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed on invalid CNIPluginDirs", func() {
@@ -119,7 +119,7 @@ var _ = Describe("Config Remote", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	It("should succeed in validating invalid PluginDir", func() {
@@ -136,7 +136,7 @@ var _ = Describe("Config Remote", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		Expect(err).To(BeNil())
 	})
 
 })
