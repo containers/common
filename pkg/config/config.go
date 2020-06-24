@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/pkg/capabilities"
@@ -820,11 +819,6 @@ func stringsEq(a, b []string) bool {
 	return true
 }
 
-var (
-	configOnce sync.Once
-	config     *Config
-)
-
 // Default returns the default container config.
 // Configuration files will be read in the following files:
 // * /usr/share/containers/containers.conf
@@ -837,11 +831,7 @@ var (
 // The system defaults container config files can be overwritten using the
 // CONTAINERS_CONF environment variable.  This is usually done for testing.
 func Default() (*Config, error) {
-	var err error
-	configOnce.Do(func() {
-		config, err = NewConfig("")
-	})
-	return config, err
+	return NewConfig("")
 }
 
 func Path() string {
