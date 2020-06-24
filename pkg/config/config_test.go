@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -22,7 +23,7 @@ var _ = Describe("Config", func() {
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
-			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal("container-default"))
+			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 		})
 
@@ -235,7 +236,7 @@ var _ = Describe("Config", func() {
 			config, err := NewConfig("")
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
-			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("container-default"))
+			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Containers.Env).To(gomega.BeEquivalentTo(envs))
 			gomega.Expect(config.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
