@@ -3,7 +3,7 @@ package apparmor
 import (
 	"errors"
 
-	"github.com/containers/common/pkg/version"
+	"github.com/containers/common/version"
 )
 
 const (
