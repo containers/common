@@ -207,6 +207,9 @@ type EngineConfig struct {
 	// memory.
 	EnablePortReservation bool `toml:"enable_port_reservation,omitempty"`
 
+	// Environment variables to be used when running the container engine. For example "http_proxy=internal.proxy.company.com"
+	Env []string `toml:"env,omitempty"`
+
 	// EventsLogFilePath is where the events log is stored.
 	EventsLogFilePath string `toml:"events_logfile_path,omitempty"`
 
