@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -176,11 +177,51 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config.Engine.Remote).To(gomega.BeFalse())
 	})
 
+	It("verify getDefaultEnv", func() {
+		envs := []string{
+			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+		}
+		// Given we do
+		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
+		os.Setenv("CONTAINERS_CONF", "/dev/null")
+
+		// When
+		config, err := Default()
+
+		// Undo that
+		if envSet {
+			os.Setenv("CONTAINERS_CONF", oldContainersConf)
+		} else {
+			os.Unsetenv("CONTAINERS_CONF")
+		}
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
+		config.Containers.HTTPProxy = true
+		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
+		os.Setenv("HTTP_PROXY", "localhost")
+		os.Setenv("FOO", "BAR")
+		newenvs := []string{"HTTP_PROXY=localhost"}
+		envs = append(newenvs, envs...)
+		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
+		config.Containers.HTTPProxy = false
+		config.Containers.EnvHost = true
+		envString := strings.Join(config.GetDefaultEnv(), ",")
+		gomega.Expect(envString).To(gomega.ContainSubstring("FOO=BAR"))
+		gomega.Expect(envString).To(gomega.ContainSubstring("HTTP_PROXY=localhost"))
+	})
+
 	It("write", func() {
 		tmpfile := "containers.conf.test"
 		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
 		os.Setenv("CONTAINERS_CONF", tmpfile)
 		config, err := ReadCustomConfig()
+		// Undo that
+		if envSet {
+			os.Setenv("CONTAINERS_CONF", oldContainersConf)
+		} else {
+			os.Unsetenv("CONTAINERS_CONF")
+		}
 		gomega.Expect(err).To(gomega.BeNil())
 		config.Containers.Devices = []string{"/dev/null:/dev/null:rw",
 			"/dev/sdc/",
@@ -192,12 +233,5 @@ var _ = Describe("Config Local", func() {
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		defer os.Remove(tmpfile)
-		// Undo that
-		if envSet {
-			os.Setenv("CONTAINERS_CONF", oldContainersConf)
-		} else {
-			os.Unsetenv("CONTAINERS_CONF")
-		}
 	})
-
 })

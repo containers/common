@@ -465,7 +465,7 @@ func systemConfigs() ([]string, error) {
 	path := os.Getenv("CONTAINERS_CONF")
 	if path != "" {
 		if _, err := os.Stat(path); err != nil {
-			return nil, errors.Wrap(err, "failed to stat of %s from CONTAINERS_CONF environment variable")
+			return nil, errors.Wrapf(err, "failed to stat of %s from CONTAINERS_CONF environment variable", path)
 		}
 		return append(configs, path), nil
 	}
