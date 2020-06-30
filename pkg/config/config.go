@@ -165,6 +165,9 @@ type ContainersConfig struct {
 	// ShmSize holds the size of /dev/shm.
 	ShmSize string `toml:"shm_size,omitempty"`
 
+	//TZ sets the timezone inside the container
+	TZ string `toml:"tz,omitempty"`
+
 	// UTSNS indicates how to create a UTS namespace for the container
 	UTSNS string `toml:"utsns,omitempty"`
 
@@ -575,6 +578,10 @@ func (c *ContainersConfig) Validate() error {
 	}
 
 	if err := c.validateDevices(); err != nil {
+		return err
+	}
+
+	if err := c.validateTZ(); err != nil {
 		return err
 	}
 

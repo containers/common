@@ -195,6 +195,13 @@ than `0`.
 If you omit the unit, the system uses bytes. If you omit the size entirely,
 the system uses `65536k`.
 
+**tz=**""
+  Set timezone in container. Takes IANA timezones as well as `local`, which sets the timezone in the container to match the host machine.
+  If not set, then containers will run with the time zone specified in the image. 
+  Examples:
+    `tz="local"`
+    `tz="America/New_York"`
+
 **utsns**="private"
   Default way to to create a UTS namespace for the container.
   Options are:

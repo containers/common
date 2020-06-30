@@ -157,6 +157,39 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
+	It("should fail on bad timezone", func() {
+		// Given
+		sut.Containers.TZ = "foo"
+
+		// When
+		err := sut.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).NotTo(gomega.BeNil())
+	})
+
+	It("should succeed on good timezone", func() {
+		// Given
+		sut.Containers.TZ = "US/Eastern"
+
+		// When
+		err := sut.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+	})
+
+	It("should succeed on local timezone", func() {
+		// Given
+		sut.Containers.TZ = "local"
+
+		// When
+		err := sut.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+	})
+
 	It("should fail on wrong DefaultUlimits", func() {
 		// Given
 		sut.Containers.DefaultUlimits = []string{invalidPath}
