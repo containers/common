@@ -272,7 +272,7 @@ significant memory usage if a container has many ports forwarded to it.
 Disabling this can save memory.
 
 **env**=[]
-Environment variables to be used when running the container engine.  For example "http_proxy=internal.proxy.company.com".
+Environment variables to be used when running the container engine (e.g., Podman, Buildah).  For example "http_proxy=internal.proxy.company.com".
 Note these environment variables will not be used within the container. Set the env section under [containers] table,
 if you want to set environment variables for the container.
 
