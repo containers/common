@@ -113,8 +113,8 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			conf, _ := DefaultConfig()
-			defaultConfig, err := readConfigFromFile("testdata/containers_default.conf", conf)
+			defaultConfig, _ := DefaultConfig()
+			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig)
 
 			OCIRuntimeMap := map[string][]string{
 				"kata": {
@@ -168,7 +168,7 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			conf := Config{}
-			_, err := readConfigFromFile("testdata/containers_comment.conf", &conf)
+			err := readConfigFromFile("testdata/containers_comment.conf", &conf)
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
@@ -178,7 +178,7 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			conf := Config{}
-			_, err := readConfigFromFile("/invalid/file", &conf)
+			err := readConfigFromFile("/invalid/file", &conf)
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
@@ -188,7 +188,7 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			conf := Config{}
-			_, err := readConfigFromFile("config.go", &conf)
+			err := readConfigFromFile("config.go", &conf)
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
