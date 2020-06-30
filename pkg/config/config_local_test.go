@@ -168,6 +168,16 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
+	It("should return containers engine env", func() {
+		// Given
+		expectedEnv := []string{"http_proxy=internal.proxy.company.com", "foo=bar"}
+		// When
+		config, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Engine.Env).To(gomega.BeEquivalentTo(expectedEnv))
+	})
+
 	It("Expect Remote to be False", func() {
 		// Given
 		// When
