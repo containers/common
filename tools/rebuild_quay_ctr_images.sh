@@ -72,53 +72,24 @@ podman push --authfile ${AUTHFILE} quay.io/containers/${PROJECT}:latest
 ########
 podman rmi -f quay.io/containers/${PROJECT}:latest
 
+for REPO in stable upstream testing
+do
+########
+# Build quay.io/${PROJECT}/${REPO}:latest
+########
+podman build --no-cache -t quay.io/${PROJECT}/${REPO}:latest -f https://raw.githubusercontent.com/containers/${GITHUBPROJECT}/master/contrib/${PROJECT}image/${REPO}/Dockerfile .
 
 ########
-# Build quay.io/${PROJECT}/stable:latest
+# Push quay.io/${PROJECT}/${REPO}:latest
 ########
-podman build --no-cache -t quay.io/${PROJECT}/stable:latest -f https://raw.githubusercontent.com/containers/${GITHUBPROJECT}/master/contrib/${PROJECT}image/stable/Dockerfile .
+podman push --authfile ${AUTHFILE} quay.io/${PROJECT}/${REPO}:latest
 
 ########
-# Push quay.io/${PROJECT}/stable:latest
+# Remove quay.io/${PROJECT}/${REPO}:latest
 ########
-podman push --authfile ${AUTHFILE} quay.io/${PROJECT}/stable:latest
+podman rmi -f quay.io/${PROJECT}/${REPO}:latest
 
-########
-# Remove quay.io/${PROJECT}/stable:latest
-########
-podman rmi -f quay.io/${PROJECT}/stable:latest
-
-
-########
-# Build quay.io/${PROJECT}/testing:latest
-########
-podman build --no-cache -t quay.io/${PROJECT}/testing:latest -f https://raw.githubusercontent.com/containers/${GITHUBPROJECT}/master/contrib/${PROJECT}image/testing/Dockerfile .
-
-########
-# Push quay.io/${PROJECT}/testing:latest
-########
-podman push --authfile ${AUTHFILE} quay.io/${PROJECT}/testing:latest
-
-########
-# Remove quay.io/${PROJECT}/testing:latest
-########
-podman rmi -f quay.io/${PROJECT}/testing:latest
-
-
-########
-# Build quay.io/${PROJECT}/upstream:latest
-########
-podman build --no-cache -t quay.io/${PROJECT}/upstream:latest -f https://raw.githubusercontent.com/containers/${GITHUBPROJECT}/master/contrib/${PROJECT}image/upstream/Dockerfile .
-
-########
-# Push quay.io/${PROJECT}/upstream:latest
-########
-podman push --authfile ${AUTHFILE} quay.io/${PROJECT}/upstream:latest
-
-########
-# Remove quay.io/${PROJECT}/upstream:latest
-########
-podman rmi -f quay.io/${PROJECT}/upstream:latest
+done
 
 ########
 # That's All Folks!!!
