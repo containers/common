@@ -936,3 +936,13 @@ func (c *Config) Write() error {
 	}
 	return nil
 }
+
+// Reload reloads the configuration from containers.conf files
+func Reload() (*Config, error) {
+	var err error
+	config, err = NewConfig("")
+	if err != nil {
+		return nil, errors.Wrapf(err, "containers.conf reload failed")
+	}
+	return Default()
+}
