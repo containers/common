@@ -1,6 +1,7 @@
 package config
 
 import (
+	"io/ioutil"
 	"os"
 	"sort"
 
@@ -360,4 +361,46 @@ var _ = Describe("Config", func() {
 		})
 	})
 
+	Describe("Reload", func() {
+		It("test new config from reload", func() {
+			// Default configuration
+			defaultTestFile := "testdata/containers_default.conf"
+			oldEnv, set := os.LookupEnv("CONTAINERS_CONF")
+			os.Setenv("CONTAINERS_CONF", defaultTestFile)
+			cfg, err := Default()
+			gomega.Expect(err).To(gomega.BeNil())
+			if set {
+				os.Setenv("CONTAINERS_CONF", oldEnv)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
+
+			// Reload from new configuration file
+			testFile := "testdata/temp.conf"
+			content := `[containers]
+env=["foo=bar"]`
+			err = ioutil.WriteFile(testFile, []byte(content), os.ModePerm)
+			defer os.Remove(testFile)
+			gomega.Expect(err).To(gomega.BeNil())
+			oldEnv, set = os.LookupEnv("CONTAINERS_CONF")
+			os.Setenv("CONTAINERS_CONF", testFile)
+			_, err = Reload()
+			gomega.Expect(err).To(gomega.BeNil())
+			newCfg, err := Default()
+			gomega.Expect(err).To(gomega.BeNil())
+			if set {
+				os.Setenv("CONTAINERS_CONF", oldEnv)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
+
+			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
+			expectNewEnv := []string{"foo=bar"}
+			gomega.Expect(cfg.Containers.Env).To(gomega.Equal(expectOldEnv))
+			gomega.Expect(newCfg.Containers.Env).To(gomega.Equal(expectNewEnv))
+			// Reload change back to default global configuration
+			_, err = Reload()
+			gomega.Expect(err).To(gomega.BeNil())
+		})
+	})
 })
