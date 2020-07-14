@@ -168,6 +168,9 @@ type ContainersConfig struct {
 	//TZ sets the timezone inside the container
 	TZ string `toml:"tz,omitempty"`
 
+	// Umask is the umask inside the container.
+	Umask string `toml:"umask,omitempty"`
+
 	// UTSNS indicates how to create a UTS namespace for the container
 	UTSNS string `toml:"utsns,omitempty"`
 
@@ -579,6 +582,10 @@ func (c *ContainersConfig) Validate() error {
 	}
 
 	if err := c.validateTZ(); err != nil {
+		return err
+	}
+
+	if err := c.validateUmask(); err != nil {
 		return err
 	}
 

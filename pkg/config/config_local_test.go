@@ -277,4 +277,30 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		defer os.Remove(tmpfile)
 	})
+	It("Default Umask", func() {
+		// Given
+		// When
+		config, err := NewConfig("")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0022"))
+	})
+	It("Set Umask", func() {
+		// Given
+		// When
+		config, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0002"))
+	})
+	It("Should fail on bad Umask", func() {
+		// Given
+		sut.Containers.Umask = "88888"
+
+		// When
+		err := sut.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).NotTo(gomega.BeNil())
+	})
 })
