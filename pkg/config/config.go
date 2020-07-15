@@ -828,9 +828,9 @@ func stringsEq(a, b []string) bool {
 }
 
 var (
-	configOnce sync.Once
-	configErr  error
-	config     *Config
+	configErr   error
+	configMutex sync.Mutex
+	config      *Config
 )
 
 // Default returns the default container config.
@@ -845,9 +845,12 @@ var (
 // The system defaults container config files can be overwritten using the
 // CONTAINERS_CONF environment variable.  This is usually done for testing.
 func Default() (*Config, error) {
-	configOnce.Do(func() {
-		config, configErr = NewConfig("")
-	})
+	configMutex.Lock()
+	defer configMutex.Unlock()
+	if config != nil || configErr != nil {
+		return config, configErr
+	}
+	config, configErr = NewConfig("")
 	return config, configErr
 }
 
@@ -937,12 +940,13 @@ func (c *Config) Write() error {
 	return nil
 }
 
-// Reload reloads the configuration from containers.conf files
+// Reload clean the cached config and reloads the configuration from containers.conf files
+// This function is meant to be used for long-running processes that need to reload potential changes made to
+// the cached containers.conf files.
 func Reload() (*Config, error) {
-	var err error
-	config, err = NewConfig("")
-	if err != nil {
-		return nil, errors.Wrapf(err, "containers.conf reload failed")
-	}
+	configMutex.Lock()
+	configErr = nil
+	config = nil
+	configMutex.Unlock()
 	return Default()
 }
