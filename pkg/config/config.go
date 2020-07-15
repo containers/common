@@ -165,7 +165,7 @@ type ContainersConfig struct {
 	// ShmSize holds the size of /dev/shm.
 	ShmSize string `toml:"shm_size,omitempty"`
 
-	//TZ sets the timezone inside the container
+	// TZ sets the timezone inside the container
 	TZ string `toml:"tz,omitempty"`
 
 	// UTSNS indicates how to create a UTS namespace for the container
@@ -198,7 +198,7 @@ type EngineConfig struct {
 	// The first path pointing to a valid file will be used.
 	ConmonPath []string `toml:"conmon_path,omitempty"`
 
-	//DetachKeys is the sequence of keys used to detach a container.
+	// DetachKeys is the sequence of keys used to detach a container.
 	DetachKeys string `toml:"detach_keys,omitempty"`
 
 	// EnablePortReservation determines whether engine will reserve ports on the
@@ -272,11 +272,19 @@ type EngineConfig struct {
 	// Indicates whether the application should be running in Remote mode
 	Remote bool `toml:"-"`
 
+	// RemoteURI is deprecated, see ActiveService
 	// RemoteURI containers connection information used to connect to remote system.
 	RemoteURI string `toml:"remote_uri,omitempty"`
 
-	// Identity key file for RemoteURI
+	// RemoteIdentity is deprecated, ServiceDestinations
+	// RemoteIdentity key file for RemoteURI
 	RemoteIdentity string `toml:"remote_identity,omitempty"`
+
+	// ActiveService index to Destinations added v2.0.3
+	ActiveService string `toml:"active_service,omitempty"`
+
+	// Destinations mapped by service Names
+	ServiceDestinations map[string]Destination `toml:"service_destinations,omitempty"`
 
 	// RuntimePath is the path to OCI runtime binary for launching containers.
 	// The first path pointing to a valid file will be used This is used only
@@ -391,6 +399,15 @@ type NetworkConfig struct {
 
 	// NetworkConfigDir is where CNI network configuration files are stored.
 	NetworkConfigDir string `toml:"network_config_dir,omitempty"`
+}
+
+// Destination represents destination for remote service
+type Destination struct {
+	// URI, required. Example: ssh://root@example.com:22/run/podman/podman.sock
+	URI string `toml:"uri"`
+
+	// Identity file with ssh key, optional
+	Identity string `toml:"identity,omitempty"`
 }
 
 // NewConfig creates a new Config. It starts with an empty config and, if
@@ -879,8 +896,8 @@ func customConfigFile() (string, error) {
 	return OverrideContainersConfig, nil
 }
 
-//ReadCustomConfig reads the custom config and only generates a config based on it
-//If the custom config file does not exists, function will return an empty config
+// ReadCustomConfig reads the custom config and only generates a config based on it
+// If the custom config file does not exists, function will return an empty config
 func ReadCustomConfig() (*Config, error) {
 	path, err := customConfigFile()
 	if err != nil {
@@ -945,4 +962,26 @@ func Reload() (*Config, error) {
 		return nil, errors.Wrapf(err, "containers.conf reload failed")
 	}
 	return Default()
+}
+
+func (c *Config) ActiveDestination() (string, string, error){
+	if uri, found := os.LookupEnv("CONTAINER_HOST"); found {
+		var ident string
+		if v, found := os.LookupEnv("CONTAINER_SSHKEY"); found {
+			ident = v
+		}
+		return uri, ident, nil
+	}
+
+	switch {
+	case c.Engine.ActiveService != "":
+		d, found := c.Engine.ServiceDestinations[c.Engine.ActiveService]
+		if !found {
+			return "", "", errors.Errorf("%q service destination not found", c.Engine.ActiveService)
+		}
+		return d.URI, d.Identity, nil
+	case c.Engine.RemoteURI != "":
+		return c.Engine.RemoteURI, c.Engine.RemoteIdentity, nil
+	}
+	return "", "", errors.New("no service destination configured")
 }

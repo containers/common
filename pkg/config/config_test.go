@@ -354,10 +354,89 @@ var _ = Describe("Config", func() {
 			err = sut.Engine.Validate()
 			gomega.Expect(err).To(gomega.BeNil())
 		})
+
 		It("should fail with invalid pull_policy", func() {
 			sut.Engine.PullPolicy = "invalidPullPolicy"
 			err := sut.Engine.Validate()
 			gomega.Expect(err).ToNot(gomega.BeNil())
+		})
+	})
+
+	Describe("Service Destinations", func() {
+		ConfPath := struct {
+			Value string
+			IsSet bool
+		}{}
+
+		BeforeEach(func() {
+			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
+			conf, _ := ioutil.TempFile("","containersconf")
+			os.Setenv("CONTAINERS_CONF", conf.Name())
+		})
+
+		AfterEach(func() {
+			os.Remove(os.Getenv("CONTAINERS_CONF"))
+			if ConfPath.IsSet {
+				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
+		})
+
+		It("succeed to set and read", func() {
+			cfg, err := ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg.Engine.ActiveService = "QA"
+			cfg.Engine.ServiceDestinations = map[string]Destination{
+				"QA": {
+					URI:      "https://qa/run/podman/podman.sock",
+					Identity: "/.ssh/id_rsa",
+				},
+			}
+			err = cfg.Write()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg, err = ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			gomega.Expect(cfg.Engine.ActiveService, "QA")
+			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
+				"https://qa/run/podman/podman.sock")
+			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
+				"/.ssh/id_rsa")
+		})
+
+		It("succeed ActiveDestinations()", func() {
+			cfg, err := ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg.Engine.ActiveService = "QA"
+			cfg.Engine.ServiceDestinations = map[string]Destination{
+				"QA": {
+					URI:      "https://qa/run/podman/podman.sock",
+					Identity: "/.ssh/id_rsa",
+				},
+			}
+			err = cfg.Write()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg, err = ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			u, i, err := cfg.ActiveDestination()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			gomega.Expect(u).To(gomega.Equal("https://qa/run/podman/podman.sock"))
+			gomega.Expect(i).To(gomega.Equal("/.ssh/id_rsa"))
+		})
+
+		It("fail ActiveDestination() no configuration", func() {
+			cfg, err := ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			_, _, err = cfg.ActiveDestination()
+			gomega.Expect(err).Should(gomega.HaveOccurred())
 		})
 	})
 
