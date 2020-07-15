@@ -310,6 +310,24 @@ pod consumes one lock.  The default number available is 2048.  If this is
 changed, a lock renumbering must be performed, using the
 `podman system renumber` command.
 
+**active_service**=""
+  Name of destination for accessing the Podman service.
+
+**[service_destinations]**
+
+**[service_destinations.{name}]**
+  **uri="ssh://user@production.example.com/run/user/1001/podman/podman.sock"**
+
+    Example URIs:
+
+- **rootless local**  - unix://run/user/1000/podman/podman.sock
+- **rootless remote** - ssh://user@engineering.lab.company.com/run/user/1000/podman/podman.sock
+- **rootfull local**  - unix://run/podman/podman.sock
+- **rootfull remote** - ssh://root@10.10.1.136:22/run/podman/podman.sock
+
+  **identity="~/.ssh/id_rsa**
+    Path to file containing ssh identity key
+
 **pull_policy**="always"|"missing"|"never"
 Pull image before running or creating a container. The default is **missing**.
 
