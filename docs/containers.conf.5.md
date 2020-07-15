@@ -202,6 +202,9 @@ the system uses `65536k`.
     `tz="local"`
     `tz="America/New_York"`
 
+**umask**="0022"
+  Sets umask inside the container.
+
 **utsns**="private"
   Default way to to create a UTS namespace for the container.
   Options are:
