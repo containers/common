@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/containers/image/v5 v5.5.1
-	github.com/containers/storage v1.21.0
+	github.com/containers/storage v1.21.1
 	github.com/docker/docker v1.4.2-0.20191219165747-a9416c67da9f
 	github.com/docker/go-units v0.4.0
 	github.com/onsi/ginkgo v1.14.0
