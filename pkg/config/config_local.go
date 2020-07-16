@@ -90,9 +90,9 @@ func (c *ContainersConfig) validateTZ() error {
 }
 
 func (c *ContainersConfig) validateUmask() error {
-	validUmask := regexp.MustCompile(`^[0-7]{1,4}$`)
+	validUmask := regexp.MustCompile(`^[0-7]{3,4}$`)
 	if !validUmask.MatchString(c.Umask) {
-		return fmt.Errorf("Not a valid Umask %s", c.Umask)
+		return fmt.Errorf("Not a valid Umask: %s", c.Umask)
 	}
 	return nil
 }
