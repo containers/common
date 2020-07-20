@@ -874,6 +874,10 @@ func Default() (*Config, error) {
 	if config != nil || configErr != nil {
 		return config, configErr
 	}
+	return defConfig()
+}
+
+func defConfig() (*Config, error) {
 	config, configErr = NewConfig("")
 	return config, configErr
 }
@@ -969,13 +973,11 @@ func (c *Config) Write() error {
 // the cached containers.conf files.
 func Reload() (*Config, error) {
 	configMutex.Lock()
-	configErr = nil
-	config = nil
-	configMutex.Unlock()
-	return Default()
+	defer configMutex.Unlock()
+	return defConfig()
 }
 
-func (c *Config) ActiveDestination() (string, string, error){
+func (c *Config) ActiveDestination() (string, string, error) {
 	if uri, found := os.LookupEnv("CONTAINER_HOST"); found {
 		var ident string
 		if v, found := os.LookupEnv("CONTAINER_SSHKEY"); found {
