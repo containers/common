@@ -622,9 +622,17 @@ func (c *ContainersConfig) Validate() error {
 // execution checks. It returns an `error` on validation failure, otherwise
 // `nil`.
 func (c *NetworkConfig) Validate() error {
-	if c.NetworkConfigDir != _cniConfigDir {
-		err := isDirectory(c.NetworkConfigDir)
+	expectedConfigDir := _cniConfigDir
+	if unshare.IsRootless() {
+		home, err := unshare.HomeDir()
 		if err != nil {
+			return err
+		}
+		expectedConfigDir = filepath.Join(home, _cniConfigDirRootless)
+	}
+	if c.NetworkConfigDir != expectedConfigDir {
+		err := isDirectory(c.NetworkConfigDir)
+		if err != nil && !os.IsNotExist(err) {
 			return errors.Wrapf(err, "invalid network_config_dir: %s", c.NetworkConfigDir)
 		}
 	}
