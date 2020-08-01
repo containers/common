@@ -125,9 +125,6 @@ environment variables to the container.
 **env_host**=false
   Pass all host environment variables into the container.
 
-**hooks_dir**=["/etc/containers/oci/hooks.d", ...]
-  Path to the OCI hooks directories for automatically executed hooks.
-
 **http_proxy**=false
   Default proxy environment variables will be passed into the container.
   The environment variables passed in include:
@@ -275,6 +272,9 @@ Disabling this can save memory.
   Default method to use when logging events.
   Valid values: `file`, `journald`, and `none`.
 
+**hooks_dir**=["/etc/containers/oci/hooks.d", ...]
+  Path to the OCI hooks directories for automatically executed hooks.
+
 **image_default_transport**="docker://"
   Default transport method for pulling and pushing images.
 
@@ -300,6 +300,9 @@ only containers and pods that were created in the same namespace, and will
 create new containers and pods in that namespace.  The default namespace is "",
  which corresponds to no namespace. When no namespace is set, all containers
 and pods are visible.
+
+**network_cmd_path**=""
+  NetworkCmdPath is the path to the slirp4netns binary.
 
 **no_pivot_root**=false
   Whether to use chroot instead of pivot_root in the runtime.
