@@ -12,6 +12,7 @@ import (
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/cgroupv2"
 	"github.com/containers/storage"
+	"github.com/containers/storage/pkg/homedir"
 	"github.com/containers/storage/pkg/unshare"
 	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/pkg/errors"
@@ -128,8 +129,6 @@ const (
 	SeccompOverridePath = _etcDir + "/containers/seccomp.json"
 	// SeccompDefaultPath defines the default seccomp path.
 	SeccompDefaultPath = _installPrefix + "/share/containers/seccomp.json"
-	// If XDG_CONFIG_HOME is not defined, we look here (relative to HOME)
-	DefaultRootlessConfigHomeDir = ".config"
 )
 
 // DefaultConfig defines the default values from containers.conf
@@ -146,13 +145,9 @@ func DefaultConfig() (*Config, error) {
 
 	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
 	if unshare.IsRootless() {
-		configHome := os.Getenv("XDG_CONFIG_HOME")
-		if configHome == "" {
-			home, err := unshare.HomeDir()
-			if err != nil {
-				return nil, err
-			}
-			configHome = filepath.Join(home, DefaultRootlessConfigHomeDir)
+		configHome, err := homedir.GetConfigHome()
+		if err != nil {
+			return nil, err
 		}
 		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
 		defaultEngineConfig.SignaturePolicyPath = sigPath
