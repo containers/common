@@ -60,12 +60,12 @@ func TestMergeCapabilitiesAddAll(t *testing.T) {
 
 func TestNormalizeCapabilities(t *testing.T) {
 	strSlice := []string{"SYS_ADMIN", "net_admin", "CAP_CHOWN"}
-	caps, err := normalizeCapabilities(strSlice)
+	caps, err := NormalizeCapabilities(strSlice)
 	require.Nil(t, err)
 	err = ValidateCapabilities(caps)
 	require.Nil(t, err)
 	strSlice = []string{"no_ADMIN", "net_admin", "CAP_CHMOD"}
-	_, err = normalizeCapabilities(strSlice)
+	_, err = NormalizeCapabilities(strSlice)
 	assert.Error(t, err)
 }
 
