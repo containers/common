@@ -224,7 +224,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
 
 	var storeOpts storage.StoreOptions
-	if path, ok := os.LookupEnv("CONTAINER_STORAGE_CONF"); ok {
+	if path, ok := os.LookupEnv("CONTAINERS_STORAGE_CONF"); ok {
 		storage.ReloadConfigurationFile(path, &storeOpts)
 	} else {
 		storeOpts, err = storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
