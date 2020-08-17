@@ -221,7 +221,7 @@ the system uses `65536k`.
 **tz=**""
 
 Set timezone in container. Takes IANA timezones as well as `local`, which sets the timezone in the container to match the host machine.
-If not set, then containers will run with the time zone specified in the image. 
+If not set, then containers will run with the time zone specified in the image.
 Examples:
   `tz="local"`
   `tz="America/New_York"`
@@ -452,6 +452,9 @@ containers. This convention is followed by the default volume driver, but may
 not be by other drivers.
 
 # FILES
+
+**containers.conf**
+
 Distributions often provide a `/usr/share/containers/containers.conf` file to
 define default container configuration. Administrators can override fields in
 this file by creating `/etc/containers/containers.conf` to specify their own
@@ -464,6 +467,16 @@ this path will be used.  This is primarily used for testing.
 
 Fields specified in the containers.conf file override the default options, as
 well as options in previously read containers.conf files.
+
+**storage.conf**
+
+The `/etc/containers/storage.conf` file is the default storage configuration file.
+Rootless users can override fields in the storage config by creating
+`$HOME/.config/containers/storage.conf`.
+
+If the `CONTAINERS_STORAGE_CONF` path environment variable is set, this path
+is used for the storage.conf file rather than the default.
+This is primarily used for testing.
 
 # SEE ALSO
 containers-storage.conf(5), containers-policy.json(5), containers-registries.conf(5)

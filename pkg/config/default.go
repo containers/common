@@ -223,10 +223,16 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
 
-	storeOpts, err := storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
-	if err != nil {
-		return nil, err
+	var storeOpts storage.StoreOptions
+	if path, ok := os.LookupEnv("CONTAINER_STORAGE_CONF"); ok {
+		storage.ReloadConfigurationFile(path, &storeOpts)
+	} else {
+		storeOpts, err = storage.DefaultStoreOptions(unshare.IsRootless(), unshare.GetRootlessUID())
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	if storeOpts.GraphRoot == "" {
 		logrus.Warnf("Storage configuration is unset - using hardcoded default graph root %q", _defaultGraphRoot)
 		storeOpts.GraphRoot = _defaultGraphRoot
