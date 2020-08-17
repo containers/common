@@ -163,7 +163,7 @@ func execAAParser(dir string, args ...string) (string, error) {
 	c := exec.Command("apparmor_parser", args...)
 	c.Dir = dir
 
-	output, err := c.CombinedOutput()
+	output, err := c.Output()
 	if err != nil {
 		return "", fmt.Errorf("running `%s %s` failed with output: %s\nerror: %v", c.Path, strings.Join(c.Args, " "), output, err)
 	}
