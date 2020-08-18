@@ -129,7 +129,7 @@ A list of dns servers to override the DNS configuration passed to the
 container. The special value “none” can be specified to disable creation of
 /etc/resolv.conf in the container.
 
-**env**=["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"]
+**env**=["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "TERM=xterm"]
 
 Environment variable list for the container process, used for passing
 environment variables to the container.

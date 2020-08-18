@@ -153,6 +153,7 @@ var _ = Describe("Config", func() {
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
 			}
 
 			// Then
@@ -230,6 +231,7 @@ var _ = Describe("Config", func() {
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
 			}
 
 			// When
@@ -370,7 +372,7 @@ var _ = Describe("Config", func() {
 
 		BeforeEach(func() {
 			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
-			conf, _ := ioutil.TempFile("","containersconf")
+			conf, _ := ioutil.TempFile("", "containersconf")
 			os.Setenv("CONTAINERS_CONF", conf.Name())
 		})
 
@@ -473,7 +475,7 @@ env=["foo=bar"]`
 				os.Unsetenv("CONTAINERS_CONF")
 			}
 
-			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
+			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "TERM=xterm"}
 			expectNewEnv := []string{"foo=bar"}
 			gomega.Expect(cfg.Containers.Env).To(gomega.Equal(expectOldEnv))
 			gomega.Expect(newCfg.Containers.Env).To(gomega.Equal(expectNewEnv))
