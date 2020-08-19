@@ -1,6 +1,7 @@
 package config
 
 import (
+	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -394,7 +395,7 @@ var _ = Describe("Config", func() {
 
 		BeforeEach(func() {
 			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
-			conf, _ := ioutil.TempFile("","containersconf")
+			conf, _ := ioutil.TempFile("", "containersconf")
 			os.Setenv("CONTAINERS_CONF", conf.Name())
 		})
 
