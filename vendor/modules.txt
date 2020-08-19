@@ -30,7 +30,7 @@ github.com/Microsoft/hcsshim/osversion
 github.com/beorn7/perks/quantile
 # github.com/containerd/cgroups v0.0.0-20190919134610-bf292b21730f
 github.com/containerd/cgroups/stats/v1
-# github.com/containers/image/v5 v5.5.1
+# github.com/containers/image/v5 v5.5.2
 ## explicit
 github.com/containers/image/v5/docker
 github.com/containers/image/v5/docker/policyconfiguration
