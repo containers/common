@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"sort"
-	"strings"
 
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
@@ -153,6 +152,7 @@ var _ = Describe("Config", func() {
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
 			}
 
 			// Then
@@ -230,6 +230,7 @@ var _ = Describe("Config", func() {
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
 			}
 
 			// When
@@ -242,30 +243,6 @@ var _ = Describe("Config", func() {
 			gomega.Expect(config.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
-		})
-
-		It("verify getDefaultEnv", func() {
-			envs := []string{
-				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-			}
-
-			// When
-			config, err := Default()
-			// Then
-			gomega.Expect(err).To(gomega.BeNil())
-			gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-			config.Containers.HTTPProxy = true
-			gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-			os.Setenv("HTTP_PROXY", "localhost")
-			os.Setenv("FOO", "BAR")
-			newenvs := []string{"HTTP_PROXY=localhost"}
-			envs = append(newenvs, envs...)
-			gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-			config.Containers.HTTPProxy = false
-			config.Containers.EnvHost = true
-			envString := strings.Join(config.GetDefaultEnv(), ",")
-			gomega.Expect(envString).To(gomega.ContainSubstring("FOO=BAR"))
-			gomega.Expect(envString).To(gomega.ContainSubstring("HTTP_PROXY=localhost"))
 		})
 
 		It("should success with valid user file path", func() {
@@ -378,7 +355,6 @@ var _ = Describe("Config", func() {
 			err = sut.Engine.Validate()
 			gomega.Expect(err).To(gomega.BeNil())
 		})
-
 		It("should fail with invalid pull_policy", func() {
 			sut.Engine.PullPolicy = "invalidPullPolicy"
 			err := sut.Engine.Validate()
@@ -386,124 +362,4 @@ var _ = Describe("Config", func() {
 		})
 	})
 
-	Describe("Service Destinations", func() {
-		ConfPath := struct {
-			Value string
-			IsSet bool
-		}{}
-
-		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
-			conf, _ := ioutil.TempFile("","containersconf")
-			os.Setenv("CONTAINERS_CONF", conf.Name())
-		})
-
-		AfterEach(func() {
-			os.Remove(os.Getenv("CONTAINERS_CONF"))
-			if ConfPath.IsSet {
-				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
-			} else {
-				os.Unsetenv("CONTAINERS_CONF")
-			}
-		})
-
-		It("succeed to set and read", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg.Engine.ActiveService = "QA"
-			cfg.Engine.ServiceDestinations = map[string]Destination{
-				"QA": {
-					URI:      "https://qa/run/podman/podman.sock",
-					Identity: "/.ssh/id_rsa",
-				},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			gomega.Expect(cfg.Engine.ActiveService, "QA")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
-				"https://qa/run/podman/podman.sock")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
-				"/.ssh/id_rsa")
-		})
-
-		It("succeed ActiveDestinations()", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg.Engine.ActiveService = "QA"
-			cfg.Engine.ServiceDestinations = map[string]Destination{
-				"QA": {
-					URI:      "https://qa/run/podman/podman.sock",
-					Identity: "/.ssh/id_rsa",
-				},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			u, i, err := cfg.ActiveDestination()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			gomega.Expect(u).To(gomega.Equal("https://qa/run/podman/podman.sock"))
-			gomega.Expect(i).To(gomega.Equal("/.ssh/id_rsa"))
-		})
-
-		It("fail ActiveDestination() no configuration", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			_, _, err = cfg.ActiveDestination()
-			gomega.Expect(err).Should(gomega.HaveOccurred())
-		})
-	})
-
-	Describe("Reload", func() {
-		It("test new config from reload", func() {
-			// Default configuration
-			defaultTestFile := "testdata/containers_default.conf"
-			oldEnv, set := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", defaultTestFile)
-			cfg, err := Default()
-			gomega.Expect(err).To(gomega.BeNil())
-			if set {
-				os.Setenv("CONTAINERS_CONF", oldEnv)
-			} else {
-				os.Unsetenv("CONTAINERS_CONF")
-			}
-
-			// Reload from new configuration file
-			testFile := "testdata/temp.conf"
-			content := `[containers]
-env=["foo=bar"]`
-			err = ioutil.WriteFile(testFile, []byte(content), os.ModePerm)
-			defer os.Remove(testFile)
-			gomega.Expect(err).To(gomega.BeNil())
-			oldEnv, set = os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", testFile)
-			_, err = Reload()
-			gomega.Expect(err).To(gomega.BeNil())
-			newCfg, err := Default()
-			gomega.Expect(err).To(gomega.BeNil())
-			if set {
-				os.Setenv("CONTAINERS_CONF", oldEnv)
-			} else {
-				os.Unsetenv("CONTAINERS_CONF")
-			}
-
-			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
-			expectNewEnv := []string{"foo=bar"}
-			gomega.Expect(cfg.Containers.Env).To(gomega.Equal(expectOldEnv))
-			gomega.Expect(newCfg.Containers.Env).To(gomega.Equal(expectNewEnv))
-			// Reload change back to default global configuration
-			_, err = Reload()
-			gomega.Expect(err).To(gomega.BeNil())
-		})
-	})
 })
