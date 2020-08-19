@@ -2,7 +2,7 @@ language: go
 
 go:
   - tip
-  - 1.13
+  - 1.15
 
 before_install:
   - sudo apt-get -qq install libdevmapper-dev
