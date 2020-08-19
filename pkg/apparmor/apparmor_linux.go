@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -25,9 +26,34 @@ var profileDirectory = "/etc/apparmor.d"
 // IsEnabled returns true if AppArmor is enabled on the host.
 func IsEnabled() bool {
 	if unshare.IsRootless() {
+		logrus.Debug("AppAmor is not supported on rootless containers")
 		return false
 	}
-	return runcaa.IsEnabled()
+	if !runcaa.IsEnabled() {
+		logrus.Debug("AppArmor not supported by the host system")
+		return false
+	}
+
+	const (
+		binary = "apparmor_parser"
+		sbin   = "/sbin"
+	)
+
+	// `/sbin` is not always in `$PATH`, so we check it explicitly
+	sbinBinaryPath := filepath.Join(sbin, binary)
+	if _, err := os.Stat(sbinBinaryPath); err == nil {
+		logrus.Debugf("AppAmor is supported by the host. Found %s binary in %s", binary, sbinBinaryPath)
+		return true
+	}
+
+	// Fallback to checking $PATH
+	if path, err := exec.LookPath(binary); err == nil {
+		logrus.Debugf("AppAmor is supported by the host. Found %s binary in %s", binary, path)
+		return true
+	}
+
+	logrus.Debugf("AppAmor requirements not met: %s binary neither found in %s nor $PATH", binary, sbin)
+	return false
 }
 
 // profileData holds information about the given profile for generation.
