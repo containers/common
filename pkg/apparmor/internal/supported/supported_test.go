@@ -10,12 +10,43 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsSupported(t *testing.T) {
+func TestSingleton(t *testing.T) {
+	// Create the singleton
+	sut := NewAppArmorVerifier()
+	mock := &supportedfakes.FakeVerifierImpl{}
+	sut.impl = mock
+	mock.OsStatReturns(nil, errors.New(""))
+
+	// Retrieve the mocked path
+	const testBinaryPath = "/some/test/path"
+	mock.ExecLookPathReturns(testBinaryPath, nil)
+	res, err := sut.FindAppArmorParserBinary()
+	require.Nil(t, err)
+	require.Equal(t, testBinaryPath, res)
+
+	// Make the mock fail
+	mock.ExecLookPathReturns("", errors.New(""))
+
+	// Check if we still return the memoized result
+	res, err = sut.FindAppArmorParserBinary()
+	require.Nil(t, err)
+	require.Equal(t, testBinaryPath, res)
+
+	// A new singleton instance should return the same memoized result
+	sutNew := NewAppArmorVerifier()
+	res, err = sutNew.FindAppArmorParserBinary()
+	require.Nil(t, err)
+	require.Equal(t, testBinaryPath, res)
+}
+
+func TestApparmorVerifier(t *testing.T) {
 	for _, tc := range []struct {
-		prepare   func(*supportedfakes.FakeVerifierImpl) func()
-		shoulderr bool
+		description string
+		prepare     func(*supportedfakes.FakeVerifierImpl) func()
+		shoulderr   bool
 	}{
-		{ // success with binary in /sbin
+		{
+			description: "success with binary in /sbin",
 			prepare: func(mock *supportedfakes.FakeVerifierImpl) func() {
 				mock.UnshareIsRootlessReturns(false)
 				mock.RuncIsEnabledReturns(true)
@@ -32,7 +63,8 @@ func TestIsSupported(t *testing.T) {
 			},
 			shoulderr: false,
 		},
-		{ // success with binary in $PATH
+		{
+			description: "success with binary in $PATH",
 			prepare: func(mock *supportedfakes.FakeVerifierImpl) func() {
 				mock.UnshareIsRootlessReturns(false)
 				mock.RuncIsEnabledReturns(true)
@@ -43,7 +75,8 @@ func TestIsSupported(t *testing.T) {
 			},
 			shoulderr: false,
 		},
-		{ // error binary not in /sbin or $PATH
+		{
+			description: "error binary not in /sbin or $PATH",
 			prepare: func(mock *supportedfakes.FakeVerifierImpl) func() {
 				mock.UnshareIsRootlessReturns(false)
 				mock.RuncIsEnabledReturns(true)
@@ -53,7 +86,8 @@ func TestIsSupported(t *testing.T) {
 			},
 			shoulderr: true,
 		},
-		{ // error runc AppAmor not enabled
+		{
+			description: "error runc AppAmor not enabled",
 			prepare: func(mock *supportedfakes.FakeVerifierImpl) func() {
 				mock.UnshareIsRootlessReturns(false)
 				mock.RuncIsEnabledReturns(false)
@@ -61,7 +95,8 @@ func TestIsSupported(t *testing.T) {
 			},
 			shoulderr: true,
 		},
-		{ // error rootless
+		{
+			description: "error rootless",
 			prepare: func(mock *supportedfakes.FakeVerifierImpl) func() {
 				mock.UnshareIsRootlessReturns(true)
 				return func() {}
@@ -70,7 +105,7 @@ func TestIsSupported(t *testing.T) {
 		},
 	} {
 		// Given
-		sut := NewAppArmorVerifier()
+		sut := &ApparmorVerifier{impl: &defaultVerifier{}}
 		mock := &supportedfakes.FakeVerifierImpl{}
 		cleanup := tc.prepare(mock)
 		defer cleanup()
@@ -81,9 +116,9 @@ func TestIsSupported(t *testing.T) {
 
 		// Then
 		if tc.shoulderr {
-			require.NotNil(t, err)
+			require.NotNil(t, err, tc.description)
 		} else {
-			require.Nil(t, err)
+			require.Nil(t, err, tc.description)
 		}
 	}
 }

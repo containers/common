@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 
 	"github.com/containers/storage/pkg/unshare"
 	runcaa "github.com/opencontainers/runc/libcontainer/apparmor"
@@ -13,22 +14,51 @@ import (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
+// ApparmorVerifier is the global struct for verifying if AppAmor is available
+// on the system.
 type ApparmorVerifier struct {
-	impl verifierImpl
+	impl             verifierImpl
+	parserBinaryPath string
 }
 
+var (
+	singleton *ApparmorVerifier
+	once      sync.Once
+)
+
+// NewAppArmorVerifier can be used to retrieve a new ApparmorVerifier instance.
 func NewAppArmorVerifier() *ApparmorVerifier {
-	return &ApparmorVerifier{impl: &defaultVerifier{}}
+	once.Do(func() {
+		singleton = &ApparmorVerifier{impl: &defaultVerifier{}}
+	})
+	return singleton
 }
 
-// IsSupported returns nil if AppAmor is supported by the host system,
-// otherwise an error
+// IsSupported returns nil if AppAmor is supported by the host system.
+// The method will error if:
+// - the process runs in rootless mode
+// - AppArmor is disabled by the host system
+// - the `apparmor_parser` binary is not discoverable
 func (a *ApparmorVerifier) IsSupported() error {
 	if a.impl.UnshareIsRootless() {
 		return errors.New("AppAmor is not supported on rootless containers")
 	}
 	if !a.impl.RuncIsEnabled() {
 		return errors.New("AppArmor not supported by the host system")
+	}
+
+	_, err := a.FindAppArmorParserBinary()
+	return err
+}
+
+// FindAppArmorParserBinary returns the `apparmor_parser` binary either from
+// `/sbin` or from `$PATH`. It returns an error if the binary could not be
+// found.
+func (a *ApparmorVerifier) FindAppArmorParserBinary() (string, error) {
+	// Use the memoized path if available
+	if a.parserBinaryPath != "" {
+		logrus.Debugf("Using %s binary", a.parserBinaryPath)
+		return a.parserBinaryPath, nil
 	}
 
 	const (
@@ -40,16 +70,18 @@ func (a *ApparmorVerifier) IsSupported() error {
 	sbinBinaryPath := filepath.Join(sbin, binary)
 	if _, err := a.impl.OsStat(sbinBinaryPath); err == nil {
 		logrus.Debugf("Found %s binary in %s", binary, sbinBinaryPath)
-		return nil
+		a.parserBinaryPath = sbinBinaryPath
+		return sbinBinaryPath, nil
 	}
 
 	// Fallback to checking $PATH
 	if path, err := a.impl.ExecLookPath(binary); err == nil {
 		logrus.Debugf("Found %s binary in %s", binary, path)
-		return nil
+		a.parserBinaryPath = path
+		return path, nil
 	}
 
-	return errors.Errorf(
+	return "", errors.Errorf(
 		"%s binary neither found in %s nor $PATH", binary, sbin,
 	)
 }
