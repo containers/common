@@ -55,7 +55,7 @@ github.com/containers/image/v5/types
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.2
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.23.0
+# github.com/containers/storage v1.23.1
 ## explicit
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -151,7 +151,7 @@ github.com/hashicorp/errwrap
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru/simplelru
-# github.com/klauspost/compress v1.10.10
+# github.com/klauspost/compress v1.10.11
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
