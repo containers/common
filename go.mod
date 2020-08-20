@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/containers/image/v5 v5.5.2
 	github.com/containers/storage v1.23.2
 	github.com/docker/distribution v2.7.1+incompatible
@@ -13,8 +14,11 @@ require (
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
 	github.com/opencontainers/runc v1.0.0-rc91
+	github.com/opencontainers/runtime-spec v1.0.3-0.20200520003142-237cc4f519e2
+	github.com/opencontainers/runtime-tools v0.9.0
 	github.com/opencontainers/selinux v1.6.0
 	github.com/pkg/errors v0.9.1
+	github.com/seccomp/libseccomp-golang v0.9.2-0.20200616122406-847368b35ebf
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1

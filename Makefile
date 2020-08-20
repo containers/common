@@ -105,9 +105,13 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go test -v $(PROJECT)/pkg/...
-	go test --tags remote -v $(PROJECT)/pkg/...
+	go test --tags remote,seccomp -v $(PROJECT)/pkg/...
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean
 	find . -name \*~ -delete
 	find . -name \#\* -delete
+
+.PHONY: seccomp.json
+seccomp.json: $(sources)
+	$(GO) run ./cmd/seccomp/generate.go
