@@ -2,6 +2,7 @@ package retry
 
 import (
 	"context"
+	"io"
 	"math"
 	"net"
 	"net/url"
@@ -58,7 +59,10 @@ func isRetryable(err error) bool {
 		return true
 	case *net.OpError:
 		return isRetryable(e.Err)
-	case *url.Error:
+	case *url.Error: // This includes errors returned by the net/http client.
+		if e.Err == io.EOF {
+			return true
+		}
 		return isRetryable(e.Err)
 	case syscall.Errno:
 		return e != syscall.ECONNREFUSED
