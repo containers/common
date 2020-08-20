@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"sort"
-	"strings"
 
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
@@ -153,6 +152,7 @@ var _ = Describe("Config", func() {
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
 			}
 
 			// Then
@@ -230,6 +230,7 @@ var _ = Describe("Config", func() {
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
 			}
 
 			// When
@@ -242,30 +243,6 @@ var _ = Describe("Config", func() {
 			gomega.Expect(config.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
-		})
-
-		It("verify getDefaultEnv", func() {
-			envs := []string{
-				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-			}
-
-			// When
-			config, err := Default()
-			// Then
-			gomega.Expect(err).To(gomega.BeNil())
-			gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-			config.Containers.HTTPProxy = true
-			gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-			os.Setenv("HTTP_PROXY", "localhost")
-			os.Setenv("FOO", "BAR")
-			newenvs := []string{"HTTP_PROXY=localhost"}
-			envs = append(newenvs, envs...)
-			gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-			config.Containers.HTTPProxy = false
-			config.Containers.EnvHost = true
-			envString := strings.Join(config.GetDefaultEnv(), ",")
-			gomega.Expect(envString).To(gomega.ContainSubstring("FOO=BAR"))
-			gomega.Expect(envString).To(gomega.ContainSubstring("HTTP_PROXY=localhost"))
 		})
 
 		It("should success with valid user file path", func() {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -174,6 +175,31 @@ var _ = Describe("Config Local", func() {
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.Remote).To(gomega.BeFalse())
+	})
+
+	It("verify getDefaultEnv", func() {
+		envs := []string{
+			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			"TERM=xterm",
+		}
+
+		// When
+		config, err := Default()
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
+		config.Containers.HTTPProxy = true
+		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
+		os.Setenv("HTTP_PROXY", "localhost")
+		os.Setenv("FOO", "BAR")
+		newenvs := []string{"HTTP_PROXY=localhost"}
+		envs = append(newenvs, envs...)
+		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
+		config.Containers.HTTPProxy = false
+		config.Containers.EnvHost = true
+		envString := strings.Join(config.GetDefaultEnv(), ",")
+		gomega.Expect(envString).To(gomega.ContainSubstring("FOO=BAR"))
+		gomega.Expect(envString).To(gomega.ContainSubstring("HTTP_PROXY=localhost"))
 	})
 
 	It("write", func() {
