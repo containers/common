@@ -3,8 +3,7 @@ package config
 import "os"
 
 func customConfigFile() (string, error) {
-	path := os.Getenv("CONTAINERS_CONF")
-	if path != "" {
+	if path, found := os.LookupEnv("CONTAINERS_CONF"); found {
 		return path, nil
 	}
 	return os.Getenv("LOCALAPPDATA"), nil
