@@ -60,7 +60,7 @@ func isRetryable(err error) bool {
 	case *net.OpError:
 		return isRetryable(e.Err)
 	case *url.Error: // This includes errors returned by the net/http client.
-		if e.Err == io.EOF {
+		if e.Err == io.EOF { // Happens when a server accepts a HTTP connection and sends EOF
 			return true
 		}
 		return isRetryable(e.Err)
