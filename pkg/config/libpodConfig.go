@@ -3,7 +3,6 @@ package config
 /* libpodConfig.go contains deprecated functionality and should not be used any longer */
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -247,7 +246,7 @@ func readLibpodConfigFromFile(path string, config *ConfigFromLibpod) (*ConfigFro
 	logrus.Debugf("Reading configuration file %q", path)
 	_, err := toml.DecodeFile(path, config)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode configuration %v: %v", path, err)
+		return nil, errors.Wrapf(err, "decode configuration %s", path)
 	}
 
 	return config, err
