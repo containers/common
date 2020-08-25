@@ -58,7 +58,7 @@ linters-settings:
       - flagName
       - nilValReturn
       - offBy1
-      # - sloppyReassign
+      - sloppyReassign
       - weakCond
       - octalLiteral
 
@@ -74,13 +74,13 @@ linters-settings:
       - assignOp
       - boolExprSimplify
       - captLocal
-      # - commentFormatting
+      - commentFormatting
       - commentedOutImport
       - defaultCaseOrder
       - docStub
-      # - elseif
+      - elseif
       - emptyFallthrough
-      # - emptyStringTest
+      - emptyStringTest
       - hexLiteral
       - ifElseChain
       - methodExprCall
@@ -100,12 +100,12 @@ linters-settings:
       - yodaStyleExpr
 
       # Opinionated
-      # - builtinShadow
-      # - importShadow
+      - builtinShadow
+      - importShadow
       - initClause
       - nestingReduce
       - paramTypeCombine
       - ptrToRefParam
       - typeUnparen
-      # - unnamedResult
+      - unnamedResult
       - unnecessaryBlock

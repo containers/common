@@ -253,8 +253,8 @@ func cgroupEnabled(mountPoint, name string) bool {
 	return err == nil
 }
 
-func readProcBool(path string) bool {
-	val, err := ioutil.ReadFile(path)
+func readProcBool(file string) bool {
+	val, err := ioutil.ReadFile(file)
 	if err != nil {
 		return false
 	}

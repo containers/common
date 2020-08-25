@@ -123,17 +123,17 @@ func InstallDefault(name string) error {
 // generation fails.
 func DefaultContent(name string) ([]byte, error) {
 	p := profileData{Name: name}
-	var bytes bytes.Buffer
+	buffer := &bytes.Buffer{}
 
 	apparmorParserPath, err := supported.NewAppArmorVerifier().FindAppArmorParserBinary()
 	if err != nil {
 		return nil, errors.Wrap(err, "find `apparmor_parser` binary")
 	}
 
-	if err := p.generateDefault(apparmorParserPath, &bytes); err != nil {
+	if err := p.generateDefault(apparmorParserPath, buffer); err != nil {
 		return nil, errors.Wrap(err, "generate default AppAmor profile")
 	}
-	return bytes.Bytes(), nil
+	return buffer.Bytes(), nil
 }
 
 // IsLoaded checks if a profile with the given name has been loaded into the
