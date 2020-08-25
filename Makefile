@@ -64,8 +64,8 @@ docs:
 	$(MAKE) -C docs
 
 .PHONY: validate
-validate:
-	golangci-lint run
+validate: build/golangci-lint
+	./build/golangci-lint run
 
 vendor-in-container:
 	podman run --privileged --rm --env HOME=/root -v `pwd`:/src -w /src golang make vendor
@@ -77,12 +77,14 @@ vendor:
 	GO111MODULE=on $(GO) mod verify
 
 .PHONY: install.tools
-install.tools: .install.golangci-lint .install.md2man
+install.tools: build/golangci-lint .install.md2man
 
-.install.golangci-lint:
-	if [ ! -x "$(GOBIN)/golangci-lint" ]; then \
-		curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOBIN)/ v1.18.0; \
-	fi
+build/golangci-lint:
+	export \
+		VERSION=v1.30.0 \
+		URL=https://raw.githubusercontent.com/golangci/golangci-lint \
+		BINDIR=build && \
+	curl -sfL $$URL/$$VERSION/install.sh | sh -s $$VERSION
 
 
 .install.md2man:
