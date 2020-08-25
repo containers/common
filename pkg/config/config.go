@@ -612,11 +612,11 @@ func (c *ContainersConfig) Validate() error {
 	}
 
 	if c.LogSizeMax >= 0 && c.LogSizeMax < OCIBufSize {
-		return fmt.Errorf("log size max should be negative or >= %d", OCIBufSize)
+		return errors.Errorf("log size max should be negative or >= %d", OCIBufSize)
 	}
 
 	if _, err := units.FromHumanSize(c.ShmSize); err != nil {
-		return fmt.Errorf("invalid --shm-size %s, %q", c.ShmSize, err)
+		return errors.Errorf("invalid --shm-size %s, %q", c.ShmSize, err)
 	}
 
 	return nil
@@ -767,7 +767,7 @@ func Device(device string) (string, string, string, error) {
 	switch len(split) {
 	case 3:
 		if !IsValidDeviceMode(split[2]) {
-			return "", "", "", fmt.Errorf("invalid device mode: %s", split[2])
+			return "", "", "", errors.Errorf("invalid device mode: %s", split[2])
 		}
 		permissions = split[2]
 		fallthrough
@@ -776,18 +776,18 @@ func Device(device string) (string, string, string, error) {
 			permissions = split[1]
 		} else {
 			if len(split[1]) == 0 || split[1][0] != '/' {
-				return "", "", "", fmt.Errorf("invalid device mode: %s", split[1])
+				return "", "", "", errors.Errorf("invalid device mode: %s", split[1])
 			}
 			dst = split[1]
 		}
 		fallthrough
 	case 1:
 		if !strings.HasPrefix(split[0], "/dev/") {
-			return "", "", "", fmt.Errorf("invalid device mode: %s", split[0])
+			return "", "", "", errors.Errorf("invalid device mode: %s", split[0])
 		}
 		src = split[0]
 	default:
-		return "", "", "", fmt.Errorf("invalid device specification: %s", device)
+		return "", "", "", errors.Errorf("invalid device specification: %s", device)
 	}
 
 	if dst == "" {
