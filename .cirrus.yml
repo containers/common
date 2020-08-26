@@ -1,0 +1,38 @@
+---
+
+testing_task:
+
+  env:
+    CIRRUS_WORKING_DIR: "${GOPATH}/src/github.com/containers/common"
+    GOSRC: "$CIRRUS_WORKING_DIR"
+
+  container:
+    image: "docker.io/library/golang"
+    cpu: 2
+    memory: 2
+
+  test_script:
+    - apt-get update && apt-get -qq install libdevmapper-dev libbtrfs-dev
+    - make build
+    - make install.tools
+    - make validate
+    - make vendor
+    - make test
+
+
+success_task:
+
+    # This task is a required-pass in github settings,
+    # it blocks PRs from merging if a depends_on task fails
+    only_if: $CIRRUS_BRANCH != $DEST_BRANCH
+
+    # ignores any dependent task conditions
+    depends_on:
+        - "testing"
+
+    container:
+        # Note: Image has dual purpose, see contrib/gate/README.md
+        image: "quay.io/libpod/gate:master"
+        cpu: 1
+        memory: 1
+      
