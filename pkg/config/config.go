@@ -759,10 +759,8 @@ func (c *Config) Capabilities(user string, addCapabilities, dropCapabilities []s
 //    '/dev/sdc:/dev/xvdc"
 //    '/dev/sdc:/dev/xvdc:rwm"
 //    '/dev/sdc:rm"
-func Device(device string) (string, string, string, error) {
-	src := ""
-	dst := ""
-	permissions := "rwm"
+func Device(device string) (src, dst, permissions string, err error) {
+	permissions = "rwm"
 	split := strings.Split(device, ":")
 	switch len(split) {
 	case 3:
@@ -775,7 +773,7 @@ func Device(device string) (string, string, string, error) {
 		if IsValidDeviceMode(split[1]) {
 			permissions = split[1]
 		} else {
-			if len(split[1]) == 0 || split[1][0] != '/' {
+			if split[1] == "" || split[1][0] != '/' {
 				return "", "", "", errors.Errorf("invalid device mode: %s", split[1])
 			}
 			dst = split[1]
@@ -928,7 +926,7 @@ func ReadCustomConfig() (*Config, error) {
 
 	newConfig := &Config{}
 	if _, err := os.Stat(path); err == nil {
-		if err = readConfigFromFile(path, newConfig); err != nil {
+		if err := readConfigFromFile(path, newConfig); err != nil {
 			return nil, err
 		}
 	} else {
@@ -975,13 +973,12 @@ func Reload() (*Config, error) {
 	return defConfig()
 }
 
-func (c *Config) ActiveDestination() (string, string, error) {
+func (c *Config) ActiveDestination() (uri, identity string, err error) {
 	if uri, found := os.LookupEnv("CONTAINER_HOST"); found {
-		var ident string
 		if v, found := os.LookupEnv("CONTAINER_SSHKEY"); found {
-			ident = v
+			identity = v
 		}
-		return uri, ident, nil
+		return uri, identity, nil
 	}
 
 	switch {

@@ -167,7 +167,7 @@ type ConfigFromLibpod struct {
 	// EventsLogFilePath is where the events log is stored.
 	EventsLogFilePath string `toml:"events_logfile_path,omitempty"`
 
-	//DetachKeys is the sequence of keys used to detach a container.
+	// DetachKeys is the sequence of keys used to detach a container.
 	DetachKeys string `toml:"detach_keys,omitempty"`
 
 	// SDNotify tells Libpod to allow containers to notify the host systemd of
