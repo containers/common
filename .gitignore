@@ -12,3 +12,4 @@ contrib/spec/podman.spec
 *.rpm
 *~
 build
+./generate

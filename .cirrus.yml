@@ -12,7 +12,7 @@ testing_task:
     memory: 2
 
   test_script:
-    - apt-get update && apt-get -qq install libdevmapper-dev libbtrfs-dev
+    - apt-get update && apt-get -qq install libdevmapper-dev libbtrfs-dev libseccomp-dev
     - make build
     - make install.tools
     - make validate
@@ -35,4 +35,4 @@ success_task:
         image: "quay.io/libpod/gate:master"
         cpu: 1
         memory: 1
-      
+
