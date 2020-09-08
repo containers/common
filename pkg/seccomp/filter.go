@@ -28,46 +28,66 @@ var (
 // BuildFilter does a basic validation for the provided seccomp profile
 // string and returns a filter for it.
 func BuildFilter(spec *specs.LinuxSeccomp) (*libseccomp.ScmpFilter, error) {
+	filter, profile, err := FilterFromSpec(spec)
+	if err != nil {
+		return nil, errors.Wrap(err, "build filter from runtime spec")
+	}
+
+	filter, err = addRuiles(filter, profile)
+	if err != nil {
+		return nil, errors.Wrap(err, "add seccomp filter rules")
+	}
+
+	return filter, nil
+}
+
+// FilterFromSpec takes an OCI runtime spec and creates a new libseccomp
+// filter as well as an internal profile from it. It does not apply any rules.
+func FilterFromSpec(spec *specs.LinuxSeccomp) (*libseccomp.ScmpFilter, *Seccomp, error) {
 	// Sanity checking to allow consumers to act accordingly
 	if spec == nil {
-		return nil, ErrSpecNil
+		return nil, nil, ErrSpecNil
 	}
 	if spec.DefaultAction == "" && len(spec.Syscalls) == 0 {
-		return nil, ErrSpecEmpty
+		return nil, nil, ErrSpecEmpty
 	}
 
 	profile, err := specToSeccomp(spec)
 	if err != nil {
-		return nil, errors.Wrap(err, "convert spec to seccomp profile")
+		return nil, nil, errors.Wrap(err, "convert spec to seccomp profile")
 	}
 
 	defaultAction, err := toAction(profile.DefaultAction, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "convert default action %s", profile.DefaultAction)
+		return nil, nil, errors.Wrapf(err, "convert default action %s", profile.DefaultAction)
 	}
 
 	filter, err := libseccomp.NewFilter(defaultAction)
 	if err != nil {
-		return nil, errors.Wrapf(err, "create filter for default action %s", defaultAction)
+		return nil, nil, errors.Wrapf(err, "create filter for default action %s", defaultAction)
 	}
 
 	// Add extra architectures
 	for _, arch := range spec.Architectures {
 		libseccompArch, err := specArchToLibseccompArch(arch)
 		if err != nil {
-			return nil, errors.Wrap(err, "convert spec arch")
+			return nil, nil, errors.Wrap(err, "convert spec arch")
 		}
 
 		scmpArch, err := libseccomp.GetArchFromString(libseccompArch)
 		if err != nil {
-			return nil, errors.Wrapf(err, "validate Seccomp architecture %s", arch)
+			return nil, nil, errors.Wrapf(err, "validate Seccomp architecture %s", arch)
 		}
 
 		if err := filter.AddArch(scmpArch); err != nil {
-			return nil, errors.Wrap(err, "add architecture to seccomp filter")
+			return nil, nil, errors.Wrap(err, "add architecture to seccomp filter")
 		}
 	}
 
+	return filter, profile, nil
+}
+
+func addRuiles(filter *libseccomp.ScmpFilter, profile *Seccomp) (*libseccomp.ScmpFilter, error) {
 	// Unset no new privs bit
 	if err := filter.SetNoNewPrivsBit(false); err != nil {
 		return nil, errors.Wrap(err, "set no new privileges flag")
@@ -79,7 +99,7 @@ func BuildFilter(spec *specs.LinuxSeccomp) (*libseccomp.ScmpFilter, error) {
 			return nil, errors.New("encountered nil syscall while initializing seccomp")
 		}
 
-		if err = matchSyscall(filter, call); err != nil {
+		if err := matchSyscall(filter, call); err != nil {
 			return nil, errors.Wrap(err, "filter matches syscall")
 		}
 	}

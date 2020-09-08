@@ -21,7 +21,7 @@ func ValidateProfile(content string) error {
 		return errors.Wrap(err, "create seccomp spec")
 	}
 
-	if _, err := BuildFilter(spec); err != nil {
+	if _, _, err := FilterFromSpec(spec); err != nil {
 		return errors.Wrap(err, "build seccomp filter")
 	}
 
