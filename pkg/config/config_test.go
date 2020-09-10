@@ -357,6 +357,12 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).To(gomega.BeNil())
 		})
 
+		It("should succeed case-insensitive", func() {
+			sut.Engine.PullPolicy = "NeVer"
+			err := sut.Engine.Validate()
+			gomega.Expect(err).To(gomega.BeNil())
+		})
+
 		It("should fail with invalid pull_policy", func() {
 			sut.Engine.PullPolicy = "invalidPullPolicy"
 			err := sut.Engine.Validate()
