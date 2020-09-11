@@ -309,7 +309,7 @@ type EngineConfig struct {
 	RuntimeSupportsNoCgroups []string `toml:"runtime_supports_nocgroupv2,omitempty"`
 
 	// RuntimeSupportsKVM is a list of OCI runtimes that support
-	// KVM separation for conatainers.
+	// KVM separation for containers.
 	RuntimeSupportsKVM []string `toml:"runtime_supports_kvm,omitempty"`
 
 	// SetOptions contains a subset of config options. It's used to indicate if
