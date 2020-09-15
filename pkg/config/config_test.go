@@ -421,6 +421,10 @@ var _ = Describe("Config", func() {
 
 			cfg.Engine.ActiveService = "QA"
 			cfg.Engine.ServiceDestinations = map[string]Destination{
+				"QB": {
+					URI:      "https://qb/run/podman/podman.sock",
+					Identity: "/.ssh/qb_id_rsa",
+				},
 				"QA": {
 					URI:      "https://qa/run/podman/podman.sock",
 					Identity: "/.ssh/id_rsa",
@@ -437,6 +441,91 @@ var _ = Describe("Config", func() {
 
 			gomega.Expect(u).To(gomega.Equal("https://qa/run/podman/podman.sock"))
 			gomega.Expect(i).To(gomega.Equal("/.ssh/id_rsa"))
+		})
+
+		It("succeed ActiveDestinations() CONTAINER_CONNECTION environment", func() {
+			cfg, err := ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg.Engine.ActiveService = "QA"
+			cfg.Engine.ServiceDestinations = map[string]Destination{
+				"QA": {
+					URI:      "https://qa/run/podman/podman.sock",
+					Identity: "/.ssh/id_rsa",
+				},
+				"QB": {
+					URI:      "https://qb/run/podman/podman.sock",
+					Identity: "/.ssh/qb_id_rsa",
+				},
+			}
+			err = cfg.Write()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg, err = ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			// Given we do
+			oldContainerConnection, hostEnvSet := os.LookupEnv("CONTAINER_CONNECTION")
+			os.Setenv("CONTAINER_CONNECTION", "QB")
+
+			u, i, err := cfg.ActiveDestination()
+			// Undo that
+			if hostEnvSet {
+				os.Setenv("CONTAINER_CONNECTION", oldContainerConnection)
+			} else {
+				os.Unsetenv("CONTAINER_CONNECTION")
+			}
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			gomega.Expect(u).To(gomega.Equal("https://qb/run/podman/podman.sock"))
+			gomega.Expect(i).To(gomega.Equal("/.ssh/qb_id_rsa"))
+		})
+
+		It("succeed ActiveDestinations CONTAINER_HOST ()", func() {
+			cfg, err := ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg.Engine.ActiveService = "QA"
+			cfg.Engine.ServiceDestinations = map[string]Destination{
+				"QB": {
+					URI:      "https://qb/run/podman/podman.sock",
+					Identity: "/.ssh/qb_id_rsa",
+				},
+				"QA": {
+					URI:      "https://qa/run/podman/podman.sock",
+					Identity: "/.ssh/id_rsa",
+				},
+			}
+			err = cfg.Write()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg, err = ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			// Given we do
+			oldContainerHost, hostEnvSet := os.LookupEnv("CONTAINER_HOST")
+			oldContainerSSH, sshEnvSet := os.LookupEnv("CONTAINER_SSHKEY")
+			os.Setenv("CONTAINER_HOST", "foo.bar")
+			os.Setenv("CONTAINER_SSHKEY", "/.ssh/newid_rsa")
+
+			u, i, err := cfg.ActiveDestination()
+			// Undo that
+			if hostEnvSet {
+				os.Setenv("CONTAINER_HOST", oldContainerHost)
+			} else {
+				os.Unsetenv("CONTAINER_HOST")
+			}
+			// Undo that
+			if sshEnvSet {
+				os.Setenv("CONTAINER_SSHKEY", oldContainerSSH)
+			} else {
+				os.Unsetenv("CONTAINER_SSHKEY")
+			}
+
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			gomega.Expect(u).To(gomega.Equal("foo.bar"))
+			gomega.Expect(i).To(gomega.Equal("/.ssh/newid_rsa"))
 		})
 
 		It("fail ActiveDestination() no configuration", func() {

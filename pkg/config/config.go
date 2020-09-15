@@ -980,8 +980,15 @@ func (c *Config) ActiveDestination() (uri, identity string, err error) {
 		}
 		return uri, identity, nil
 	}
-
+	connEnv := os.Getenv("CONTAINER_CONNECTION")
 	switch {
+	case connEnv != "":
+		d, found := c.Engine.ServiceDestinations[connEnv]
+		if !found {
+			return "", "", errors.Errorf("environment variable CONTAINER_CONNECTION=%q service destination not found", connEnv)
+		}
+		return d.URI, d.Identity, nil
+
 	case c.Engine.ActiveService != "":
 		d, found := c.Engine.ServiceDestinations[c.Engine.ActiveService]
 		if !found {
