@@ -183,6 +183,10 @@ type ContainersConfig struct {
 
 // EngineConfig contains configuration options used to set up a engine runtime
 type EngineConfig struct {
+	// ImageBuildFormat indicates the default image format to building
+	// container images.  Valid values are "oci" (default) or "docker".
+	ImageBuildFormat string `toml:"image_build_format,omitempty"`
+
 	// CgroupCheck indicates the configuration has been rewritten after an
 	// upgrade to Fedora 31 to change the default OCI runtime for cgroupv2v2.
 	CgroupCheck bool `toml:"cgroup_check,omitempty"`

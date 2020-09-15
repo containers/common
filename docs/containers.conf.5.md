@@ -268,6 +268,9 @@ Path to the directory where CNI configuration files are located.
 ## ENGINE TABLE
 The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
 
+**image_build_format**="oci"
+The default image format to building container images. Valid values are "oci" (default) or "docker".
+
 **cgroup_check**=false
 
 CgroupCheck indicates the configuration has been rewritten after an upgrade to Fedora 31 to change the default OCI runtime for cgroupsv2.
