@@ -33,7 +33,7 @@ github.com/beorn7/perks/quantile
 github.com/blang/semver
 # github.com/containerd/cgroups v0.0.0-20190919134610-bf292b21730f
 github.com/containerd/cgroups/stats/v1
-# github.com/containers/image/v5 v5.5.2
+# github.com/containers/image/v5 v5.6.0
 ## explicit
 github.com/containers/image/v5/docker
 github.com/containers/image/v5/docker/policyconfiguration
@@ -56,7 +56,7 @@ github.com/containers/image/v5/transports
 github.com/containers/image/v5/types
 # github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b
 github.com/containers/libtrust
-# github.com/containers/ocicrypt v1.0.2
+# github.com/containers/ocicrypt v1.0.3
 github.com/containers/ocicrypt/spec
 # github.com/containers/storage v1.23.5
 ## explicit
@@ -120,7 +120,6 @@ github.com/docker/distribution/registry/storage/cache/memory
 # github.com/docker/docker v1.4.2-0.20191219165747-a9416c67da9f
 ## explicit
 github.com/docker/docker/api/types/versions
-github.com/docker/docker/pkg/homedir
 github.com/docker/docker/pkg/parsers
 # github.com/docker/docker-credential-helpers v0.6.3
 github.com/docker/docker-credential-helpers/client
@@ -284,7 +283,7 @@ github.com/stretchr/testify/require
 github.com/syndtr/gocapability/capability
 # github.com/tchap/go-patricia v2.3.0+incompatible
 github.com/tchap/go-patricia/patricia
-# github.com/ulikunitz/xz v0.5.7
+# github.com/ulikunitz/xz v0.5.8
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
@@ -317,7 +316,7 @@ golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1
+# golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
