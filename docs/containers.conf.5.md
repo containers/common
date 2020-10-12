@@ -76,7 +76,7 @@ Determines  whether  the  container will create CGroups.
 Options are:
   `enabled`   Enable cgroup support within container
   `disabled`  Disable cgroup support, will inherit cgroups from parent
-  `no-conmon` Container engine runs run without conmon
+  `no-conmon` Do not create a cgroup dedicated to conmon.
 
 **default_capabilities**=[]
 
