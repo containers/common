@@ -58,7 +58,7 @@ github.com/containers/image/v5/types
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.3
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.23.5
+# github.com/containers/storage v1.23.6
 ## explicit
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -156,7 +156,7 @@ github.com/hashicorp/go-multierror
 github.com/hashicorp/golang-lru/simplelru
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
-# github.com/klauspost/compress v1.11.0
+# github.com/klauspost/compress v1.11.1
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
@@ -171,7 +171,7 @@ github.com/mattn/go-shellwords
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mistifyio/go-zfs v2.1.1+incompatible
 github.com/mistifyio/go-zfs
-# github.com/moby/sys/mountinfo v0.1.3
+# github.com/moby/sys/mountinfo v0.3.1
 github.com/moby/sys/mountinfo
 # github.com/nxadm/tail v1.4.4
 github.com/nxadm/tail
