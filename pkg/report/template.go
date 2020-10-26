@@ -41,6 +41,9 @@ func NormalizeFormat(format string) string {
 		f = escapedReplacer.Replace(format)
 	}
 
+	if !strings.HasSuffix(f, "\n") {
+		f += "\n"
+	}
 	return f
 }
 
@@ -92,12 +95,7 @@ func NewTemplate(name string) *Template {
 func (t *Template) Parse(text string) (*Template, error) {
 	if strings.HasPrefix(text, "table ") {
 		t.isTable = true
-
-		text = NormalizeFormat(text)
-		if !strings.HasSuffix(text, "\n") {
-			text += "\n"
-		}
-		text = "{{range .}}" + text + "{{end}}"
+		text = "{{range .}}" + NormalizeFormat(text) + "{{end}}"
 	} else {
 		text = NormalizeFormat(text)
 	}
