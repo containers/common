@@ -51,8 +51,8 @@ func TestNormalizeFormat(t *testing.T) {
 		{"{{.ID}}\t{{.ID}}\n", "{{.ID}}\t{{.ID}}\n"},
 		{`{{.ID}}\t{{.ID}}\n`, "{{.ID}}\t{{.ID}}\n"},
 		{`{{.ID}} {{.ID}}\n`, "{{.ID}} {{.ID}}\n"},
-		{`table {{.ID}}\t{{.ID}}`, "{{.ID}}\t{{.ID}}"},
-		{`table {{.ID}} {{.ID}}`, "{{.ID}}\t{{.ID}}"},
+		{`table {{.ID}}\t{{.ID}}`, "{{.ID}}\t{{.ID}}\n"},
+		{`table {{.ID}} {{.ID}}`, "{{.ID}}\t{{.ID}}\n"},
 	}
 
 	for _, tc := range testCase {
@@ -70,8 +70,8 @@ func TestTemplate_Parse(t *testing.T) {
 		"table {{ .ID}}",
 		`table {{ .ID}}\n`,
 		"table {{ .ID}}\n",
-		"{{range .}}{{.ID}}\n{{end}}",
-		`{{range .}}{{.ID}}\n{{end}}`,
+		"{{range .}}{{.ID}}{{end}}",
+		`{{range .}}{{.ID}}{{end}}`,
 	}
 
 	var buf bytes.Buffer
@@ -109,5 +109,5 @@ func TestTemplate_Funcs(t *testing.T) {
 		"ID": "ident",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "ident", buf.String())
+	assert.Equal(t, "ident\n", buf.String())
 }
