@@ -414,6 +414,10 @@ Pull image before running or creating a container. The default is **missing**.
 - **always**: pull the image from the first registry it is found in as listed in registries.conf. Raise an error if not found in the registries, even if the image is present locally.
 - **never**: do not pull the image from the registry, use only the local version. Raise an error if the image is not present locally.
 
+**remote** = false
+Indicates whether the application should be running in remote mode. This flag modifies the
+--remote option on container engines. Setting the flag to true will default `podman --remote=true` for access to the remote Podman service.
+
 **runtime**="crun"
 
 Default OCI specific runtime in runtimes that will be used by default. Must
