@@ -117,7 +117,7 @@ github.com/docker/distribution/registry/client/auth/challenge
 github.com/docker/distribution/registry/client/transport
 github.com/docker/distribution/registry/storage/cache
 github.com/docker/distribution/registry/storage/cache/memory
-# github.com/docker/docker v1.4.2-0.20191219165747-a9416c67da9f
+# github.com/docker/docker v17.12.0-ce-rc1.0.20201020191947-73dc6a680cdd+incompatible
 ## explicit
 github.com/docker/docker/api/types/versions
 github.com/docker/docker/pkg/homedir
@@ -146,7 +146,10 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.4.2
 github.com/golang/protobuf/proto
-# github.com/gorilla/mux v1.7.4
+# github.com/google/go-cmp v0.5.2
+## explicit
+# github.com/gorilla/mux v1.8.0
+## explicit
 github.com/gorilla/mux
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
@@ -229,7 +232,7 @@ github.com/opencontainers/runc/libcontainer/devices
 github.com/opencontainers/runc/libcontainer/system
 github.com/opencontainers/runc/libcontainer/user
 github.com/opencontainers/runc/libcontainer/utils
-# github.com/opencontainers/runtime-spec v1.0.3-0.20200520003142-237cc4f519e2
+# github.com/opencontainers/runtime-spec v1.0.3-0.20200710190001-3e4195d92445
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
 # github.com/opencontainers/runtime-tools v0.9.0
@@ -259,7 +262,8 @@ github.com/pquerna/ffjson/shared
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
-# github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+# github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
+## explicit
 github.com/prometheus/client_model/go
 # github.com/prometheus/common v0.6.0
 github.com/prometheus/common/expfmt
@@ -322,7 +326,7 @@ golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+# golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
