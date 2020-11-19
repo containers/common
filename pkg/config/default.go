@@ -46,8 +46,6 @@ var (
 	DefaultInitPath = "/usr/libexec/podman/catatonit"
 	// DefaultInfraImage to use for infra container
 	DefaultInfraImage = "k8s.gcr.io/pause:3.2"
-	// DefaultInfraCommand to be run in an infra container
-	DefaultInfraCommand = "/pause"
 	// DefaultRootlessSHMLockPath is the default path for rootless SHM locks
 	DefaultRootlessSHMLockPath = "/libpod_rootless_lock"
 	// DefaultDetachKeys is the default keys sequence for detaching a
@@ -308,7 +306,6 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.InitPath = DefaultInitPath
 	c.NoPivotRoot = false
 
-	c.InfraCommand = DefaultInfraCommand
 	c.InfraImage = DefaultInfraImage
 	c.EnablePortReservation = true
 	c.NumLocks = 2048
