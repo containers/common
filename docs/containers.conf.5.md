@@ -164,9 +164,14 @@ Options are:
   `private` Create private IPC Namespace for the container.
   `host`    Share host IPC Namespace with the container.
 
+**keyring**=true
+
+Indicates whether the container engines create a kernel keyring for use within
+the container.
+
 **label**=true
 
-Indicates whether the container engines use MAC(SELinux) container separation via via labeling. Flag is ignored on disabled systems.
+Indicates whether the container engine uses MAC(SELinux) container separation via labeling. This option is ignored on disabled systems.
 
 **log_driver**="k8s-file"
 

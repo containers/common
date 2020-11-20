@@ -177,6 +177,7 @@ func DefaultConfig() (*Config, error) {
 			DNSServers:          []string{},
 			DNSOptions:          []string{},
 			DNSSearches:         []string{},
+			EnableKeyring:       true,
 			EnableLabeling:      selinuxEnabled(),
 			Env: []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
