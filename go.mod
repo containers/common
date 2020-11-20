@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/containers/image/v5 v5.8.0
+	github.com/containers/image/v5 v5.8.1
 	github.com/containers/storage v1.24.1
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v17.12.0-ce-rc1.0.20201020191947-73dc6a680cdd+incompatible
