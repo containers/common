@@ -147,7 +147,7 @@ func getMountsMap(path string) (string, string, error) { //nolint
 	return "", "", errors.Errorf("unable to get host and container dir from path: %s", path)
 }
 
-// SubscriptionMountsWithUIDGID copies, adds, and mounts the subscriptions to the container root filesystem
+// MountsWithUIDGID copies, adds, and mounts the subscriptions to the container root filesystem
 // mountLabel: MAC/SELinux label for container content
 // containerWorkingDir: Private data for storing subscriptions on the host mounted in container.
 // mountFile: Additional mount points required for the container.
@@ -156,7 +156,7 @@ func getMountsMap(path string) (string, string, error) { //nolint
 // gid: to assign to content created for subscriptions
 // rootless: indicates whether container is running in rootless mode
 // disableFips: indicates whether system should ignore fips mode
-func SubscriptionMountsWithUIDGID(mountLabel, containerWorkingDir, mountFile, mountPoint string, uid, gid int, rootless, disableFips bool) []rspec.Mount {
+func MountsWithUIDGID(mountLabel, containerWorkingDir, mountFile, mountPoint string, uid, gid int, rootless, disableFips bool) []rspec.Mount {
 	var (
 		subscriptionMounts []rspec.Mount
 		mountFiles         []string
@@ -240,8 +240,8 @@ func addSubscriptionsFromMountsFile(filePath, mountLabel, containerWorkingDir st
 			}
 
 			// Don't let the umask have any influence on the file and directory creation
-			oldUmask := umask.SetUmask(0)
-			defer umask.SetUmask(oldUmask)
+			oldUmask := umask.Set(0)
+			defer umask.Set(oldUmask)
 
 			switch mode := fileInfo.Mode(); {
 			case mode.IsDir():
