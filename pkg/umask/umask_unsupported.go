@@ -2,6 +2,6 @@
 
 package umask
 
-func CheckUmask() {}
+func Check() {}
 
-func SetUmask(int) int { return 0 }
+func Set(int) int { return 0 }
