@@ -5,7 +5,7 @@ GOMD2MAN ?= $(shell command -v go-md2man || echo '$(GOBIN)/go-md2man')
 
 docs: $(patsubst %.md,%,$(wildcard *.md))
 
-%.5: *md
+%.5:  %.5.md
 	$(GOMD2MAN) -in $^ -out $@
 
 .PHONY: install

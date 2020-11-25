@@ -50,12 +50,14 @@ configure and manage the OCI runtime.
 
 List of devices.
 Specified as 'device-on-host:device-on-container:permissions'.
+
 Example: "/dev/sdc:/dev/xvdc:rwm".
 
 **volumes**=[]
 
 List of volumes.
 Specified as "directory-on-host:directory-in-container:options".
+
 Example:  "/db:/var/lib/db:ro".
 
 **apparmor_profile**="container-default"
@@ -105,12 +107,14 @@ default_capabilities = [
 
 A list of sysctls to be set in containers by default,
 specified as "name=value".
+
 Example:"net.ipv4.ping_group_range=0 1000".
 
 **default_ulimits**=[]
 
 A list of ulimits to be set in containers by default,
 specified as "name=soft-limit:hard-limit".
+
 Example: "nofile=1024:2048".
 
 **dns_options**=[]
@@ -227,6 +231,7 @@ the system uses `65536k`.
 
 Set timezone in container. Takes IANA timezones as well as `local`, which sets the timezone in the container to match the host machine.
 If not set, then containers will run with the time zone specified in the image.
+
 Examples:
   `tz="local"`
   `tz="America/New_York"`
@@ -380,6 +385,12 @@ and pods are visible.
 
 Path to the slirp4netns binary.
 
+**network_cmd_options**=[]
+
+Default options to pass to the slirp4netns binary.
+
+Example "allow_host_loopback=true"
+
 **no_pivot_root**=false
 
 Whether to use chroot instead of pivot_root in the runtime.
@@ -398,6 +409,7 @@ Name of destination for accessing the Podman service.
 **[service_destinations]**
 
 **[service_destinations.{name}]**
+
 **uri="ssh://user@production.example.com/run/user/1001/podman/podman.sock"**
 
   Example URIs:
