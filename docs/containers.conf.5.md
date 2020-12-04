@@ -475,6 +475,13 @@ By default this will be configured relative to where containers/storage store
 containers. This convention is followed by the default volume driver, but may
 not be by other drivers.
 
+**[engine.volume_plugins]**
+
+A table of all the enabled volume plugins on the system. Volume plugins can be
+used as the backend for Podman named volumes. Individual plugins are specified
+below, as a map of the plugin name (what the plugin will be called) to its path
+(filepath of the plugin's unix socket).
+
 # FILES
 
 **containers.conf**
