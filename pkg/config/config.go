@@ -445,11 +445,6 @@ func NewConfig(userConfigPath string) (*Config, error) {
 		return nil, err
 	}
 
-	// read libpod.conf and convert the config to *Config
-	if err = newLibpodConfig(config); err != nil && !os.IsNotExist(err) {
-		logrus.Errorf("error reading libpod.conf: %v", err)
-	}
-
 	// Now, gather the system configs and merge them as needed.
 	configs, err := systemConfigs()
 	if err != nil {
