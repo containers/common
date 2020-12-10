@@ -149,6 +149,9 @@ type ContainersConfig struct {
 	// Negative values indicate that the log file won't be truncated.
 	LogSizeMax int64 `toml:"log_size_max,omitempty"`
 
+	// MaskPaths is the additional paths to mask in the container.
+	MaskPaths string `toml:"mask_paths,omitempty"`
+
 	// NetNS indicates how to create a network namespace for the container
 	NetNS string `toml:"netns,omitempty"`
 
@@ -174,6 +177,9 @@ type ContainersConfig struct {
 
 	// Umask is the umask inside the container.
 	Umask string `toml:"umask,omitempty"`
+
+	// UnmaskPaths is the paths to unmask in the container.
+	UnmaskPaths string `toml:"unmask_paths,omitempty"`
 
 	// UTSNS indicates how to create a UTS namespace for the container
 	UTSNS string `toml:"utsns,omitempty"`

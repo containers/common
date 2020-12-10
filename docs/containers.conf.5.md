@@ -188,6 +188,10 @@ that no size limit is imposed. If it is positive, it must be >= 8192 to
 match/exceed conmon's read buffer. The file is truncated and re-opened so the
 limit is never exceeded.
 
+**mask_paths**=""
+
+Additional paths to mask in the container. Multiple paths can be set by `/path/1:/path/2`
+
 **netns**="private"
 
 Default way to to create a NET namespace for the container.
@@ -239,6 +243,12 @@ Examples:
 **umask**="0022"
 
 Sets umask inside the container.
+
+**unmask_paths**=""
+
+Paths to unmask in the container. Multiple paths can be set by `/path/1:/path/2`. If set to `ALL`, it will unmask all the paths that are masked or made read only by default.
+The default masked paths are /proc/acpi, /proc/kcore, /proc/keys, /proc/latency_stats, /proc/sched_debug, /proc/scsi, /proc/timer_list, /proc/timer_stats, /sys/firmware, and /sys/fs/selinux.
+The default paths that are read only are /proc/asound, /proc/bus, /proc/fs, /proc/irq, /proc/sys, /proc/sysrq-trigger.
 
 **utsns**="private"
 
