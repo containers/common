@@ -435,10 +435,11 @@ Pull image before running or creating a container. The default is **missing**.
 Indicates whether the application should be running in remote mode. This flag modifies the
 --remote option on container engines. Setting the flag to true will default `podman --remote=true` for access to the remote Podman service.
 
-**runtime**="crun"
+**runtime**=""
 
 Default OCI specific runtime in runtimes that will be used by default. Must
-refer to a member of the runtimes table.
+refer to a member of the runtimes table. Default runtime will be searched for
+on the system using the priority: "crun", "runc", "kata".
 
 **runtime_supports_json**=["crun", "runc", "kata"]
 
