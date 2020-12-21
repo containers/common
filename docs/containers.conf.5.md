@@ -463,7 +463,7 @@ stores containers.
 
 Number of seconds to wait for container to exit before sending kill signal.
 
-**tmp_dir**="/var/run/libpod"
+**tmp_dir**="/run/libpod"
 
 The path to a temporary directory to store per-boot container.
 Must be a tmpfs (wiped after reboot).
