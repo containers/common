@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/containers/image/v5 v5.9.0
-	github.com/containers/storage v1.24.3
+	github.com/containers/storage v1.24.4
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v17.12.0-ce-rc1.0.20201020191947-73dc6a680cdd+incompatible
 	github.com/docker/go-units v0.4.0
@@ -29,5 +29,5 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13
+	golang.org/x/sys v0.0.0-20201201145000-ef89a241ccb3
 )
