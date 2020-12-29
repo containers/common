@@ -142,7 +142,7 @@ environment variables to the container.
 
 Pass all host environment variables into the container.
 
-**http_proxy**=false
+**http_proxy**=true
 
 Default proxy environment variables will be passed into the container.
 The environment variables passed in include:
