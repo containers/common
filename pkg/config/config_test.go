@@ -85,15 +85,9 @@ var _ = Describe("Config", func() {
 		})
 
 		It("Check SELinux settings", func() {
-			if selinux.GetEnabled() {
-				sut.Containers.EnableLabeling = true
-				gomega.Expect(sut.Containers.Validate()).To(gomega.BeNil())
-				gomega.Expect(selinux.GetEnabled()).To(gomega.BeTrue())
-
-				sut.Containers.EnableLabeling = false
-				gomega.Expect(sut.Containers.Validate()).To(gomega.BeNil())
-				gomega.Expect(selinux.GetEnabled()).To(gomega.BeFalse())
-			}
+			defaultConfig, _ := NewConfig("")
+			// EnableLabeling should match whether or not SELinux is enabled on the host
+			gomega.Expect(defaultConfig.Containers.EnableLabeling).To(gomega.Equal(selinux.GetEnabled()))
 
 		})
 
@@ -115,6 +109,9 @@ var _ = Describe("Config", func() {
 			// Given
 			// When
 			defaultConfig, _ := DefaultConfig()
+			// prior to reading local config, shows hard coded defaults
+			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(true))
+
 			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig)
 
 			OCIRuntimeMap := map[string][]string{
@@ -164,6 +161,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(defaultConfig.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
+			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(false))
 		})
 
 		It("should succeed with commented out configuration", func() {
