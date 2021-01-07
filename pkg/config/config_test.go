@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
@@ -162,6 +163,37 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(false))
+		})
+
+		It("test GetDefaultEnvEx", func() {
+
+			envs := []string{
+				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
+			}
+			httpEnvs := append([]string{"HTTP_PROXY=1.2.3.4"}, envs...)
+			oldProxy, proxyEnvSet := os.LookupEnv("HTTP_PROXY")
+			os.Setenv("HTTP_PROXY", "1.2.3.4")
+			oldFoo, fooEnvSet := os.LookupEnv("foo")
+			os.Setenv("foo", "bar")
+
+			defaultConfig, _ := DefaultConfig()
+			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, false)).To(gomega.BeEquivalentTo(envs))
+			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, true)).To(gomega.BeEquivalentTo(httpEnvs))
+			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("HTTP_PROXY"))
+			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("foo"))
+
+			// Undo that
+			if proxyEnvSet {
+				os.Setenv("HTTP_PROXY", oldProxy)
+			} else {
+				os.Unsetenv("HTTP_PROXY")
+			}
+			if fooEnvSet {
+				os.Setenv("foo", oldFoo)
+			} else {
+				os.Unsetenv("foo")
+			}
 		})
 
 		It("should succeed with commented out configuration", func() {
