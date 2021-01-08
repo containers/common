@@ -61,7 +61,7 @@ github.com/containers/image/v5/types
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.3
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.24.4
+# github.com/containers/storage v1.24.5
 ## explicit
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -162,7 +162,7 @@ github.com/hashicorp/go-multierror
 github.com/hashicorp/golang-lru/simplelru
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
-# github.com/klauspost/compress v1.11.4
+# github.com/klauspost/compress v1.11.5
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
