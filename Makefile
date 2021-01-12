@@ -58,7 +58,9 @@ build-amd64:
 
 .PHONY: build-386
 build-386:
+ifneq ($(shell uname -s), Darwin)
 	GOARCH=386 $(GO_BUILD) ./...
+endif
 
 .PHONY: docs
 docs:
