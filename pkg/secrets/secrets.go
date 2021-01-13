@@ -47,7 +47,7 @@ var secretsFile = "secrets.json"
 
 // secretNameRegexp matches valid secret names
 // Allowed: 64 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
-var secretNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]$`)
+var secretNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]?$`)
 
 // SecretsManager holds information on handling secrets
 type SecretsManager struct {

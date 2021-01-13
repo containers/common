@@ -44,6 +44,28 @@ func TestAddSecretAndLookupData(t *testing.T) {
 		t.Errorf("error: secret data not equal")
 	}
 }
+func TestAddSecretName(t *testing.T) {
+	manager, testpath, err := setup()
+	require.NoError(t, err)
+	defer cleanup(testpath)
+
+	// test one char secret name
+	_, err = manager.Store("a", []byte("mydata"), drivertype, opts)
+	require.NoError(t, err)
+
+	_, err = manager.lookupSecret("a")
+	require.NoError(t, err)
+
+	// name too short
+	_, err = manager.Store("", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+	// name too long
+	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaiz", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+	// invalid chars
+	_, err = manager.Store("??", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+}
 
 func TestAddMultipleSecrets(t *testing.T) {
 	manager, testpath, err := setup()
