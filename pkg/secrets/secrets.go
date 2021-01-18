@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/containers/common/pkg/secrets/filedriver"
@@ -47,7 +48,7 @@ var secretsFile = "secrets.json"
 
 // secretNameRegexp matches valid secret names
 // Allowed: 64 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
-var secretNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]?$`)
+var secretNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 
 // SecretsManager holds information on handling secrets
 type SecretsManager struct {
@@ -98,9 +99,9 @@ func NewManager(rootPath string) (*SecretsManager, error) {
 	if !filepath.IsAbs(rootPath) {
 		return nil, errors.Wrapf(errInvalidPath, "path must be absolute: %s", rootPath)
 	}
-	if _, err := os.Stat(rootPath); os.IsNotExist(err) {
-		// the lockfile functions requre that the rootPath dir is executable
-		os.MkdirAll(rootPath, 0700)
+	// the lockfile functions requre that the rootPath dir is executable
+	if err := os.MkdirAll(rootPath, 0700); err != nil {
+		return nil, err
 	}
 
 	lock, err := lockfile.GetLockfile(filepath.Join(rootPath, "secrets.lock"))
@@ -262,7 +263,7 @@ func (s *SecretsManager) LookupSecretData(nameOrID string) (*Secret, []byte, err
 
 // validateSecretName checks if the secret name is valid.
 func validateSecretName(name string) error {
-	if !secretNameRegexp.MatchString(name) || len(name) > 64 {
+	if !secretNameRegexp.MatchString(name) || len(name) > 64 || strings.HasSuffix(name, "-") {
 		return errors.Wrapf(errInvalidSecretName, "only 64 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s", name)
 	}
 	return nil
