@@ -68,27 +68,18 @@ func (s *SecretsManager) loadDB() error {
 
 // getNameAndID takes a secret's name, ID, or partial ID, and returns both its name and full ID.
 func (s *SecretsManager) getNameAndID(nameOrID string) (name, id string, err error) {
-	err = s.loadDB()
-	if err != nil {
+	name, id, err = s.getExactNameAndID(nameOrID)
+	if err == nil {
+		return name, id, nil
+	} else if errors.Cause(err) != errNoSuchSecret {
 		return "", "", err
 	}
-	if id, ok := s.db.NameToID[nameOrID]; ok {
-		name := nameOrID
-		return name, id, nil
-	}
 
-	// Name not found, we know we're working with ID or partial ID.
+	// ID prefix may have been given, iterate through all IDs.
 	// ID and partial ID has a max lenth of 25, so we return if its greater than that.
 	if len(nameOrID) > secretIDLength {
 		return "", "", errors.Wrapf(errNoSuchSecret, "no secret with name or id %q", nameOrID)
 	}
-
-	if name, ok := s.db.IDToName[nameOrID]; ok {
-		id := nameOrID
-		return name, id, nil
-	}
-
-	// ID prefix may have been given, iterate through all IDs.
 	exists := false
 	var foundID, foundName string
 	for id, name := range s.db.IDToName {
@@ -105,13 +96,32 @@ func (s *SecretsManager) getNameAndID(nameOrID string) (name, id string, err err
 	if exists {
 		return foundName, foundID, nil
 	}
+	return "", "", errors.Wrapf(errNoSuchSecret, "no secret with name or id %q", nameOrID)
+}
+
+// getExactNameAndID takes a secret's name or ID and returns both its name and full ID.
+func (s *SecretsManager) getExactNameAndID(nameOrID string) (name, id string, err error) {
+	err = s.loadDB()
+	if err != nil {
+		return "", "", err
+	}
+	if name, ok := s.db.IDToName[nameOrID]; ok {
+		id := nameOrID
+		return name, id, nil
+	}
+
+	if id, ok := s.db.NameToID[nameOrID]; ok {
+		name := nameOrID
+		return name, id, nil
+	}
 
 	return "", "", errors.Wrapf(errNoSuchSecret, "no secret with name or id %q", nameOrID)
 }
 
-// secretExists checks if the secret exists, given a name, ID, or partial ID.
-func (s *SecretsManager) secretExists(nameOrID string) (bool, error) {
-	_, _, err := s.getNameAndID(nameOrID)
+// exactSecretExists checks if the secret exists, given a name or ID
+// Does not match partial name or IDs
+func (s *SecretsManager) exactSecretExists(nameOrID string) (bool, error) {
+	_, _, err := s.getExactNameAndID(nameOrID)
 	if err != nil {
 		if errors.Cause(err) == errNoSuchSecret {
 			return false, nil

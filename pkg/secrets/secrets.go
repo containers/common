@@ -133,7 +133,7 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 	s.lockfile.Lock()
 	defer s.lockfile.Unlock()
 
-	exist, err := s.secretExists(name)
+	exist, err := s.exactSecretExists(name)
 	if err != nil {
 		return "", err
 	}
