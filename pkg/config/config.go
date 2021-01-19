@@ -191,6 +191,11 @@ type EngineConfig struct {
 	// container images.  Valid values are "oci" (default) or "docker".
 	ImageBuildFormat string `toml:"image_build_format,omitempty"`
 
+	// ImageParallelCopies indicates the maximum number of image layers
+	// to be copied simultaneously. If this is zero, container engines
+	// will fall back to containers/image defaults.
+	ImageParallelCopies uint `toml:"image_parallel_copies,omitempty"`
+
 	// CgroupCheck indicates the configuration has been rewritten after an
 	// upgrade to Fedora 31 to change the default OCI runtime for cgroupv2v2.
 	CgroupCheck bool `toml:"cgroup_check,omitempty"`
