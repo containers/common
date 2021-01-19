@@ -69,6 +69,10 @@ func TestAddSecretName(t *testing.T) {
 	require.Error(t, err)
 	_, err = manager.Store("a-", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
+	_, err = manager.Store(".a", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+	_, err = manager.Store("a.", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
 }
 
 func TestAddMultipleSecrets(t *testing.T) {
