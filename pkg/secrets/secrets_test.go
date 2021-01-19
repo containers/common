@@ -65,6 +65,10 @@ func TestAddSecretName(t *testing.T) {
 	// invalid chars
 	_, err = manager.Store("??", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
+	_, err = manager.Store("-a", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+	_, err = manager.Store("a-", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
 }
 
 func TestAddMultipleSecrets(t *testing.T) {
