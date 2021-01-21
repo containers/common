@@ -121,6 +121,20 @@ func TestAddSecretDupName(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestAddSecretPrefix(t *testing.T) {
+	manager, testpath, err := setup()
+	require.NoError(t, err)
+	defer cleanup(testpath)
+
+	// If the randomly generated secret id is something like "abcdeiuoergnadufigh"
+	// we should still allow someone to store a secret with the name "abcd" or "a"
+	secretID, err := manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	require.NoError(t, err)
+
+	_, err = manager.Store(secretID[0:5], []byte("mydata"), drivertype, opts)
+	require.NoError(t, err)
+}
+
 func TestRemoveSecret(t *testing.T) {
 	manager, testpath, err := setup()
 	require.NoError(t, err)
