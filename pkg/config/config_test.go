@@ -302,6 +302,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config).ToNot(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
+			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
 		})
 
 		It("should fail with invalid value", func() {

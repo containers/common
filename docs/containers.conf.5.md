@@ -361,6 +361,11 @@ pod, we start a `pause` process in a container to hold open the namespaces
 associated with the  pod.  This container does nothing other then sleep,
 reserving the pods resources for the lifetime of the pod.
 
+**image_parallel_copies**=0
+
+Maximum number of image layers to be copied (pulled/pushed) simultaneously.
+Not setting this field will fall back to containers/image defaults. (6)
+
 **lock_type**="shm"
 
 Specify the locking mechanism to use; valid values are "shm" and "file".
