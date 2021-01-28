@@ -69,6 +69,7 @@ docs:
 .PHONY: validate
 validate: build/golangci-lint
 	./build/golangci-lint run
+	./tools/validate_seccomp.sh ./pkg/seccomp
 
 vendor-in-container:
 	podman run --privileged --rm --env HOME=/root -v `pwd`:/src -w /src golang make vendor
