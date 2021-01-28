@@ -278,8 +278,12 @@ Path to the directory where CNI configuration files are located.
 ## ENGINE TABLE
 The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
 
-**image_build_format**="oci"
-The default image format to building container images. Valid values are "oci" (default) or "docker".
+**image_default_format**="oci"|"v2s2"|"v2s1"
+
+Manifest Type (oci, v2s2, or v2s1) to use when pulling, pushing, building
+container images. By default images pulled and pushed match the format of the
+source image. Building/committing defaults to OCI.
+Note: **image_build_format** is deprecated.
 
 **cgroup_check**=false
 
