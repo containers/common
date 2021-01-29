@@ -100,13 +100,40 @@ func TestTemplate_IsTable(t *testing.T) {
 
 func TestTemplate_Funcs(t *testing.T) {
 	tmpl := NewTemplate("TestTemplate")
-	tmpl = tmpl.Funcs(map[string]interface{}{"ToLower": strings.ToLower})
-	tmpl, e := tmpl.Parse("{{.ID |ToLower}}")
+	tmpl, e := tmpl.Funcs(FuncMap{"trim": strings.TrimSpace}).Parse("{{.ID |trim}}")
 	assert.NoError(t, e)
 
 	var buf bytes.Buffer
 	err := tmpl.Execute(&buf, map[string]string{
-		"ID": "ident",
+		"ID": "ident  ",
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "ident\n", buf.String())
+}
+
+func TestTemplate_DefaultFuncs(t *testing.T) {
+	tmpl := NewTemplate("TestTemplate")
+	// Throw in trim function to ensure default 'join' is still available
+	tmpl, e := tmpl.Funcs(FuncMap{"trim": strings.TrimSpace}).Parse(`{{join .ID ","}}`)
+	assert.NoError(t, e)
+
+	var buf bytes.Buffer
+	err := tmpl.Execute(&buf, map[string][]string{
+		"ID": {"ident1", "ident2", "ident3"},
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "ident1,ident2,ident3\n", buf.String())
+}
+
+func TestTemplate_ReplaceFuncs(t *testing.T) {
+	tmpl := NewTemplate("TestTemplate")
+	// yes, we're overriding upper with lower :-)
+	tmpl, e := tmpl.Funcs(FuncMap{"upper": strings.ToLower}).Parse(`{{.ID | lower}}`)
+	assert.NoError(t, e)
+
+	var buf bytes.Buffer
+	err := tmpl.Execute(&buf, map[string]string{
+		"ID": "IDENT",
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, "ident\n", buf.String())
