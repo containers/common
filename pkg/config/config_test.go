@@ -306,6 +306,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 			gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
+			gomega.Expect(config.Engine.ImageDefaultFormat).To(gomega.Equal("v2s2"))
 		})
 
 		It("should fail with invalid value", func() {
