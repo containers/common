@@ -63,7 +63,7 @@ github.com/containers/image/v5/version
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.3
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.24.5
+# github.com/containers/storage v1.25.0
 ## explicit
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -173,7 +173,7 @@ github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/klauspost/pgzip v1.2.5
 github.com/klauspost/pgzip
-# github.com/mattn/go-shellwords v1.0.10
+# github.com/mattn/go-shellwords v1.0.11
 github.com/mattn/go-shellwords
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
