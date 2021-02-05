@@ -177,7 +177,7 @@ the container.
 
 Indicates whether the container engine uses MAC(SELinux) container separation via labeling. This option is ignored on disabled systems.
 
-**log_driver**="journald"
+**log_driver**="k8s-file"
 
 Logging driver for the container. Available options: `k8s-file` and `journald`.
 

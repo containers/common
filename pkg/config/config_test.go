@@ -26,7 +26,6 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
-			gomega.Expect(defaultConfig.Containers.LogDriver).To(gomega.BeEquivalentTo("journald"))
 		})
 
 		It("should succeed with devices", func() {
@@ -47,7 +46,6 @@ var _ = Describe("Config", func() {
 		It("should fail wrong max log size", func() {
 			// Given
 			sut.Containers.LogSizeMax = 1
-			sut.Containers.LogDriver = "k8s-file"
 
 			// When
 			err := sut.Validate()
@@ -304,7 +302,6 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config).ToNot(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
-			gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
 			gomega.Expect(config.Engine.ImageDefaultFormat).To(gomega.Equal("v2s2"))
 		})
