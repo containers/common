@@ -7,12 +7,13 @@ import (
 	"path/filepath"
 
 	"github.com/containers/storage/pkg/unshare"
+	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/devices"
 	"github.com/pkg/errors"
 )
 
-func DeviceFromPath(device string) ([]devices.Device, error) {
-	var devs []devices.Device
+func DeviceFromPath(device string) ([]configs.Device, error) {
+	var devs []configs.Device
 	src, dst, permissions, err := Device(device)
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func DeviceFromPath(device string) ([]devices.Device, error) {
 	}
 	for _, d := range srcDevices {
 		d.Path = filepath.Join(dst, filepath.Base(d.Path))
-		d.Permissions = devices.Permissions(permissions)
+		d.Permissions = configs.DevicePermissions(permissions)
 		devs = append(devs, *d)
 	}
 	return devs, nil

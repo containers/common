@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/opencontainers/runc/libcontainer/devices"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -93,9 +92,6 @@ type Config struct {
 	// Path to a directory containing the container's root filesystem.
 	Rootfs string `json:"rootfs"`
 
-	// Umask is the umask to use inside of the container.
-	Umask *uint32 `json:"umask"`
-
 	// Readonlyfs will remount the container's rootfs as readonly where only externally mounted
 	// bind mounts are writtable.
 	Readonlyfs bool `json:"readonlyfs"`
@@ -108,7 +104,7 @@ type Config struct {
 	Mounts []*Mount `json:"mounts"`
 
 	// The device nodes that should be automatically created within the container upon container start.  Note, make sure that the node is marked as allowed in the cgroup as well!
-	Devices []*devices.Device `json:"devices"`
+	Devices []*Device `json:"devices"`
 
 	MountLabel string `json:"mount_label"`
 
@@ -241,6 +237,15 @@ const (
 	// Poststop commands are executed after the container init process exits.
 	// Poststop commands are called in the Runtime Namespace.
 	Poststop = "poststop"
+)
+
+// TODO move this to runtime-spec
+// See: https://github.com/opencontainers/runtime-spec/pull/1046
+const (
+	Creating = "creating"
+	Created  = "created"
+	Running  = "running"
+	Stopped  = "stopped"
 )
 
 type Capabilities struct {

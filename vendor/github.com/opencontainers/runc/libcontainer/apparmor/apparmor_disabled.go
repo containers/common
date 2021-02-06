@@ -1,4 +1,4 @@
-// +build !linux
+// +build !apparmor !linux
 
 package apparmor
 
