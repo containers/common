@@ -358,7 +358,7 @@ Default transport method for pulling and pushing images.
 
 Command to run the infra container.
 
-**infra_image**="k8s.gcr.io/pause:3.2"
+**infra_image**="k8s.gcr.io/pause:3.4.1"
 
 Infra (pause) container image name for pod infra containers.  When running a
 pod, we start a `pause` process in a container to hold open the namespaces
