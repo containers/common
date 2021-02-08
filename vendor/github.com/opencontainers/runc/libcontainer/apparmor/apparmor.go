@@ -1,7 +1,8 @@
+// +build apparmor,linux
+
 package apparmor
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,9 +12,11 @@ import (
 
 // IsEnabled returns true if apparmor is enabled for the host.
 func IsEnabled() bool {
-	if _, err := os.Stat("/sys/kernel/security/apparmor"); err == nil {
-		buf, err := ioutil.ReadFile("/sys/module/apparmor/parameters/enabled")
-		return err == nil && bytes.HasPrefix(buf, []byte("Y"))
+	if _, err := os.Stat("/sys/kernel/security/apparmor"); err == nil && os.Getenv("container") == "" {
+		if _, err = os.Stat("/sbin/apparmor_parser"); err == nil {
+			buf, err := ioutil.ReadFile("/sys/module/apparmor/parameters/enabled")
+			return err == nil && len(buf) > 1 && buf[0] == 'Y'
+		}
 	}
 	return false
 }
@@ -21,7 +24,9 @@ func IsEnabled() bool {
 func setProcAttr(attr, value string) error {
 	// Under AppArmor you can only change your own attr, so use /proc/self/
 	// instead of /proc/<tid>/ like libapparmor does
-	f, err := os.OpenFile("/proc/self/attr/"+attr, os.O_WRONLY, 0)
+	path := fmt.Sprintf("/proc/self/attr/%s", attr)
+
+	f, err := os.OpenFile(path, os.O_WRONLY, 0)
 	if err != nil {
 		return err
 	}
@@ -31,13 +36,14 @@ func setProcAttr(attr, value string) error {
 		return err
 	}
 
-	_, err = f.WriteString(value)
+	_, err = fmt.Fprintf(f, "%s", value)
 	return err
 }
 
 // changeOnExec reimplements aa_change_onexec from libapparmor in Go
 func changeOnExec(name string) error {
-	if err := setProcAttr("exec", "exec "+name); err != nil {
+	value := "exec " + name
+	if err := setProcAttr("exec", value); err != nil {
 		return fmt.Errorf("apparmor failed to apply profile: %s", err)
 	}
 	return nil

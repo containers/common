@@ -2,7 +2,6 @@ package configs
 
 import (
 	systemdDbus "github.com/coreos/go-systemd/v22/dbus"
-	"github.com/opencontainers/runc/libcontainer/devices"
 )
 
 type FreezerState string
@@ -43,7 +42,7 @@ type Cgroup struct {
 
 type Resources struct {
 	// Devices is the set of access rules for devices in the container.
-	Devices []*devices.Rule `json:"devices"`
+	Devices []*DeviceRule `json:"devices"`
 
 	// Memory limit (in bytes)
 	Memory int64 `json:"memory"`
@@ -127,14 +126,4 @@ type Resources struct {
 
 	// CpuWeight sets a proportional bandwidth limit.
 	CpuWeight uint64 `json:"cpu_weight"`
-
-	// Unified is cgroupv2-only key-value map.
-	Unified map[string]string `json:"unified"`
-
-	// SkipDevices allows to skip configuring device permissions.
-	// Used by e.g. kubelet while creating a parent cgroup (kubepods)
-	// common for many containers.
-	//
-	// NOTE it is impossible to start a container which has this flag set.
-	SkipDevices bool `json:"skip_devices"`
 }

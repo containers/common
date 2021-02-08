@@ -11,12 +11,13 @@ require (
 	github.com/docker/docker v17.12.0-ce-rc1.0.20201020191947-73dc6a680cdd+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.5
-	github.com/opencontainers/runc v1.0.0-rc93
-	github.com/opencontainers/runtime-spec v1.0.3-0.20200929063507-e6143ca7d51d
+	github.com/opencontainers/runc v1.0.0-rc91
+	github.com/opencontainers/runtime-spec v1.0.3-0.20200710190001-3e4195d92445
 	github.com/opencontainers/runtime-tools v0.9.0
 	github.com/opencontainers/selinux v1.8.0
 	github.com/pkg/errors v0.9.1
@@ -26,7 +27,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
+	github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/sys v0.0.0-20210112080510-489259a85091
 )
