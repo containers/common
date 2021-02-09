@@ -46,31 +46,15 @@ TOML can be simplified to:
 The containers table contains settings pertaining to the OCI runtime that can
 configure and manage the OCI runtime.
 
-**devices**=[]
+**annotations** = []
+List of annotations. Specified as "key=value" pairs to be added to all containers.
 
-List of devices.
-Specified as 'device-on-host:device-on-container:permissions'.
-
-Example: "/dev/sdc:/dev/xvdc:rwm".
-
-**volumes**=[]
-
-List of volumes.
-Specified as "directory-on-host:directory-in-container:options".
-
-Example:  "/db:/var/lib/db:ro".
+Example: "run.oci.keep_original_groups=1"
 
 **apparmor_profile**="container-default"
 
 Used to change the name of the default AppArmor profile of container engines.
 The default profile name is "container-default".
-
-**cgroupns**="private"
-
-Default way to to create a cgroup namespace for the container.
-Options are:
-`private` Create private Cgroup Namespace for the container.
-`host`    Share host Cgroup Namespace with the container.
 
 **cgroups**="enabled"
 
@@ -79,6 +63,13 @@ Options are:
   `enabled`   Enable cgroup support within container
   `disabled`  Disable cgroup support, will inherit cgroups from parent
   `no-conmon` Do not create a cgroup dedicated to conmon.
+
+**cgroupns**="private"
+
+Default way to to create a cgroup namespace for the container.
+Options are:
+`private` Create private Cgroup Namespace for the container.
+`host`    Share host Cgroup Namespace with the container.
 
 **default_capabilities**=[]
 
@@ -116,6 +107,13 @@ A list of ulimits to be set in containers by default,
 specified as "name=soft-limit:hard-limit".
 
 Example: "nofile=1024:2048".
+
+**devices**=[]
+
+List of devices.
+Specified as 'device-on-host:device-on-container:permissions'.
+
+Example: "/dev/sdc:/dev/xvdc:rwm".
 
 **dns_options**=[]
 
@@ -201,17 +199,17 @@ Options are:
 Create /etc/hosts for the container.  By default, container engines manage
 /etc/hosts, automatically adding  the container's  own  IP  address.
 
-**pids_limit**=1024
-
-Maximum number of processes allowed in a container. 0 indicates that no limit
-is imposed.
-
 **pidns**="private"
 
 Default way to to create a PID namespace for the container.
 Options are:
   `private` Create private PID Namespace for the container.
   `host`    Share host PID Namespace with the container.
+
+**pids_limit**=1024
+
+Maximum number of processes allowed in a container. 0 indicates that no limit
+is imposed.
 
 **seccomp_profile**="/usr/share/containers/seccomp.json"
 
@@ -240,13 +238,6 @@ Examples:
 
 Sets umask inside the container.
 
-**utsns**="private"
-
-Default way to to create a UTS namespace for the container.
-Options are:
-  `private` Create private UTS Namespace for the container.
-  `host`    Share host UTS Namespace with the container.
-
 **userns**="host"
 
 Default way to to create a USER namespace for the container.
@@ -258,6 +249,14 @@ Options are:
 
 Number of UIDs to allocate for the automatic container creation. UIDs are
 allocated from the “container” UIDs listed in /etc/subuid & /etc/subgid.
+
+**utsns**="private"
+
+Default way to to create a UTS namespace for the container.
+Options are:
+  `private` Create private UTS Namespace for the container.
+  `host`    Share host UTS Namespace with the container.
+
 
 ## NETWORK TABLE
 The `network` table contains settings pertaining to the management of CNI
@@ -275,15 +274,19 @@ The network name of the default CNI network to attach pods to.
 
 Path to the directory where CNI configuration files are located.
 
+**volumes**=[]
+
+List of volumes.
+Specified as "directory-on-host:directory-in-container:options".
+
+Example:  "/db:/var/lib/db:ro".
+
 ## ENGINE TABLE
 The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
 
-**image_default_format**="oci"|"v2s2"|"v2s1"
+**active_service**=""
 
-Manifest Type (oci, v2s2, or v2s1) to use when pulling, pushing, building
-container images. By default images pulled and pushed match the format of the
-source image. Building/committing defaults to OCI.
-Note: **image_build_format** is deprecated.
+Name of destination for accessing the Podman service. See SERVICE DESTINATION TABLE below.
 
 **cgroup_check**=false
 
@@ -350,9 +353,21 @@ Valid values: `file`, `journald`, and `none`.
 
 Path to the OCI hooks directories for automatically executed hooks.
 
+**image_default_format**="oci"|"v2s2"|"v2s1"
+
+Manifest Type (oci, v2s2, or v2s1) to use when pulling, pushing, building
+container images. By default images pulled and pushed match the format of the
+source image. Building/committing defaults to OCI.
+Note: **image_build_format** is deprecated.
+
 **image_default_transport**="docker://"
 
 Default transport method for pulling and pushing images.
+
+**image_parallel_copies**=0
+
+Maximum number of image layers to be copied (pulled/pushed) simultaneously.
+Not setting this field will fall back to containers/image defaults. (6)
 
 **infra_command**="/pause"
 
@@ -364,11 +379,6 @@ Infra (pause) container image name for pod infra containers.  When running a
 pod, we start a `pause` process in a container to hold open the namespaces
 associated with the  pod.  This container does nothing other then sleep,
 reserving the pods resources for the lifetime of the pod.
-
-**image_parallel_copies**=0
-
-Maximum number of image layers to be copied (pulled/pushed) simultaneously.
-Not setting this field will fall back to containers/image defaults. (6)
 
 **lock_type**="shm"
 
@@ -410,27 +420,6 @@ Number of locks available for containers and pods. Each created container or
 pod consumes one lock.  The default number available is 2048.  If this is
 changed, a lock renumbering must be performed, using the
 `podman system renumber` command.
-
-**active_service**=""
-
-Name of destination for accessing the Podman service.
-
-**[service_destinations]**
-
-**[service_destinations.{name}]**
-
-**uri="ssh://user@production.example.com/run/user/1001/podman/podman.sock"**
-
-  Example URIs:
-
-- **rootless local**  - unix://run/user/1000/podman/podman.sock
-- **rootless remote** - ssh://user@engineering.lab.company.com/run/user/1000/podman/podman.sock
-- **rootfull local**  - unix://run/podman/podman.sock
-- **rootfull remote** - ssh://root@10.10.1.136:22/run/podman/podman.sock
-
-**identity="~/.ssh/id_rsa**
-
-Path to file containing ssh identity key
 
 **pull_policy**="always"|"missing"|"never"
 
@@ -476,6 +465,24 @@ Number of seconds to wait for container to exit before sending kill signal.
 
 The path to a temporary directory to store per-boot container.
 Must be a tmpfs (wiped after reboot).
+
+## SERVICE DESTINATION TABLE
+The `service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
+
+**[service_destinations.{name}]**
+URI to access the Podman service
+**uri="ssh://user@production.example.com/run/user/1001/podman/podman.sock"**
+
+  Example URIs:
+
+- **rootless local**  - unix://run/user/1000/podman/podman.sock
+- **rootless remote** - ssh://user@engineering.lab.company.com/run/user/1000/podman/podman.sock
+- **rootfull local**  - unix://run/podman/podman.sock
+- **rootfull remote** - ssh://root@10.10.1.136:22/run/podman/podman.sock
+
+**identity="~/.ssh/id_rsa**
+
+Path to file containing ssh identity key
 
 **volume_path**="/var/lib/containers/storage/volumes"
 
