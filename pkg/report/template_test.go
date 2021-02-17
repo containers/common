@@ -151,3 +151,15 @@ func TestTemplate_json(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, `["ident1","ident2","ident3"]`+"\n", buf.String())
 }
+
+func TestTemplate_HasTable(t *testing.T) {
+	assert.True(t, HasTable("table foobar"))
+	assert.False(t, HasTable("foobar"))
+}
+
+func TestTemplate_EnforceRange(t *testing.T) {
+	testRange := `{{range .}}foobar was here{{end}}`
+	assert.Equal(t, testRange, EnforceRange(testRange))
+	assert.Equal(t, testRange, EnforceRange("foobar was here"))
+	assert.NotEqual(t, testRange, EnforceRange("foobar"))
+}
