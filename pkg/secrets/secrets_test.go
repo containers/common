@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,12 +60,15 @@ func TestAddSecretName(t *testing.T) {
 	// name too short
 	_, err = manager.Store("", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrInvalidSecretName)
 	// name too long
 	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaiz", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrInvalidSecretName)
 	// invalid chars
 	_, err = manager.Store("??", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrInvalidSecretName)
 	_, err = manager.Store("-a", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
 	_, err = manager.Store("a-", []byte("mydata"), drivertype, opts)
@@ -119,6 +123,7 @@ func TestAddSecretDupName(t *testing.T) {
 
 	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrSecretNameInUse)
 }
 
 func TestAddSecretPrefix(t *testing.T) {
@@ -151,6 +156,7 @@ func TestRemoveSecret(t *testing.T) {
 
 	_, err = manager.lookupSecret("mysecret")
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrNoSuchSecret)
 
 	_, _, err = manager.LookupSecretData("mysecret")
 	require.Error(t, err)
@@ -163,6 +169,7 @@ func TestRemoveSecretNoExist(t *testing.T) {
 
 	_, err = manager.Delete("mysecret")
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrNoSuchSecret)
 }
 
 func TestLookupAllSecrets(t *testing.T) {
@@ -209,6 +216,7 @@ func TestInspectSecretBogus(t *testing.T) {
 
 	_, err = manager.Lookup("bogus")
 	require.Error(t, err)
+	require.Equal(t, errors.Cause(err), ErrNoSuchSecret)
 }
 
 func TestSecretList(t *testing.T) {
