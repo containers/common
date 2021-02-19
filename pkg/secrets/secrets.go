@@ -19,38 +19,36 @@ const maxSecretSize = 512000
 // secretIDLength is the character length of a secret ID - 25
 const secretIDLength = 25
 
-var (
-	// ErrInvalidPath indicates that the secrets path is invalid
-	ErrInvalidPath = errors.New("invalid secrets path")
+// errInvalidPath indicates that the secrets path is invalid
+var errInvalidPath = errors.New("invalid secrets path")
 
-	// ErrNoSuchSecret indicates that the secret does not exist
-	ErrNoSuchSecret = errors.New("no such secret")
+// errNoSuchSecret indicates that the secret does not exist
+var errNoSuchSecret = errors.New("no such secret")
 
-	// ErrSecretNameInUse indicates that the secret name is already in use
-	ErrSecretNameInUse = errors.New("secret name in use")
+// errSecretNameInUse indicates that the secret name is already in use
+var errSecretNameInUse = errors.New("secret name in use")
 
-	// ErrInvalidSecretName indicates that the secret name is invalid
-	ErrInvalidSecretName = errors.New("invalid secret name")
+// errInvalidSecretName indicates that the secret name is invalid
+var errInvalidSecretName = errors.New("invalid secret name")
 
-	// ErrInvalidDriver indicates that the driver type is invalid
-	ErrInvalidDriver = errors.New("invalid driver")
+// errInvalidDriver indicates that the driver type is invalid
+var errInvalidDriver = errors.New("invalid driver")
 
-	// ErrInvalidDriverOpt indicates that a driver option is invalid
-	ErrInvalidDriverOpt = errors.New("invalid driver option")
+// errInvalidDriverOpt indicates that a driver option is invalid
+var errInvalidDriverOpt = errors.New("invalid driver option")
 
-	// ErrAmbiguous indicates that a secret is ambiguous
-	ErrAmbiguous = errors.New("secret is ambiguous")
+// errAmbiguous indicates that a secret is ambiguous
+var errAmbiguous = errors.New("secret is ambiguous")
 
-	// ErrDataSize indicates that the secret data is too large or too small
-	ErrDataSize = errors.New("secret data must be larger than 0 and less than 512000 bytes")
+// errDataSize indicates that the secret data is too large or too small
+var errDataSize = errors.New("secret data must be larger than 0 and less than 512000 bytes")
 
-	// secretsFile is the name of the file that the secrets database will be stored in
-	secretsFile = "secrets.json"
+// secretsFile is the name of the file that the secrets database will be stored in
+var secretsFile = "secrets.json"
 
-	// secretNameRegexp matches valid secret names
-	// Allowed: 64 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
-	secretNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
-)
+// secretNameRegexp matches valid secret names
+// Allowed: 64 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
+var secretNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 
 // SecretsManager holds information on handling secrets
 type SecretsManager struct {
@@ -99,7 +97,7 @@ func NewManager(rootPath string) (*SecretsManager, error) {
 	manager := new(SecretsManager)
 
 	if !filepath.IsAbs(rootPath) {
-		return nil, errors.Wrapf(ErrInvalidPath, "path must be absolute: %s", rootPath)
+		return nil, errors.Wrapf(errInvalidPath, "path must be absolute: %s", rootPath)
 	}
 	// the lockfile functions requre that the rootPath dir is executable
 	if err := os.MkdirAll(rootPath, 0700); err != nil {
@@ -129,7 +127,7 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 	}
 
 	if !(len(data) > 0 && len(data) < maxSecretSize) {
-		return "", ErrDataSize
+		return "", errDataSize
 	}
 
 	s.lockfile.Lock()
@@ -140,7 +138,7 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 		return "", err
 	}
 	if exist {
-		return "", errors.Wrapf(ErrSecretNameInUse, name)
+		return "", errors.Wrapf(errSecretNameInUse, name)
 	}
 
 	secr := new(Secret)
@@ -152,7 +150,7 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 		newID = newID[0:secretIDLength]
 		_, err := s.lookupSecret(newID)
 		if err != nil {
-			if errors.Cause(err) == ErrNoSuchSecret {
+			if errors.Cause(err) == errNoSuchSecret {
 				secr.ID = newID
 				break
 			} else {
@@ -266,7 +264,7 @@ func (s *SecretsManager) LookupSecretData(nameOrID string) (*Secret, []byte, err
 // validateSecretName checks if the secret name is valid.
 func validateSecretName(name string) error {
 	if !secretNameRegexp.MatchString(name) || len(name) > 64 || strings.HasSuffix(name, "-") || strings.HasSuffix(name, ".") {
-		return errors.Wrapf(ErrInvalidSecretName, "only 64 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s", name)
+		return errors.Wrapf(errInvalidSecretName, "only 64 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s", name)
 	}
 	return nil
 }
@@ -277,8 +275,8 @@ func getDriver(name string, opts map[string]string) (SecretsDriver, error) {
 		if path, ok := opts["path"]; ok {
 			return filedriver.NewDriver(path)
 		} else {
-			return nil, errors.Wrap(ErrInvalidDriverOpt, "need path for filedriver")
+			return nil, errors.Wrap(errInvalidDriverOpt, "need path for filedriver")
 		}
 	}
-	return nil, ErrInvalidDriver
+	return nil, errInvalidDriver
 }
