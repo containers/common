@@ -3,38 +3,12 @@
 github.com/BurntSushi/toml
 # github.com/Microsoft/go-winio v0.4.16-0.20201130162521-d1ffc52c7331
 github.com/Microsoft/go-winio
-github.com/Microsoft/go-winio/backuptar
 github.com/Microsoft/go-winio/pkg/guid
-github.com/Microsoft/go-winio/pkg/security
-github.com/Microsoft/go-winio/vhd
-# github.com/Microsoft/hcsshim v0.8.14
-github.com/Microsoft/hcsshim
-github.com/Microsoft/hcsshim/computestorage
-github.com/Microsoft/hcsshim/internal/cow
-github.com/Microsoft/hcsshim/internal/hcs
-github.com/Microsoft/hcsshim/internal/hcserror
-github.com/Microsoft/hcsshim/internal/hns
-github.com/Microsoft/hcsshim/internal/interop
-github.com/Microsoft/hcsshim/internal/log
-github.com/Microsoft/hcsshim/internal/logfields
-github.com/Microsoft/hcsshim/internal/longpath
-github.com/Microsoft/hcsshim/internal/mergemaps
-github.com/Microsoft/hcsshim/internal/oc
-github.com/Microsoft/hcsshim/internal/safefile
-github.com/Microsoft/hcsshim/internal/schema1
-github.com/Microsoft/hcsshim/internal/schema2
-github.com/Microsoft/hcsshim/internal/timeout
-github.com/Microsoft/hcsshim/internal/vmcompute
-github.com/Microsoft/hcsshim/internal/wclayer
-github.com/Microsoft/hcsshim/internal/winapi
-github.com/Microsoft/hcsshim/osversion
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
 ## explicit
 github.com/blang/semver
-# github.com/containerd/cgroups v0.0.0-20200531161412-0dbf7f05ba59
-github.com/containerd/cgroups/stats/v1
 # github.com/containers/image/v5 v5.10.4
 ## explicit
 github.com/containers/image/v5/docker
@@ -63,48 +37,18 @@ github.com/containers/image/v5/version
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.3
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.26.0
+# github.com/containers/storage v1.27.0
 ## explicit
-github.com/containers/storage
-github.com/containers/storage/drivers
-github.com/containers/storage/drivers/aufs
-github.com/containers/storage/drivers/btrfs
-github.com/containers/storage/drivers/copy
-github.com/containers/storage/drivers/devmapper
-github.com/containers/storage/drivers/overlay
-github.com/containers/storage/drivers/overlayutils
-github.com/containers/storage/drivers/quota
-github.com/containers/storage/drivers/register
-github.com/containers/storage/drivers/vfs
-github.com/containers/storage/drivers/windows
-github.com/containers/storage/drivers/zfs
-github.com/containers/storage/pkg/archive
-github.com/containers/storage/pkg/chrootarchive
 github.com/containers/storage/pkg/config
-github.com/containers/storage/pkg/devicemapper
-github.com/containers/storage/pkg/directory
-github.com/containers/storage/pkg/dmesg
-github.com/containers/storage/pkg/fileutils
-github.com/containers/storage/pkg/fsutils
 github.com/containers/storage/pkg/homedir
 github.com/containers/storage/pkg/idtools
-github.com/containers/storage/pkg/ioutils
-github.com/containers/storage/pkg/locker
 github.com/containers/storage/pkg/lockfile
-github.com/containers/storage/pkg/longpath
-github.com/containers/storage/pkg/loopback
 github.com/containers/storage/pkg/mount
-github.com/containers/storage/pkg/parsers
-github.com/containers/storage/pkg/parsers/kernel
-github.com/containers/storage/pkg/pools
-github.com/containers/storage/pkg/promise
 github.com/containers/storage/pkg/reexec
 github.com/containers/storage/pkg/stringid
-github.com/containers/storage/pkg/stringutils
 github.com/containers/storage/pkg/system
-github.com/containers/storage/pkg/tarlog
-github.com/containers/storage/pkg/truncindex
 github.com/containers/storage/pkg/unshare
+github.com/containers/storage/types
 # github.com/coreos/go-systemd/v22 v22.1.0
 github.com/coreos/go-systemd/v22/dbus
 # github.com/cyphar/filepath-securejoin v0.2.2
@@ -146,10 +90,6 @@ github.com/fsnotify/fsnotify
 github.com/ghodss/yaml
 # github.com/godbus/dbus/v5 v5.0.3
 github.com/godbus/dbus/v5
-# github.com/gogo/protobuf v1.3.1
-github.com/gogo/protobuf/gogoproto
-github.com/gogo/protobuf/proto
-github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.4.3
 github.com/golang/protobuf/proto
 # github.com/gorilla/mux v1.8.0
@@ -160,8 +100,6 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
 ## explicit
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/golang-lru v0.5.1
-github.com/hashicorp/golang-lru/simplelru
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/klauspost/compress v1.11.7
@@ -176,12 +114,8 @@ github.com/klauspost/pgzip
 # github.com/magefile/mage v1.10.0
 github.com/magefile/mage/mg
 github.com/magefile/mage/sh
-# github.com/mattn/go-shellwords v1.0.11
-github.com/mattn/go-shellwords
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/mistifyio/go-zfs v2.1.1+incompatible
-github.com/mistifyio/go-zfs
 # github.com/moby/sys/mountinfo v0.4.0
 github.com/moby/sys/mountinfo
 # github.com/nxadm/tail v1.4.4
@@ -261,11 +195,6 @@ github.com/opencontainers/selinux/pkg/pwalk
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/pquerna/ffjson v0.0.0-20190813045741-dac163c6c0a9
-github.com/pquerna/ffjson/fflib/v1
-github.com/pquerna/ffjson/fflib/v1/internal
-github.com/pquerna/ffjson/inception
-github.com/pquerna/ffjson/shared
 # github.com/prometheus/client_golang v1.1.0
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -299,17 +228,11 @@ github.com/stretchr/testify/require
 # github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 ## explicit
 github.com/syndtr/gocapability/capability
-# github.com/tchap/go-patricia v2.3.0+incompatible
-github.com/tchap/go-patricia/patricia
 # github.com/ulikunitz/xz v0.5.9
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
-# github.com/vbatts/tar-split v0.11.1
-github.com/vbatts/tar-split/archive/tar
-github.com/vbatts/tar-split/tar/asm
-github.com/vbatts/tar-split/tar/storage
 # github.com/willf/bitset v1.1.11
 github.com/willf/bitset
 # github.com/xeipuuv/gojsonpointer v0.0.0-20190809123943-df4f5c81cb3b
@@ -318,17 +241,10 @@ github.com/xeipuuv/gojsonpointer
 github.com/xeipuuv/gojsonreference
 # github.com/xeipuuv/gojsonschema v1.2.0
 github.com/xeipuuv/gojsonschema
-# go.opencensus.io v0.22.0
-go.opencensus.io
-go.opencensus.io/internal
-go.opencensus.io/trace
-go.opencensus.io/trace/internal
-go.opencensus.io/trace/tracestate
 # golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 ## explicit
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20201224014010-6772e930b67b
-golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
