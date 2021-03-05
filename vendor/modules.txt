@@ -9,7 +9,7 @@ github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
 ## explicit
 github.com/blang/semver
-# github.com/containers/image/v5 v5.10.4
+# github.com/containers/image/v5 v5.10.5
 ## explicit
 github.com/containers/image/v5/docker
 github.com/containers/image/v5/docker/policyconfiguration
