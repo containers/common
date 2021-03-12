@@ -12,7 +12,7 @@ require (
 	github.com/docker/go-units v0.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.0
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/onsi/ginkgo v1.15.1
 	github.com/onsi/gomega v1.11.0
 	github.com/opencontainers/runc v1.0.0-rc93
