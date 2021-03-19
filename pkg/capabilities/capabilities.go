@@ -27,7 +27,7 @@ var (
 	ContainerImageLabels = []string{"io.containers.capabilities"}
 )
 
-// All is a special value used to add/drop all known capababilities.
+// All is a special value used to add/drop all known capabilities.
 // Useful on the CLI for `--cap-add=all` etc.
 const All = "ALL"
 
@@ -116,7 +116,7 @@ func ValidateCapabilities(caps []string) error {
 	return nil
 }
 
-// MergeCapabilities computes a set of capabilities by adding capapbitilities
+// MergeCapabilities computes a set of capabilities by adding capabilities
 // to or dropping them from base.
 //
 // Note that:
@@ -150,7 +150,7 @@ func MergeCapabilities(base, adds, drops []string) ([]string, error) {
 
 	if stringInSlice(All, capAdd) {
 		// "Add" all capabilities;
-		return capabilityList, nil
+		return BoundingSet()
 	}
 
 	for _, add := range capAdd {

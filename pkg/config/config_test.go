@@ -334,7 +334,9 @@ var _ = Describe("Config", func() {
 			caps, err = config.Capabilities("root", addcaps, dropcaps)
 			gomega.Expect(err).To(gomega.BeNil())
 			sort.Strings(caps)
-			gomega.Expect(caps).To(gomega.BeEquivalentTo(capabilities.AllCapabilities()))
+			boundingSet, err := capabilities.BoundingSet()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(caps).To(gomega.BeEquivalentTo(boundingSet))
 
 			// Drop all caps
 			dropcaps = []string{"all"}
