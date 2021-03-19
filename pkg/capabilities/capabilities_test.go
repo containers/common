@@ -14,6 +14,12 @@ func TestAllCapabilities(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestBoundingCapabilities(t *testing.T) {
+	caps, err := BoundingSet()
+	require.Nil(t, err)
+	assert.True(t, len(caps) > 0)
+}
+
 func TestMergeCapabilitiesDropVerify(t *testing.T) {
 	adds := []string{"CAP_SYS_ADMIN", "CAP_SETUID"}
 	drops := []string{"CAP_NET_ADMIN", "cap_chown"}
