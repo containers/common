@@ -61,7 +61,9 @@ func TestMergeCapabilitiesAddAll(t *testing.T) {
 	drops := []string{}
 	caps, err := MergeCapabilities(base, adds, drops)
 	require.Nil(t, err)
-	assert.Equal(t, caps, AllCapabilities())
+	allCaps, err := BoundingSet()
+	require.Nil(t, err)
+	assert.Equal(t, caps, allCaps)
 }
 
 func TestNormalizeCapabilities(t *testing.T) {
