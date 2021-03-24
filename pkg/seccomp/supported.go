@@ -3,7 +3,14 @@
 package seccomp
 
 import (
+	"sync"
+
 	"golang.org/x/sys/unix"
+)
+
+var (
+	supported bool
+	supOnce   sync.Once
 )
 
 // IsSupported returns true if the system has been configured to support
@@ -35,5 +42,8 @@ func IsSupported() bool {
 	// EFAULT). IOW, EINVAL means "seccomp not supported", any other error
 	// means it is supported.
 
-	return unix.Prctl(unix.PR_SET_SECCOMP, unix.SECCOMP_MODE_FILTER, 0, 0, 0) != unix.EINVAL
+	supOnce.Do(func() {
+		supported = unix.Prctl(unix.PR_SET_SECCOMP, unix.SECCOMP_MODE_FILTER, 0, 0, 0) != unix.EINVAL
+	})
+	return supported
 }
