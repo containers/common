@@ -38,7 +38,7 @@ github.com/containers/image/v5/version
 github.com/containers/libtrust
 # github.com/containers/ocicrypt v1.0.3
 github.com/containers/ocicrypt/spec
-# github.com/containers/storage v1.28.0
+# github.com/containers/storage v1.28.1
 ## explicit
 github.com/containers/storage/drivers
 github.com/containers/storage/drivers/overlay
@@ -248,7 +248,7 @@ github.com/stretchr/testify/require
 # github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 ## explicit
 github.com/syndtr/gocapability/capability
-# github.com/ulikunitz/xz v0.5.9
+# github.com/ulikunitz/xz v0.5.10
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
