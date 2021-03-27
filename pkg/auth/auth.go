@@ -34,7 +34,7 @@ func CheckAuthFile(authfile string) error {
 		return nil
 	}
 	if _, err := os.Stat(authfile); err != nil {
-		return errors.Wrapf(err, "error checking authfile path %s", authfile)
+		return errors.Wrap(err, "checking authfile")
 	}
 	return nil
 }
@@ -70,11 +70,11 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		err    error
 	)
 	if len(args) > 1 {
-		return errors.Errorf("login accepts only one registry to login to")
+		return errors.New("login accepts only one registry to login to")
 	}
 	if len(args) == 0 {
 		if !opts.AcceptUnspecifiedRegistry {
-			return errors.Errorf("please provide a registry to login to")
+			return errors.New("please provide a registry to login to")
 		}
 		if server, err = defaultRegistryWhenUnspecified(systemContext); err != nil {
 			return err
@@ -85,7 +85,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 	}
 	authConfig, err := config.GetCredentials(systemContext, server)
 	if err != nil {
-		return errors.Wrapf(err, "error reading auth file")
+		return errors.Wrap(err, "reading auth file")
 	}
 	if opts.GetLoginSet {
 		if authConfig.Username == "" {
@@ -95,17 +95,17 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		return nil
 	}
 	if authConfig.IdentityToken != "" {
-		return errors.Errorf("currently logged in, auth file contains an Identity token")
+		return errors.New("currently logged in, auth file contains an Identity token")
 	}
 
 	password := opts.Password
 	if opts.StdinPassword {
 		var stdinPasswordStrBuilder strings.Builder
 		if opts.Password != "" {
-			return errors.Errorf("Can't specify both --password-stdin and --password")
+			return errors.New("Can't specify both --password-stdin and --password")
 		}
 		if opts.Username == "" {
-			return errors.Errorf("Must provide --username with --password-stdin")
+			return errors.New("Must provide --username with --password-stdin")
 		}
 		scanner := bufio.NewScanner(opts.Stdin)
 		for scanner.Scan() {
@@ -126,7 +126,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 
 	username, password, err := getUserAndPass(opts, password, authConfig.Username)
 	if err != nil {
-		return errors.Wrapf(err, "error getting username and password")
+		return errors.Wrap(err, "getting username and password")
 	}
 
 	if err = docker.CheckAuth(ctx, systemContext, username, password, server); err == nil {
@@ -143,7 +143,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		logrus.Debugf("error logging into %q: %v", server, unauthorized)
 		return errors.Errorf("error logging into %q: invalid username/password", server)
 	}
-	return errors.Wrapf(err, "error authenticating creds for %q", server)
+	return errors.Wrapf(err, "authenticating creds for %q", server)
 }
 
 // getRegistryName scrubs and parses the input to get the server name
@@ -172,7 +172,7 @@ func getUserAndPass(opts *LoginOptions, password, userFromAuthFile string) (user
 		}
 		username, err = reader.ReadString('\n')
 		if err != nil {
-			return "", "", errors.Wrapf(err, "error reading username")
+			return "", "", errors.Wrap(err, "reading username")
 		}
 		// If the user just hit enter, use the displayed user from the
 		// the authentication file.  This allows to do a lazy
@@ -186,7 +186,7 @@ func getUserAndPass(opts *LoginOptions, password, userFromAuthFile string) (user
 		fmt.Fprint(opts.Stdout, "Password: ")
 		pass, err := terminal.ReadPassword(0)
 		if err != nil {
-			return "", "", errors.Wrapf(err, "error reading password")
+			return "", "", errors.Wrap(err, "reading password")
 		}
 		password = string(pass)
 		fmt.Fprintln(opts.Stdout)
@@ -206,11 +206,11 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		err    error
 	)
 	if len(args) > 1 {
-		return errors.Errorf("logout accepts only one registry to logout from")
+		return errors.New("logout accepts only one registry to logout from")
 	}
 	if len(args) == 0 && !opts.All {
 		if !opts.AcceptUnspecifiedRegistry {
-			return errors.Errorf("please provide a registry to logout from")
+			return errors.New("please provide a registry to logout from")
 		}
 		if server, err = defaultRegistryWhenUnspecified(systemContext); err != nil {
 			return err
@@ -219,7 +219,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 	}
 	if len(args) != 0 {
 		if opts.All {
-			return errors.Errorf("--all takes no arguments")
+			return errors.New("--all takes no arguments")
 		}
 		server = getRegistryName(args[0])
 	}
@@ -240,7 +240,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 	case config.ErrNotLoggedIn:
 		authConfig, err := config.GetCredentials(systemContext, server)
 		if err != nil {
-			return errors.Wrapf(err, "error reading auth file")
+			return errors.Wrap(err, "reading auth file")
 		}
 		authInvalid := docker.CheckAuth(context.Background(), systemContext, authConfig.Username, authConfig.Password, server)
 		if authConfig.Username != "" && authConfig.Password != "" && authInvalid == nil {
@@ -249,7 +249,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		}
 		return errors.Errorf("Not logged into %s\n", server)
 	default:
-		return errors.Wrapf(err, "error logging out of %q", server)
+		return errors.Wrapf(err, "logging out of %q", server)
 	}
 }
 
@@ -258,10 +258,10 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 func defaultRegistryWhenUnspecified(systemContext *types.SystemContext) (string, error) {
 	registriesFromFile, err := sysregistriesv2.UnqualifiedSearchRegistries(systemContext)
 	if err != nil {
-		return "", errors.Wrapf(err, "error getting registry from registry.conf, please specify a registry")
+		return "", errors.Wrap(err, "getting registry from registry.conf, please specify a registry")
 	}
 	if len(registriesFromFile) == 0 {
-		return "", errors.Errorf("no registries found in registries.conf, a registry must be provided")
+		return "", errors.New("no registries found in registries.conf, a registry must be provided")
 	}
 	return registriesFromFile[0], nil
 }
