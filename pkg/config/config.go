@@ -465,14 +465,14 @@ func NewConfig(userConfigPath string) (*Config, error) {
 	// Now, gather the system configs and merge them as needed.
 	configs, err := systemConfigs()
 	if err != nil {
-		return nil, errors.Wrapf(err, "error finding config on system")
+		return nil, errors.Wrap(err, "finding config on system")
 	}
 	for _, path := range configs {
 		// Merge changes in later configs with the previous configs.
 		// Each config file that specified fields, will override the
 		// previous fields.
 		if err = readConfigFromFile(path, config); err != nil {
-			return nil, errors.Wrapf(err, "error reading system config %q", path)
+			return nil, errors.Wrapf(err, "reading system config %q", path)
 		}
 		logrus.Debugf("Merged system config %q: %+v", path, config)
 	}
@@ -484,7 +484,7 @@ func NewConfig(userConfigPath string) (*Config, error) {
 		// readConfigFromFile reads in container config in the specified
 		// file and then merge changes with the current default.
 		if err = readConfigFromFile(userConfigPath, config); err != nil {
-			return nil, errors.Wrapf(err, "error reading user config %q", userConfigPath)
+			return nil, errors.Wrapf(err, "reading user config %q", userConfigPath)
 		}
 		logrus.Debugf("Merged user config %q: %+v", userConfigPath, config)
 	}
@@ -504,7 +504,7 @@ func NewConfig(userConfigPath string) (*Config, error) {
 func readConfigFromFile(path string, config *Config) error {
 	logrus.Debugf("Reading configuration file %q", path)
 	if _, err := toml.DecodeFile(path, config); err != nil {
-		return errors.Wrapf(err, "unable to decode configuration %v", path)
+		return errors.Wrapf(err, "decode configuration %v", path)
 	}
 	return nil
 }
@@ -517,7 +517,7 @@ func systemConfigs() ([]string, error) {
 	path := os.Getenv("CONTAINERS_CONF")
 	if path != "" {
 		if _, err := os.Stat(path); err != nil {
-			return nil, errors.Wrapf(err, "failed to stat of %s from CONTAINERS_CONF environment variable", path)
+			return nil, errors.Wrap(err, "CONTAINERS_CONF file")
 		}
 		return append(configs, path), nil
 	}
@@ -579,7 +579,7 @@ func (c *Config) addCAPPrefix() {
 func (c *Config) Validate() error {
 
 	if err := c.Containers.Validate(); err != nil {
-		return errors.Wrapf(err, " error validating containers config")
+		return errors.Wrap(err, "validating containers config")
 	}
 
 	if !c.Containers.EnableLabeling {
@@ -587,11 +587,11 @@ func (c *Config) Validate() error {
 	}
 
 	if err := c.Engine.Validate(); err != nil {
-		return errors.Wrapf(err, "error validating engine configs")
+		return errors.Wrap(err, "validating engine configs")
 	}
 
 	if err := c.Network.Validate(); err != nil {
-		return errors.Wrapf(err, "error validating network configs")
+		return errors.Wrap(err, "validating network configs")
 	}
 
 	return nil
@@ -1001,7 +1001,7 @@ func (c *Config) Write() error {
 	}
 	configFile, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0600)
 	if err != nil {
-		return errors.Wrapf(err, "cannot open %s", path)
+		return err
 	}
 	defer configFile.Close()
 	enc := toml.NewEncoder(configFile)
