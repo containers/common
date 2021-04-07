@@ -6,7 +6,7 @@ GO_BUILD=$(GO) build
 ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
 	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
 endif
-BUILDTAGS :=
+BUILDTAGS := containers_image_openpgp
 DESTDIR ?=
 PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
@@ -54,12 +54,12 @@ build: build-amd64 build-386
 
 .PHONY: build-amd64
 build-amd64:
-	GOARCH=amd64 $(GO_BUILD) ./...
+	GOARCH=amd64 $(GO_BUILD) -tags $(BUILDTAGS) ./...
 
 .PHONY: build-386
 build-386:
 ifneq ($(shell uname -s), Darwin)
-	GOARCH=386 $(GO_BUILD) ./...
+	GOARCH=386 $(GO_BUILD) -tags $(BUILDTAGS) ./...
 endif
 
 .PHONY: docs
@@ -108,8 +108,8 @@ test: test-unit
 
 .PHONY: test-unit
 test-unit:
-	go test -v $(PROJECT)/pkg/...
-	go test --tags remote,seccomp -v $(PROJECT)/pkg/...
+	go test --tags $(BUILDTAGS) -v $(PROJECT)/pkg/...
+	go test --tags remote,seccomp,$(BUILDTAGS) -v $(PROJECT)/pkg/...
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean
