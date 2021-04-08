@@ -14,7 +14,7 @@ var _ = Describe("Config", func() {
 		It("validate GetDefaultAuthFile", func() {
 			// Given
 			oldDockerConf, envDockerSet := os.LookupEnv("DOCKER_CONFIG")
-			os.Setenv("DOCKER_CONFIG", "/tmp/docker.file")
+			os.Setenv("DOCKER_CONFIG", "/tmp")
 			oldConf, envSet := os.LookupEnv("REGISTRY_AUTH_FILE")
 			os.Setenv("REGISTRY_AUTH_FILE", "/tmp/registry.file")
 			// When			// When
@@ -26,7 +26,7 @@ var _ = Describe("Config", func() {
 			// Fall back to DOCKER_CONFIG
 			authFile = GetDefaultAuthFile()
 			// Then
-			gomega.Expect(authFile).To(gomega.BeEquivalentTo("/tmp/docker.file"))
+			gomega.Expect(authFile).To(gomega.BeEquivalentTo("/tmp/config.json"))
 			os.Unsetenv("DOCKER_CONFIG")
 
 			// Fall back to DOCKER_CONFIG

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/containers/image/v5/docker"
@@ -20,11 +21,13 @@ import (
 // --authfile path used in multiple --authfile flag definitions
 // Will fail over to DOCKER_CONFIG if REGISTRY_AUTH_FILE environment is not set
 func GetDefaultAuthFile() string {
-	authfile := os.Getenv("REGISTRY_AUTH_FILE")
-	if authfile == "" {
-		authfile = os.Getenv("DOCKER_CONFIG")
+	if authfile := os.Getenv("REGISTRY_AUTH_FILE"); authfile != "" {
+		return authfile
 	}
-	return authfile
+	if auth_env := os.Getenv("DOCKER_CONFIG"); auth_env != "" {
+		return filepath.Join(auth_env, "config.json")
+	}
+	return ""
 }
 
 // CheckAuthFile validates filepath given by --authfile
