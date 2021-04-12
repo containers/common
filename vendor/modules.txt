@@ -10,7 +10,7 @@ github.com/beorn7/perks/quantile
 github.com/blang/semver
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
-# github.com/containers/image/v5 v5.10.5
+# github.com/containers/image/v5 v5.11.0
 ## explicit
 github.com/containers/image/v5/docker
 github.com/containers/image/v5/docker/policyconfiguration
@@ -36,7 +36,7 @@ github.com/containers/image/v5/types
 github.com/containers/image/v5/version
 # github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b
 github.com/containers/libtrust
-# github.com/containers/ocicrypt v1.0.3
+# github.com/containers/ocicrypt v1.1.0
 github.com/containers/ocicrypt/spec
 # github.com/containers/storage v1.28.1
 ## explicit
@@ -122,7 +122,7 @@ github.com/hashicorp/errwrap
 github.com/hashicorp/go-multierror
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
-# github.com/klauspost/compress v1.11.12
+# github.com/klauspost/compress v1.11.13
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
@@ -274,7 +274,7 @@ golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
+# golang.org/x/sys v0.0.0-20210324051608-47abb6519492
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
