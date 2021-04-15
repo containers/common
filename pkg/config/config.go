@@ -474,7 +474,8 @@ func NewConfig(userConfigPath string) (*Config, error) {
 		if err = readConfigFromFile(path, config); err != nil {
 			return nil, errors.Wrapf(err, "reading system config %q", path)
 		}
-		logrus.Debugf("Merged system config %q: %+v", path, config)
+		logrus.Debugf("Merged system config %q", path)
+		logrus.Tracef("%+v", config)
 	}
 
 	// If the caller specified a config path to use, then we read it to
@@ -486,7 +487,8 @@ func NewConfig(userConfigPath string) (*Config, error) {
 		if err = readConfigFromFile(userConfigPath, config); err != nil {
 			return nil, errors.Wrapf(err, "reading user config %q", userConfigPath)
 		}
-		logrus.Debugf("Merged user config %q: %+v", userConfigPath, config)
+		logrus.Debugf("Merged user config %q", userConfigPath)
+		logrus.Tracef("%+v", config)
 	}
 	config.addCAPPrefix()
 
@@ -502,7 +504,7 @@ func NewConfig(userConfigPath string) (*Config, error) {
 // default config. If the path, only specifies a few fields in the Toml file
 // the defaults from the config parameter will be used for all other fields.
 func readConfigFromFile(path string, config *Config) error {
-	logrus.Debugf("Reading configuration file %q", path)
+	logrus.Tracef("Reading configuration file %q", path)
 	if _, err := toml.DecodeFile(path, config); err != nil {
 		return errors.Wrapf(err, "decode configuration %v", path)
 	}
