@@ -165,14 +165,14 @@ github.com/containerd/zfs v0.0.0-20210315114300-dde8f0fda960/go.mod h1:m+m51S1Dv
 github.com/containernetworking/cni v0.7.1/go.mod h1:LGwApLUm2FpoOfxTDEeq8T9ipbpZ61X79hmU3w8FmsY=
 github.com/containernetworking/cni v0.8.0/go.mod h1:LGwApLUm2FpoOfxTDEeq8T9ipbpZ61X79hmU3w8FmsY=
 github.com/containernetworking/plugins v0.8.6/go.mod h1:qnw5mN19D8fIwkqW7oHHYDHVlzhJpcY6TQxn/fUyDDM=
-github.com/containers/image/v5 v5.11.0 h1:SwxGucW1AZ8H/5KH9jW70lo9WyuOrtxafutyQ9RPPLw=
-github.com/containers/image/v5 v5.11.0/go.mod h1:dCbUB4w6gmxIEOCsE0tZQppr8iBoXb4Evr74ZKlmwoI=
+github.com/containers/image/v5 v5.11.1 h1:mNybUvU6zXUwcMsQaa3n+Idsru5pV+GE7k4oRuPzYi0=
+github.com/containers/image/v5 v5.11.1/go.mod h1:HC9lhJ/Nz5v3w/5Co7H431kLlgzlVlOC+auD/er3OqE=
 github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b h1:Q8ePgVfHDplZ7U33NwHZkrVELsZP5fYj9pM5WBZB2GE=
 github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b/go.mod h1:9rfv8iPl1ZP7aqh9YA68wnZv2NUDbXdcdPHVz0pFbPY=
 github.com/containers/ocicrypt v1.0.1/go.mod h1:MeJDzk1RJHv89LjsH0Sp5KTY3ZYkjXO/C+bKAeWFIrc=
 github.com/containers/ocicrypt v1.1.0 h1:A6UzSUFMla92uxO43O6lm86i7evMGjTY7wTKB2DyGPY=
 github.com/containers/ocicrypt v1.1.0/go.mod h1:b8AOe0YR67uU8OqfVNcznfFpAzu3rdgUV4GP9qXPfu4=
-github.com/containers/storage v1.28.1/go.mod h1:5bwiMh2LkrN3AWIfDFMH7A/xbVNLcve+oeXYvHvW8cc=
+github.com/containers/storage v1.29.0/go.mod h1:u84RU4CCufGeJBNTRNwMB+FoE+AiFeFw4SsMoqAOeCM=
 github.com/containers/storage v1.30.0 h1:KS6zmoPyy0Qcx1HCCiseQ0ysSckRvtiuoVpIGh9iwQA=
 github.com/containers/storage v1.30.0/go.mod h1:M/xn0pg6ReYFrLtWl5YELI/a4Xjq+Z3e5GJxQrJCcDI=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
@@ -402,7 +402,6 @@ github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQL
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.11.3/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
-github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.11.13/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.12.1 h1:/+xsCsk06wE38cyiqOR/o7U2fSftcH72xD+BQXmja/g=
 github.com/klauspost/compress v1.12.1/go.mod h1:8dP1Hq4DHOhN9w426knH3Rhby4rFm6D8eO+e+Dq5Gzg=
