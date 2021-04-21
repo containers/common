@@ -14,7 +14,7 @@ import (
 	"github.com/containers/image/v5/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh/terminal"
+	terminal "golang.org/x/term"
 )
 
 // GetDefaultAuthFile returns env value REGISTRY_AUTH_FILE as default

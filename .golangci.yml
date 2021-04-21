@@ -1,10 +1,15 @@
 ---
 run:
+  skip-dirs:
+    - libimage/manifests
+    - pkg/manifests
+    - pkg/supplemented
   build-tags:
     - apparmor
     - seccomp
     - selinux
     - exclude_graphdriver_btrfs
+    - containers_image_openpgp
   concurrency: 6
   deadline: 5m
 linters:
