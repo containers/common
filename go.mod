@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/containers/image/v5 v5.11.1
-	github.com/containers/ocicrypt v1.1.0
+	github.com/containers/ocicrypt v1.1.1
 	github.com/containers/storage v1.30.0
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.3-0.20210216175712-646072ed6524+incompatible
