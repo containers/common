@@ -7,6 +7,7 @@ require (
 	github.com/containers/image/v5 v5.11.1
 	github.com/containers/ocicrypt v1.1.1
 	github.com/containers/storage v1.30.1
+	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.3-0.20210216175712-646072ed6524+incompatible
 	github.com/docker/go-units v0.4.0
@@ -14,6 +15,7 @@ require (
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/jinzhu/copier v0.3.0
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/onsi/ginkgo v1.16.1
 	github.com/onsi/gomega v1.11.0
