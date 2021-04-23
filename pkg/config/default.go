@@ -278,6 +278,15 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 			"/usr/bin/kata-qemu",
 			"/usr/bin/kata-fc",
 		},
+		"runsc": {
+			"/usr/bin/runsc",
+			"/usr/sbin/runsc",
+			"/usr/local/bin/runsc",
+			"/usr/local/sbin/runsc",
+			"/sbin/runsc",
+			"/bin/runsc",
+			"/run/current-system/sw/bin/runsc",
+		},
 	}
 	// Needs to be called after populating c.OCIRuntimes
 	c.OCIRuntime = c.findRuntime()
@@ -299,6 +308,8 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.RuntimeSupportsJSON = []string{
 		"crun",
 		"runc",
+		"kata",
+		"runsc",
 	}
 	c.RuntimeSupportsNoCgroups = []string{"crun"}
 	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc"}
