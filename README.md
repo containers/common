@@ -41,7 +41,7 @@ syscalls available to containers.
 - [`pkg/sysinfo`](pkg/sysclt): `linux`, `solaris`, `windows`, `cgo`
 - [`pkg/cgroupv2`](pkg/cgroupv2): `linux`
 
-## Contributing
+## [Contributing](CONTRIBUTING.md)
 
 When developing this library, please use `make` (or `make … BUILDTAGS=…`) to
 take advantage of the tests and validation.
