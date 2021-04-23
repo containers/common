@@ -140,6 +140,15 @@ var _ = Describe("Config", func() {
 					"/usr/bin/crun",
 					"/usr/local/bin/crun",
 				},
+				"runsc": {
+					"/usr/bin/runsc",
+					"/usr/sbin/runsc",
+					"/usr/local/bin/runsc",
+					"/usr/local/sbin/runsc",
+					"/bin/runsc",
+					"/sbin/runsc",
+					"/run/current-system/sw/bin/runsc",
+				},
 			}
 
 			pluginDirs := []string{
