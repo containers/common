@@ -1,7 +1,9 @@
 package parse
 
 import (
+	"os"
 	"runtime"
+	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -72,14 +74,23 @@ func TestDeviceFromPath(t *testing.T) {
 		t.Skip("Devices is only supported on Linux")
 	}
 	// Path is valid
+	info, err := os.Stat("/dev/null")
+	assert.NoError(t, err)
+
+	var UID uint32
+	var GID uint32
+	if stat, ok := info.Sys().(*syscall.Stat_t); ok {
+		UID = stat.Uid
+		GID = stat.Gid
+	}
 	dev, err := DeviceFromPath("/dev/null")
 	assert.NoError(t, err)
 	assert.Equal(t, len(dev), 1)
 	assert.Equal(t, dev[0].Major, int64(1))
 	assert.Equal(t, dev[0].Minor, int64(3))
 	assert.Equal(t, string(dev[0].Permissions), "rwm")
-	assert.Equal(t, dev[0].Uid, uint32(0))
-	assert.Equal(t, dev[0].Gid, uint32(0))
+	assert.Equal(t, dev[0].Uid, UID)
+	assert.Equal(t, dev[0].Gid, GID)
 
 	// Path does not exists
 	_, err = DeviceFromPath("/dev/BOGUS")
