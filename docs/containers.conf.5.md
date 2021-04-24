@@ -388,6 +388,12 @@ Change the default only if you are sure of what you are doing, in general
 faster "shm" lock type.  You may need to run "podman system renumber" after you
 change the lock type.
 
+**machine_enabled**=false
+
+Indicates if Podman is running inside a VM via Podman Machine.
+Podman uses this value to do extra setup around networking from the
+container inside the VM to to host.
+
 **multi_image_archive**=false
 
 Allows for creating archives (e.g., tarballs) with more than one image.  Some container engines, such as Podman, interpret additional arguments as tags for one image and hence do not store more than one image.  The default behavior can be altered with this option.

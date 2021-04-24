@@ -314,6 +314,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	// TODO - ideally we should expose a `type LockType string` along with
 	// constants.
 	c.LockType = "shm"
+	c.MachineEnabled = false
 
 	return c, nil
 }
@@ -523,4 +524,8 @@ func (c *Config) Umask() string {
 // currently k8s-file or journald
 func (c *Config) LogDriver() string {
 	return c.Containers.LogDriver
+}
+
+func (c *Config) MachineEnabled() bool {
+	return c.Engine.MachineEnabled
 }
