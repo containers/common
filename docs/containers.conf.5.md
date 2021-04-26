@@ -445,7 +445,7 @@ Default OCI specific runtime in runtimes that will be used by default. Must
 refer to a member of the runtimes table. Default runtime will be searched for
 on the system using the priority: "crun", "runc", "kata".
 
-**runtime_supports_json**=["crun", "runc", "kata"]
+**runtime_supports_json**=["crun", "runc", "kata", "runsc"]
 
 The list of the OCI runtimes that support `--format=json`.
 
