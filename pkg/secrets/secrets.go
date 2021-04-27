@@ -37,6 +37,9 @@ var errInvalidDriver = errors.New("invalid driver")
 // errInvalidDriverOpt indicates that a driver option is invalid
 var errInvalidDriverOpt = errors.New("invalid driver option")
 
+// errInvalidClass indicates that a driver option is invalid
+var errInvalidClass = errors.New("invalid secret class")
+
 // errAmbiguous indicates that a secret is ambiguous
 var errAmbiguous = errors.New("secret is ambiguous")
 
@@ -74,6 +77,9 @@ type Secret struct {
 	Driver string `json:"driver"`
 	// DriverOptions is other metadata needed to use the driver
 	DriverOptions map[string]string `json:"driverOptions"`
+	// Class is the class of secret and the default behavior
+	// of the secret when it is added to a container
+	Class string
 }
 
 // SecretsDriver interfaces with the secrets data store.
@@ -120,7 +126,7 @@ func NewManager(rootPath string) (*SecretsManager, error) {
 // Store takes a name, creates a secret and stores the secret metadata and the secret payload.
 // It returns a generated ID that is associated with the secret.
 // The max size for secret data is 512kB.
-func (s *SecretsManager) Store(name string, data []byte, driverType string, driverOpts map[string]string) (string, error) {
+func (s *SecretsManager) Store(name string, data []byte, class, driverType string, driverOpts map[string]string) (string, error) {
 	err := validateSecretName(name)
 	if err != nil {
 		return "", err
@@ -159,10 +165,16 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 		}
 	}
 
+	err = validateClass(class)
+	if err != nil {
+		return "", err
+	}
+
 	secr.Driver = driverType
 	secr.Metadata = make(map[string]string)
 	secr.CreatedAt = time.Now()
 	secr.DriverOptions = driverOpts
+	secr.Class = class
 
 	driver, err := getDriver(driverType, driverOpts)
 	if err != nil {
@@ -279,4 +291,11 @@ func getDriver(name string, opts map[string]string) (SecretsDriver, error) {
 		}
 	}
 	return nil, errInvalidDriver
+}
+
+func validateClass(class string) error {
+	if class == "mount" || class == "env" {
+		return nil
+	}
+	return errInvalidClass
 }
