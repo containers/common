@@ -283,6 +283,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(config.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
+			gomega.Expect(config.LogDriver()).To(gomega.Equal("journald"))
 		})
 
 		It("should success with valid user file path", func() {
