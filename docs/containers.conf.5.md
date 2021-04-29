@@ -270,6 +270,11 @@ List of paths to directories where CNI plugin binaries are located.
 
 The network name of the default CNI network to attach pods to.
 
+**default_subnet**="10.88.0.0/16"
+
+The subnet to use for the default CNI network (named above in **default_network**).
+If the default network does not exist, it will be automatically created the first time a tool is run using this subnet.
+
 **network_config_dir**="/etc/cni/net.d/"
 
 Path to the directory where CNI configuration files are located.

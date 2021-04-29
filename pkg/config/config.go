@@ -425,6 +425,12 @@ type NetworkConfig struct {
 	// to attach pods to.
 	DefaultNetwork string `toml:"default_network,omitempty"`
 
+	// DefaultSubnet is the subnet to be used for the default CNI network.
+	// If a network with the name given in DefaultNetwork is not present
+	// then a new network using this subnet will be created.
+	// Must be a valid IPv4 CIDR block.
+	DefaultSubnet string `toml:"default_subnet,omitempty"`
+
 	// NetworkConfigDir is where CNI network configuration files are stored.
 	NetworkConfigDir string `toml:"network_config_dir,omitempty"`
 }
