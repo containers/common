@@ -159,6 +159,9 @@ github.com/coreos/go-systemd/v22/dbus
 github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/disiqueira/gotree/v3 v3.0.2
+## explicit
+github.com/disiqueira/gotree/v3
 # github.com/docker/distribution v2.7.1+incompatible
 ## explicit
 github.com/docker/distribution
@@ -244,6 +247,9 @@ github.com/hashicorp/go-multierror
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/jinzhu/copier v0.3.0
+## explicit
+github.com/jinzhu/copier
 # github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
 github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
