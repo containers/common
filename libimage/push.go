@@ -2,6 +2,7 @@ package libimage
 
 import (
 	"context"
+	"time"
 
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/reference"
@@ -59,6 +60,10 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 			return nil, err
 		}
 		destRef = dockerRef
+	}
+
+	if r.eventChannel != nil {
+		r.writeEvent(&Event{ID: image.ID(), Name: destination, Time: time.Now(), Type: EventTypeImagePush})
 	}
 
 	// Buildah compat: Make sure to tag the destination image if it's a

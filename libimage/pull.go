@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/containers/common/pkg/config"
 	dirTransport "github.com/containers/image/v5/directory"
@@ -78,6 +79,10 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 
 	if options.AllTags && ref.Transport().Name() != dockerTransport.Transport.Name() {
 		return nil, errors.Errorf("pulling all tags is not supported for %s transport", ref.Transport().Name())
+	}
+
+	if r.eventChannel != nil {
+		r.writeEvent(&Event{ID: "", Name: name, Time: time.Now(), Type: EventTypeImagePull})
 	}
 
 	var (

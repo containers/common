@@ -1,6 +1,10 @@
 package libimage
 
-import "time"
+import (
+	"time"
+
+	"github.com/sirupsen/logrus"
+)
 
 // EventType indicates the type of an event.  Currrently, there is only one
 // supported type for container image but we may add more (e.g., for manifest
@@ -40,4 +44,19 @@ type Event struct {
 	Time time.Time
 	// Type of the event.
 	Type EventType
+}
+
+// writeEvent writes the specified event to the Runtime's event channel.  The
+// event is discarded if no event channel has been registered (yet).
+func (r *Runtime) writeEvent(event *Event) {
+	select {
+	case r.eventChannel <- event:
+		// Done
+	case <-time.After(2 * time.Second):
+		// The Runtime's event channel has a buffer of size 100 which
+		// should be enough even under high load.  However, we
+		// shouldn't block too long in case the buffer runs full (could
+		// be an honest user error or bug).
+		logrus.Warnf("Discarding libimage event which was not read within 2 seconds: %v", event)
+	}
 }
