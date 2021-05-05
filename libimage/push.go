@@ -62,7 +62,7 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 	}
 
 	// Buildah compat: Make sure to tag the destination image if it's a
-	// Docker archive. This way, we preseve the image name.
+	// Docker archive. This way, we preserve the image name.
 	if destRef.Transport().Name() == dockerArchiveTransport.Transport.Name() {
 		if named, err := reference.ParseNamed(resolvedSource); err == nil {
 			tagged, isTagged := named.(reference.NamedTagged)

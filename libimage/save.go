@@ -46,7 +46,7 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 		// All formats support saving 1.
 	default:
 		if format != "docker-archive" {
-			return errors.Errorf("unspported format %q for saving multiple images (only docker-archive)", format)
+			return errors.Errorf("unsupported format %q for saving multiple images (only docker-archive)", format)
 		}
 		if len(options.AdditionalTags) > 0 {
 			return errors.Errorf("cannot save multiple images with multiple tags")
@@ -62,7 +62,7 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 		return r.saveDockerArchive(ctx, names, path, options)
 	}
 
-	return errors.Errorf("unspported format %q for saving images", format)
+	return errors.Errorf("unsupported format %q for saving images", format)
 
 }
 
@@ -101,7 +101,7 @@ func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string
 		options.ManifestMIMEType = manifest.DockerV2Schema2MediaType
 
 	default:
-		return errors.Errorf("unspported format %q for saving images", format)
+		return errors.Errorf("unsupported format %q for saving images", format)
 	}
 
 	if err != nil {
