@@ -42,7 +42,7 @@ type PullOptions struct {
 // policies (e.g., buildah-bud versus podman-build).  Making the pull-policy
 // choice explicit is an attempt to prevent silent regressions.
 //
-// The errror is storage.ErrImageUnknown iff the pull policy is set to "never"
+// The error is storage.ErrImageUnknown iff the pull policy is set to "never"
 // and no local image has been found.  This allows for an easier integration
 // into some users of this package (e.g., Buildah).
 func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy libimageTypes.PullPolicy, options *PullOptions) ([]*Image, error) {

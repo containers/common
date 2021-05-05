@@ -2,13 +2,13 @@ package libimage
 
 import "time"
 
-// EventType indicates the type of an event.  Currrently, there is only one
+// EventType indicates the type of an event.  Currently, there is only one
 // supported type for container image but we may add more (e.g., for manifest
 // lists) in the future.
 type EventType int
 
 const (
-	// EventTypeUnknow is an unitialized EventType.
+	// EventTypeUnknown is an uninitialized EventType.
 	EventTypeUnknown EventType = iota
 	// EventTypeImagePull represents an image pull.
 	EventTypeImagePull
@@ -26,7 +26,7 @@ const (
 	EventTypeImageUntag
 	// EventTypeImageMount represents an image being mounted.
 	EventTypeImageMount
-	// EventTypeImageUnmounted represents an image being unmounted.
+	// EventTypeImageUnmount represents an image being unmounted.
 	EventTypeImageUnmount
 )
 

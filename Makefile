@@ -111,6 +111,10 @@ test-unit:
 	go test --tags $(BUILDTAGS) -v $(PROJECT)/pkg/...
 	go test --tags remote,seccomp,$(BUILDTAGS) -v $(PROJECT)/pkg/...
 
+.PHONY: codespell
+codespell:
+	codespell -S bin,vendor,.git,go.sum,changelog.txt,.cirrus.yml,"RELEASE_NOTES.md,*.xz,*.gz,*.tar,*.tgz,bin2img,*ico,*.png,*.1,*.5,copyimg,*.orig,apidoc.go" -L uint,iff,od,seeked,splitted,marge,ERROR,hist,ether -w
+
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean
 	find . -name \*~ -delete

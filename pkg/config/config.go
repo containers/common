@@ -244,7 +244,7 @@ type EngineConfig struct {
 	// will fall back to containers/image defaults.
 	ImageParallelCopies uint `toml:"image_parallel_copies,omitempty"`
 
-	// ImageDefaultFormat sepecified the manifest Type (oci, v2s2, or v2s1)
+	// ImageDefaultFormat specified the manifest Type (oci, v2s2, or v2s1)
 	// to use when pulling, pushing, building container images. By default
 	// image pulled and pushed match the format of the source image.
 	// Building/committing defaults to OCI.
