@@ -8,7 +8,7 @@ import (
 
 	"github.com/containers/common/pkg/config"
 	dirTransport "github.com/containers/image/v5/directory"
-	dockerTransport "github.com/containers/image/v5/docker"
+	registryTransport "github.com/containers/image/v5/docker"
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/reference"
 	ociArchiveTransport "github.com/containers/image/v5/oci/archive"
@@ -76,7 +76,7 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 		ref = dockerRef
 	}
 
-	if options.AllTags && ref.Transport().Name() != dockerTransport.Transport.Name() {
+	if options.AllTags && ref.Transport().Name() != registryTransport.Transport.Name() {
 		return nil, errors.Errorf("pulling all tags is not supported for %s transport", ref.Transport().Name())
 	}
 
@@ -89,7 +89,7 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	switch ref.Transport().Name() {
 
 	// DOCKER REGISTRY
-	case dockerTransport.Transport.Name():
+	case registryTransport.Transport.Name():
 		pulledImages, pullError = r.copyFromRegistry(ctx, ref, strings.TrimPrefix(name, "docker://"), pullPolicy, options)
 
 	// DOCKER ARCHIVE
@@ -265,7 +265,7 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 	}
 
 	named := reference.TrimNamed(ref.DockerReference())
-	tags, err := dockerTransport.GetRepositoryTags(ctx, &r.systemContext, ref)
+	tags, err := registryTransport.GetRepositoryTags(ctx, &r.systemContext, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +389,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	for _, candidate := range resolved.PullCandidates {
 		candidateString := candidate.Value.String()
 		logrus.Debugf("Attempting to pull candidate %s for %s", candidateString, imageName)
-		srcRef, err := dockerTransport.NewReference(candidate.Value)
+		srcRef, err := registryTransport.NewReference(candidate.Value)
 		if err != nil {
 			return nil, err
 		}
