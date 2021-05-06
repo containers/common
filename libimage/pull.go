@@ -58,7 +58,7 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	if err != nil {
 		// If the image clearly refers to a local one, we can look it up directly.
 		// In fact, we need to since they are not parseable.
-		if strings.HasPrefix(name, "sha256:") || (len(name) == 64 && !strings.Contains(name, "/.:@")) {
+		if strings.HasPrefix(name, "sha256:") || (len(name) == 64 && !strings.ContainsAny(name, "/.:@")) {
 			if pullPolicy == config.PullPolicyAlways {
 				return nil, errors.Errorf("pull policy is always but image has been referred to by ID (%s)", name)
 			}
