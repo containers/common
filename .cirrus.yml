@@ -3,20 +3,21 @@
 testing_task:
 
   env:
+    GOPATH: "/go"
     CIRRUS_WORKING_DIR: "${GOPATH}/src/github.com/containers/common"
     GOSRC: "$CIRRUS_WORKING_DIR"
 
   container:
-    image: "docker.io/library/golang"
+    image: "registry.fedoraproject.org/fedora:34"
     cpu: 2
     memory: 2
 
   test_script:
-    - apt-get update && apt-get -qq install libdevmapper-dev libbtrfs-dev libseccomp-dev
+    - dnf install -y go containers-common device-mapper-devel libseccomp-devel btrfs-progs-devel
+    - make vendor
     - make build
     - make install.tools
     - make validate
-    - make vendor
     - make test
 
 
