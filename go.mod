@@ -12,13 +12,12 @@ require (
 	github.com/docker/docker v20.10.3-0.20210216175712-646072ed6524+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jinzhu/copier v0.3.0
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/onsi/ginkgo v1.16.2
-	github.com/onsi/gomega v1.11.0
+	github.com/onsi/gomega v1.12.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6
 	github.com/opencontainers/runc v1.0.0-rc93
@@ -33,6 +32,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210324051608-47abb6519492
+	golang.org/x/sys v0.0.0-20210423082822-04245dca01da
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 )
