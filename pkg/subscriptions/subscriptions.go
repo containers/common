@@ -335,14 +335,14 @@ func addFIPSModeSubscription(mounts *[]rspec.Mount, containerWorkingDir, mountPo
 		*mounts = append(*mounts, m)
 	}
 
-	srcBackendDir := "/usr/share/crypto-policies/back-ends/FIPS"
-	destDir := "/etc/crypto-policies/back-ends"
+	srcBackendDir := "/usr/share/crypto-policies"
+	destDir := "/etc/crypto-policies"
 	srcOnHost := filepath.Join(mountPoint, srcBackendDir)
 	if _, err := os.Stat(srcOnHost); err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		return errors.Wrap(err, "FIPS Backend directory")
+		return errors.Wrap(err, "crypto-policies directory")
 	}
 
 	if !mountExists(*mounts, destDir) {
