@@ -3,6 +3,7 @@ package libimage
 import (
 	"context"
 	"strings"
+	"time"
 
 	dirTransport "github.com/containers/image/v5/directory"
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
@@ -72,6 +73,10 @@ func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string
 	image, imageName, err := r.LookupImage(name, nil)
 	if err != nil {
 		return err
+	}
+
+	if r.eventChannel != nil {
+		r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageSave})
 	}
 
 	// Unless the image was referenced by ID, use the resolved name as a
@@ -160,6 +165,9 @@ func (r *Runtime) saveDockerArchive(ctx context.Context, names []string, path st
 			}
 		}
 		localImages[image.ID()] = local
+		if r.eventChannel != nil {
+			r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageSave})
+		}
 	}
 
 	writer, err := dockerArchiveTransport.NewWriter(r.systemContextCopy(), path)

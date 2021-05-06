@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	dirTransport "github.com/containers/image/v5/directory"
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
@@ -22,6 +23,8 @@ type LoadOptions struct {
 // oci, oci-archive, dir, docker-archive.
 func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) ([]string, error) {
 	logrus.Debugf("Loading image from %q", path)
+
+	r.writeEvent(&Event{ID: "", Name: path, Time: time.Now(), Type: EventTypeImageLoad})
 
 	var (
 		loadedImages []string
