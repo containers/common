@@ -9,15 +9,13 @@ import (
 
 	"github.com/containers/common/pkg/config"
 	dirTransport "github.com/containers/image/v5/directory"
-	dockerRegistryTransport "github.com/containers/image/v5/docker"
+	registryTransport "github.com/containers/image/v5/docker"
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
-	dockerDaemonTransport "github.com/containers/image/v5/docker/daemon"
 	"github.com/containers/image/v5/docker/reference"
 	ociArchiveTransport "github.com/containers/image/v5/oci/archive"
 	ociTransport "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/pkg/shortnames"
 	storageTransport "github.com/containers/image/v5/storage"
-	tarballTransport "github.com/containers/image/v5/tarball"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
@@ -79,7 +77,7 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 		ref = dockerRef
 	}
 
-	if options.AllTags && ref.Transport().Name() != dockerRegistryTransport.Transport.Name() {
+	if options.AllTags && ref.Transport().Name() != registryTransport.Transport.Name() {
 		return nil, errors.Errorf("pulling all tags is not supported for %s transport", ref.Transport().Name())
 	}
 
@@ -96,36 +94,18 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	switch ref.Transport().Name() {
 
 	// DOCKER REGISTRY
-	case dockerRegistryTransport.Transport.Name():
+	case registryTransport.Transport.Name():
 		pulledImages, pullError = r.copyFromRegistry(ctx, ref, strings.TrimPrefix(name, "docker://"), pullPolicy, options)
-
-	// DOCKER DAEMON
-	case dockerDaemonTransport.Transport.Name():
-		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
 
 	// DOCKER ARCHIVE
 	case dockerArchiveTransport.Transport.Name():
 		pulledImages, pullError = r.copyFromDockerArchive(ctx, ref, &options.CopyOptions)
 
-	// OCI
-	case ociTransport.Transport.Name():
-		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
-
-	// TARBALL
-	case tarballTransport.Transport.Name():
-		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
-
-	// OCI ARCHIVE
-	case ociArchiveTransport.Transport.Name():
-		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
-
-	// DIR
 	case dirTransport.Transport.Name():
-		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
 
-	// UNSUPPORTED
+	// ALL OTHER TRANSPORTS
 	default:
-		return nil, errors.Errorf("unsupported transport %q for pulling", ref.Transport().Name())
+		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
 	}
 
 	if pullError != nil {
@@ -295,7 +275,7 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 	}
 
 	named := reference.TrimNamed(ref.DockerReference())
-	tags, err := dockerRegistryTransport.GetRepositoryTags(ctx, &r.systemContext, ref)
+	tags, err := registryTransport.GetRepositoryTags(ctx, &r.systemContext, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +399,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	for _, candidate := range resolved.PullCandidates {
 		candidateString := candidate.Value.String()
 		logrus.Debugf("Attempting to pull candidate %s for %s", candidateString, imageName)
-		srcRef, err := dockerRegistryTransport.NewReference(candidate.Value)
+		srcRef, err := registryTransport.NewReference(candidate.Value)
 		if err != nil {
 			return nil, err
 		}
