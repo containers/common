@@ -177,7 +177,12 @@ func (r *Runtime) copyFromDefault(ctx context.Context, ref types.ImageReference,
 			imageName = "sha256:" + storageName[1:]
 		} else {
 			storageName = manifest.Annotations["org.opencontainers.image.ref.name"]
-			imageName = storageName
+			named, err := NormalizeName(storageName)
+			if err != nil {
+				return nil, err
+			}
+			imageName = named.String()
+			storageName = imageName
 		}
 
 	default:

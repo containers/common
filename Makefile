@@ -108,6 +108,7 @@ test: test-unit
 
 .PHONY: test-unit
 test-unit:
+	go test --tags $(BUILDTAGS) -v ./libimage
 	go test --tags $(BUILDTAGS) -v $(PROJECT)/pkg/...
 	go test --tags remote,seccomp,$(BUILDTAGS) -v $(PROJECT)/pkg/...
 
