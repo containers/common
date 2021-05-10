@@ -273,8 +273,17 @@ var _ = Describe("Config", func() {
 				"TERM=xterm",
 			}
 
+			// Given we do
+			oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
+			os.Setenv("CONTAINERS_CONF", "/dev/null")
 			// When
 			config, err := NewConfig("")
+			// Undo that
+			if envSet {
+				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))

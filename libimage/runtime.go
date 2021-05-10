@@ -116,7 +116,9 @@ func RuntimeFromStoreOptions(runtimeOptions *RuntimeOptions, storeOptions *stora
 // is considered to be an error condition.
 func (r *Runtime) Shutdown(force bool) error {
 	_, err := r.store.Shutdown(force)
-	close(r.eventChannel)
+	if r.eventChannel != nil {
+		close(r.eventChannel)
+	}
 	return err
 }
 
