@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/containers/common/pkg/config"
-	dirTransport "github.com/containers/image/v5/directory"
 	registryTransport "github.com/containers/image/v5/docker"
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/reference"
@@ -100,8 +99,6 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	// DOCKER ARCHIVE
 	case dockerArchiveTransport.Transport.Name():
 		pulledImages, pullError = r.copyFromDockerArchive(ctx, ref, &options.CopyOptions)
-
-	case dirTransport.Transport.Name():
 
 	// ALL OTHER TRANSPORTS
 	default:
