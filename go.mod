@@ -20,8 +20,8 @@ require (
 	github.com/onsi/gomega v1.12.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6
-	github.com/opencontainers/runc v1.0.0-rc93
-	github.com/opencontainers/runtime-spec v1.0.3-0.20200929063507-e6143ca7d51d
+	github.com/opencontainers/runc v1.0.0-rc94
+	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/runtime-tools v0.9.0
 	github.com/opencontainers/selinux v1.8.0
 	github.com/pkg/errors v0.9.1
@@ -32,6 +32,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 )
