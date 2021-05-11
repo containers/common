@@ -550,7 +550,7 @@ func (r *Runtime) RemoveImages(ctx context.Context, names []string, options *Rem
 			return nil, rmErrors
 		}
 
-	case len(options.Filters) > 0:
+	default:
 		filteredImages, err := r.ListImages(ctx, nil, &ListImagesOptions{Filters: options.Filters})
 		if err != nil {
 			appendError(err)
