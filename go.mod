@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/containers/image/v5 v5.12.0
 	github.com/containers/ocicrypt v1.1.1
-	github.com/containers/storage v1.30.2
+	github.com/containers/storage v1.30.3
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.6+incompatible
@@ -23,7 +23,7 @@ require (
 	github.com/opencontainers/runc v1.0.0-rc94
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/runtime-tools v0.9.0
-	github.com/opencontainers/selinux v1.8.0
+	github.com/opencontainers/selinux v1.8.1
 	github.com/pkg/errors v0.9.1
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20200616122406-847368b35ebf
 	github.com/sirupsen/logrus v1.8.1
