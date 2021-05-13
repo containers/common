@@ -21,12 +21,12 @@ func TestBoundingCapabilities(t *testing.T) {
 }
 
 func TestMergeCapabilitiesDropVerify(t *testing.T) {
-	adds := []string{"CAP_SYS_ADMIN", "CAP_SETUID"}
+	adds := []string{"CAP_SETUID", "CAP_SYS_ADMIN"}
 	drops := []string{"CAP_NET_ADMIN", "cap_chown"}
 	base := []string{"CHOWN"}
 	caps, err := MergeCapabilities(base, adds, drops)
 	require.Nil(t, err)
-	assert.Equal(t, []string{"CAP_SYS_ADMIN", "CAP_SETUID"}, caps)
+	assert.Equal(t, []string{"CAP_SETUID", "CAP_SYS_ADMIN"}, caps)
 }
 
 func TestMergeCapabilitiesDropAddConflict(t *testing.T) {
@@ -47,7 +47,7 @@ func TestMergeCapabilitiesDrop(t *testing.T) {
 }
 
 func TestMergeCapabilitiesDropAll(t *testing.T) {
-	adds := []string{"CAP_SYS_ADMIN", "CAP_NET_ADMIN", "CAP_CHOWN"}
+	adds := []string{"CAP_CHOWN", "CAP_NET_ADMIN", "CAP_SYS_ADMIN"}
 	drops := []string{"all"}
 	base := []string{"CAP_SETUID"}
 	caps, err := MergeCapabilities(base, adds, drops)
@@ -64,6 +64,21 @@ func TestMergeCapabilitiesAddAll(t *testing.T) {
 	allCaps, err := BoundingSet()
 	require.Nil(t, err)
 	assert.Equal(t, caps, allCaps)
+
+	drops = []string{"CAP_SETUID", "CAP_CHOWN"}
+	caps, err = MergeCapabilities(base, adds, drops)
+	require.Nil(t, err)
+	assert.NotEqual(t, caps, allCaps)
+	assert.False(t, stringInSlice("CAP_SETUID", caps))
+	assert.False(t, stringInSlice("CAP_CHOWN", caps))
+}
+
+func TestMergeCapabilitiesAddAllDropAll(t *testing.T) {
+	base := []string{"CAP_SYS_ADMIN", "CAP_NET_ADMIN", "CAP_CHOWN"}
+	adds := []string{"all"}
+	drops := []string{"all"}
+	_, err := MergeCapabilities(base, adds, drops)
+	assert.Error(t, err)
 }
 
 func TestNormalizeCapabilities(t *testing.T) {
