@@ -1,19 +1,39 @@
 ---
 
-testing_task:
+# Main collection of env. vars to set for all tasks and scripts.
+env:
+    ####
+    #### Global variables used for all tasks
+    ####
+    # Overrides default location (/tmp/cirrus) for repo clone
+    GOPATH: &gopath "/var/tmp/go"
+    GOBIN: "${GOPATH}/bin"
+    GOCACHE: "${GOPATH}/cache"
+    GOSRC: &gosrc "/var/tmp/go/src/github.com/containers/common"
+    CIRRUS_WORKING_DIR: *gosrc
+    # The default is 'sh' if unspecified
+    CIRRUS_SHELL: "/bin/bash"
 
-  env:
-    GOPATH: "/go"
-    CIRRUS_WORKING_DIR: "${GOPATH}/src/github.com/containers/common"
-    GOSRC: "$CIRRUS_WORKING_DIR"
+    ####
+    #### image names to test with (double-quotes around names are critical)
+    ####
+    FEDORA_NAME: "fedora-34"
+    IMAGE_SUFFIX: "c6032583541653504"
+    FEDORA_CONTAINER_FQIN: "quay.io/libpod/fedora_podman:${IMAGE_SUFFIX}"
+
+
+# Default, hard-coded max timeout is 2-hours.
+timeout_in: 30m  # no need to wait 2-hours before timing out
+
+
+testing_task:
+  alias: testing
+  name: "Testing on $FEDORA_NAME"
 
   container:
-    image: "registry.fedoraproject.org/fedora:34"
-    cpu: 2
-    memory: 2
+    image: "${FEDORA_CONTAINER_FQIN}"
 
   test_script:
-    - dnf install -y go containers-common device-mapper-devel libseccomp-devel btrfs-progs-devel
     - make vendor
     - make build
     - make install.tools
@@ -21,19 +41,16 @@ testing_task:
     - make test
 
 
+# Status aggregator for all tests.  This task simply ensures a defined
+# set of tasks all passed, and allows confirming that based on the status
+# of this task.
 success_task:
 
-    # This task is a required-pass in github settings,
-    # it blocks PRs from merging if a depends_on task fails
-    only_if: $CIRRUS_BRANCH != $DEST_BRANCH
-
-    # ignores any dependent task conditions
     depends_on:
         - "testing"
 
     container:
-        # Note: Image has dual purpose, see contrib/gate/README.md
-        image: "quay.io/libpod/gate:master"
-        cpu: 1
-        memory: 1
+        image: "${FEDORA_CONTAINER_FQIN}"
 
+    clone_script: &noop mkdir -p "$CIRRUS_WORKING_DIR"
+    script: *noop
