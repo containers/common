@@ -66,3 +66,30 @@ func TestPush(t *testing.T) {
 		require.True(t, rmReports[i].Removed)
 	}
 }
+
+func TestPushOtherPlatform(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	// Prefetch alpine.
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+	pullOptions.Architecture = "arm64"
+	pulledImages, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	data, err := pulledImages[0].Inspect(ctx, false)
+	require.NoError(t, err)
+	require.Equal(t, "arm64", data.Architecture)
+
+	pushOptions := &PushOptions{}
+	pushOptions.Writer = os.Stdout
+	tmp, err := ioutil.TempFile("", "")
+	require.NoError(t, err)
+	tmp.Close()
+	defer os.Remove(tmp.Name())
+	_, err = runtime.Push(ctx, "docker.io/library/alpine:latest", "docker-archive:"+tmp.Name(), pushOptions)
+	require.NoError(t, err)
+}
