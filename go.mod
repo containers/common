@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/containers/image/v5 v5.12.0
 	github.com/containers/ocicrypt v1.1.1
-	github.com/containers/storage v1.30.3
+	github.com/containers/storage v1.31.1
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.6+incompatible
