@@ -60,15 +60,14 @@ func (r *Runtime) systemContextCopy() *types.SystemContext {
 	return &sys
 }
 
-// EventChannel creates a buffered channel for events that the Runtime will use
-// to write events to.  Callers are expected to read from the channel in a
-// timely manner.
-// Can be called once for a given Runtime.
+// EventChannel creates a channel for events that the Runtime will use to write
+// events to.  Callers are expected to read from the channel in a timely
+// manner.
 func (r *Runtime) EventChannel() chan *Event {
 	if r.eventChannel != nil {
 		return r.eventChannel
 	}
-	r.eventChannel = make(chan *Event, 100)
+	r.eventChannel = make(chan *Event)
 	return r.eventChannel
 }
 

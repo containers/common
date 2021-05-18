@@ -52,11 +52,9 @@ func (r *Runtime) writeEvent(event *Event) {
 	select {
 	case r.eventChannel <- event:
 		// Done
-	case <-time.After(2 * time.Second):
-		// The Runtime's event channel has a buffer of size 100 which
-		// should be enough even under high load.  However, we
-		// shouldn't block too long in case the buffer runs full (could
-		// be an honest user error or bug).
+	case <-time.After(10 * time.Second):
+		// Set the timeout to a very high value to account for a
+		// worst-case I/O.  However, we shouldn't wait until infinity.
 		logrus.Warnf("Discarding libimage event which was not read within 2 seconds: %v", event)
 	}
 }
