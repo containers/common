@@ -147,6 +147,10 @@ type LookupImageOptions struct {
 	// the current platform will be performed.  This can be helpful when
 	// the platform does not matter, for instance, for image removal.
 	IgnorePlatform bool
+
+	// If set, do not look for items/instances in the manifest list that
+	// match the current platform but return the manifest list as is.
+	lookupManifest bool
 }
 
 // Lookup Image looks up `name` in the local container storage matching the
@@ -252,20 +256,34 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, options *Loo
 	if err != nil {
 		return nil, err
 	}
+	if options.lookupManifest {
+		if isManifestList {
+			return image, nil
+		}
+		return nil, errors.Wrapf(ErrNotAManifestList, candidate)
+	}
+
 	if isManifestList {
 		logrus.Debugf("Candidate %q is a manifest list, looking up matching instance", candidate)
 		manifestList, err := image.ToManifestList()
 		if err != nil {
 			return nil, err
 		}
-		image, err = manifestList.LookupInstance(context.Background(), "", "", "")
+		instance, err := manifestList.LookupInstance(context.Background(), "", "", "")
+		if err != nil {
+			// NOTE: If we are not looking for a specific platform
+			// and already found the manifest list, then return it
+			// instead of the error.
+			if options.IgnorePlatform {
+				return image, nil
+			}
+			return nil, errors.Wrap(storage.ErrImageUnknown, err.Error())
+		}
+		ref, err = storageTransport.Transport.ParseStoreReference(r.store, "@"+instance.ID())
 		if err != nil {
 			return nil, err
 		}
-		ref, err = storageTransport.Transport.ParseStoreReference(r.store, "@"+image.ID())
-		if err != nil {
-			return nil, err
-		}
+		image = instance
 	}
 
 	if options.IgnorePlatform {
