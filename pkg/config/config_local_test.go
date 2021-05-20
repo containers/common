@@ -316,4 +316,16 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config2.Engine.MachineEnabled).To(gomega.Equal(true))
 	})
+
+	It("Rootless networking", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Containers.RootlessNetworking).To(gomega.Equal("slirp4netns"))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Containers.RootlessNetworking).To(gomega.Equal("cni"))
+	})
 })
