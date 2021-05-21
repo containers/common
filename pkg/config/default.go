@@ -415,9 +415,6 @@ func probeConmon(conmonBinary string) error {
 
 // NetNS returns the default network namespace
 func (c *Config) NetNS() string {
-	if c.Containers.NetNS == "private" && unshare.IsRootless() {
-		return "slirp4netns"
-	}
 	return c.Containers.NetNS
 }
 
