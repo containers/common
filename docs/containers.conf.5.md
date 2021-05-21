@@ -211,6 +211,11 @@ Options are:
 Maximum number of processes allowed in a container. 0 indicates that no limit
 is imposed.
 
+**rootless_networking**="slirp4netns"
+
+Set type of networking rootless containers should use.  Valid options are `slirp4netns`
+or `cni`.
+
 **seccomp_profile**="/usr/share/containers/seccomp.json"
 
 Path to the seccomp.json profile which is used as the default seccomp profile
