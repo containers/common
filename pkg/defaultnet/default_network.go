@@ -33,8 +33,7 @@ const networkTemplate = `{
         "ranges": [
           [
             {
-              "subnet": "{{{{.Subnet}}}}",
-              "gateway": "{{{{.Gateway}}}}"
+              "subnet": "{{{{.Subnet}}}}"
             }
           ]
         ]
