@@ -33,7 +33,8 @@ const networkTemplate = `{
         "ranges": [
           [
             {
-              "subnet": "{{{{.Subnet}}}}"
+              "subnet": "{{{{.Subnet}}}}",
+              "gateway": "{{{{.Gateway}}}}"
             }
           ]
         ]
@@ -145,14 +146,24 @@ func Create(name, subnet, configDir, existsDir string, isMachine bool) error {
 
 	// We need to make the config.
 	// Get subnet and gateway.
-	gw, ipNet, err := net.ParseCIDR(subnet)
+	_, ipNet, err := net.ParseCIDR(subnet)
 	if err != nil {
 		return errors.Wrapf(err, "default network subnet %s is invalid", subnet)
 	}
 
+	ones, bits := ipNet.Mask.Size()
+	if ones == bits {
+		return errors.Wrapf(err, "default network subnet %s is to small", subnet)
+	}
+	gateway := make(net.IP, len(ipNet.IP))
+	// copy the subnet ip to the gateway so we can modify it
+	copy(gateway, ipNet.IP)
+	// the default gateway should be the first ip in the subnet
+	gateway[len(gateway)-1]++
+
 	netInfo := new(networkInfo)
 	netInfo.Name = name
-	netInfo.Gateway = gw.String()
+	netInfo.Gateway = gateway.String()
 	netInfo.Subnet = ipNet.String()
 	netInfo.Machine = isMachine
 
