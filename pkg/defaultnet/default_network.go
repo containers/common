@@ -120,6 +120,11 @@ func Create(name, subnet, configDir, existsDir string, isMachine bool) error {
 	}
 	file.Close()
 
+	// We may need to make the config dir.
+	if err := os.MkdirAll(configDir, 0755); err != nil && !os.IsExist(err) {
+		return errors.Wrapf(err, "error creating CNI configuration directory")
+	}
+
 	// Check all networks in the CNI conflist.
 	files, err := ioutil.ReadDir(configDir)
 	if err != nil {
