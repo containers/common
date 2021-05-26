@@ -42,6 +42,8 @@ func TestPull(t *testing.T) {
 		{"docker://alpine", false, 1, []string{"docker.io/library/alpine:latest"}},
 		{"docker.io/library/alpine", false, 1, []string{"docker.io/library/alpine:latest"}},
 		{"docker://docker.io/library/alpine", false, 1, []string{"docker.io/library/alpine:latest"}},
+		{"quay.io/libpod/alpine@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00", false, 1, []string{"quay.io/libpod/alpine@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00"}},
+		{"quay.io/libpod/alpine:pleaseignorethistag@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00", false, 1, []string{"quay.io/libpod/alpine@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00"}},
 	} {
 		pulledImages, err := runtime.Pull(ctx, test.input, config.PullPolicyAlways, pullOptions)
 		if test.expectError {

@@ -67,6 +67,15 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 			return []*Image{local}, err
 		}
 
+		// Docker compat: strip off the tag iff name is tagged and digested
+		// (e.g., fedora:latest@sha256...).  In that case, the tag is stripped
+		// off and entirely ignored.  The digest is the sole source of truth.
+		normalizedName, normalizeError := normalizeTaggedDigestedString(name)
+		if normalizeError != nil {
+			return nil, normalizeError
+		}
+		name = normalizedName
+
 		// If the input does not include a transport assume it refers
 		// to a registry.
 		dockerRef, dockerErr := alltransports.ParseImageName("docker://" + name)
