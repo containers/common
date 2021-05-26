@@ -65,10 +65,6 @@ func (r *Runtime) systemContextCopy() *types.SystemContext {
 // timely manner.
 // Can be called once for a given Runtime.
 func (r *Runtime) EventChannel() chan *Event {
-	if r.eventChannel != nil {
-		return r.eventChannel
-	}
-	r.eventChannel = make(chan *Event, 100)
 	return r.eventChannel
 }
 
@@ -94,6 +90,7 @@ func RuntimeFromStore(store storage.Store, options *RuntimeOptions) (*Runtime, e
 	return &Runtime{
 		store:         store,
 		systemContext: systemContext,
+		eventChannel:  make(chan *Event, 100),
 	}, nil
 }
 
@@ -116,9 +113,7 @@ func RuntimeFromStoreOptions(runtimeOptions *RuntimeOptions, storeOptions *stora
 // is considered to be an error condition.
 func (r *Runtime) Shutdown(force bool) error {
 	_, err := r.store.Shutdown(force)
-	if r.eventChannel != nil {
-		close(r.eventChannel)
-	}
+	close(r.eventChannel)
 	return err
 }
 

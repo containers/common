@@ -101,9 +101,7 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 		return nil, errors.Errorf("pulling all tags is not supported for %s transport", ref.Transport().Name())
 	}
 
-	if r.eventChannel != nil {
-		r.writeEvent(&Event{ID: "", Name: name, Time: time.Now(), Type: EventTypeImagePull})
-	}
+	r.writeEvent(&Event{ID: "", Name: name, Time: time.Now(), Type: EventTypeImagePull})
 
 	var (
 		pulledImages []string

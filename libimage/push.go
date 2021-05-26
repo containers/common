@@ -64,9 +64,7 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 		destRef = dockerRef
 	}
 
-	if r.eventChannel != nil {
-		r.writeEvent(&Event{ID: image.ID(), Name: destination, Time: time.Now(), Type: EventTypeImagePush})
-	}
+	r.writeEvent(&Event{ID: image.ID(), Name: destination, Time: time.Now(), Type: EventTypeImagePush})
 
 	// Buildah compat: Make sure to tag the destination image if it's a
 	// Docker archive. This way, we preserve the image name.

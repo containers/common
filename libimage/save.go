@@ -79,9 +79,7 @@ func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string
 		return err
 	}
 
-	if r.eventChannel != nil {
-		r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageSave})
-	}
+	r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageSave})
 
 	// Unless the image was referenced by ID, use the resolved name as a
 	// tag.
@@ -182,9 +180,7 @@ func (r *Runtime) saveDockerArchive(ctx context.Context, names []string, path st
 			}
 		}
 		localImages[image.ID()] = local
-		if r.eventChannel != nil {
-			r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageSave})
-		}
+		r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageSave})
 	}
 
 	writer, err := dockerArchiveTransport.NewWriter(r.systemContextCopy(), path)
