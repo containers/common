@@ -6,7 +6,7 @@ GO_BUILD=$(GO) build
 ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
 	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
 endif
-BUILDTAGS := containers_image_openpgp
+BUILDTAGS := containers_image_openpgp,systemd
 DESTDIR ?=
 PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
