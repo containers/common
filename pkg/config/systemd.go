@@ -3,6 +3,8 @@
 package config
 
 import (
+	"io/ioutil"
+	"strings"
 	"sync"
 
 	"github.com/containers/common/pkg/cgroupv2"
@@ -25,6 +27,7 @@ func defaultCgroupManager() string {
 
 	return SystemdCgroupsManager
 }
+
 func defaultEventsLogger() string {
 	if useSystemd() {
 		return "journald"
