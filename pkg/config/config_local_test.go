@@ -328,4 +328,16 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config2.Containers.RootlessNetworking).To(gomega.Equal("cni"))
 	})
+
+	It("default netns", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Containers.NetNS).To(gomega.Equal(""))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Containers.NetNS).To(gomega.Equal("bridge"))
+	})
 })
