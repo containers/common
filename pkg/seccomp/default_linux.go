@@ -128,6 +128,7 @@ func DefaultProfile() *Seccomp {
 				"ftruncate",
 				"ftruncate64",
 				"futex",
+				"futex_time64",
 				"futimesat",
 				"get_robust_list",
 				"get_thread_area",
