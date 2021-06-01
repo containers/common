@@ -34,6 +34,20 @@ testing_task:
     image: "${FEDORA_CONTAINER_FQIN}"
 
   test_script:
+    - apt-get update && apt-get -qq install libdevmapper-dev libbtrfs-dev libseccomp-dev
+    - |
+      cat >keyspec <<EOF
+      %echo Generating a default key
+      %no-protection
+      Key-Type: default
+      Subkey-Type: default
+      Name-Real: Tester
+      Name-Email: tester@localhost
+      Expire-Date: 0
+      %commit
+      %echo done
+      EOF
+    - gpg --batch --gen-key keyspec
     - make vendor
     - make build
     - make install.tools
