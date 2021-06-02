@@ -157,7 +157,7 @@ func (d *Driver) gpg(ctx context.Context, in io.Reader, out io.Writer, args ...s
 	cmd := exec.CommandContext(ctx, "gpg", args...)
 	cmd.Stdin = in
 	cmd.Stdout = out
-	cmd.Stderr = io.Discard
+	cmd.Stderr = ioutil.Discard
 	return cmd.Run()
 }
 
