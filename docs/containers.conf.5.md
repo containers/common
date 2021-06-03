@@ -519,6 +519,21 @@ used as the backend for Podman named volumes. Individual plugins are specified
 below, as a map of the plugin name (what the plugin will be called) to its path
 (filepath of the plugin's unix socket).
 
+
+## SECRET TABLE
+The `secret` table contains settings for the configuration of the secret subsystem.
+
+**driver**=file
+
+Name of the secret driver to be used.
+Currently valid values are:
+  * file
+  * pass
+
+**opts**={}
+
+The driver specific options object.
+
 # FILES
 
 **containers.conf**

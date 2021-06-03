@@ -340,4 +340,28 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config2.Containers.NetNS).To(gomega.Equal("bridge"))
 	})
+
+	It("should have a default secret driver", func() {
+		// Given
+		path := ""
+		// When
+		config, err := NewConfig(path)
+		gomega.Expect(err).To(gomega.BeNil())
+		// Then
+		gomega.Expect(config.Secrets.Driver).To(gomega.Equal("file"))
+	})
+
+	It("should be possible to override the secret driver and options", func() {
+		// Given
+		path := "testdata/containers_override.conf"
+		// When
+		config, err := NewConfig(path)
+		gomega.Expect(err).To(gomega.BeNil())
+		// Then
+		gomega.Expect(config.Secrets.Driver).To(gomega.Equal("pass"))
+		gomega.Expect(config.Secrets.Opts).To(gomega.Equal(map[string]string{
+			"key":  "foo@bar",
+			"root": "/srv/password-store",
+		}))
+	})
 })
