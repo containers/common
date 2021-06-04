@@ -198,7 +198,6 @@ func DefaultConfig() (*Config, error) {
 			PidsLimit:          DefaultPidsLimit,
 			PidNS:              "private",
 			RootlessNetworking: DefaultRootlessNetwork,
-			SeccompProfile:     SeccompDefaultPath,
 			ShmSize:            DefaultShmSize,
 			TZ:                 "",
 			Umask:              "0022",
