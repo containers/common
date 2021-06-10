@@ -135,8 +135,11 @@ func (r *Runtime) storageToImage(storageImage *storage.Image, ref types.ImageRef
 // storage.  Note that it may return false if an image corrupted.
 func (r *Runtime) Exists(name string) (bool, error) {
 	image, _, err := r.LookupImage(name, &LookupImageOptions{IgnorePlatform: true})
-	if image == nil || err != nil && errors.Cause(err) != storage.ErrImageUnknown {
+	if err != nil && errors.Cause(err) != storage.ErrImageUnknown {
 		return false, err
+	}
+	if image == nil {
+		return false, nil
 	}
 	// Inspect the image to make sure if it's corrupted or not.
 	if _, err := image.Inspect(context.Background(), false); err != nil {
