@@ -599,6 +599,48 @@ var _ = Describe("Config", func() {
 			_, _, err = cfg.ActiveDestination()
 			gomega.Expect(err).Should(gomega.HaveOccurred())
 		})
+
+		It("test addConfigs", func() {
+			tmpFilePath := func(dir, prefix string) string {
+				file, err := ioutil.TempFile(dir, prefix)
+				gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+				conf := file.Name() + ".conf"
+
+				os.Rename(file.Name(), conf)
+				return conf
+
+			}
+			configs := []string{
+				"test1",
+				"test2",
+			}
+			newConfigs, err := addConfigs("/bogus/path", configs)
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			gomega.Expect(newConfigs).To(gomega.Equal(configs))
+
+			dir, err := ioutil.TempDir("", "configTest")
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			defer os.RemoveAll(dir)
+			file1 := tmpFilePath(dir, "b")
+			file2 := tmpFilePath(dir, "a")
+			file3 := tmpFilePath(dir, "2")
+			file4 := tmpFilePath(dir, "1")
+			// create a file in dir that is not a .conf to make sure
+			// it does not show up in configs
+			_, err = ioutil.TempFile(dir, "notconf")
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			subdir, err := ioutil.TempDir(dir, "")
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			// create a file in subdir, to make sure it does not
+			// show up in configs
+			_, err = ioutil.TempFile(subdir, "")
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			newConfigs, err = addConfigs(dir, configs)
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			testConfigs := append(configs, []string{file4, file3, file2, file1}...)
+			gomega.Expect(newConfigs).To(gomega.Equal(testConfigs))
+		})
 	})
 
 	Describe("Reload", func() {
