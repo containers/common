@@ -24,6 +24,10 @@ func TestCorruptedImage(t *testing.T) {
 
 	imageName := "quay.io/libpod/alpine_nginx:latest"
 
+	exists, err := runtime.Exists(imageName)
+	require.NoError(t, err, "image does not exist yet")
+	require.False(t, exists, "image does not exist yet")
+
 	pulledImages, err := runtime.Pull(ctx, imageName, config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
 	require.Len(t, pulledImages, 1)
@@ -33,7 +37,7 @@ func TestCorruptedImage(t *testing.T) {
 	_, err = image.Inspect(ctx, false)
 	require.NoError(t, err, "inspecting healthy image should work")
 
-	exists, err := runtime.Exists(imageName)
+	exists, err = runtime.Exists(imageName)
 	require.NoError(t, err, "healthy image exists")
 	require.True(t, exists, "healthy image exists")
 
