@@ -51,7 +51,7 @@ func defaultDriverConfig() *driverConfig {
 			filepath.Join(home, ".local/share/gopass/stores/root"),
 		}
 		for _, path := range defaultLocations {
-			if stat, err := os.Stat(path); err != nil || stat.IsDir() {
+			if stat, err := os.Stat(path); err != nil || !stat.IsDir() {
 				continue
 			}
 			cfg.Root = path
@@ -59,7 +59,7 @@ func defaultDriverConfig() *driverConfig {
 			if err != nil {
 				continue
 			}
-			cfg.KeyID = string(bs)
+			cfg.KeyID = string(bytes.Trim(bs, "\r\n"))
 			break
 		}
 	}
@@ -75,7 +75,7 @@ func (cfg *driverConfig) findGpgID() {
 			if err != nil {
 				continue
 			}
-			cfg.KeyID = string(bs)
+			cfg.KeyID = string(bytes.Trim(bs, "\r\n"))
 			break
 		}
 		path = filepath.Dir(path)
@@ -106,7 +106,9 @@ func (d *Driver) List() (secrets []string, err error) {
 		return nil, errors.Wrap(err, "failed to read secret directory")
 	}
 	for _, f := range files {
-		secrets = append(secrets, f.Name())
+		fileName := f.Name()
+		withoutSuffix := fileName[:len(fileName)-len(".gpg")]
+		secrets = append(secrets, withoutSuffix)
 	}
 	sort.Strings(secrets)
 	return secrets, nil
@@ -155,6 +157,7 @@ func (d *Driver) Delete(id string) error {
 
 func (d *Driver) gpg(ctx context.Context, in io.Reader, out io.Writer, args ...string) error {
 	cmd := exec.CommandContext(ctx, "gpg", args...)
+	cmd.Env = os.Environ()
 	cmd.Stdin = in
 	cmd.Stdout = out
 	cmd.Stderr = ioutil.Discard
@@ -169,5 +172,5 @@ func (d *Driver) getPath(id string) (string, error) {
 	if !strings.HasPrefix(path, d.Root) {
 		return "", errInvalidKey
 	}
-	return path, nil
+	return path + ".gpg", nil
 }
