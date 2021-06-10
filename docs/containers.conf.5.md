@@ -186,6 +186,10 @@ that no size limit is imposed. If it is positive, it must be >= 8192 to
 match/exceed conmon's read buffer. The file is truncated and re-opened so the
 limit is never exceeded.
 
+**log_tag**=""
+
+Default format tag for container log messages.  This is useful for creating a specific tag for container log messages. Container log messages default to using the truncated container ID as a tag.
+
 **netns**="private"
 
 Default way to to create a NET namespace for the container.
