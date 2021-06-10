@@ -302,10 +302,6 @@ The `engine` table contains configuration options used to set up container engin
 
 Name of destination for accessing the Podman service. See SERVICE DESTINATION TABLE below.
 
-**cgroup_check**=false
-
-CgroupCheck indicates the configuration has been rewritten after an upgrade to Fedora 31 to change the default OCI runtime for cgroupsv2.
-
 **cgroup_manager**="systemd"
 
 The cgroup management implementation used for the runtime. Supports `cgroupfs`
@@ -463,13 +459,13 @@ on the system using the priority: "crun", "runc", "kata".
 
 The list of the OCI runtimes that support `--format=json`.
 
-**runtime_supports_nocgroups**=["crun"]
-
-The list of OCI runtimes that support running containers without CGroups.
-
 **runtime_supports_kvm**=["kata"]
 
 The list of OCI runtimes that support running containers with KVM separation.
+
+**runtime_supports_nocgroups**=["crun"]
+
+The list of OCI runtimes that support running containers without CGroups.
 
 **static_dir**="/var/lib/containers/storage/libpod"
 
@@ -485,6 +481,14 @@ Number of seconds to wait for container to exit before sending kill signal.
 
 The path to a temporary directory to store per-boot container.
 Must be a tmpfs (wiped after reboot).
+
+**volume_path**="/var/lib/containers/storage/volumes"
+
+Directory where named volumes will be created in using the default volume
+driver.
+By default this will be configured relative to where containers/storage store
+containers. This convention is followed by the default volume driver, but may
+not be by other drivers.
 
 ## SERVICE DESTINATION TABLE
 The `service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
@@ -503,14 +507,6 @@ URI to access the Podman service
 **identity="~/.ssh/id_rsa**
 
 Path to file containing ssh identity key
-
-**volume_path**="/var/lib/containers/storage/volumes"
-
-Directory where named volumes will be created in using the default volume
-driver.
-By default this will be configured relative to where containers/storage store
-containers. This convention is followed by the default volume driver, but may
-not be by other drivers.
 
 **[engine.volume_plugins]**
 
