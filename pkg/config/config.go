@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -23,7 +24,7 @@ const (
 	_configPath = "containers/containers.conf"
 	// DefaultContainersConfig holds the default containers config path
 	DefaultContainersConfig = "/usr/share/" + _configPath
-	// OverrideContainersConfig holds the default config paths overridden by the root user
+	// OverrideContainersConfig holds the default config path overridden by the root user
 	OverrideContainersConfig = "/etc/" + _configPath
 	// UserOverrideContainersConfig holds the containers config path overridden by the rootless user
 	UserOverrideContainersConfig = ".config/" + _configPath
@@ -531,10 +532,49 @@ func readConfigFromFile(path string, config *Config) error {
 	return nil
 }
 
+// addConfigs will search one level in the config dirPath for config files
+// If the dirPath does not exist, addConfigs will return nil
+func addConfigs(dirPath string, configs []string) ([]string, error) {
+	newConfigs := []string{}
+
+	err := filepath.Walk(dirPath,
+		// WalkFunc to read additional configs
+		func(path string, info os.FileInfo, err error) error {
+			switch {
+			case err != nil:
+				// return error (could be a permission problem)
+				return err
+			case info == nil:
+				// this should only happen when err != nil but let's be sure
+				return nil
+			case info.IsDir():
+				if path != dirPath {
+					// make sure to not recurse into sub-directories
+					return filepath.SkipDir
+				}
+				// ignore directories
+				return nil
+			default:
+				// only add *.conf files
+				if strings.HasSuffix(path, ".conf") {
+					newConfigs = append(newConfigs, path)
+				}
+				return nil
+			}
+		},
+	)
+	if os.IsNotExist(err) {
+		err = nil
+	}
+	sort.Strings(newConfigs)
+	return append(configs, newConfigs...), err
+}
+
 // Returns the list of configuration files, if they exist in order of hierarchy.
 // The files are read in order and each new file can/will override previous
 // file settings.
 func systemConfigs() ([]string, error) {
+	var err error
 	configs := []string{}
 	path := os.Getenv("CONTAINERS_CONF")
 	if path != "" {
@@ -549,13 +589,22 @@ func systemConfigs() ([]string, error) {
 	if _, err := os.Stat(OverrideContainersConfig); err == nil {
 		configs = append(configs, OverrideContainersConfig)
 	}
-	path, err := ifRootlessConfigPath()
+	configs, err = addConfigs(OverrideContainersConfig+".d", configs)
+	if err != nil {
+		return nil, err
+	}
+
+	path, err = ifRootlessConfigPath()
 	if err != nil {
 		return nil, err
 	}
 	if path != "" {
 		if _, err := os.Stat(path); err == nil {
 			configs = append(configs, path)
+		}
+		configs, err = addConfigs(path+".d", configs)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return configs, nil

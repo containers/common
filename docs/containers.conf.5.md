@@ -10,11 +10,15 @@ and modify the defaults for running containers on the host. containers.conf uses
 a TOML format that can be easily modified and versioned.
 
 Container engines read the /usr/share/containers/containers.conf and
-/etc/containers/containers.conf files if they exists.  When running in rootless
-mode, they also read $HOME/.config/containers/containers.conf files.
+/etc/containers/containers.conf, and /etc/containers/containers.conf.d/*.conf files
+if they exist.  When running in rootless mode, they also read
+$HOME/.config/containers/containers.conf and
+$HOME/.config/containers/containers.conf.d/*.conf files.
 
 Fields specified in containers conf override the default options, as well as
 options in previously read containers.conf files.
+
+Config files in the `.d` directories, are added in alpha numeric sorted order and must end in `.conf`.
 
 Not all options are supported in all container engines.
 
@@ -538,8 +542,7 @@ Distributions often provide a `/usr/share/containers/containers.conf` file to
 define default container configuration. Administrators can override fields in
 this file by creating `/etc/containers/containers.conf` to specify their own
 configuration. Rootless users can further override fields in the config by
-creating a config file stored in the
-`$HOME/.config/containers/containers.conf` file.
+creating a config file stored in the `$HOME/.config/containers/containers.conf` file.
 
 If the `CONTAINERS_CONF` path environment variable is set, just
 this path will be used.  This is primarily used for testing.
