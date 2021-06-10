@@ -211,8 +211,17 @@ func DefaultConfig() (*Config, error) {
 			NetworkConfigDir: cniConfig,
 			CNIPluginDirs:    cniBinDir,
 		},
-		Engine: *defaultEngineConfig,
+		Engine:  *defaultEngineConfig,
+		Secrets: defaultSecretConfig(),
 	}, nil
+}
+
+// defaultSecretConfig returns the default secret configuration.
+// Please note that the default is choosing the "file" driver.
+func defaultSecretConfig() SecretConfig {
+	return SecretConfig{
+		Driver: "file",
+	}
 }
 
 // defaultConfigFromMemory returns a default engine configuration. Note that the
