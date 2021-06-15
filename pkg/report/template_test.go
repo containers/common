@@ -158,8 +158,43 @@ func TestTemplate_HasTable(t *testing.T) {
 }
 
 func TestTemplate_EnforceRange(t *testing.T) {
-	testRange := `{{range .}}foobar was here{{end}}`
+	testRange := `{{range .}}foobar was here{{end -}}`
 	assert.Equal(t, testRange, EnforceRange(testRange))
 	assert.Equal(t, testRange, EnforceRange("foobar was here"))
 	assert.NotEqual(t, testRange, EnforceRange("foobar"))
+
+	// Do not override a given range
+	testRange = `{{range .}}foobar was here{{end}}`
+	assert.Equal(t, testRange, EnforceRange(testRange))
+}
+
+func TestTemplate_Newlines(t *testing.T) {
+	input := []struct {
+		Field1 string
+		Field2 int
+		Field3 string
+	}{
+		{Field1: "One", Field2: 1, Field3: "First"},
+		{Field1: "Two", Field2: 2, Field3: "Second"},
+		{Field1: "Three", Field2: 3, Field3: "Third"},
+	}
+
+	hdrs := Headers(input[0], map[string]string{"Field1": "Ein", "Field2": "Zwei", "Field3": "Drei"})
+
+	// Ensure no blank lines in table
+	expected := "EIN\tZWEI\tDREI\nOne\t1\tFirst\nTwo\t2\tSecond\nThree\t3\tThird\n"
+
+	format := NormalizeFormat("{{.Field1}}\t{{.Field2}}\t{{.Field3}}")
+	format = EnforceRange(format)
+	tmpl, err := NewTemplate("TestTemplate").Parse(format)
+	assert.NoError(t, err)
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, hdrs)
+	assert.NoError(t, err)
+
+	err = tmpl.Execute(&buf, input)
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected, buf.String())
 }
