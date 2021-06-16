@@ -38,6 +38,7 @@ func testNewRuntime(t *testing.T) (runtime *Runtime, cleanup func()) {
 
 	runtime, err = RuntimeFromStoreOptions(&RuntimeOptions{SystemContext: systemContext}, storeOptions)
 	require.NoError(t, err)
+	require.Equal(t, runtime.systemContext.BigFilesTemporaryDir, tmpdir())
 
 	cleanup = func() {
 		runtime.Shutdown(true)
