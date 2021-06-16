@@ -54,7 +54,6 @@ func DefaultProfile() *Seccomp {
 				"io_pgetevents",
 				"kexec_file_load",
 				"kexec_load",
-				"membarrier",
 				"migrate_pages",
 				"move_pages",
 				"nfsservctl",
