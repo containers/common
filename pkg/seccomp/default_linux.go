@@ -51,7 +51,6 @@ func DefaultProfile() *Seccomp {
 		{
 			Names: []string{
 				"bdflush",
-				"clone3",
 				"io_pgetevents",
 				"io_uring_enter",
 				"io_uring_register",
@@ -118,6 +117,7 @@ func DefaultProfile() *Seccomp {
 				"clock_nanosleep",
 				"clock_nanosleep_time64",
 				"clone",
+				"clone3",
 				"close",
 				"close_range",
 				"connect",
