@@ -183,6 +183,7 @@ func DefaultProfile() *Seccomp {
 				"getgroups",
 				"getgroups32",
 				"getitimer",
+				"get_mempolicy",
 				"getpeername",
 				"getpgid",
 				"getpgrp",
@@ -233,6 +234,7 @@ func DefaultProfile() *Seccomp {
 				"lstat",
 				"lstat64",
 				"madvise",
+				"mbind",
 				"memfd_create",
 				"mincore",
 				"mkdir",
@@ -350,6 +352,7 @@ func DefaultProfile() *Seccomp {
 				"sendmsg",
 				"sendto",
 				"setns",
+				"set_mempolicy",
 				"set_robust_list",
 				"set_thread_area",
 				"set_tid_address",
@@ -657,31 +660,6 @@ func DefaultProfile() *Seccomp {
 			Args:     []*Arg{},
 			Excludes: Filter{
 				Caps: []string{"CAP_SYS_MODULE"},
-			},
-		},
-		{
-			Names: []string{
-				"get_mempolicy",
-				"mbind",
-				"set_mempolicy",
-			},
-			Action: ActAllow,
-			Args:   []*Arg{},
-			Includes: Filter{
-				Caps: []string{"CAP_SYS_NICE"},
-			},
-		},
-		{
-			Names: []string{
-				"get_mempolicy",
-				"mbind",
-				"set_mempolicy",
-			},
-			Action:   ActErrno,
-			ErrnoRet: &eperm,
-			Args:     []*Arg{},
-			Excludes: Filter{
-				Caps: []string{"CAP_SYS_NICE"},
 			},
 		},
 		{

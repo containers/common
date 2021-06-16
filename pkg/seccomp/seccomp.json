@@ -189,6 +189,7 @@
 				"getgroups",
 				"getgroups32",
 				"getitimer",
+				"get_mempolicy",
 				"getpeername",
 				"getpgid",
 				"getpgrp",
@@ -239,6 +240,7 @@
 				"lstat",
 				"lstat64",
 				"madvise",
+				"mbind",
 				"memfd_create",
 				"mincore",
 				"mkdir",
@@ -356,6 +358,7 @@
 				"sendmsg",
 				"sendto",
 				"setns",
+				"set_mempolicy",
 				"set_robust_list",
 				"set_thread_area",
 				"set_tid_address",
@@ -751,39 +754,6 @@
 			"excludes": {
 				"caps": [
 					"CAP_SYS_MODULE"
-				]
-			},
-			"errnoRet": 1
-		},
-		{
-			"names": [
-				"get_mempolicy",
-				"mbind",
-				"set_mempolicy"
-			],
-			"action": "SCMP_ACT_ALLOW",
-			"args": [],
-			"comment": "",
-			"includes": {
-				"caps": [
-					"CAP_SYS_NICE"
-				]
-			},
-			"excludes": {}
-		},
-		{
-			"names": [
-				"get_mempolicy",
-				"mbind",
-				"set_mempolicy"
-			],
-			"action": "SCMP_ACT_ERRNO",
-			"args": [],
-			"comment": "",
-			"includes": {},
-			"excludes": {
-				"caps": [
-					"CAP_SYS_NICE"
 				]
 			},
 			"errnoRet": 1
