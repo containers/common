@@ -52,9 +52,6 @@ func DefaultProfile() *Seccomp {
 			Names: []string{
 				"bdflush",
 				"io_pgetevents",
-				"io_uring_enter",
-				"io_uring_register",
-				"io_uring_setup",
 				"kexec_file_load",
 				"kexec_load",
 				"membarrier",
