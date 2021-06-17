@@ -55,7 +55,7 @@ func TestLoad(t *testing.T) {
 		}
 
 		// Now remove the image.
-		rmReports, rmErrors := runtime.RemoveImages(ctx, loadedImages, &RemoveImagesOptions{Force: true})
+		rmReports, rmErrors := runtime.RemoveImages(ctx, ids, &RemoveImagesOptions{Force: true})
 		require.Len(t, rmErrors, 0)
 		require.Len(t, rmReports, test.numImages)
 
