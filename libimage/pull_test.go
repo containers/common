@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	goruntime "runtime"
 	"testing"
 
 	"github.com/containers/common/pkg/config"
@@ -66,4 +67,59 @@ func TestPull(t *testing.T) {
 		assert.Equal(t, image.ID(), rmReports[0].ID)
 		assert.True(t, rmReports[0].Removed)
 	}
+}
+
+func TestPullPlatforms(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	localArch := goruntime.GOARCH
+	localOS := goruntime.GOOS
+
+	pulledImages, err := runtime.Pull(ctx, "busybox", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err, "pull busybox")
+	require.Len(t, pulledImages, 1)
+
+	image, _, err := runtime.LookupImage("busybox", nil)
+	require.NoError(t, err, "lookup busybox")
+	require.NotNil(t, image, "lookup busybox")
+
+	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{IgnorePlatform: true})
+	require.NoError(t, err, "lookup busybox - ign. platform")
+	require.NotNil(t, image, "lookup busybox - ing. platform")
+
+	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{Architecture: localArch})
+	require.NoError(t, err, "lookup busybox - by local arch")
+	require.NotNil(t, image, "lookup busybox - by local arch")
+
+	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{OS: localOS})
+	require.NoError(t, err, "lookup busybox - by local arch")
+	require.NotNil(t, image, "lookup busybox - by local arch")
+
+	_, _, err = runtime.LookupImage("busybox", &LookupImageOptions{Architecture: "bogus"})
+	require.Error(t, err, "lookup busybox - bogus arch")
+
+	_, _, err = runtime.LookupImage("busybox", &LookupImageOptions{OS: "bogus"})
+	require.Error(t, err, "lookup busybox - bogus OS")
+
+	pullOptions.Architecture = "arm"
+	pulledImages, err = runtime.Pull(ctx, "busybox", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err, "pull busybox - arm")
+	require.Len(t, pulledImages, 1)
+
+	if localArch != "arm" {
+		_, _, err = runtime.LookupImage("busybox", nil)
+		require.Error(t, err, "lookup busybox - local arch != arm")
+	}
+
+	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{Architecture: "arm"})
+	require.NoError(t, err, "lookup busybox - by arm")
+	require.NotNil(t, image, "lookup busybox - by local arch")
+
+	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{IgnorePlatform: true})
+	require.NoError(t, err, "lookup busybox - ign. platform")
+	require.NotNil(t, image, "lookup busybox - ing. platform")
 }
