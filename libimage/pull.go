@@ -323,7 +323,7 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 // from a registry.  On successful pull it returns the used fully-qualified
 // name that can later be used to look up the image in the local containers
 // storage.
-func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName string, pullPolicy config.PullPolicy, options *PullOptions) ([]string, error) {
+func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName string, pullPolicy config.PullPolicy, options *PullOptions) ([]string, error) { //nolint:gocyclo
 	// Sanity check.
 	if err := pullPolicy.Validate(); err != nil {
 		return nil, err
@@ -339,9 +339,25 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	// resolved name for pulling.  Assume we're doing a `pull foo`.
 	// If there's already a local image "localhost/foo", then we should
 	// attempt pulling that instead of doing the full short-name dance.
-	localImage, resolvedImageName, err = r.LookupImage(imageName, nil)
+	lookupOptions := &LookupImageOptions{
+		// NOTE: we must ignore the platform of a local image when
+		// doing lookups.  Some images set an incorrect or even invalid
+		// platform (see containers/podman/issues/10682).  Doing the
+		// lookup while ignoring the platform checks prevents
+		// redundantly downloading the same image.
+		IgnorePlatform: true,
+	}
+	localImage, resolvedImageName, err = r.LookupImage(imageName, lookupOptions)
 	if err != nil && errors.Cause(err) != storage.ErrImageUnknown {
 		logrus.Errorf("Looking up %s in local storage: %v", imageName, err)
+	}
+
+	// If the local image is corrupted, we need to repull it.
+	if localImage != nil {
+		if err := localImage.isCorrupted(imageName); err != nil {
+			logrus.Error(err)
+			localImage = nil
+		}
 	}
 
 	if pullPolicy == config.PullPolicyNever {
