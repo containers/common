@@ -64,6 +64,9 @@ func TestCorruptedImage(t *testing.T) {
 	_, err = image.Inspect(ctx, false)
 	require.Error(t, err, "inspecting corrupted image should fail")
 
+	err = image.isCorrupted(imageName)
+	require.Error(t, err, "image is corrupted")
+
 	exists, err = runtime.Exists(imageName)
 	require.NoError(t, err, "corrupted image exists should not fail")
 	require.False(t, exists, "corrupted image should not be marked to exist")
@@ -75,7 +78,7 @@ func TestCorruptedImage(t *testing.T) {
 	require.Len(t, pulledImages, 1)
 	image = pulledImages[0]
 
-	// Inpsecting a repaired image should work.
+	// Inspecting a repaired image should work.
 	_, err = image.Inspect(ctx, false)
 	require.NoError(t, err, "inspecting repaired image should work")
 }
