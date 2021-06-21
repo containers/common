@@ -379,6 +379,16 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		return nil, errors.Wrap(storage.ErrImageUnknown, imageName)
 	}
 
+	// Unless the pull policy is "always", we must pessimistically assume
+	// that the local image has an invalid architecture (see
+	// containers/podman/issues/10682).  Hence, whenever the user requests
+	// a custom platform, set the pull policy to "always" to make sure
+	// we're pulling down the image.
+	if pullPolicy != config.PullPolicyAlways && len(options.Architecture)+len(options.OS)+len(options.Variant) > 0 {
+		logrus.Debugf("Enforcing pull policy to %q to support custom platform (arch: %q, os: %q, variant: %q)", "always", options.Architecture, options.OS, options.Variant)
+		pullPolicy = config.PullPolicyAlways
+	}
+
 	if pullPolicy == config.PullPolicyMissing && localImage != nil {
 		return []string{resolvedImageName}, nil
 	}
