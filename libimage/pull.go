@@ -96,6 +96,20 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 		r.writeEvent(&Event{ID: "", Name: name, Time: time.Now(), Type: EventTypeImagePull})
 	}
 
+	// Some callers may set the platform via the system context at creation
+	// time of the runtime.  We need this information to decide whether we
+	// need to enforce pulling from a registry (see
+	// containers/podman/issues/10682).
+	if options.Architecture == "" {
+		options.Architecture = r.systemContext.ArchitectureChoice
+	}
+	if options.OS == "" {
+		options.OS = r.systemContext.OSChoice
+	}
+	if options.Variant == "" {
+		options.Variant = r.systemContext.VariantChoice
+	}
+
 	var (
 		pulledImages []string
 		pullError    error
@@ -360,6 +374,20 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 	}
 
+	// Unless the pull policy is "always", we must pessimistically assume
+	// that the local image has an invalid architecture (see
+	// containers/podman/issues/10682).  Hence, whenever the user requests
+	// a custom platform, set the pull policy to "always" to make sure
+	// we're pulling down the image.
+	//
+	// NOTE that this is will even override --pull={false,never}.  This is
+	// very likely a bug but a consistent one in Podman/Buildah and should
+	// be addressed at a later point.
+	if pullPolicy != config.PullPolicyAlways && len(options.Architecture)+len(options.OS)+len(options.Variant) > 0 {
+		logrus.Debugf("Enforcing pull policy to %q to support custom platform (arch: %q, os: %q, variant: %q)", "always", options.Architecture, options.OS, options.Variant)
+		pullPolicy = config.PullPolicyAlways
+	}
+
 	if pullPolicy == config.PullPolicyNever {
 		if localImage != nil {
 			logrus.Debugf("Pull policy %q but no local image has been found for %s", pullPolicy, imageName)
@@ -367,16 +395,6 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 		logrus.Debugf("Pull policy %q and %s resolved to local image %s", pullPolicy, imageName, resolvedImageName)
 		return nil, errors.Wrap(storage.ErrImageUnknown, imageName)
-	}
-
-	// Unless the pull policy is "always", we must pessimistically assume
-	// that the local image has an invalid architecture (see
-	// containers/podman/issues/10682).  Hence, whenever the user requests
-	// a custom platform, set the pull policy to "always" to make sure
-	// we're pulling down the image.
-	if pullPolicy != config.PullPolicyAlways && len(options.Architecture)+len(options.OS)+len(options.Variant) > 0 {
-		logrus.Debugf("Enforcing pull policy to %q to support custom platform (arch: %q, os: %q, variant: %q)", "always", options.Architecture, options.OS, options.Variant)
-		pullPolicy = config.PullPolicyAlways
 	}
 
 	if pullPolicy == config.PullPolicyMissing && localImage != nil {
