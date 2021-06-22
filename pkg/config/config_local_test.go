@@ -276,6 +276,11 @@ var _ = Describe("Config Local", func() {
 		}
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
+		fi, err := os.Stat(tmpfile)
+		gomega.Expect(err).To(gomega.BeNil())
+		perm := int(fi.Mode().Perm())
+		// 436 decimal = 644 octal
+		gomega.Expect(perm).To(gomega.Equal(420))
 		defer os.Remove(tmpfile)
 	})
 	It("Default Umask", func() {
