@@ -260,12 +260,6 @@ var _ = Describe("Config Local", func() {
 		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
 		os.Setenv("CONTAINERS_CONF", tmpfile)
 		config, err := ReadCustomConfig()
-		// Undo that
-		if envSet {
-			os.Setenv("CONTAINERS_CONF", oldContainersConf)
-		} else {
-			os.Unsetenv("CONTAINERS_CONF")
-		}
 		gomega.Expect(err).To(gomega.BeNil())
 		config.Containers.Devices = []string{"/dev/null:/dev/null:rw",
 			"/dev/sdc/",
@@ -274,8 +268,19 @@ var _ = Describe("Config Local", func() {
 		}
 
 		err = config.Write()
+		// Undo that
+		if envSet {
+			os.Setenv("CONTAINERS_CONF", oldContainersConf)
+		} else {
+			os.Unsetenv("CONTAINERS_CONF")
+		}
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
+		fi, err := os.Stat(tmpfile)
+		gomega.Expect(err).To(gomega.BeNil())
+		perm := int(fi.Mode().Perm())
+		// 436 decimal = 644 octal
+		gomega.Expect(perm).To(gomega.Equal(420))
 		defer os.Remove(tmpfile)
 	})
 	It("Default Umask", func() {
