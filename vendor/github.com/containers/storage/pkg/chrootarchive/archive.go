@@ -13,7 +13,7 @@ import (
 
 	"github.com/containers/storage/pkg/archive"
 	"github.com/containers/storage/pkg/idtools"
-	"github.com/opencontainers/runc/libcontainer/userns"
+	rsystem "github.com/opencontainers/runc/libcontainer/system"
 	"github.com/pkg/errors"
 )
 
@@ -76,7 +76,7 @@ func untarHandler(tarArchive io.Reader, dest string, options *archive.TarOptions
 	}
 	if options == nil {
 		options = &archive.TarOptions{}
-		options.InUserNS = userns.RunningInUserNS()
+		options.InUserNS = rsystem.RunningInUserNS()
 	}
 	if options.ExcludePatterns == nil {
 		options.ExcludePatterns = []string{}
