@@ -44,5 +44,8 @@ func testNewRuntime(t *testing.T) (runtime *Runtime, cleanup func()) {
 		runtime.Shutdown(true)
 		_ = os.RemoveAll(workdir)
 	}
+
+	sys := runtime.SystemContext()
+	require.NotNil(t, sys)
 	return runtime, cleanup
 }
