@@ -104,7 +104,7 @@ func TestNumCPU(t *testing.T) {
 }
 
 func TestNumMems(t *testing.T) {
-	if _, err := os.Stat("/proc/*/numa_maps"); !os.IsNotExist(err) {
+	if _, err := os.Stat("/proc/self/numa_maps"); !os.IsNotExist(err) {
 		t.Skip("NUMA must be supported")
 	}
 	cpuMems := NUMANodeCount()
