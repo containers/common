@@ -102,3 +102,13 @@ func TestNumCPU(t *testing.T) {
 		t.Fatal("CPU returned must be greater than zero")
 	}
 }
+
+func TestNumMems(t *testing.T) {
+	if _, err := os.Stat("/proc/self/numa_maps"); !os.IsNotExist(err) {
+		t.Skip("NUMA must be supported")
+	}
+	cpuMems := NUMANodeCount()
+	if cpuMems < 0 {
+		t.Fatal("Invalid number of memory nodes, must be 0 or greater.")
+	}
+}
