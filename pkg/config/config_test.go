@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -11,6 +12,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	selinux "github.com/opencontainers/selinux/go-selinux"
+	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Config", func() {
@@ -640,6 +642,18 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			testConfigs := append(configs, []string{file4, file3, file2, file1}...)
 			gomega.Expect(newConfigs).To(gomega.Equal(testConfigs))
+		})
+
+		It("test config errors", func() {
+			conf := Config{}
+			content := bytes.NewBufferString("")
+			logrus.SetOutput(content)
+			err := readConfigFromFile("testdata/containers_broken.conf", &conf)
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(conf.Containers.NetNS).To(gomega.Equal("bridge"))
+			gomega.Expect(conf.Containers.Umask).To(gomega.Equal("0002"))
+			gomega.Expect(content).To(gomega.ContainSubstring("Failed to decode the keys [\\\"foo\\\" \\\"containers.image_default_transport\\\"] from \\\"testdata/containers_broken.conf\\\""))
+			logrus.SetOutput(os.Stderr)
 		})
 	})
 
