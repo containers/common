@@ -655,6 +655,16 @@ var _ = Describe("Config", func() {
 			gomega.Expect(content).To(gomega.ContainSubstring("Failed to decode the keys [\\\"foo\\\" \\\"containers.image_default_transport\\\"] from \\\"testdata/containers_broken.conf\\\""))
 			logrus.SetOutput(os.Stderr)
 		})
+
+		It("test default config errors", func() {
+			conf := Config{}
+			content := bytes.NewBufferString("")
+			logrus.SetOutput(content)
+			err := readConfigFromFile("containers.conf", &conf)
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(content.String()).To(gomega.Equal(""))
+			logrus.SetOutput(os.Stderr)
+		})
 	})
 
 	Describe("Reload", func() {

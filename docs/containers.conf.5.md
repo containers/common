@@ -530,7 +530,7 @@ Currently valid values are:
   * file
   * pass
 
-**opts**={}
+**[secrets.opts]**
 
 The driver specific options object.
 
