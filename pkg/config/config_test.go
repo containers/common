@@ -191,7 +191,6 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, true)).To(gomega.BeEquivalentTo(httpEnvs))
 			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("HTTP_PROXY"))
 			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("foo"))
-
 			// Undo that
 			if proxyEnvSet {
 				os.Setenv("HTTP_PROXY", oldProxy)
@@ -292,7 +291,16 @@ var _ = Describe("Config", func() {
 			gomega.Expect(config.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
-			gomega.Expect(config.LogDriver()).To(gomega.Equal("k8s-file"))
+			if useSystemd() {
+				gomega.Expect(config.Engine.CgroupManager).To(gomega.BeEquivalentTo("systemd"))
+				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("journald"))
+				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
+			} else {
+				gomega.Expect(config.Engine.CgroupManager).To(gomega.BeEquivalentTo("cgroupfs"))
+				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("file"))
+				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
+			}
+
 		})
 
 		It("should success with valid user file path", func() {
