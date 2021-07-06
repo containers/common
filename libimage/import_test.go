@@ -16,11 +16,19 @@ func TestImport(t *testing.T) {
 	importOptions := &ImportOptions{}
 	importOptions.Writer = os.Stdout
 
-	imported, err := runtime.Import(ctx, "testdata/exported-container.tar", importOptions)
-	require.NoError(t, err)
+	for _, tag := range []string{"", "foobar"} {
+		importOptions.Tag = tag
+		imported, err := runtime.Import(ctx, "testdata/exported-container.tar", importOptions)
+		require.NoError(t, err)
 
-	image, resolvedName, err := runtime.LookupImage(imported, nil)
-	require.NoError(t, err)
-	require.Equal(t, imported, resolvedName)
-	require.Equal(t, imported, "sha256:"+image.ID())
+		image, resolvedName, err := runtime.LookupImage(imported, nil)
+		require.NoError(t, err)
+		require.Equal(t, imported, resolvedName)
+		require.Equal(t, "sha256:"+image.ID(), imported)
+
+		if tag != "" {
+			_, _, err := runtime.LookupImage(tag, nil)
+			require.NoError(t, err)
+		}
+	}
 }
