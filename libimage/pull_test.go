@@ -87,10 +87,6 @@ func TestPullPlatforms(t *testing.T) {
 	require.NoError(t, err, "lookup busybox")
 	require.NotNil(t, image, "lookup busybox")
 
-	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{IgnorePlatform: true})
-	require.NoError(t, err, "lookup busybox - ign. platform")
-	require.NotNil(t, image, "lookup busybox - ing. platform")
-
 	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{Architecture: localArch})
 	require.NoError(t, err, "lookup busybox - by local arch")
 	require.NotNil(t, image, "lookup busybox - by local arch")
@@ -109,17 +105,9 @@ func TestPullPlatforms(t *testing.T) {
 	pulledImages, err = runtime.Pull(ctx, "busybox", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err, "pull busybox - arm")
 	require.Len(t, pulledImages, 1)
-
-	if localArch != "arm" {
-		_, _, err = runtime.LookupImage("busybox", nil)
-		require.Error(t, err, "lookup busybox - local arch != arm")
-	}
+	pullOptions.Architecture = ""
 
 	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{Architecture: "arm"})
 	require.NoError(t, err, "lookup busybox - by arm")
 	require.NotNil(t, image, "lookup busybox - by local arch")
-
-	image, _, err = runtime.LookupImage("busybox", &LookupImageOptions{IgnorePlatform: true})
-	require.NoError(t, err, "lookup busybox - ign. platform")
-	require.NotNil(t, image, "lookup busybox - ing. platform")
 }
