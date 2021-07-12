@@ -158,6 +158,13 @@ type ContainersConfig struct {
 	// PidNS indicates how to create a pid namespace for the container
 	PidNS string `toml:"pidns,omitempty"`
 
+	// Copy the content from the underlying image into the newly created
+	// volume when the container is created instead of when it is started.
+	// If false, the container engine will not copy the content until
+	// the container is started. Setting it to true may have negative
+	// performance implications.
+	PrepareOnCreate bool `toml:"prepare_on_create,omitempty"`
+
 	// RootlessNetworking depicts the "kind" of networking for rootless
 	// containers.  Valid options are `slirp4netns` and `cni`. Default is
 	// `slirp4netns`
