@@ -384,6 +384,10 @@ type EngineConfig struct {
 	// will refer to the plugin as) mapped to a path, which must point to a
 	// Unix socket that conforms to the Volume Plugin specification.
 	VolumePlugins map[string]string `toml:"volume_plugins,omitempty"`
+
+	// ChownCopiedFiles tells the container engine whether to chown files copied
+	// into a container to the container's primary uid/gid.
+	ChownCopiedFiles bool `toml:"chown_copied_files"`
 }
 
 // SetOptions contains a subset of options in a Config. It's used to indicate if
