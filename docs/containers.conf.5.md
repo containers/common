@@ -494,6 +494,11 @@ By default this will be configured relative to where containers/storage store
 containers. This convention is followed by the default volume driver, but may
 not be by other drivers.
 
+**chown_copied_files**=true
+
+Determines whether file copied into a container will have changed ownership to
+the primary uid/gid of the container.
+
 ## SERVICE DESTINATION TABLE
 The `service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
 
