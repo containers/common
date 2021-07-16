@@ -64,7 +64,9 @@ func TestImageFunctions(t *testing.T) {
 
 	// Below mostly smoke tests.
 	require.False(t, image.IsReadOnly())
-	require.False(t, image.IsDangling())
+	isDangling, err := image.IsDangling(ctx)
+	require.NoError(t, err)
+	require.False(t, isDangling)
 
 	isIntermediate, err := image.IsIntermediate(ctx)
 	require.NoError(t, err)

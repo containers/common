@@ -121,24 +121,29 @@ func (i *Image) IsReadOnly() bool {
 	return i.storageImage.ReadOnly
 }
 
-// IsDangling returns true if the image is dangling.  An image is considered
-// dangling if no names are associated with it in the containers storage.
-func (i *Image) IsDangling() bool {
-	return len(i.Names()) == 0
-}
-
-// IsIntermediate returns true if the image is an intermediate image, that is
-// a dangling image without children.
-func (i *Image) IsIntermediate(ctx context.Context) (bool, error) {
-	// If the image has tags, it's not an intermediate one.
-	if !i.IsDangling() {
+// IsDangling returns true if the image is dangling, that is an untagged image
+// without children.
+func (i *Image) IsDangling(ctx context.Context) (bool, error) {
+	if len(i.Names()) > 0 {
 		return false, nil
 	}
 	children, err := i.getChildren(ctx, false)
 	if err != nil {
 		return false, err
 	}
-	// No tags, no children -> intermediate!
+	return len(children) == 0, nil
+}
+
+// IsIntermediate returns true if the image is an intermediate image, that is
+// an untagged image with children.
+func (i *Image) IsIntermediate(ctx context.Context) (bool, error) {
+	if len(i.Names()) > 0 {
+		return false, nil
+	}
+	children, err := i.getChildren(ctx, false)
+	if err != nil {
+		return false, err
+	}
 	return len(children) != 0, nil
 }
 
@@ -420,19 +425,16 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 		return nil
 	}
 
-	if !parent.IsDangling() {
-		return nil
-	}
-
-	// If the image has siblings, we don't remove the parent.
-	hasSiblings, err := parent.HasChildren(ctx)
+	// Only remove the parent if it's dangling, that is being untagged and
+	// without children.
+	danglingParent, err := parent.IsDangling(ctx)
 	if err != nil {
 		// See Podman commit fd9dd7065d44: we need to
 		// be tolerant toward corrupted images.
 		logrus.Warnf("error determining if an image is a parent: %v, ignoring the error", err)
-		hasSiblings = false
+		danglingParent = false
 	}
-	if hasSiblings {
+	if !danglingParent {
 		return nil
 	}
 
