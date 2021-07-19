@@ -276,7 +276,7 @@ type RemoveImageReport struct {
 
 // remove removes the image along with all dangling parent images that no other
 // image depends on.  The image must not be set read-only and not be used by
-// containers.
+// containers.  Returns IDs of removed/untagged images in order.
 //
 // If the image is used by containers return storage.ErrImageUsedByContainer.
 // Use force to remove these containers.
@@ -287,7 +287,12 @@ type RemoveImageReport struct {
 //
 // This function is internal.  Users of libimage should always use
 // `(*Runtime).RemoveImages()`.
-func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport, referencedBy string, options *RemoveImagesOptions) error {
+func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport, referencedBy string, options *RemoveImagesOptions) ([]string, error) {
+	processedIDs := []string{}
+	return i.removeRecursive(ctx, rmMap, processedIDs, referencedBy, options)
+}
+
+func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveImageReport, processedIDs []string, referencedBy string, options *RemoveImagesOptions) ([]string, error) {
 	// If referencedBy is empty, the image is considered to be removed via
 	// `image remove --all` which alters the logic below.
 
@@ -299,7 +304,7 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 	logrus.Debugf("Removing image %s", i.ID())
 
 	if i.IsReadOnly() {
-		return errors.Errorf("cannot remove read-only image %q", i.ID())
+		return processedIDs, errors.Errorf("cannot remove read-only image %q", i.ID())
 	}
 
 	if i.runtime.eventChannel != nil {
@@ -311,7 +316,7 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 	if exists {
 		// If the image has already been removed, we're done.
 		if report.Removed {
-			return nil
+			return processedIDs, nil
 		}
 	} else {
 		report = &RemoveImageReport{ID: i.ID()}
@@ -338,7 +343,7 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 	if options.WithSize {
 		size, err := i.Size()
 		if handleError(err) != nil {
-			return err
+			return processedIDs, err
 		}
 		report.Size = size
 	}
@@ -359,18 +364,18 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 		byDigest := strings.HasPrefix(referencedBy, "sha256:")
 		if !options.Force {
 			if byID && numNames > 1 {
-				return errors.Errorf("unable to delete image %q by ID with more than one tag (%s): please force removal", i.ID(), i.Names())
+				return processedIDs, errors.Errorf("unable to delete image %q by ID with more than one tag (%s): please force removal", i.ID(), i.Names())
 			} else if byDigest && numNames > 1 {
 				// FIXME - Docker will remove the digest but containers storage
 				// does not support that yet, so our hands are tied.
-				return errors.Errorf("unable to delete image %q by digest with more than one tag (%s): please force removal", i.ID(), i.Names())
+				return processedIDs, errors.Errorf("unable to delete image %q by digest with more than one tag (%s): please force removal", i.ID(), i.Names())
 			}
 		}
 
 		// Only try to untag if we know it's not an ID or digest.
 		if !byID && !byDigest {
 			if err := i.Untag(referencedBy); handleError(err) != nil {
-				return err
+				return processedIDs, err
 			}
 			report.Untagged = append(report.Untagged, referencedBy)
 
@@ -379,14 +384,15 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 		}
 	}
 
+	processedIDs = append(processedIDs, i.ID())
 	if skipRemove {
-		return nil
+		return processedIDs, nil
 	}
 
 	// Perform the actual removal. First, remove containers if needed.
 	if options.Force {
 		if err := i.removeContainers(options.RemoveContainerFunc); err != nil {
-			return err
+			return processedIDs, err
 		}
 	}
 
@@ -412,7 +418,7 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 	}
 
 	if _, err := i.runtime.store.DeleteImage(i.ID(), true); handleError(err) != nil {
-		return err
+		return processedIDs, err
 	}
 	report.Untagged = append(report.Untagged, i.Names()...)
 
@@ -422,7 +428,7 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 
 	// Check if can remove the parent image.
 	if parent == nil {
-		return nil
+		return processedIDs, nil
 	}
 
 	// Only remove the parent if it's dangling, that is being untagged and
@@ -435,11 +441,11 @@ func (i *Image) remove(ctx context.Context, rmMap map[string]*RemoveImageReport,
 		danglingParent = false
 	}
 	if !danglingParent {
-		return nil
+		return processedIDs, nil
 	}
 
 	// Recurse into removing the parent.
-	return parent.remove(ctx, rmMap, "", options)
+	return parent.removeRecursive(ctx, rmMap, processedIDs, "", options)
 }
 
 // Tag the image with the specified name and store it in the local containers
