@@ -19,6 +19,12 @@ func TestPull(t *testing.T) {
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
 
+	// Make sure that parsing errors of the daemon transport are returned
+	// and that we do not fallthrough attempting to pull the specified
+	// string as an image from a registry.
+	_, err := runtime.Pull(ctx, "docker-daemon:alpine", config.PullPolicyAlways, pullOptions)
+	require.Error(t, err, "return parsing error from daemon transport")
+
 	for _, test := range []struct {
 		input       string
 		expectError bool
