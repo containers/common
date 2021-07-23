@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/containers/image/v5 v5.13.2
+	github.com/containers/image/v5 v5.14.0
 	github.com/containers/ocicrypt v1.1.2
 	github.com/containers/storage v1.32.6
 	github.com/disiqueira/gotree/v3 v3.0.2
@@ -33,6 +33,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210603125802-9665404d3644
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 )
