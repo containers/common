@@ -112,7 +112,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.32.6
+# github.com/containers/storage v1.33.0
 ## explicit
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -130,6 +130,8 @@ github.com/containers/storage/drivers/zfs
 github.com/containers/storage/pkg/archive
 github.com/containers/storage/pkg/chrootarchive
 github.com/containers/storage/pkg/chunked
+github.com/containers/storage/pkg/chunked/compressor
+github.com/containers/storage/pkg/chunked/internal
 github.com/containers/storage/pkg/config
 github.com/containers/storage/pkg/devicemapper
 github.com/containers/storage/pkg/directory
