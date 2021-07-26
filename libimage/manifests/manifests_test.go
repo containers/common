@@ -72,6 +72,10 @@ func TestSaveLoad(t *testing.T) {
 
 	image, err := list.SaveToImage(store, "", []string{listImageName}, manifest.DockerV2ListMediaType)
 	assert.Nilf(t, err, "SaveToImage(1)")
+	locker, err := LockerForImage(store, image)
+	assert.Nilf(t, err, "LockerForImage()")
+	locker.Lock()
+	defer locker.Unlock()
 	imageReused, err := list.SaveToImage(store, image, nil, manifest.DockerV2ListMediaType)
 	assert.Nilf(t, err, "SaveToImage(2)")
 
