@@ -50,7 +50,6 @@ func GetLoginFlags(flags *LoginOptions) *pflag.FlagSet {
 	fs.StringVarP(&flags.Username, "username", "u", "", "Username for registry")
 	fs.BoolVar(&flags.StdinPassword, "password-stdin", false, "Take the password from stdin")
 	fs.BoolVar(&flags.GetLoginSet, "get-login", false, "Return the current login user for the registry")
-	fs.BoolVar(&flags.AcceptRepositories, "accept-repositories", false, "Allow namespaces or repositories rather than just registries")
 	fs.BoolVarP(&flags.Verbose, "verbose", "v", false, "Write more detailed information to stdout")
 	return &fs
 }
@@ -70,7 +69,6 @@ func GetLogoutFlags(flags *LogoutOptions) *pflag.FlagSet {
 	fs := pflag.FlagSet{}
 	fs.StringVar(&flags.AuthFile, "authfile", GetDefaultAuthFile(), "path of the authentication file. Use REGISTRY_AUTH_FILE environment variable to override")
 	fs.BoolVarP(&flags.All, "all", "a", false, "Remove the cached credentials for all registries in the auth file")
-	fs.BoolVar(&flags.AcceptRepositories, "accept-repositories", false, "Allow namespaces or repositories rather than just registries")
 	return &fs
 }
 
