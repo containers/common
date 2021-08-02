@@ -12,6 +12,10 @@ PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
 PROJECT := github.com/containers/common
 
+# Enforce the GOPROXY to make sure dependencies are resovled consistently
+# across different environments.
+export GOPROXY := https://proxy.golang.org
+
 # If GOPATH not specified, use one in the local directory
 ifeq ($(GOPATH),)
 export GOPATH := $(CURDIR)/_output
