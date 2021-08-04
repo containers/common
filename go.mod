@@ -9,7 +9,7 @@ require (
 	github.com/containers/storage v1.33.1
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
-	github.com/docker/docker v20.10.7+incompatible
+	github.com/docker/docker v20.10.8+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gorilla/mux v1.8.0 // indirect
