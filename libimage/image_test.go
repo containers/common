@@ -164,3 +164,107 @@ func TestImageFunctions(t *testing.T) {
 	require.Equal(t, labels, imageData.Labels, "inspect data should match")
 	require.Equal(t, image.NamesHistory(), imageData.NamesHistory, "inspect data should match")
 }
+
+func TestTag(t *testing.T) {
+	// Note: this will resolve pull from the GCR registry (see
+	// testdata/registries.conf).
+	busyboxLatest := "docker.io/library/busybox:latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+	pulledImages, err := runtime.Pull(ctx, busyboxLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	image := pulledImages[0]
+
+	digest := "sha256:adab3844f497ab9171f070d4cae4114b5aec565ac772e2f2579405b78be67c96"
+
+	// Tag
+	for _, test := range []struct {
+		tag         string
+		resolvesTo  string
+		expectError bool
+	}{
+		{"foo", "localhost/foo:latest", false},
+		{"docker.io/foo", "docker.io/library/foo:latest", false},
+		{"quay.io/bar/foo:tag", "quay.io/bar/foo:tag", false},
+		{"registry.com/$invalid", "", true},
+		{digest, "", true},
+		{"foo@" + digest, "", true},
+		{"quay.io/foo@" + digest, "", true},
+		{"", "", true},
+	} {
+		err := image.Tag(test.tag)
+		if test.expectError {
+			require.Error(t, err, "tag should have failed: %v", test)
+			continue
+		}
+		require.NoError(t, err, "tag should have succeeded: %v", test)
+
+		_, resolvedName, err := runtime.LookupImage(test.tag, nil)
+		require.NoError(t, err, "image should have resolved locally: %v", test)
+		require.Equal(t, test.resolvesTo, resolvedName, "image should have resolved correctly: %v", test)
+	}
+
+	// Check for specific error.
+	err = image.Tag("foo@" + digest)
+	require.True(t, errors.Cause(err) == errTagDigest, "check for specific digest error")
+}
+
+func TestUntag(t *testing.T) {
+	// Note: this will resolve pull from the GCR registry (see
+	// testdata/registries.conf).
+	busyboxLatest := "docker.io/library/busybox:latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+	pulledImages, err := runtime.Pull(ctx, busyboxLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	image := pulledImages[0]
+
+	digest := "sha256:adab3844f497ab9171f070d4cae4114b5aec565ac772e2f2579405b78be67c96"
+
+	// Untag
+	for _, test := range []struct {
+		tag         string
+		untag       string
+		expectError bool
+	}{
+		{"foo", "foo", false},
+		{"foo", "foo:latest", false},
+		{"foo", "localhost/foo", false},
+		{"foo", "localhost/foo:latest", false},
+		{"quay.io/image/foo", "quay.io/image/foo", false},
+		{"foo", "doNotExist", true},
+		{"foo", digest, true},
+		{"foo", "foo@" + digest, true},
+		{"foo", "localhost/foo@" + digest, true},
+	} {
+		err := image.Tag(test.tag)
+		require.NoError(t, err, "tag should have succeeded: %v", test)
+
+		err = image.Untag(test.untag)
+		if test.expectError {
+			require.Error(t, err, "untag should have failed: %v", test)
+			continue
+		}
+		require.NoError(t, err, "untag should have succeedded: %v", test)
+		_, resolvedName, err := runtime.LookupImage(test.tag, nil)
+		require.Error(t, err, "image should not resolve after untag anymore (%s): %v", resolvedName, test)
+	}
+
+	// Check for specific error.
+	err = image.Untag("foo@" + digest)
+	require.True(t, errors.Cause(err) == errUntagDigest, "check for specific digest error")
+}
