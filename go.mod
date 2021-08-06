@@ -3,7 +3,7 @@ module github.com/containers/common
 go 1.15
 
 require (
-	github.com/BurntSushi/toml v0.3.1
+	github.com/BurntSushi/toml v0.4.1
 	github.com/containers/image/v5 v5.15.0
 	github.com/containers/ocicrypt v1.1.2
 	github.com/containers/storage v1.33.1
