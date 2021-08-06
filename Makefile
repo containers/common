@@ -6,7 +6,7 @@ GO_BUILD=$(GO) build
 ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
 	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
 endif
-BUILDTAGS := containers_image_openpgp,systemd
+BUILDTAGS := containers_image_openpgp,systemd,no_libsubid
 DESTDIR ?=
 PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
@@ -72,7 +72,7 @@ docs:
 
 .PHONY: validate
 validate: build/golangci-lint
-	./build/golangci-lint run
+	./build/golangci-lint run --build-tags no_libsubid
 	./tools/validate_seccomp.sh ./pkg/seccomp
 
 vendor-in-container:
