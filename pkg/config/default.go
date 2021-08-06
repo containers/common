@@ -339,6 +339,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	// constants.
 	c.LockType = "shm"
 	c.MachineEnabled = false
+	c.MachineImage = "testing"
 
 	c.ChownCopiedFiles = true
 
@@ -549,6 +550,7 @@ func (c *Config) LogDriver() string {
 	return c.Containers.LogDriver
 }
 
+// MachineEnabled returns if podman is running inside a VM or not
 func (c *Config) MachineEnabled() bool {
 	return c.Engine.MachineEnabled
 }
@@ -557,4 +559,10 @@ func (c *Config) MachineEnabled() bool {
 // rootless containers should use
 func (c *Config) RootlessNetworking() string {
 	return c.Containers.RootlessNetworking
+}
+
+// MachineImage returns the image to be
+// used when creating a podman-machine VM
+func (c *Config) MachineImage() string {
+	return c.Engine.MachineImage
 }

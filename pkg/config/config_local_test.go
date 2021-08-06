@@ -369,4 +369,17 @@ var _ = Describe("Config Local", func() {
 			"root": "/srv/password-store",
 		}))
 	})
+
+	It("Set machine image path", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Engine.MachineImage).To(gomega.Equal("testing"))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Engine.MachineImage).To(gomega.Equal("stable"))
+	})
+
 })
