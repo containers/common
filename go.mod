@@ -7,6 +7,7 @@ require (
 	github.com/containers/image/v5 v5.15.0
 	github.com/containers/ocicrypt v1.1.2
 	github.com/containers/storage v1.33.2
+	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.8+incompatible
