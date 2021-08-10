@@ -412,6 +412,11 @@ Indicates if Podman is running inside a VM via Podman Machine.
 Podman uses this value to do extra setup around networking from the
 container inside the VM to to host.
 
+**machine_image**="testing"
+
+Default image used when creating a new VM using `podman machine init`.
+Options: `testing`, `stable`, or a custom path or download URL to an image
+
 **multi_image_archive**=false
 
 Allows for creating archives (e.g., tarballs) with more than one image.  Some container engines, such as Podman, interpret additional arguments as tags for one image and hence do not store more than one image.  The default behavior can be altered with this option.
