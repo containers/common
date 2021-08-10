@@ -299,6 +299,15 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 			"/sbin/runsc",
 			"/run/current-system/sw/bin/runsc",
 		},
+		"krun": {
+			"/usr/bin/krun",
+			"/usr/sbin/krun",
+			"/usr/local/bin/krun",
+			"/usr/local/sbin/krun",
+			"/sbin/krun",
+			"/bin/krun",
+			"/run/current-system/sw/bin/krun",
+		},
 	}
 	// Needs to be called after populating c.OCIRuntimes
 	c.OCIRuntime = c.findRuntime()
@@ -322,9 +331,10 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 		"runc",
 		"kata",
 		"runsc",
+		"krun",
 	}
-	c.RuntimeSupportsNoCgroups = []string{"crun"}
-	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc"}
+	c.RuntimeSupportsNoCgroups = []string{"crun", "krun"}
+	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}
 	c.InitPath = DefaultInitPath
 	c.NoPivotRoot = false
 
