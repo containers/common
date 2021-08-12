@@ -61,7 +61,7 @@ func isRetryable(err error) bool {
 
 	case errcode.Error:
 		switch e.Code {
-		case errcode.ErrorCodeUnauthorized,
+		case errcode.ErrorCodeUnauthorized, errcode.ErrorCodeDenied,
 			errcodev2.ErrorCodeNameUnknown, errcodev2.ErrorCodeManifestUnknown:
 			return false
 		}
