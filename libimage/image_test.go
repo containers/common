@@ -126,7 +126,7 @@ func TestImageFunctions(t *testing.T) {
 
 	sameMountPoint, err := image.Mountpoint()
 	require.NoError(t, err)
-	require.Equal(t, mountPoint, sameMountPoint, "mount points shoud be equal")
+	require.Equal(t, mountPoint, sameMountPoint, "mount points should be equal")
 
 	require.NoError(t, image.Unmount(false))
 	require.NoError(t, image.Unmount(true))

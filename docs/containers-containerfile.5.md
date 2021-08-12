@@ -320,7 +320,7 @@ The secret needs to be passed to the build using the --secret flag. The final im
   Sets the username or UID used for running subsequent commands.
 
   The **USER** instruction can optionally be used to set the group or GID. The
-  followings examples are all valid:
+  following examples are all valid:
   USER [user | user:group | uid | uid:gid | user:gid | uid:group ]
 
   Until the **USER** instruction is set, instructions will be run as root. The USER
