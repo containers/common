@@ -155,8 +155,9 @@ var _ = Describe("Config", func() {
 
 			pluginDirs := []string{
 				"/usr/libexec/cni",
-				"/usr/lib/cni",
+				"/usr/local/libexec/cni",
 				"/usr/local/lib/cni",
+				"/usr/lib/cni",
 				"/opt/cni/bin",
 			}
 

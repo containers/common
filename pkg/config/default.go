@@ -76,10 +76,12 @@ var (
 		"CAP_SYS_CHROOT",
 	}
 
+	// It may seem a bit unconventional, but it is necessary to do so
 	cniBinDir = []string{
 		"/usr/libexec/cni",
-		"/usr/lib/cni",
+		"/usr/local/libexec/cni",
 		"/usr/local/lib/cni",
+		"/usr/lib/cni",
 		"/opt/cni/bin",
 	}
 
