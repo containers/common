@@ -34,7 +34,7 @@ func Validate(strSlice []string) (map[string]string, error) {
 
 		trimmed := fmt.Sprintf("%s=%s", strings.TrimSpace(arr[0]), strings.TrimSpace(arr[1]))
 		if trimmed != val {
-			return nil, errors.Errorf("'%s' is invalid, extra spaces found", val)
+			return nil, errors.Errorf("%q is invalid, extra spaces found", val)
 		}
 
 		if validSysctlMap[arr[0]] {
