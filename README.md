@@ -38,7 +38,7 @@ syscalls available to containers.
 - [`pkg/apparmor`](pkg/apparmor): `apparmor`, `linux`
 - [`pkg/seccomp`](pkg/seccomp): `seccomp`
 - [`pkg/config`](pkg/config): `darwin`, `remote`, `linux`, `systemd`
-- [`pkg/sysinfo`](pkg/sysclt): `linux`, `solaris`, `windows`, `cgo`
+- [`pkg/sysinfo`](pkg/sysctl): `linux`, `solaris`, `windows`, `cgo`
 - [`pkg/cgroupv2`](pkg/cgroupv2): `linux`
 
 ## [Contributing](CONTRIBUTING.md)
