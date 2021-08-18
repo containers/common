@@ -44,9 +44,14 @@ func defaultEventsLogger() string {
 }
 
 func defaultLogDriver() string {
-	if useJournald() {
-		return "journald"
-	}
+	// FIXME: Podman's journald driver still has some issues which prevents
+	// defaulting to journald.  containers/podman/pull/11241 flaked with
+	// the following error: "Error: initial journal cursor: failed to get
+	// cursor: cannot assign requested address".
+	//
+	//	if useJournald() {
+	//		return "journald"
+	//	}
 	return "k8s-file"
 }
 
