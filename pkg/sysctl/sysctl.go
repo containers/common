@@ -50,7 +50,7 @@ func Validate(strSlice []string) (map[string]string, error) {
 			}
 		}
 		if !foundMatch {
-			return nil, errors.Errorf("sysctl '%s' is not allowed", arr[0])
+			return nil, errors.Errorf("sysctl %q is not allowed", arr[0])
 		}
 	}
 	return sysctl, nil
