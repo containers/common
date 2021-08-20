@@ -1,6 +1,7 @@
 package sysctl
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -30,6 +31,12 @@ func Validate(strSlice []string) (map[string]string, error) {
 		if len(arr) < 2 {
 			return nil, errors.Errorf("%s is invalid, sysctl values must be in the form of KEY=VALUE", val)
 		}
+
+		trimmed := fmt.Sprintf("%s=%s", strings.TrimSpace(arr[0]), strings.TrimSpace(arr[1]))
+		if trimmed != val {
+			return nil, errors.Errorf("%q is invalid, extra spaces found", val)
+		}
+
 		if validSysctlMap[arr[0]] {
 			sysctl[arr[0]] = arr[1]
 			continue
@@ -43,7 +50,7 @@ func Validate(strSlice []string) (map[string]string, error) {
 			}
 		}
 		if !foundMatch {
-			return nil, errors.Errorf("sysctl '%s' is not whitelisted", arr[0])
+			return nil, errors.Errorf("sysctl %q is not allowed", arr[0])
 		}
 	}
 	return sysctl, nil
