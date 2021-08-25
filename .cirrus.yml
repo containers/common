@@ -18,7 +18,7 @@ env:
     #### image names to test with (double-quotes around names are critical)
     ####
     FEDORA_NAME: "fedora-34"
-    IMAGE_SUFFIX: "c6032583541653504"
+    IMAGE_SUFFIX: "c6737534580424704"
     FEDORA_CONTAINER_FQIN: "quay.io/libpod/fedora_podman:${IMAGE_SUFFIX}"
 
 
