@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCorruptedImage(t *testing.T) {
+func TestCorruptedLayers(t *testing.T) {
 	// Regression tests for https://bugzilla.redhat.com/show_bug.cgi?id=1966872.
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
@@ -40,6 +40,10 @@ func TestCorruptedImage(t *testing.T) {
 	exists, err = runtime.Exists(imageName)
 	require.NoError(t, err, "healthy image exists")
 	require.True(t, exists, "healthy image exists")
+
+	// Disk usage works.
+	_, err = runtime.DiskUsage(ctx)
+	require.NoError(t, err, "disk usage works on healthy image")
 
 	// Now remove one layer from the layers.json index in the storage.  The
 	// image will still be listed in the container storage but attempting
@@ -70,6 +74,11 @@ func TestCorruptedImage(t *testing.T) {
 	exists, err = runtime.Exists(imageName)
 	require.NoError(t, err, "corrupted image exists should not fail")
 	require.False(t, exists, "corrupted image should not be marked to exist")
+
+	// Disk usage does not work.
+	_, err = runtime.DiskUsage(ctx)
+	require.Error(t, err, "disk usage does not work on corrupted image")
+	require.Contains(t, err.Error(), "exists in local storage but may be corrupted", "disk usage reports corrupted image")
 
 	// Now make sure that pull will detect the corrupted image and repulls
 	// if needed which will repair the data corruption.
