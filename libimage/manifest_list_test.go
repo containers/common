@@ -75,3 +75,43 @@ func TestCreateAndTagManifestList(t *testing.T) {
 	// Both origin list and newly tagged list should point to same image id
 	require.Equal(t, image.ID(), taggedImage.ID())
 }
+
+// Following test ensure that we test  Removing a manifestList
+// Test tags two manifestlist and deletes one of them and
+// confirms if other one is not deleted.
+func TestCreateAndRemoveManifestList(t *testing.T) {
+
+	tagName := "manifestlisttagged"
+	listName := "manifestlist"
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	list, err := runtime.CreateManifestList(listName)
+	require.NoError(t, err)
+	require.NotNil(t, list)
+
+	manifestListOpts := &ManifestListAddOptions{All: true}
+	_, err = list.Add(ctx, "docker://busybox", manifestListOpts)
+	require.NoError(t, err)
+
+	lookupOptions := &LookupImageOptions{ManifestList: true}
+	image, _, err := runtime.LookupImage(listName, lookupOptions)
+	require.NoError(t, err)
+	require.NotNil(t, image)
+	err = image.Tag(tagName)
+	require.NoError(t, err, "tag should have succeeded: %s", tagName)
+
+	// Try deleting the manifestList with tag
+	rmReports, rmErrors := runtime.RemoveImages(ctx, []string{tagName}, &RemoveImagesOptions{Force: true, LookupManifest: true})
+	require.Nil(t, rmErrors)
+	require.Equal(t, []string{"localhost/manifestlisttagged:latest"}, rmReports[0].Untagged)
+
+	// Remove original listname as well
+	rmReports, rmErrors = runtime.RemoveImages(ctx, []string{listName}, &RemoveImagesOptions{Force: true, LookupManifest: true})
+	require.Nil(t, rmErrors)
+	// output should contain log of untagging the original manifestlist
+	require.True(t, rmReports[0].Removed)
+	require.Equal(t, []string{"localhost/manifestlist:latest"}, rmReports[0].Untagged)
+
+}
