@@ -279,9 +279,20 @@ Options are:
 The `network` table contains settings pertaining to the management of CNI
 plugins.
 
-**cni_plugin_dirs**=["/opt/cni/bin/",]
+**cni_plugin_dirs**=[]
 
 List of paths to directories where CNI plugin binaries are located.
+
+The default list is:
+```
+cni_plugin_dirs = [
+  "/usr/local/libexec/cni",
+  "/usr/libexec/cni",
+  "/usr/local/lib/cni",
+  "/usr/lib/cni",
+  "/opt/cni/bin",
+]
+```
 
 **default_network**="podman"
 
