@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,6 +42,41 @@ func CheckAuthFile(authfile string) error {
 		return errors.Wrap(err, "checking authfile")
 	}
 	return nil
+}
+
+// Mirrors --authfile to a tmpfile if --authfile points to a
+// file descriptor instead of actual file on filesystem
+// reason is file descriptor could vanish mid-session if consumed
+// once, check https://github.com/containers/buildah/issues/3070
+func CreateTempAuthFileIfNeeded(authfile string) string {
+	if strings.HasPrefix(authfile, "/dev/fd") {
+		b, err := ioutil.ReadFile(authfile)
+		if err != nil {
+			// if anything goes wrong return authfile
+			// and let c/common/auth handle failues later
+			return authfile
+		}
+		tmpfile, err := ioutil.TempFile(os.TempDir(), "temp-common-auth")
+		if err != nil {
+			return authfile
+		}
+		if _, err := tmpfile.Write(b); err != nil {
+			// if anything goes wrong return authfile
+			// and let c/common/auth handle failues later
+			return authfile
+		}
+
+		return tmpfile.Name()
+	}
+	return authfile
+}
+
+// Removes any temp auth file if it was created in the first place
+func CleanTempAuthFiles() {
+	files, _ := filepath.Glob(filepath.Join(os.TempDir(), "temp-common-auth"))
+	for _, f := range files {
+		os.Remove(f)
+	}
 }
 
 // systemContextWithOptions returns a version of sys
