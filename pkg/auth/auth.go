@@ -193,6 +193,12 @@ func parseRegistryArgument(arg string, acceptRepositories bool) (key, registry s
 		return key, registry, nil, nil
 	}
 
+	// Special case when user inputs `docker.io/username`. reference.ParseNamed
+	// will fail if we do not include the `docker.io/library/username` in the key.
+	if strings.HasPrefix(key, "docker.io/") && !strings.HasPrefix(key, "docker.io/library/") {
+		key = "docker.io/library/" + strings.TrimPrefix(key, "docker.io/")
+	}
+
 	ref, parseErr := reference.ParseNamed(key)
 	if parseErr != nil {
 		return key, registry, nil, errors.Wrapf(parseErr, "parse reference from %q", key)
