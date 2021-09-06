@@ -98,6 +98,17 @@ func TestParseRegistryArgument(t *testing.T) {
 			},
 		},
 		{
+			name:               "a single docker.io/library repo",
+			arg:                "docker.io/library/user",
+			acceptRepositories: true,
+			shouldErr:          false,
+			expect: func(key, registry string, ref reference.Named) {
+				assert.Equal(t, "docker.io/library/user", key)
+				assert.Equal(t, "docker.io", registry)
+				assert.NotNil(t, ref)
+			},
+		},
+		{
 			name:               "with http[s] prefix",
 			arg:                "https://quay.io",
 			acceptRepositories: true,
