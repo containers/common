@@ -1,4 +1,4 @@
-% containers.conf(5) Container engine configuration file
+% containers.conf 5 Container engine configuration file
 
 # NAME
 containers.conf - The container engine configuration file specifies default
