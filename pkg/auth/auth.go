@@ -269,6 +269,17 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 	}
 	systemContext = systemContextWithOptions(systemContext, opts.AuthFile, "")
 
+	if opts.All {
+		if len(args) != 0 {
+			return errors.New("--all takes no arguments")
+		}
+		if err := config.RemoveAllAuthentication(systemContext); err != nil {
+			return err
+		}
+		fmt.Fprintln(opts.Stdout, "Removed login credentials for all registries")
+		return nil
+	}
+
 	var (
 		key, registry string
 		ref           reference.Named
@@ -277,7 +288,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 	if len(args) > 1 {
 		return errors.New("logout accepts only one registry to logout from")
 	}
-	if len(args) == 0 && !opts.All {
+	if len(args) == 0 {
 		if !opts.AcceptUnspecifiedRegistry {
 			return errors.New("please provide a registry to logout from")
 		}
@@ -288,21 +299,10 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		logrus.Debugf("registry not specified, default to the first registry %q from registries.conf", key)
 	}
 	if len(args) != 0 {
-		if opts.All {
-			return errors.New("--all takes no arguments")
-		}
 		key, registry, ref, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
 		if err != nil {
 			return err
 		}
-	}
-
-	if opts.All {
-		if err := config.RemoveAllAuthentication(systemContext); err != nil {
-			return err
-		}
-		fmt.Fprintln(opts.Stdout, "Removed login credentials for all registries")
-		return nil
 	}
 
 	err = config.RemoveAuthentication(systemContext, key)
