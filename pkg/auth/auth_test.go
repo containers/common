@@ -74,15 +74,16 @@ func TestParseRegistryArgument(t *testing.T) {
 		arg                string
 		acceptRepositories bool
 		expectedKey        string // or "" if we expect failure
-		expect             func(key, registry string, ref reference.Named)
+		expectedRegistry   string
+		expect             func(key string, ref reference.Named)
 	}{
 		{
 			name:               "success repository",
 			arg:                "quay.io/user",
 			acceptRepositories: true,
 			expectedKey:        "quay.io/user",
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "quay.io", registry)
+			expectedRegistry:   "quay.io",
+			expect: func(key string, ref reference.Named) {
 				assert.Equal(t, key, ref.String())
 			},
 		},
@@ -91,8 +92,8 @@ func TestParseRegistryArgument(t *testing.T) {
 			arg:                "quay.io",
 			acceptRepositories: true,
 			expectedKey:        "quay.io",
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "quay.io", registry)
+			expectedRegistry:   "quay.io",
+			expect: func(key string, ref reference.Named) {
 				assert.Nil(t, ref)
 			},
 		},
@@ -101,8 +102,8 @@ func TestParseRegistryArgument(t *testing.T) {
 			arg:                "docker.io/library/user",
 			acceptRepositories: true,
 			expectedKey:        "docker.io/library/user",
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "docker.io", registry)
+			expectedRegistry:   "docker.io",
+			expect: func(key string, ref reference.Named) {
 				assert.Equal(t, key, ref.String())
 			},
 		},
@@ -129,8 +130,8 @@ func TestParseRegistryArgument(t *testing.T) {
 			arg:                "https://quay.io/user",
 			acceptRepositories: false,
 			expectedKey:        "quay.io",
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "quay.io", registry)
+			expectedRegistry:   "quay.io",
+			expect: func(key string, ref reference.Named) {
 				assert.Nil(t, ref)
 			},
 		},
@@ -141,7 +142,8 @@ func TestParseRegistryArgument(t *testing.T) {
 		} else {
 			require.NoError(t, err, tc.name)
 			assert.Equal(t, tc.expectedKey, key, tc.name)
-			tc.expect(key, registry, ref)
+			assert.Equal(t, tc.expectedRegistry, registry)
+			tc.expect(key, ref)
 		}
 	}
 }
