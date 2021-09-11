@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/containers/image/v5/docker/reference"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"github.com/stretchr/testify/assert"
@@ -75,7 +74,6 @@ func TestParseRegistryArgument(t *testing.T) {
 		acceptRepositories bool
 		expectedKey        string // or "" if we expect failure
 		expectedRegistry   string
-		expect             func(key string, ref reference.Named)
 	}{
 		{
 			name:               "success repository",
@@ -83,9 +81,6 @@ func TestParseRegistryArgument(t *testing.T) {
 			acceptRepositories: true,
 			expectedKey:        "quay.io/user",
 			expectedRegistry:   "quay.io",
-			expect: func(key string, ref reference.Named) {
-				assert.Equal(t, key, ref.String())
-			},
 		},
 		{
 			name:               "success no repository",
@@ -93,9 +88,6 @@ func TestParseRegistryArgument(t *testing.T) {
 			acceptRepositories: true,
 			expectedKey:        "quay.io",
 			expectedRegistry:   "quay.io",
-			expect: func(key string, ref reference.Named) {
-				assert.Nil(t, ref)
-			},
 		},
 		{
 			name:               "a single docker.io/library repo",
@@ -103,9 +95,6 @@ func TestParseRegistryArgument(t *testing.T) {
 			acceptRepositories: true,
 			expectedKey:        "docker.io/library/user",
 			expectedRegistry:   "docker.io",
-			expect: func(key string, ref reference.Named) {
-				assert.Equal(t, key, ref.String())
-			},
 		},
 		{
 			name:               "with http[s] prefix",
@@ -131,9 +120,6 @@ func TestParseRegistryArgument(t *testing.T) {
 			acceptRepositories: false,
 			expectedKey:        "quay.io",
 			expectedRegistry:   "quay.io",
-			expect: func(key string, ref reference.Named) {
-				assert.Nil(t, ref)
-			},
 		},
 	} {
 		key, registry, ref, err := parseRegistryArgument(tc.arg, tc.acceptRepositories)
@@ -143,7 +129,12 @@ func TestParseRegistryArgument(t *testing.T) {
 			require.NoError(t, err, tc.name)
 			assert.Equal(t, tc.expectedKey, key, tc.name)
 			assert.Equal(t, tc.expectedRegistry, registry)
-			tc.expect(key, ref)
+			if tc.expectedKey != tc.expectedRegistry {
+				require.NotNil(t, ref, tc.name)
+				assert.Equal(t, tc.expectedKey, ref.String(), tc.name)
+			} else {
+				assert.Nil(t, ref, tc.name)
+			}
 		}
 	}
 }
