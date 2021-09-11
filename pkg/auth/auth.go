@@ -285,10 +285,8 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		ref           reference.Named
 		err           error
 	)
-	if len(args) > 1 {
-		return errors.New("logout accepts only one registry to logout from")
-	}
-	if len(args) == 0 {
+	switch len(args) {
+	case 0:
 		if !opts.AcceptUnspecifiedRegistry {
 			return errors.New("please provide a registry to logout from")
 		}
@@ -297,12 +295,15 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		}
 		registry = key
 		logrus.Debugf("registry not specified, default to the first registry %q from registries.conf", key)
-	}
-	if len(args) != 0 {
+
+	case 1:
 		key, registry, ref, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
 		if err != nil {
 			return err
 		}
+
+	default:
+		return errors.New("logout accepts only one registry to logout from")
 	}
 
 	err = config.RemoveAuthentication(systemContext, key)
