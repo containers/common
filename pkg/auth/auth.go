@@ -75,8 +75,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		ref           reference.Named
 		err           error
 	)
-	l := len(args)
-	switch l {
+	switch len(args) {
 	case 0:
 		if !opts.AcceptUnspecifiedRegistry {
 			return errors.New("please provide a registry to login to")
@@ -95,7 +94,6 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 
 	default:
 		return errors.New("login accepts only one registry to login to")
-
 	}
 
 	if ref != nil {
