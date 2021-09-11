@@ -66,7 +66,7 @@ var _ = Describe("Config", func() {
 	})
 })
 
-func TestParseRegistryArgument(t *testing.T) {
+func TestParseCredentialsKey(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
 		name               string
@@ -88,6 +88,13 @@ func TestParseRegistryArgument(t *testing.T) {
 			acceptRepositories: true,
 			expectedKey:        "quay.io",
 			expectedRegistry:   "quay.io",
+		},
+		{
+			name:               "a docker.io top-level namespace",
+			arg:                "docker.io/user",
+			acceptRepositories: true,
+			expectedKey:        "docker.io/user",
+			expectedRegistry:   "docker.io",
 		},
 		{
 			name:               "a single docker.io/library repo",
@@ -122,19 +129,13 @@ func TestParseRegistryArgument(t *testing.T) {
 			expectedRegistry:   "quay.io",
 		},
 	} {
-		key, registry, ref, err := parseRegistryArgument(tc.arg, tc.acceptRepositories)
+		key, registry, err := parseCredentialsKey(tc.arg, tc.acceptRepositories)
 		if tc.expectedKey == "" {
 			assert.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
 			assert.Equal(t, tc.expectedKey, key, tc.name)
 			assert.Equal(t, tc.expectedRegistry, registry)
-			if tc.expectedKey != tc.expectedRegistry {
-				require.NotNil(t, ref, tc.name)
-				assert.Equal(t, tc.expectedKey, ref.String(), tc.name)
-			} else {
-				assert.Nil(t, ref, tc.name)
-			}
 		}
 	}
 }

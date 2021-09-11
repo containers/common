@@ -85,7 +85,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		logrus.Debugf("registry not specified, default to the first registry %q from registries.conf", key)
 
 	case 1:
-		key, registry, _, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
+		key, registry, err = parseCredentialsKey(args[0], opts.AcceptRepositories)
 		if err != nil {
 			return err
 		}
@@ -162,39 +162,44 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 	return errors.Wrapf(err, "authenticating creds for %q", key)
 }
 
-// parseRegistryArgument verifies the provided arg depending if we accept
-// repositories or not.
-func parseRegistryArgument(arg string, acceptRepositories bool) (key, registry string, maybeRef reference.Named, err error) {
+// parseCredentialsKey turns the provided argument into a valid credential key
+// and computes the registry part.
+func parseCredentialsKey(arg string, acceptRepositories bool) (key, registry string, err error) {
 	if !acceptRepositories {
 		registry = getRegistryName(arg)
 		key = registry
-		return key, registry, maybeRef, nil
+		return key, registry, nil
 	}
 
 	key = trimScheme(arg)
 	if key != arg {
-		return "", "", nil, errors.New("credentials key has https[s]:// prefix")
+		return "", "", errors.New("credentials key has https[s]:// prefix")
 	}
 
 	registry = getRegistryName(key)
 	if registry == key {
-		// We cannot parse a reference from a registry, so we stop here
-		return key, registry, nil, nil
+		// The key is not namespaced
+		return key, registry, nil
 	}
 
-	ref, parseErr := reference.ParseNamed(key)
-	if parseErr != nil {
-		return "", "", nil, errors.Wrapf(parseErr, "parse reference from %q", key)
+	// Sanity-check that the key looks reasonable (e.g. doesn't use invalid characters),
+	// and does not contain a tag or digest.
+	// WARNING: ref.Named() MUST NOT be used to compute key, because
+	// reference.ParseNormalizedNamed() turns docker.io/vendor to docker.io/library/vendor
+	// Ideally c/image should provide dedicated validation functionality.
+	ref, err := reference.ParseNormalizedNamed(key)
+	if err != nil {
+		return "", "", errors.Wrapf(err, "parse reference from %q", key)
 	}
-
 	if !reference.IsNameOnly(ref) {
-		return "", "", nil, errors.Errorf("reference %q contains tag or digest", ref.String())
+		return "", "", errors.Errorf("reference %q contains tag or digest", ref.String())
+	}
+	refRegistry := reference.Domain(ref)
+	if refRegistry != registry { // This should never happen, check just to make sure
+		return "", "", fmt.Errorf("internal error: key %q registry mismatch, %q vs. %q", key, ref, refRegistry)
 	}
 
-	maybeRef = ref
-	registry = reference.Domain(ref)
-
-	return key, registry, maybeRef, nil
+	return key, registry, nil
 }
 
 // getRegistryName scrubs and parses the input to get the server name
@@ -287,7 +292,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		logrus.Debugf("registry not specified, default to the first registry %q from registries.conf", key)
 
 	case 1:
-		key, registry, _, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
+		key, registry, err = parseCredentialsKey(args[0], opts.AcceptRepositories)
 		if err != nil {
 			return err
 		}
