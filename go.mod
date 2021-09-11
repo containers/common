@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.4.1
-	github.com/containers/image/v5 v5.17.0
+	github.com/containers/image/v5 v5.17.1-0.20211201214147-603ec1341d58
 	github.com/containers/ocicrypt v1.1.2
 	github.com/containers/storage v1.37.1-0.20211119174841-bf170b3ddac0
 	github.com/disiqueira/gotree/v3 v3.0.2
