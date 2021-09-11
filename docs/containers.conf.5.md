@@ -378,6 +378,29 @@ if you want to set environment variables for the container.
 Default method to use when logging events.
 Valid values: `file`, `journald`, and `none`.
 
+**helper_binaries_dir**=["/usr/libexec/podman", ...]
+
+A is a list of directories which are used to search for helper binaries.
+
+The default paths on Linux are:
+- `/usr/local/libexec/podman`
+- `/usr/local/lib/podman`
+- `/usr/libexec/podman`
+- `/usr/lib/podman`
+
+The default paths on macOS are:
+- `/usr/local/opt/podman/libexec`
+-	`/opt/homebrew/bin`
+-	`/opt/homebrew/opt/podman/libexec`
+- `/usr/local/bin`
+-	`/usr/local/libexec/podman`
+-	`/usr/local/lib/podman`
+-	`/usr/libexec/podman`
+-	`/usr/lib/podman`
+
+The default path on Windows is:
+- `C:\Program Files\RedHat\Podman`
+
 **hooks_dir**=["/etc/containers/oci/hooks.d", ...]
 
 Path to the OCI hooks directories for automatically executed hooks.

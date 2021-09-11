@@ -247,6 +247,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.StaticDir = filepath.Join(storeOpts.GraphRoot, "libpod")
 	c.VolumePath = filepath.Join(storeOpts.GraphRoot, "volumes")
 
+	c.HelperBinariesDir = defaultHelperBinariesDir
 	c.HooksDir = DefaultHooksDirs
 	c.ImageDefaultTransport = _defaultTransport
 	c.StateType = BoltDBStateStore
