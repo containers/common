@@ -83,7 +83,7 @@ func TestParseRegistryArgument(t *testing.T) {
 			expect: func(key, registry string, ref reference.Named) {
 				assert.Equal(t, "quay.io/user", key)
 				assert.Equal(t, "quay.io", registry)
-				assert.NotNil(t, ref)
+				assert.Equal(t, key, ref.String())
 			},
 		},
 		{
@@ -105,7 +105,7 @@ func TestParseRegistryArgument(t *testing.T) {
 			expect: func(key, registry string, ref reference.Named) {
 				assert.Equal(t, "docker.io/library/user", key)
 				assert.Equal(t, "docker.io", registry)
-				assert.NotNil(t, ref)
+				assert.Equal(t, key, ref.String())
 			},
 		},
 		{
