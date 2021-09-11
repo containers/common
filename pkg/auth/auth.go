@@ -184,7 +184,7 @@ func parseRegistryArgument(arg string, acceptRepositories bool) (key, registry s
 
 	key = trimScheme(arg)
 	if key != arg {
-		return key, registry, nil, errors.New("credentials key has https[s]:// prefix")
+		return "", "", nil, errors.New("credentials key has https[s]:// prefix")
 	}
 
 	registry = getRegistryName(key)
@@ -195,11 +195,11 @@ func parseRegistryArgument(arg string, acceptRepositories bool) (key, registry s
 
 	ref, parseErr := reference.ParseNamed(key)
 	if parseErr != nil {
-		return key, registry, nil, errors.Wrapf(parseErr, "parse reference from %q", key)
+		return "", "", nil, errors.Wrapf(parseErr, "parse reference from %q", key)
 	}
 
 	if !reference.IsNameOnly(ref) {
-		return key, registry, nil, errors.Errorf("reference %q contains tag or digest", ref.String())
+		return "", "", nil, errors.Errorf("reference %q contains tag or digest", ref.String())
 	}
 
 	maybeRef = ref
