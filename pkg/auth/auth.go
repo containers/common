@@ -70,9 +70,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 	systemContext = systemContextWithOptions(systemContext, opts.AuthFile, opts.CertDir)
 
 	var (
-		authConfig    types.DockerAuthConfig
 		key, registry string
-		ref           reference.Named
 		err           error
 	)
 	switch len(args) {
@@ -87,7 +85,7 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		logrus.Debugf("registry not specified, default to the first registry %q from registries.conf", key)
 
 	case 1:
-		key, registry, ref, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
+		key, registry, _, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
 		if err != nil {
 			return err
 		}
@@ -96,16 +94,9 @@ func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginO
 		return errors.New("login accepts only one registry to login to")
 	}
 
-	if ref != nil {
-		authConfig, err = config.GetCredentialsForRef(systemContext, ref)
-		if err != nil {
-			return errors.Wrap(err, "get credentials for repository")
-		}
-	} else {
-		authConfig, err = config.GetCredentials(systemContext, registry)
-		if err != nil {
-			return errors.Wrap(err, "get credentials")
-		}
+	authConfig, err := config.GetCredentials(systemContext, key)
+	if err != nil {
+		return errors.Wrap(err, "get credentials")
 	}
 
 	if opts.GetLoginSet {
@@ -282,7 +273,6 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 
 	var (
 		key, registry string
-		ref           reference.Named
 		err           error
 	)
 	switch len(args) {
@@ -297,7 +287,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		logrus.Debugf("registry not specified, default to the first registry %q from registries.conf", key)
 
 	case 1:
-		key, registry, ref, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
+		key, registry, _, err = parseRegistryArgument(args[0], opts.AcceptRepositories)
 		if err != nil {
 			return err
 		}
@@ -312,17 +302,9 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		fmt.Fprintf(opts.Stdout, "Removed login credentials for %s\n", key)
 		return nil
 	case config.ErrNotLoggedIn:
-		var authConfig types.DockerAuthConfig
-		if ref != nil {
-			authConfig, err = config.GetCredentialsForRef(systemContext, ref)
-			if err != nil {
-				return errors.Wrap(err, "get credentials for repository")
-			}
-		} else {
-			authConfig, err = config.GetCredentials(systemContext, registry)
-			if err != nil {
-				return errors.Wrap(err, "get credentials")
-			}
+		authConfig, err := config.GetCredentials(systemContext, key)
+		if err != nil {
+			return errors.Wrap(err, "get credentials")
 		}
 
 		authInvalid := docker.CheckAuth(context.Background(), systemContext, authConfig.Username, authConfig.Password, registry)
