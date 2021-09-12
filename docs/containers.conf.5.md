@@ -467,7 +467,7 @@ and pods are visible.
 
 Path to the slirp4netns binary.
 
-**network_cmd_options**=[]
+**network_cmd_options**=["enable_ipv6=true",]
 
 Default options to pass to the slirp4netns binary.
 
