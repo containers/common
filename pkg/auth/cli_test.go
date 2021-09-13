@@ -3,8 +3,8 @@ package auth
 import (
 	"testing"
 
+	"github.com/cdoern/pflag"
 	"github.com/containers/common/pkg/completion"
-	"github.com/spf13/pflag"
 )
 
 func testFlagCompletion(t *testing.T, flags *pflag.FlagSet, flagCompletions completion.FlagCompletions) {

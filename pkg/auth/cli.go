@@ -3,8 +3,8 @@ package auth
 import (
 	"io"
 
+	"github.com/cdoern/pflag"
 	"github.com/containers/common/pkg/completion"
-	"github.com/spf13/pflag"
 )
 
 // LoginOptions represents common flags in login

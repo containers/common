@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.4.1
+	github.com/cdoern/pflag v1.1.0
 	github.com/containers/image/v5 v5.16.0
 	github.com/containers/ocicrypt v1.1.2
 	github.com/containers/storage v1.36.0
@@ -30,7 +31,6 @@ require (
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20200616122406-847368b35ebf
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
-	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
