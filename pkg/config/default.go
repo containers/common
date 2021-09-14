@@ -301,12 +301,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 		},
 		"krun": {
 			"/usr/bin/krun",
-			"/usr/sbin/krun",
 			"/usr/local/bin/krun",
-			"/usr/local/sbin/krun",
-			"/sbin/krun",
-			"/bin/krun",
-			"/run/current-system/sw/bin/krun",
 		},
 	}
 	// Needs to be called after populating c.OCIRuntimes
