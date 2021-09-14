@@ -28,6 +28,9 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
+			path, err := defaultConfig.ImageCopyTmpDir()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
 		})
 
 		It("should succeed with devices", func() {
@@ -104,6 +107,35 @@ var _ = Describe("Config", func() {
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
+		})
+	})
+
+	Describe("readStorageTmp", func() {
+		It("test image_copy_tmp_dir='storage'", func() {
+			// Reload from new configuration file
+			testFile := "testdata/temp.conf"
+			content := `[engine]
+image_copy_tmp_dir="storage"`
+			err := ioutil.WriteFile(testFile, []byte(content), os.ModePerm)
+			// Then
+			gomega.Expect(err).To(gomega.BeNil())
+			defer os.Remove(testFile)
+
+			config, _ := NewConfig(testFile)
+			path, err := config.ImageCopyTmpDir()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(path).To(gomega.ContainSubstring("containers/storage/tmp"))
+			// Given we do
+			oldTMPDIR, set := os.LookupEnv("TMPDIR")
+			os.Setenv("TMPDIR", "/var/tmp/foobar")
+			path, err = config.ImageCopyTmpDir()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp/foobar"))
+			if set {
+				os.Setenv("TMPDIR", oldTMPDIR)
+			} else {
+				os.Unsetenv("TMPDIR")
+			}
 		})
 	})
 
@@ -332,6 +364,9 @@ var _ = Describe("Config", func() {
 			gomega.Expect(config.Containers.LogSizeMax).To(gomega.Equal(int64(100000)))
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
 			gomega.Expect(config.Engine.ImageDefaultFormat).To(gomega.Equal("v2s2"))
+			path, err := config.ImageCopyTmpDir()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(path).To(gomega.BeEquivalentTo("/tmp/foobar"))
 		})
 
 		It("should fail with invalid value", func() {

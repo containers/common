@@ -514,6 +514,14 @@ The list of OCI runtimes that support running containers with KVM separation.
 
 The list of OCI runtimes that support running containers without CGroups.
 
+**image_copy_tmp_dir**="/var/tmp"
+
+Default location for storing temporary container image content.  Can be
+overridden with the TMPDIR environment variable.  If you specify "storage", then
+the location of the container/storage tmp directory will be used. If set then it
+is the users responsibility to cleanup storage. Configure tmpfiles.d(5) to
+cleanup storage.
+
 **static_dir**="/var/lib/containers/storage/libpod"
 
 Directory for persistent libpod files (database, etc).
@@ -609,6 +617,6 @@ is used for the storage.conf file rather than the default.
 This is primarily used for testing.
 
 # SEE ALSO
-containers-storage.conf(5), containers-policy.json(5), containers-registries.conf(5)
+containers-storage.conf(5), containers-policy.json(5), containers-registries.conf(5), tmpfiles.d(5)
 
 [toml]: https://github.com/toml-lang/toml
