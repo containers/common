@@ -183,6 +183,10 @@ image_copy_tmp_dir="storage"`
 					"/sbin/runsc",
 					"/run/current-system/sw/bin/runsc",
 				},
+				"krun": {
+					"/usr/bin/krun",
+					"/usr/local/bin/krun",
+				},
 			}
 
 			pluginDirs := []string{
