@@ -522,6 +522,11 @@ the location of the container/storage tmp directory will be used. If set then it
 is the users responsibility to cleanup storage. Configure tmpfiles.d(5) to
 cleanup storage.
 
+**service_timeout**=**5**
+
+Number of seconds to wait without a connection  before the
+`podman system service` times out and exits
+
 **static_dir**="/var/lib/containers/storage/libpod"
 
 Directory for persistent libpod files (database, etc).

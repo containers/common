@@ -257,6 +257,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.ImageBuildFormat = "oci"
 
 	c.CgroupManager = defaultCgroupManager()
+	c.ServiceTimeout = uint(5)
 	c.StopTimeout = uint(10)
 
 	c.Remote = isRemote()
