@@ -200,6 +200,10 @@ image_copy_tmp_dir="storage"`
 				"TERM=xterm",
 			}
 
+			networkCmdOptions := []string{
+				"enable_ipv6=true",
+			}
+
 			helperDirs := []string{
 				"/somepath",
 			}
@@ -213,6 +217,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(false))
+			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions).To(gomega.BeEquivalentTo(networkCmdOptions))
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
 		})

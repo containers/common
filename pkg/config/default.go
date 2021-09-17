@@ -259,7 +259,9 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.CgroupManager = defaultCgroupManager()
 	c.ServiceTimeout = uint(5)
 	c.StopTimeout = uint(10)
-
+	c.NetworkCmdOptions = []string{
+		"enable_ipv6=true",
+	}
 	c.Remote = isRemote()
 	c.OCIRuntimes = map[string][]string{
 		"crun": {
