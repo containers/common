@@ -502,17 +502,30 @@ Default OCI specific runtime in runtimes that will be used by default. Must
 refer to a member of the runtimes table. Default runtime will be searched for
 on the system using the priority: "crun", "runc", "kata".
 
-**runtime_supports_json**=["crun", "runc", "kata", "runsc"]
+**runtime_supports_json**=["crun", "runc", "kata", "runsc", "krun"]
 
 The list of the OCI runtimes that support `--format=json`.
 
-**runtime_supports_kvm**=["kata"]
+**runtime_supports_kvm**=["kata", "krun"]
 
 The list of OCI runtimes that support running containers with KVM separation.
 
-**runtime_supports_nocgroups**=["crun"]
+**runtime_supports_nocgroups**=["crun", "krun"]
 
 The list of OCI runtimes that support running containers without CGroups.
+
+**image_copy_tmp_dir**="/var/tmp"
+
+Default location for storing temporary container image content.  Can be
+overridden with the TMPDIR environment variable.  If you specify "storage", then
+the location of the container/storage tmp directory will be used. If set then it
+is the users responsibility to cleanup storage. Configure tmpfiles.d(5) to
+cleanup storage.
+
+**service_timeout**=**5**
+
+Number of seconds to wait without a connection  before the
+`podman system service` times out and exits
 
 **static_dir**="/var/lib/containers/storage/libpod"
 
@@ -609,6 +622,6 @@ is used for the storage.conf file rather than the default.
 This is primarily used for testing.
 
 # SEE ALSO
-containers-storage.conf(5), containers-policy.json(5), containers-registries.conf(5)
+containers-storage.conf(5), containers-policy.json(5), containers-registries.conf(5), tmpfiles.d(5)
 
 [toml]: https://github.com/toml-lang/toml

@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.4.1
 	github.com/containers/image/v5 v5.16.0
 	github.com/containers/ocicrypt v1.1.2
-	github.com/containers/storage v1.35.0
+	github.com/containers/storage v1.36.0
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
@@ -16,7 +16,7 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jinzhu/copier v0.3.2
-	github.com/mitchellh/mapstructure v1.4.1
+	github.com/mitchellh/mapstructure v1.4.2
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
