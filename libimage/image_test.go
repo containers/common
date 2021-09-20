@@ -134,14 +134,14 @@ func TestImageFunctions(t *testing.T) {
 	// Same image -> same digest
 	remoteRef, err := alltransports.ParseImageName("docker://" + busyboxDigest)
 	require.NoError(t, err)
-	hasDifferentDigest, err := image.HasDifferentDigest(ctx, remoteRef)
+	hasDifferentDigest, err := image.HasDifferentDigest(ctx, remoteRef, nil)
 	require.NoError(t, err)
 	require.False(t, hasDifferentDigest, "image with same digest should have the same manifest (and hence digest)")
 
 	// Different images -> different digests
 	remoteRef, err = alltransports.ParseImageName("docker://docker.io/library/alpine:latest")
 	require.NoError(t, err)
-	hasDifferentDigest, err = image.HasDifferentDigest(ctx, remoteRef)
+	hasDifferentDigest, err = image.HasDifferentDigest(ctx, remoteRef, nil)
 	require.NoError(t, err)
 	require.True(t, hasDifferentDigest, "another image should have a different digest")
 
