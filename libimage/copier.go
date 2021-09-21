@@ -70,6 +70,8 @@ type CopyOptions struct {
 	// types.  Short forms (e.g., oci, v2s2) used by some tools are not
 	// supported.
 	ManifestMIMEType string
+	// Accept uncompressed layers when copying OCI images.
+	OciAcceptUncompressedLayers bool
 	// If OciEncryptConfig is non-nil, it indicates that an image should be
 	// encrypted.  The encryption options is derived from the construction
 	// of EncryptConfig object.  Note: During initial encryption process of
@@ -254,6 +256,9 @@ func (r *Runtime) newCopier(options *CopyOptions) (*copier, error) {
 	if options.CompressionLevel != nil {
 		c.systemContext.CompressionLevel = options.CompressionLevel
 	}
+
+	// NOTE: for the sake of consistency it's called Oci* in the CopyOptions.
+	c.systemContext.OCIAcceptUncompressedLayers = options.OciAcceptUncompressedLayers
 
 	policy, err := signature.DefaultPolicy(c.systemContext)
 	if err != nil {
