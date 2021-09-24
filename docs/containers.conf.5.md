@@ -47,8 +47,7 @@ TOML can be simplified to:
     option = value
 
 ## CONTAINERS TABLE
-The containers table contains settings pertaining to the OCI runtime that can
-configure and manage the OCI runtime.
+The containers table contains settings to configure and manage the OCI runtime.
 
 **annotations** = []
 List of annotations. Specified as "key=value" pairs to be added to all containers.
