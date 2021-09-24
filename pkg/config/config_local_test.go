@@ -374,12 +374,46 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := NewConfig("")
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.MachineImage).To(gomega.Equal("testing"))
+		gomega.Expect(config.Machine.Image).To(gomega.Equal("testing"))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config2.Engine.MachineImage).To(gomega.Equal("stable"))
+		gomega.Expect(config2.Machine.Image).To(gomega.Equal("stable"))
+	})
+
+	It("Set machine disk", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Machine.DiskSize).To(gomega.Equal(uint64(10)))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Machine.DiskSize).To(gomega.Equal(uint64(20)))
+	})
+	It("Set machine CPUs", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Machine.CPUs).To(gomega.Equal(uint64(1)))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Machine.CPUs).To(gomega.Equal(uint64(2)))
+	})
+	It("Set machine memory", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Machine.Memory).To(gomega.Equal(uint64(2048)))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Machine.Memory).To(gomega.Equal(uint64(1024)))
 	})
 
 })
