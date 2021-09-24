@@ -2,6 +2,7 @@ package libimage
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -232,11 +233,15 @@ func (i *Image) Containers() ([]string, error) {
 }
 
 // removeContainers removes all containers using the image.
-func (i *Image) removeContainers(fn RemoveContainerFunc) error {
-	// Execute the custom removal func if specified.
-	if fn != nil {
+func (i *Image) removeContainers(options *RemoveImagesOptions) error {
+	if !options.Force && !options.ExternalContainers {
+		// Nothing to do.
+		return nil
+	}
+
+	if options.Force && options.RemoveContainerFunc != nil {
 		logrus.Debugf("Removing containers of image %s with custom removal function", i.ID())
-		if err := fn(i.ID()); err != nil {
+		if err := options.RemoveContainerFunc(i.ID()); err != nil {
 			return err
 		}
 	}
@@ -244,6 +249,19 @@ func (i *Image) removeContainers(fn RemoveContainerFunc) error {
 	containers, err := i.Containers()
 	if err != nil {
 		return err
+	}
+
+	if !options.Force && options.ExternalContainers {
+		// All containers must be external ones.
+		for _, cID := range containers {
+			isExternal, err := options.IsExternalContainerFunc(cID)
+			if err != nil {
+				return fmt.Errorf("checking if %s is an external container: %w", cID, err)
+			}
+			if !isExternal {
+				return fmt.Errorf("cannot remove container %s: not an external container", cID)
+			}
+		}
 	}
 
 	logrus.Debugf("Removing containers of image %s from the local containers storage", i.ID())
@@ -392,11 +410,9 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 		return processedIDs, nil
 	}
 
-	// Perform the actual removal. First, remove containers if needed.
-	if options.Force {
-		if err := i.removeContainers(options.RemoveContainerFunc); err != nil {
-			return processedIDs, err
-		}
+	// Perform the container removal, if needed.
+	if err := i.removeContainers(options); err != nil {
+		return processedIDs, err
 	}
 
 	// Podman/Docker compat: we only report an image as removed if it has

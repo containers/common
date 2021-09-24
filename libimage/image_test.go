@@ -94,10 +94,13 @@ func TestImageFunctions(t *testing.T) {
 	require.Nil(t, containers)
 
 	// Since we have no containers here, we can only smoke test.
-	require.NoError(t, image.removeContainers(nil))
-	require.Error(t, image.removeContainers(func(_ string) error {
-		return errors.New("TEST")
-	}))
+	rmOptions := &RemoveImagesOptions{
+		RemoveContainerFunc: func(_ string) error {
+			return errors.New("TEST")
+		},
+		Force: true,
+	}
+	require.Error(t, image.removeContainers(rmOptions))
 
 	// Two items since both names are "Named".
 	namedRepoTags, err := image.NamedRepoTags()
