@@ -306,7 +306,7 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, options *Loo
 		if errors.Cause(err) == os.ErrNotExist {
 			// We must be tolerant toward corrupted images.
 			// See containers/podman commit fd9dd7065d44.
-			logrus.Warnf("error determining if an image is a manifest list: %v, ignoring the error", err)
+			logrus.Warnf("Failed to determine if an image is a manifest list: %v, ignoring the error", err)
 			return image, nil
 		}
 		return nil, err

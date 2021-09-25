@@ -51,7 +51,7 @@ func (i *Image) reload() error {
 	logrus.Tracef("Reloading image %s", i.ID())
 	img, err := i.runtime.store.Image(i.ID())
 	if err != nil {
-		return errors.Wrap(err, "error reloading image")
+		return errors.Wrap(err, "reloading image")
 	}
 	i.storageImage = img
 	i.cached.imageSource = nil
@@ -406,7 +406,7 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 	if err != nil {
 		// We must be tolerant toward corrupted images.
 		// See containers/podman commit fd9dd7065d44.
-		logrus.Warnf("error determining if an image is a parent: %v, ignoring the error", err)
+		logrus.Warnf("Failed to determine if an image is a parent: %v, ignoring the error", err)
 		hasChildren = false
 	}
 
@@ -416,7 +416,7 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 	if err != nil {
 		// We must be tolerant toward corrupted images.
 		// See containers/podman commit fd9dd7065d44.
-		logrus.Warnf("error determining parent of image: %v, ignoring the error", err)
+		logrus.Warnf("Failed to determine parent of image: %v, ignoring the error", err)
 		parent = nil
 	}
 
@@ -440,7 +440,7 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 	if err != nil {
 		// See Podman commit fd9dd7065d44: we need to
 		// be tolerant toward corrupted images.
-		logrus.Warnf("error determining if an image is a parent: %v, ignoring the error", err)
+		logrus.Warnf("Failed to determine if an image is a parent: %v, ignoring the error", err)
 		danglingParent = false
 	}
 	if !danglingParent {
@@ -462,7 +462,7 @@ func (i *Image) Tag(name string) error {
 
 	ref, err := NormalizeName(name)
 	if err != nil {
-		return errors.Wrapf(err, "error normalizing name %q", name)
+		return errors.Wrapf(err, "normalizing name %q", name)
 	}
 
 	if _, isDigested := ref.(reference.Digested); isDigested {
@@ -499,7 +499,7 @@ func (i *Image) Untag(name string) error {
 
 	ref, err := NormalizeName(name)
 	if err != nil {
-		return errors.Wrapf(err, "error normalizing name %q", name)
+		return errors.Wrapf(err, "normalizing name %q", name)
 	}
 
 	// FIXME: this is breaking Podman CI but must be re-enabled once
@@ -885,12 +885,12 @@ func getImageID(ctx context.Context, src types.ImageReference, sys *types.System
 	}
 	defer func() {
 		if err := newImg.Close(); err != nil {
-			logrus.Errorf("failed to close image: %q", err)
+			logrus.Errorf("Failed to close image: %q", err)
 		}
 	}()
 	imageDigest := newImg.ConfigInfo().Digest
 	if err = imageDigest.Validate(); err != nil {
-		return "", errors.Wrapf(err, "error getting config info")
+		return "", errors.Wrapf(err, "getting config info")
 	}
 	return "@" + imageDigest.Encoded(), nil
 }
