@@ -117,3 +117,40 @@ func TestPullPlatforms(t *testing.T) {
 	require.NoError(t, err, "lookup busybox - by arm")
 	require.NotNil(t, image, "lookup busybox - by local arch")
 }
+
+func TestPullCandidates(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	pulledImages, err := runtime.Pull(ctx, "busybox", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err, "pull busybox")
+	require.Len(t, pulledImages, 1)
+
+	for _, test := range []struct {
+		input       string
+		expectError bool
+		pullPolicy  config.PullPolicy
+		names       []string
+	}{
+		// If we resolve to a local image, we use it's FQN!
+		{pulledImages[0].ID(), false, config.PullPolicyMissing, []string{pulledImages[0].ID()}},
+		{"busybox", false, config.PullPolicyAlways, []string{"docker.io/library/busybox:latest"}},
+		{"fedora", false, config.PullPolicyAlways, []string{"docker.io/library/fedora:latest", "quay.io/fedora:latest"}},
+		{"repo/fedora", false, config.PullPolicyAlways, []string{"docker.io/repo/fedora:latest", "quay.io/repo/fedora:latest"}},
+		{"repo/fedora:tag", false, config.PullPolicyAlways, []string{"docker.io/repo/fedora:tag", "quay.io/repo/fedora:tag"}},
+		{"reg.com/repo/fedora:tag", false, config.PullPolicyAlways, []string{"reg.com/repo/fedora:tag"}},
+		{"quay.io/libpod/alpine@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00", false, config.PullPolicyAlways, []string{"quay.io/libpod/alpine@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00"}},
+		{"quay.io/libpod/alpine:pleaseignorethistag@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00", false, config.PullPolicyAlways, []string{"quay.io/libpod/alpine@sha256:634a8f35b5f16dcf4aaa0822adc0b1964bb786fca12f6831de8ddc45e5986a00"}},
+	} {
+		candidates, _, err := runtime.PullCandidates(ctx, test.input, test.pullPolicy)
+		if test.expectError {
+			require.Error(t, err, "should fail: %v", test)
+			continue
+		}
+		require.NoError(t, err, "should succeed: %v", test)
+		require.Equal(t, test.names, candidates, "%v", test)
+	}
+}

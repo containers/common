@@ -34,6 +34,7 @@ func testNewRuntime(t *testing.T) (runtime *Runtime, cleanup func()) {
 	systemContext := &types.SystemContext{
 		SystemRegistriesConfPath:    "testdata/registries.conf",
 		SystemRegistriesConfDirPath: "/dev/null",
+		UserShortNameAliasConfPath:  "/dev/null",
 	}
 
 	runtime, err = RuntimeFromStoreOptions(&RuntimeOptions{SystemContext: systemContext}, storeOptions)
