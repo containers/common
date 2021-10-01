@@ -467,6 +467,17 @@ var _ = Describe("Config", func() {
 			err = cfg.Write()
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
+			// test that we do not write zero values to the file
+			path, err := customConfigFile()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			f, err := os.Open(path)
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			data, err := ioutil.ReadAll(f)
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("cpus"))
+			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("disk_size"))
+			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("memory"))
+
 			cfg, err = ReadCustomConfig()
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
