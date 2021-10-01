@@ -5,8 +5,8 @@ package specerror
 import (
 	"fmt"
 
+	rfc2119 "github.com/containers/common/pkg/runtime-tools/error"
 	"github.com/hashicorp/go-multierror"
-	rfc2119 "github.com/opencontainers/runtime-tools/error"
 )
 
 const referenceTemplate = "https://github.com/opencontainers/runtime-spec/blob/v%s/%s"

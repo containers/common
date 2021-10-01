@@ -58,27 +58,11 @@ type Error struct {
 // ParseLevel takes a string level and returns the RFC 2119 compliance level constant.
 func ParseLevel(level string) (Level, error) {
 	switch strings.ToUpper(level) {
-	case "MAY":
-		fallthrough
-	case "OPTIONAL":
+	case "MAY", "OPTIONAL":
 		return May, nil
-	case "SHOULD":
-		fallthrough
-	case "SHOULDNOT":
-		fallthrough
-	case "RECOMMENDED":
-		fallthrough
-	case "NOTRECOMMENDED":
+	case "SHOULD", "SHOULDNOT", "RECOMMENDED", "NOTRECOMMENDED": //nolint
 		return Should, nil
-	case "MUST":
-		fallthrough
-	case "MUSTNOT":
-		fallthrough
-	case "SHALL":
-		fallthrough
-	case "SHALLNOT":
-		fallthrough
-	case "REQUIRED":
+	case "MUST", "MUSTNOT", "SHALL", "SHALLNOT", "REQUIRED":
 		return Must, nil
 	}
 

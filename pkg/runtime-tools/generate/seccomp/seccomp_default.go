@@ -3,7 +3,6 @@ package seccomp
 import (
 	"runtime"
 
-	"github.com/opencontainers/runtime-spec/specs-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -31,7 +30,7 @@ func arches() []rspec.Arch {
 }
 
 // DefaultProfile defines the whitelist for the default seccomp profile.
-func DefaultProfile(rs *specs.Spec) *rspec.LinuxSeccomp {
+func DefaultProfile(rs *rspec.Spec) *rspec.LinuxSeccomp {
 
 	syscalls := []rspec.LinuxSyscall{
 		{
@@ -566,6 +565,20 @@ func DefaultProfile(rs *specs.Spec) *rspec.LinuxSeccomp {
 			},
 		}...)
 		/* Flags parameter of the clone syscall is the 2nd on s390 */
+		syscalls = append(syscalls, []rspec.LinuxSyscall{
+			{
+				Names:  []string{"clone"},
+				Action: rspec.ActAllow,
+				Args: []rspec.LinuxSeccompArg{
+					{
+						Index:    1,
+						Value:    2080505856,
+						ValueTwo: 0,
+						Op:       rspec.OpMaskedEqual,
+					},
+				},
+			},
+		}...)
 	}
 
 	return &rspec.LinuxSeccomp{

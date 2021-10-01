@@ -36,6 +36,7 @@ github.com/acarl005/stripansi
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
+## explicit
 github.com/blang/semver
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
@@ -364,14 +365,6 @@ github.com/opencontainers/runc/libcontainer/utils
 # github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
-# github.com/opencontainers/runtime-tools v0.9.0
-## explicit
-github.com/opencontainers/runtime-tools/error
-github.com/opencontainers/runtime-tools/filepath
-github.com/opencontainers/runtime-tools/generate
-github.com/opencontainers/runtime-tools/generate/seccomp
-github.com/opencontainers/runtime-tools/specerror
-github.com/opencontainers/runtime-tools/validate
 # github.com/opencontainers/selinux v1.9.1
 ## explicit
 github.com/opencontainers/selinux/go-selinux
@@ -444,6 +437,7 @@ github.com/xeipuuv/gojsonpointer
 # github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415
 github.com/xeipuuv/gojsonreference
 # github.com/xeipuuv/gojsonschema v1.2.0
+## explicit
 github.com/xeipuuv/gojsonschema
 # go.etcd.io/bbolt v1.3.6
 go.etcd.io/bbolt

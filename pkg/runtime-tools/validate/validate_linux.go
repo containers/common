@@ -10,14 +10,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/syndtr/gocapability/capability"
-
+	osFilepath "github.com/containers/common/pkg/runtime-tools/filepath"
+	"github.com/containers/common/pkg/runtime-tools/specerror"
 	multierror "github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
-	osFilepath "github.com/opencontainers/runtime-tools/filepath"
-	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/selinux/go-selinux/label"
 	"github.com/sirupsen/logrus"
+	"github.com/syndtr/gocapability/capability"
 )
 
 // LastCap return last cap of system
@@ -48,11 +47,11 @@ func deviceValid(d rspec.LinuxDevice) bool {
 }
 
 // CheckLinux checks v.spec.Linux
-func (v *Validator) CheckLinux() (errs error) {
+func (v *Validator) CheckLinux() (errs error) { //nolint
 	logrus.Debugf("check linux")
 
 	if v.spec.Linux == nil {
-		return
+		return nil
 	}
 
 	var nsTypeList = map[rspec.LinuxNamespaceType]struct {
@@ -75,12 +74,12 @@ func (v *Validator) CheckLinux() (errs error) {
 		}
 
 		tmpItem := nsTypeList[ns.Type]
-		tmpItem.num = tmpItem.num + 1
+		tmpItem.num++
 		if tmpItem.num > 1 {
 			errs = multierror.Append(errs, specerror.NewError(specerror.NSErrorOnDup, fmt.Errorf("duplicated namespace %q", ns.Type), rspec.Version))
 		}
 
-		if len(ns.Path) == 0 {
+		if ns.Path == "" {
 			tmpItem.newExist = true
 		}
 		nsTypeList[ns.Type] = tmpItem
@@ -125,11 +124,12 @@ func (v *Validator) CheckLinux() (errs error) {
 			}
 			absPath := filepath.Join(rootfsPath, device.Path)
 			fi, err := os.Stat(absPath)
-			if os.IsNotExist(err) {
+			switch {
+			case os.IsNotExist(err):
 				devList[device.Path] = true
-			} else if err != nil {
+			case err != nil:
 				errs = multierror.Append(errs, err)
-			} else {
+			default:
 				fStat, ok := fi.Sys().(*syscall.Stat_t)
 				if !ok {
 					errs = multierror.Append(errs, specerror.NewError(specerror.DevicesAvailable,
@@ -233,5 +233,5 @@ func (v *Validator) CheckLinux() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }

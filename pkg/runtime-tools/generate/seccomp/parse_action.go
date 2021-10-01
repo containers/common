@@ -20,7 +20,7 @@ type SyscallOpts struct {
 
 // ParseSyscallFlag takes a SyscallOpts struct and the seccomp configuration
 // and sets the new syscall rule accordingly
-func ParseSyscallFlag(args SyscallOpts, config *rspec.LinuxSeccomp) error {
+func ParseSyscallFlag(args *SyscallOpts, config *rspec.LinuxSeccomp) error {
 	var arguments []string
 	if args.Index != "" && args.Value != "" && args.ValueTwo != "" && args.Operator != "" {
 		arguments = []string{args.Action, args.Syscall, args.Index, args.Value,
@@ -127,7 +127,7 @@ func newSyscallStruct(name string, action rspec.LinuxSeccompAction, args []rspec
 	return syscallStruct
 }
 
-func (s SyscallOpts) argsAreEmpty() bool {
+func (s *SyscallOpts) argsAreEmpty() bool {
 	return (s.Index == "" &&
 		s.Value == "" &&
 		s.ValueTwo == "" &&

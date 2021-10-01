@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/opencontainers/runtime-tools/generate"
+	"github.com/containers/common/pkg/runtime-tools/generate"
 )
 
 func TestLoadProfile(t *testing.T) {

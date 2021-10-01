@@ -13,7 +13,7 @@ func Clean(os, path string) string {
 
 	// Replace multiple Separator elements with a single one.
 	for i := 0; i < len(elements); i++ {
-		if len(elements[i]) == 0 {
+		if elements[i] == "" {
 			elements = append(elements[:i], elements[i+1:]...)
 			i--
 		}
@@ -63,7 +63,7 @@ func Clean(os, path string) string {
 
 	// If the result of this process is an empty string, Clean returns
 	// the string ".".
-	if len(cleaned) == 0 {
+	if cleaned == "" {
 		cleaned = "."
 	}
 

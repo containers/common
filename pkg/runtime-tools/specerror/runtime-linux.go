@@ -3,7 +3,7 @@ package specerror
 import (
 	"fmt"
 
-	rfc2119 "github.com/opencontainers/runtime-tools/error"
+	rfc2119 "github.com/containers/common/pkg/runtime-tools/error"
 )
 
 // define error codes

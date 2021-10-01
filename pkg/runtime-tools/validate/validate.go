@@ -17,13 +17,12 @@ import (
 	"unicode/utf8"
 
 	"github.com/blang/semver"
+	osFilepath "github.com/containers/common/pkg/runtime-tools/filepath"
+	"github.com/containers/common/pkg/runtime-tools/specerror"
 	"github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
-	osFilepath "github.com/opencontainers/runtime-tools/filepath"
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"
-
-	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -96,7 +95,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 		return Validator{}, fmt.Errorf("%q is not encoded in UTF-8", configPath)
 	}
 	var spec rspec.Spec
-	if err = json.Unmarshal(content, &spec); err != nil {
+	if err := json.Unmarshal(content, &spec); err != nil {
 		return Validator{}, err
 	}
 
@@ -132,6 +131,9 @@ func JSONSchemaURL(version string) (url string, err error) {
 		return "", specerror.NewError(specerror.SpecVersionInSemVer, err, rspec.Version)
 	}
 	configRenamedToConfigSchemaVersion, err := semver.Parse("1.0.0-rc2") // config.json became config-schema.json in 1.0.0-rc2
+	if err != nil {
+		return "", err
+	}
 	if ver.Compare(configRenamedToConfigSchemaVersion) == -1 {
 		return "", fmt.Errorf("unsupported configuration version (older than %s)", configRenamedToConfigSchemaVersion)
 	}
@@ -144,18 +146,16 @@ func JSONSchemaURL(version string) (url string, err error) {
 func (v *Validator) CheckJSONSchema() (errs error) {
 	logrus.Debugf("check JSON schema")
 
-	url, err := JSONSchemaURL(v.spec.Version)
+	url, err := JSONSchemaURL(strings.TrimSuffix(v.spec.Version, "-dev"))
 	if err != nil {
-		errs = multierror.Append(errs, err)
-		return errs
+		return multierror.Append(errs, err)
 	}
 
 	schemaLoader := gojsonschema.NewReferenceLoader(url)
 	documentLoader := gojsonschema.NewGoLoader(v.spec)
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		errs = multierror.Append(errs, err)
-		return errs
+		return multierror.Append(errs, err)
 	}
 
 	if !result.Valid() {
@@ -177,16 +177,16 @@ func (v *Validator) CheckRoot() (errs error) {
 				errs = multierror.Append(errs,
 					specerror.NewError(specerror.RootOnHyperVNotSet, fmt.Errorf("for Hyper-V containers, Root must not be set"), rspec.Version))
 			}
-			return
+			return errs
 		} else if v.spec.Root == nil {
 			errs = multierror.Append(errs,
 				specerror.NewError(specerror.RootOnWindowsRequired, fmt.Errorf("on Windows, for Windows Server Containers, this field is REQUIRED"), rspec.Version))
-			return
+			return errs
 		}
 	} else if v.platform != "windows" && v.spec.Root == nil {
 		errs = multierror.Append(errs,
 			specerror.NewError(specerror.RootOnNonWindowsRequired, fmt.Errorf("on all other platforms, this field is REQUIRED"), rspec.Version))
-		return
+		return errs
 	}
 
 	if v.platform == "windows" {
@@ -203,13 +203,12 @@ func (v *Validator) CheckRoot() (errs error) {
 				specerror.NewError(specerror.RootReadonlyOnWindowsFalse, fmt.Errorf("root.readonly field MUST be omitted or false when target platform is windows"), rspec.Version))
 		}
 
-		return
+		return errs
 	}
 
 	absBundlePath, err := filepath.Abs(v.bundlePath)
 	if err != nil {
-		errs = multierror.Append(errs, fmt.Errorf("unable to convert %q to an absolute path", v.bundlePath))
-		return
+		return multierror.Append(errs, fmt.Errorf("unable to convert %q to an absolute path", v.bundlePath))
 	}
 
 	if filepath.Base(v.spec.Root.Path) != "rootfs" {
@@ -227,8 +226,7 @@ func (v *Validator) CheckRoot() (errs error) {
 		rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
 		absRootPath, err = filepath.Abs(rootfsPath)
 		if err != nil {
-			errs = multierror.Append(errs, fmt.Errorf("unable to convert %q to an absolute path", rootfsPath))
-			return
+			return multierror.Append(errs, fmt.Errorf("unable to convert %q to an absolute path", rootfsPath))
 		}
 	}
 
@@ -246,7 +244,7 @@ func (v *Validator) CheckRoot() (errs error) {
 			specerror.NewError(specerror.ArtifactsInSingleDir, fmt.Errorf("root.path is %q, but it MUST be a child of %q", v.spec.Root.Path, absBundlePath), rspec.Version))
 	}
 
-	return
+	return errs
 }
 
 // CheckSemVer checks v.spec.Version
@@ -263,7 +261,7 @@ func (v *Validator) CheckSemVer() (errs error) {
 		errs = multierror.Append(errs, fmt.Errorf("validate currently only handles version %s, but the supplied configuration targets %s", rspec.Version, version))
 	}
 
-	return
+	return errs
 }
 
 // CheckHooks check v.spec.Hooks
@@ -271,8 +269,7 @@ func (v *Validator) CheckHooks() (errs error) {
 	logrus.Debugf("check hooks")
 
 	if v.platform != "linux" && v.platform != "solaris" {
-		errs = multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support hooks", v.platform))
-		return
+		return multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support hooks", v.platform))
 	}
 
 	if v.spec.Hooks != nil {
@@ -281,7 +278,7 @@ func (v *Validator) CheckHooks() (errs error) {
 		errs = multierror.Append(errs, v.checkEventHooks("poststop", v.spec.Hooks.Poststop, v.HostSpecific))
 	}
 
-	return
+	return errs
 }
 
 func (v *Validator) checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (errs error) {
@@ -312,7 +309,7 @@ func (v *Validator) checkEventHooks(hookType string, hooks []rspec.Hook, hostSpe
 		}
 	}
 
-	return
+	return errs
 }
 
 // CheckProcess checks v.spec.Process
@@ -320,7 +317,7 @@ func (v *Validator) CheckProcess() (errs error) {
 	logrus.Debugf("check process")
 
 	if v.spec.Process == nil {
-		return
+		return nil
 	}
 
 	process := v.spec.Process
@@ -344,25 +341,24 @@ func (v *Validator) CheckProcess() (errs error) {
 				specerror.ProcArgsOneEntryRequired,
 				fmt.Errorf("args must not be empty"),
 				rspec.Version))
-	} else {
-		if filepath.IsAbs(process.Args[0]) && v.spec.Root != nil {
-			var rootfsPath string
-			if filepath.IsAbs(v.spec.Root.Path) {
-				rootfsPath = v.spec.Root.Path
-			} else {
-				rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
-			}
-			absPath := filepath.Join(rootfsPath, process.Args[0])
-			fileinfo, err := os.Stat(absPath)
-			if os.IsNotExist(err) {
-				logrus.Warnf("executable %q is not available in rootfs currently", process.Args[0])
-			} else if err != nil {
-				errs = multierror.Append(errs, err)
-			} else {
-				m := fileinfo.Mode()
-				if m.IsDir() || m&0111 == 0 {
-					errs = multierror.Append(errs, fmt.Errorf("arg %q is not executable", process.Args[0]))
-				}
+	} else if filepath.IsAbs(process.Args[0]) && v.spec.Root != nil {
+		var rootfsPath string
+		if filepath.IsAbs(v.spec.Root.Path) {
+			rootfsPath = v.spec.Root.Path
+		} else {
+			rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
+		}
+		absPath := filepath.Join(rootfsPath, process.Args[0])
+		fileinfo, err := os.Stat(absPath)
+		switch {
+		case os.IsNotExist(err):
+			logrus.Warnf("executable %q is not available in rootfs currently", process.Args[0])
+		case err != nil:
+			errs = multierror.Append(errs, err)
+		default:
+			m := fileinfo.Mode()
+			if m.IsDir() || m&0111 == 0 {
+				errs = multierror.Append(errs, fmt.Errorf("arg %q is not executable", process.Args[0]))
 			}
 		}
 	}
@@ -385,14 +381,13 @@ func (v *Validator) CheckProcess() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // CheckCapabilities checks v.spec.Process.Capabilities
 func (v *Validator) CheckCapabilities() (errs error) {
 	if v.platform != "linux" {
-		errs = multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support process.capabilities", v.platform))
-		return
+		return multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support process.capabilities", v.platform))
 	}
 
 	process := v.spec.Process
@@ -447,14 +442,13 @@ func (v *Validator) CheckCapabilities() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // CheckRlimits checks v.spec.Process.Rlimits
 func (v *Validator) CheckRlimits() (errs error) {
 	if v.platform != "linux" && v.platform != "solaris" {
-		errs = multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support process.rlimits", v.platform))
-		return
+		return multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support process.rlimits", v.platform))
 	}
 
 	process := v.spec.Process
@@ -472,16 +466,16 @@ func (v *Validator) CheckRlimits() (errs error) {
 		errs = multierror.Append(errs, v.rlimitValid(rlimit))
 	}
 
-	return
+	return errs
 }
 
-func supportedMountTypes(OS string, hostSpecific bool) (map[string]bool, error) {
+func supportedMountTypes(platform string, hostSpecific bool) (map[string]bool, error) {
 	supportedTypes := make(map[string]bool)
 
-	if OS != "linux" && OS != "windows" {
-		logrus.Warnf("%v is not supported to check mount type", OS)
+	if platform != "linux" && platform != "windows" {
+		logrus.Warnf("%v is not supported to check mount type", platform)
 		return nil, nil
-	} else if OS == "windows" {
+	} else if platform == "windows" {
 		supportedTypes["ntfs"] = true
 		return supportedTypes, nil
 	}
@@ -522,8 +516,7 @@ func (v *Validator) CheckMounts() (errs error) {
 
 	supportedTypes, err := supportedMountTypes(v.platform, v.HostSpecific)
 	if err != nil {
-		errs = multierror.Append(errs, err)
-		return
+		return multierror.Append(errs, err)
 	}
 
 	for i, mountA := range v.spec.Mounts {
@@ -565,7 +558,7 @@ func (v *Validator) CheckMounts() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // CheckPlatform checks v.platform
@@ -573,8 +566,7 @@ func (v *Validator) CheckPlatform() (errs error) {
 	logrus.Debugf("check platform")
 
 	if v.platform != "linux" && v.platform != "solaris" && v.platform != "windows" {
-		errs = multierror.Append(errs, fmt.Errorf("platform %q is not supported", v.platform))
-		return
+		return multierror.Append(errs, fmt.Errorf("platform %q is not supported", v.platform))
 	}
 
 	if v.HostSpecific && v.platform != runtime.GOOS {
@@ -592,7 +584,7 @@ func (v *Validator) CheckPlatform() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // CheckLinuxResources checks v.spec.Linux.Resources
@@ -612,8 +604,7 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 		var exist bool
 		interfaces, err := net.Interfaces()
 		if err != nil {
-			errs = multierror.Append(errs, err)
-			return
+			return multierror.Append(errs, err)
 		}
 		for _, prio := range r.Network.Priorities {
 			exist = false
@@ -640,8 +631,7 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 			switch access[i] {
 			case 'r', 'w', 'm':
 			default:
-				errs = multierror.Append(errs, fmt.Errorf("access %s is invalid", r.Devices[index].Access))
-				return
+				return multierror.Append(errs, fmt.Errorf("access %s is invalid", r.Devices[index].Access))
 			}
 		}
 	}
@@ -658,7 +648,7 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // CheckAnnotations checks v.spec.Annotations
@@ -684,7 +674,7 @@ func (v *Validator) CheckAnnotations() (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // CapValid checks whether a capability is valid
@@ -731,25 +721,26 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 		errs = multierror.Append(errs, fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type))
 	}
 
-	if v.platform == "linux" {
+	switch v.platform {
+	case "linux":
 		for _, val := range linuxRlimits {
 			if val == rlimit.Type {
-				return
+				return errs
 			}
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
-	} else if v.platform == "solaris" {
+	case "solaris":
 		for _, val := range posixRlimits {
 			if val == rlimit.Type {
-				return
+				return errs
 			}
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
-	} else {
+	default:
 		logrus.Warnf("process.rlimits validation not yet implemented for platform %q", v.platform)
 	}
 
-	return
+	return errs
 }
 
 func isStruct(t reflect.Type) bool {
@@ -760,7 +751,7 @@ func isStructPtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
 }
 
-func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, parent string) (errs error) {
+func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, parent string) (errs error) { //nolint
 	mandatory := !strings.Contains(tagField.Tag.Get("json"), "omitempty")
 	switch field.Kind() {
 	case reflect.Ptr:
@@ -773,8 +764,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 		}
 	case reflect.Slice:
 		if mandatory && (field.IsNil() || field.Len() == 0) {
-			errs = multierror.Append(errs, fmt.Errorf("'%s.%s' should not be empty", parent, tagField.Name))
-			return
+			return multierror.Append(errs, fmt.Errorf("'%s.%s' should not be empty", parent, tagField.Name))
 		}
 		for index := 0; index < field.Len(); index++ {
 			mValue := field.Index(index)
@@ -784,8 +774,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 		}
 	case reflect.Map:
 		if mandatory && (field.IsNil() || field.Len() == 0) {
-			errs = multierror.Append(errs, fmt.Errorf("'%s.%s' should not be empty", parent, tagField.Name))
-			return
+			return multierror.Append(errs, fmt.Errorf("'%s.%s' should not be empty", parent, tagField.Name))
 		}
 		keys := field.MapKeys()
 		for index := 0; index < len(keys); index++ {
@@ -797,7 +786,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 	default:
 	}
 
-	return
+	return errs
 }
 
 func checkMandatory(obj interface{}) (errs error) {
@@ -807,7 +796,7 @@ func checkMandatory(obj interface{}) (errs error) {
 		objT = objT.Elem()
 		objV = objV.Elem()
 	} else if !isStruct(objT) {
-		return
+		return nil
 	}
 
 	for i := 0; i < objT.NumField(); i++ {
@@ -816,14 +805,16 @@ func checkMandatory(obj interface{}) (errs error) {
 			if !strings.Contains(objT.Field(i).Tag.Get("json"), "omitempty") {
 				errs = multierror.Append(errs, fmt.Errorf("'%s.%s' should not be empty", objT.Name(), objT.Field(i).Name))
 			}
-		} else if (isStruct(t) || isStructPtr(t)) && objV.Field(i).CanInterface() {
-			errs = multierror.Append(errs, checkMandatory(objV.Field(i).Interface()))
 		} else {
-			errs = multierror.Append(errs, checkMandatoryUnit(objV.Field(i), objT.Field(i), objT.Name()))
+			if (isStruct(t) || isStructPtr(t)) && objV.Field(i).CanInterface() {
+				errs = multierror.Append(errs, checkMandatory(objV.Field(i).Interface()))
+			} else {
+				errs = multierror.Append(errs, checkMandatoryUnit(objV.Field(i), objT.Field(i), objT.Name()))
+			}
 		}
 
 	}
-	return
+	return errs
 }
 
 // CheckMandatoryFields checks mandatory field of container's config file

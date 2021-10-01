@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/containers/common/pkg/runtime-tools/generate/seccomp"
+	"github.com/containers/common/pkg/runtime-tools/validate"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
-	"github.com/opencontainers/runtime-tools/generate/seccomp"
-	"github.com/opencontainers/runtime-tools/validate"
 	"github.com/syndtr/gocapability/capability"
 )
 
@@ -29,6 +29,9 @@ var (
 type Generator struct {
 	Config       *rspec.Spec
 	HostSpecific bool
+	// This is used to keep a cache of the ENVs added to improve
+	// performance when adding a huge number of ENV variables
+	envMap map[string]int
 }
 
 // ExportOptions have toggles for exporting only certain parts of the specification
@@ -38,9 +41,9 @@ type ExportOptions struct {
 
 // New creates a configuration Generator with the default
 // configuration for the target operating system.
-func New(os string) (generator Generator, err error) {
-	if os != "linux" && os != "solaris" && os != "windows" {
-		return generator, fmt.Errorf("no defaults configured for %s", os)
+func New(platform string) (generator Generator, err error) {
+	if platform != "linux" && platform != "solaris" && platform != "windows" {
+		return generator, fmt.Errorf("no defaults configured for %s", platform)
 	}
 
 	config := rspec.Spec{
@@ -48,7 +51,7 @@ func New(os string) (generator Generator, err error) {
 		Hostname: "mrsdalloway",
 	}
 
-	if os == "windows" {
+	if platform == "windows" {
 		config.Process = &rspec.Process{
 			Args: []string{
 				"cmd",
@@ -69,7 +72,7 @@ func New(os string) (generator Generator, err error) {
 		}
 	}
 
-	if os == "linux" || os == "solaris" {
+	if platform == "linux" || platform == "solaris" {
 		config.Process.User = rspec.User{}
 		config.Process.Env = []string{
 			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
@@ -85,7 +88,7 @@ func New(os string) (generator Generator, err error) {
 		}
 	}
 
-	if os == "linux" {
+	if platform == "linux" {
 		config.Process.Capabilities = &rspec.LinuxCapabilities{
 			Bounding: []string{
 				"CAP_CHOWN",
@@ -179,7 +182,7 @@ func New(os string) (generator Generator, err error) {
 				Destination: "/dev",
 				Type:        "tmpfs",
 				Source:      "tmpfs",
-				Options:     []string{"nosuid", "strictatime", "mode=755", "size=65536k"},
+				Options:     []string{"nosuid", "noexec", "strictatime", "mode=755", "size=65536k"},
 			},
 			{
 				Destination: "/dev/pts",
@@ -236,7 +239,12 @@ func New(os string) (generator Generator, err error) {
 		}
 	}
 
-	return Generator{Config: &config}, nil
+	envCache := map[string]int{}
+	if config.Process != nil {
+		envCache = createEnvCacheMap(config.Process.Env)
+	}
+
+	return Generator{Config: &config, envMap: envCache}, nil
 }
 
 // NewFromSpec creates a configuration Generator from a given
@@ -246,8 +254,14 @@ func New(os string) (generator Generator, err error) {
 //
 //   generator := Generator{Config: config}
 func NewFromSpec(config *rspec.Spec) Generator {
+	envCache := map[string]int{}
+	if config != nil && config.Process != nil {
+		envCache = createEnvCacheMap(config.Process.Env)
+	}
+
 	return Generator{
 		Config: config,
+		envMap: envCache,
 	}
 }
 
@@ -273,9 +287,25 @@ func NewFromTemplate(r io.Reader) (Generator, error) {
 	if err := json.NewDecoder(r).Decode(&config); err != nil {
 		return Generator{}, err
 	}
+
+	envCache := map[string]int{}
+	if config.Process != nil {
+		envCache = createEnvCacheMap(config.Process.Env)
+	}
+
 	return Generator{
 		Config: &config,
+		envMap: envCache,
 	}, nil
+}
+
+// createEnvCacheMap creates a hash map with the ENV variables given by the config
+func createEnvCacheMap(env []string) map[string]int {
+	envMap := make(map[string]int, len(env))
+	for i, val := range env {
+		envMap[val] = i
+	}
+	return envMap
 }
 
 // SetSpec sets the configuration in the Generator g.
@@ -414,6 +444,13 @@ func (g *Generator) SetProcessUsername(username string) {
 	g.Config.Process.User.Username = username
 }
 
+// SetProcessUmask sets g.Config.Process.User.Umask.
+func (g *Generator) SetProcessUmask(umask uint32) {
+	g.initConfigProcess()
+	u := umask
+	g.Config.Process.User.Umask = &u
+}
+
 // SetProcessGID sets g.Config.Process.User.GID.
 func (g *Generator) SetProcessGID(gid uint32) {
 	g.initConfigProcess()
@@ -456,25 +493,48 @@ func (g *Generator) ClearProcessEnv() {
 		return
 	}
 	g.Config.Process.Env = []string{}
+	// Clear out the env cache map as well
+	g.envMap = map[string]int{}
 }
 
 // AddProcessEnv adds name=value into g.Config.Process.Env, or replaces an
 // existing entry with the given name.
 func (g *Generator) AddProcessEnv(name, value string) {
+	if name == "" {
+		return
+	}
+
+	g.initConfigProcess()
+	g.addEnv(fmt.Sprintf("%s=%s", name, value), name)
+}
+
+// AddMultipleProcessEnv adds multiple name=value into g.Config.Process.Env, or replaces
+// existing entries with the given name.
+func (g *Generator) AddMultipleProcessEnv(envs []string) {
 	g.initConfigProcess()
 
-	env := fmt.Sprintf("%s=%s", name, value)
-	for idx := range g.Config.Process.Env {
-		if strings.HasPrefix(g.Config.Process.Env[idx], name+"=") {
-			g.Config.Process.Env[idx] = env
-			return
-		}
+	for _, val := range envs {
+		split := strings.SplitN(val, "=", 2)
+		g.addEnv(val, split[0])
 	}
-	g.Config.Process.Env = append(g.Config.Process.Env, env)
+}
+
+// addEnv looks through adds ENV to the Process and checks envMap for
+// any duplicates
+// This is called by both AddMultipleProcessEnv and AddProcessEnv
+func (g *Generator) addEnv(env, key string) {
+	if idx, ok := g.envMap[key]; ok {
+		// The ENV exists in the cache, so change its value in g.Config.Process.Env
+		g.Config.Process.Env[idx] = env
+	} else {
+		// else the env doesn't exist, so add it and add it's index to g.envMap
+		g.Config.Process.Env = append(g.Config.Process.Env, env)
+		g.envMap[key] = len(g.Config.Process.Env) - 1
+	}
 }
 
 // AddProcessRlimits adds rlimit into g.Config.Process.Rlimits.
-func (g *Generator) AddProcessRlimits(rType string, rHard uint64, rSoft uint64) {
+func (g *Generator) AddProcessRlimits(rType string, rHard, rSoft uint64) {
 	g.initConfigProcess()
 	for i, rlimit := range g.Config.Process.Rlimits {
 		if rlimit.Type == rType {
@@ -569,7 +629,7 @@ func (g *Generator) SetLinuxResourcesBlockIOLeafWeight(weight uint16) {
 }
 
 // AddLinuxResourcesBlockIOLeafWeightDevice adds or sets g.Config.Linux.Resources.BlockIO.WeightDevice.LeafWeight.
-func (g *Generator) AddLinuxResourcesBlockIOLeafWeightDevice(major int64, minor int64, weight uint16) {
+func (g *Generator) AddLinuxResourcesBlockIOLeafWeightDevice(major, minor int64, weight uint16) {
 	g.initConfigLinuxResourcesBlockIO()
 	for i, weightDevice := range g.Config.Linux.Resources.BlockIO.WeightDevice {
 		if weightDevice.Major == major && weightDevice.Minor == minor {
@@ -584,28 +644,6 @@ func (g *Generator) AddLinuxResourcesBlockIOLeafWeightDevice(major int64, minor 
 	g.Config.Linux.Resources.BlockIO.WeightDevice = append(g.Config.Linux.Resources.BlockIO.WeightDevice, *weightDevice)
 }
 
-// DropLinuxResourcesBlockIOLeafWeightDevice drops a item form g.Config.Linux.Resources.BlockIO.WeightDevice.LeafWeight
-func (g *Generator) DropLinuxResourcesBlockIOLeafWeightDevice(major int64, minor int64) {
-	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.BlockIO == nil {
-		return
-	}
-
-	for i, weightDevice := range g.Config.Linux.Resources.BlockIO.WeightDevice {
-		if weightDevice.Major == major && weightDevice.Minor == minor {
-			if weightDevice.Weight != nil {
-				newWeightDevice := new(rspec.LinuxWeightDevice)
-				newWeightDevice.Major = major
-				newWeightDevice.Minor = minor
-				newWeightDevice.Weight = weightDevice.Weight
-				g.Config.Linux.Resources.BlockIO.WeightDevice[i] = *newWeightDevice
-			} else {
-				g.Config.Linux.Resources.BlockIO.WeightDevice = append(g.Config.Linux.Resources.BlockIO.WeightDevice[:i], g.Config.Linux.Resources.BlockIO.WeightDevice[i+1:]...)
-			}
-			return
-		}
-	}
-}
-
 // SetLinuxResourcesBlockIOWeight sets g.Config.Linux.Resources.BlockIO.Weight.
 func (g *Generator) SetLinuxResourcesBlockIOWeight(weight uint16) {
 	g.initConfigLinuxResourcesBlockIO()
@@ -613,7 +651,7 @@ func (g *Generator) SetLinuxResourcesBlockIOWeight(weight uint16) {
 }
 
 // AddLinuxResourcesBlockIOWeightDevice adds or sets g.Config.Linux.Resources.BlockIO.WeightDevice.Weight.
-func (g *Generator) AddLinuxResourcesBlockIOWeightDevice(major int64, minor int64, weight uint16) {
+func (g *Generator) AddLinuxResourcesBlockIOWeightDevice(major, minor int64, weight uint16) {
 	g.initConfigLinuxResourcesBlockIO()
 	for i, weightDevice := range g.Config.Linux.Resources.BlockIO.WeightDevice {
 		if weightDevice.Major == major && weightDevice.Minor == minor {
@@ -628,37 +666,15 @@ func (g *Generator) AddLinuxResourcesBlockIOWeightDevice(major int64, minor int6
 	g.Config.Linux.Resources.BlockIO.WeightDevice = append(g.Config.Linux.Resources.BlockIO.WeightDevice, *weightDevice)
 }
 
-// DropLinuxResourcesBlockIOWeightDevice drops a item form g.Config.Linux.Resources.BlockIO.WeightDevice.Weight
-func (g *Generator) DropLinuxResourcesBlockIOWeightDevice(major int64, minor int64) {
-	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.BlockIO == nil {
-		return
-	}
-
-	for i, weightDevice := range g.Config.Linux.Resources.BlockIO.WeightDevice {
-		if weightDevice.Major == major && weightDevice.Minor == minor {
-			if weightDevice.LeafWeight != nil {
-				newWeightDevice := new(rspec.LinuxWeightDevice)
-				newWeightDevice.Major = major
-				newWeightDevice.Minor = minor
-				newWeightDevice.LeafWeight = weightDevice.LeafWeight
-				g.Config.Linux.Resources.BlockIO.WeightDevice[i] = *newWeightDevice
-			} else {
-				g.Config.Linux.Resources.BlockIO.WeightDevice = append(g.Config.Linux.Resources.BlockIO.WeightDevice[:i], g.Config.Linux.Resources.BlockIO.WeightDevice[i+1:]...)
-			}
-			return
-		}
-	}
-}
-
 // AddLinuxResourcesBlockIOThrottleReadBpsDevice adds or sets g.Config.Linux.Resources.BlockIO.ThrottleReadBpsDevice.
-func (g *Generator) AddLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, minor int64, rate uint64) {
+func (g *Generator) AddLinuxResourcesBlockIOThrottleReadBpsDevice(major, minor int64, rate uint64) {
 	g.initConfigLinuxResourcesBlockIO()
 	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.Config.Linux.Resources.BlockIO.ThrottleReadBpsDevice, major, minor, rate)
 	g.Config.Linux.Resources.BlockIO.ThrottleReadBpsDevice = throttleDevices
 }
 
 // DropLinuxResourcesBlockIOThrottleReadBpsDevice drops a item from g.Config.Linux.Resources.BlockIO.ThrottleReadBpsDevice.
-func (g *Generator) DropLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, minor int64) {
+func (g *Generator) DropLinuxResourcesBlockIOThrottleReadBpsDevice(major, minor int64) {
 	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.BlockIO == nil {
 		return
 	}
@@ -668,14 +684,14 @@ func (g *Generator) DropLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, 
 }
 
 // AddLinuxResourcesBlockIOThrottleReadIOPSDevice adds or sets g.Config.Linux.Resources.BlockIO.ThrottleReadIOPSDevice.
-func (g *Generator) AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64, minor int64, rate uint64) {
+func (g *Generator) AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor int64, rate uint64) {
 	g.initConfigLinuxResourcesBlockIO()
 	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.Config.Linux.Resources.BlockIO.ThrottleReadIOPSDevice, major, minor, rate)
 	g.Config.Linux.Resources.BlockIO.ThrottleReadIOPSDevice = throttleDevices
 }
 
 // DropLinuxResourcesBlockIOThrottleReadIOPSDevice drops a item from g.Config.Linux.Resources.BlockIO.ThrottleReadIOPSDevice.
-func (g *Generator) DropLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64, minor int64) {
+func (g *Generator) DropLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor int64) {
 	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.BlockIO == nil {
 		return
 	}
@@ -685,14 +701,14 @@ func (g *Generator) DropLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64,
 }
 
 // AddLinuxResourcesBlockIOThrottleWriteBpsDevice adds or sets g.Config.Linux.Resources.BlockIO.ThrottleWriteBpsDevice.
-func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64, minor int64, rate uint64) {
+func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor int64, rate uint64) {
 	g.initConfigLinuxResourcesBlockIO()
 	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.Config.Linux.Resources.BlockIO.ThrottleWriteBpsDevice, major, minor, rate)
 	g.Config.Linux.Resources.BlockIO.ThrottleWriteBpsDevice = throttleDevices
 }
 
 // DropLinuxResourcesBlockIOThrottleWriteBpsDevice drops a item from g.Config.Linux.Resources.BlockIO.ThrottleWriteBpsDevice.
-func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64, minor int64) {
+func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor int64) {
 	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.BlockIO == nil {
 		return
 	}
@@ -702,14 +718,14 @@ func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64,
 }
 
 // AddLinuxResourcesBlockIOThrottleWriteIOPSDevice adds or sets g.Config.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice.
-func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major int64, minor int64, rate uint64) {
+func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor int64, rate uint64) {
 	g.initConfigLinuxResourcesBlockIO()
 	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.Config.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice, major, minor, rate)
 	g.Config.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice = throttleDevices
 }
 
 // DropLinuxResourcesBlockIOThrottleWriteIOPSDevice drops a item from g.Config.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice.
-func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteIOPSDevice(major int64, minor int64) {
+func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor int64) {
 	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.BlockIO == nil {
 		return
 	}
@@ -1082,7 +1098,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 
 	var foundAmbient, foundBounding, foundEffective, foundInheritable, foundPermitted bool
 	for _, cap := range g.Config.Process.Capabilities.Ambient {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundAmbient = true
 			break
 		}
@@ -1092,7 +1108,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 	}
 
 	for _, cap := range g.Config.Process.Capabilities.Bounding {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundBounding = true
 			break
 		}
@@ -1102,7 +1118,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 	}
 
 	for _, cap := range g.Config.Process.Capabilities.Effective {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundEffective = true
 			break
 		}
@@ -1112,7 +1128,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 	}
 
 	for _, cap := range g.Config.Process.Capabilities.Inheritable {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundInheritable = true
 			break
 		}
@@ -1122,7 +1138,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 	}
 
 	for _, cap := range g.Config.Process.Capabilities.Permitted {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundPermitted = true
 			break
 		}
@@ -1145,7 +1161,7 @@ func (g *Generator) AddProcessCapabilityAmbient(c string) error {
 
 	var foundAmbient bool
 	for _, cap := range g.Config.Process.Capabilities.Ambient {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundAmbient = true
 			break
 		}
@@ -1169,7 +1185,7 @@ func (g *Generator) AddProcessCapabilityBounding(c string) error {
 
 	var foundBounding bool
 	for _, cap := range g.Config.Process.Capabilities.Bounding {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundBounding = true
 			break
 		}
@@ -1192,7 +1208,7 @@ func (g *Generator) AddProcessCapabilityEffective(c string) error {
 
 	var foundEffective bool
 	for _, cap := range g.Config.Process.Capabilities.Effective {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundEffective = true
 			break
 		}
@@ -1215,7 +1231,7 @@ func (g *Generator) AddProcessCapabilityInheritable(c string) error {
 
 	var foundInheritable bool
 	for _, cap := range g.Config.Process.Capabilities.Inheritable {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundInheritable = true
 			break
 		}
@@ -1238,7 +1254,7 @@ func (g *Generator) AddProcessCapabilityPermitted(c string) error {
 
 	var foundPermitted bool
 	for _, cap := range g.Config.Process.Capabilities.Permitted {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			foundPermitted = true
 			break
 		}
@@ -1258,27 +1274,27 @@ func (g *Generator) DropProcessCapability(c string) error {
 
 	cp := strings.ToUpper(c)
 	for i, cap := range g.Config.Process.Capabilities.Ambient {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Ambient = removeFunc(g.Config.Process.Capabilities.Ambient, i)
 		}
 	}
 	for i, cap := range g.Config.Process.Capabilities.Bounding {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Bounding = removeFunc(g.Config.Process.Capabilities.Bounding, i)
 		}
 	}
 	for i, cap := range g.Config.Process.Capabilities.Effective {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Effective = removeFunc(g.Config.Process.Capabilities.Effective, i)
 		}
 	}
 	for i, cap := range g.Config.Process.Capabilities.Inheritable {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Inheritable = removeFunc(g.Config.Process.Capabilities.Inheritable, i)
 		}
 	}
 	for i, cap := range g.Config.Process.Capabilities.Permitted {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Permitted = removeFunc(g.Config.Process.Capabilities.Permitted, i)
 		}
 	}
@@ -1294,7 +1310,7 @@ func (g *Generator) DropProcessCapabilityAmbient(c string) error {
 
 	cp := strings.ToUpper(c)
 	for i, cap := range g.Config.Process.Capabilities.Ambient {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Ambient = removeFunc(g.Config.Process.Capabilities.Ambient, i)
 		}
 	}
@@ -1310,7 +1326,7 @@ func (g *Generator) DropProcessCapabilityBounding(c string) error {
 
 	cp := strings.ToUpper(c)
 	for i, cap := range g.Config.Process.Capabilities.Bounding {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Bounding = removeFunc(g.Config.Process.Capabilities.Bounding, i)
 		}
 	}
@@ -1326,7 +1342,7 @@ func (g *Generator) DropProcessCapabilityEffective(c string) error {
 
 	cp := strings.ToUpper(c)
 	for i, cap := range g.Config.Process.Capabilities.Effective {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Effective = removeFunc(g.Config.Process.Capabilities.Effective, i)
 		}
 	}
@@ -1342,7 +1358,7 @@ func (g *Generator) DropProcessCapabilityInheritable(c string) error {
 
 	cp := strings.ToUpper(c)
 	for i, cap := range g.Config.Process.Capabilities.Inheritable {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Inheritable = removeFunc(g.Config.Process.Capabilities.Inheritable, i)
 		}
 	}
@@ -1358,7 +1374,7 @@ func (g *Generator) DropProcessCapabilityPermitted(c string) error {
 
 	cp := strings.ToUpper(c)
 	for i, cap := range g.Config.Process.Capabilities.Permitted {
-		if strings.ToUpper(cap) == cp {
+		if strings.EqualFold(cap, cp) {
 			g.Config.Process.Capabilities.Permitted = removeFunc(g.Config.Process.Capabilities.Permitted, i)
 		}
 	}
@@ -1366,7 +1382,7 @@ func (g *Generator) DropProcessCapabilityPermitted(c string) error {
 	return validate.CapValid(cp, false)
 }
 
-func mapStrToNamespace(ns string, path string) (rspec.LinuxNamespace, error) {
+func mapStrToNamespace(ns, path string) (rspec.LinuxNamespace, error) {
 	switch ns {
 	case "network":
 		return rspec.LinuxNamespace{Type: rspec.NetworkNamespace, Path: path}, nil
@@ -1397,7 +1413,7 @@ func (g *Generator) ClearLinuxNamespaces() {
 
 // AddOrReplaceLinuxNamespace adds or replaces a namespace inside
 // g.Config.Linux.Namespaces.
-func (g *Generator) AddOrReplaceLinuxNamespace(ns string, path string) error {
+func (g *Generator) AddOrReplaceLinuxNamespace(ns, path string) error {
 	namespace, err := mapStrToNamespace(ns, path)
 	if err != nil {
 		return err
@@ -1441,9 +1457,6 @@ func (g *Generator) AddDevice(device rspec.LinuxDevice) {
 		if dev.Path == device.Path {
 			g.Config.Linux.Devices[i] = device
 			return
-		}
-		if dev.Type == device.Type && dev.Major == device.Major && dev.Minor == device.Minor {
-			fmt.Fprintln(os.Stderr, "WARNING: The same type, major and minor should not be used for multiple devices.")
 		}
 	}
 
@@ -1503,16 +1516,12 @@ func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major
 			return
 		}
 	}
-	return
 }
 
-// strPtr returns the pointer pointing to the string s.
-func strPtr(s string) *string { return &s }
-
 // SetSyscallAction adds rules for syscalls with the specified action
-func (g *Generator) SetSyscallAction(arguments seccomp.SyscallOpts) error {
+func (g *Generator) SetSyscallAction(arguments seccomp.SyscallOpts) error { //nolint
 	g.initConfigLinuxSeccomp()
-	return seccomp.ParseSyscallFlag(arguments, g.Config.Linux.Seccomp)
+	return seccomp.ParseSyscallFlag(&arguments, g.Config.Linux.Seccomp)
 }
 
 // SetDefaultSeccompAction sets the default action for all syscalls not defined
@@ -1558,7 +1567,7 @@ func (g *Generator) AddLinuxReadonlyPaths(path string) {
 	g.Config.Linux.ReadonlyPaths = append(g.Config.Linux.ReadonlyPaths, path)
 }
 
-func addOrReplaceBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64, minor int64, rate uint64) []rspec.LinuxThrottleDevice {
+func addOrReplaceBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major, minor int64, rate uint64) []rspec.LinuxThrottleDevice {
 	throttleDevices := tmpList
 	for i, throttleDevice := range throttleDevices {
 		if throttleDevice.Major == major && throttleDevice.Minor == minor {
@@ -1575,7 +1584,7 @@ func addOrReplaceBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, majo
 	return throttleDevices
 }
 
-func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64, minor int64) []rspec.LinuxThrottleDevice {
+func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major, minor int64) []rspec.LinuxThrottleDevice {
 	throttleDevices := tmpList
 	for i, throttleDevice := range throttleDevices {
 		if throttleDevice.Major == major && throttleDevice.Minor == minor {
@@ -1588,7 +1597,7 @@ func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64,
 }
 
 // AddSolarisAnet adds network into g.Config.Solaris.Anet
-func (g *Generator) AddSolarisAnet(anet rspec.SolarisAnet) {
+func (g *Generator) AddSolarisAnet(anet rspec.SolarisAnet) { //nolint
 	g.initConfigSolaris()
 	g.Config.Solaris.Anet = append(g.Config.Solaris.Anet, anet)
 }
@@ -1737,7 +1746,7 @@ func (g *Generator) AddWindowsDevices(id, idType string) error {
 }
 
 // SetWindowsNetwork sets g.Config.Windows.Network.
-func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) {
+func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) { //nolint
 	g.initConfigWindows()
 	g.Config.Windows.Network = &network
 }

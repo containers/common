@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.4.1
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/containers/image/v5 v5.16.1
 	github.com/containers/ocicrypt v1.1.2
 	github.com/containers/storage v1.37.0
@@ -25,7 +26,6 @@ require (
 	github.com/opencontainers/image-spec v1.0.2-0.20210819154149-5ad6f50d6283
 	github.com/opencontainers/runc v1.0.2
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
-	github.com/opencontainers/runtime-tools v0.9.0
 	github.com/opencontainers/selinux v1.9.1
 	github.com/pkg/errors v0.9.1
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20200616122406-847368b35ebf
@@ -34,6 +34,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
+	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1

@@ -2,8 +2,6 @@ package specerror
 
 import (
 	"fmt"
-
-	rfc2119 "github.com/opencontainers/runtime-tools/error"
 )
 
 // define error codes
@@ -140,49 +138,3 @@ var (
 		return fmt.Sprintf(referenceTemplate, version, "config.md#valid-values"), nil
 	}
 )
-
-func init() {
-	register(SpecVersionInSemVer, rfc2119.Must, specificationVersionRef)
-	register(RootOnWindowsRequired, rfc2119.Required, rootRef)
-	register(RootOnHyperVNotSet, rfc2119.Must, rootRef)
-	register(RootOnNonWindowsRequired, rfc2119.Required, rootRef)
-	register(RootPathOnWindowsGUID, rfc2119.Must, rootRef)
-	register(RootPathOnPosixConvention, rfc2119.Should, rootRef)
-	register(RootPathExist, rfc2119.Must, rootRef)
-	register(RootReadonlyImplement, rfc2119.Must, rootRef)
-	register(RootReadonlyOnWindowsFalse, rfc2119.Must, rootRef)
-	register(MountsInOrder, rfc2119.Must, mountsRef)
-	register(MountsDestAbs, rfc2119.Must, mountsRef)
-	register(MountsDestOnWindowsNotNested, rfc2119.Must, mountsRef)
-	register(MountsOptionsOnWindowsROSupport, rfc2119.Must, mountsRef)
-	register(ProcRequiredAtStart, rfc2119.Required, processRef)
-	register(ProcConsoleSizeIgnore, rfc2119.Must, processRef)
-	register(ProcCwdAbs, rfc2119.Must, processRef)
-	register(ProcArgsOneEntryRequired, rfc2119.Required, processRef)
-	register(PosixProcRlimitsTypeGenError, rfc2119.Must, posixProcessRef)
-	register(PosixProcRlimitsTypeGet, rfc2119.Must, posixProcessRef)
-	register(PosixProcRlimitsTypeValueError, rfc2119.Should, posixProcessRef)
-	register(PosixProcRlimitsSoftMatchCur, rfc2119.Must, posixProcessRef)
-	register(PosixProcRlimitsHardMatchMax, rfc2119.Must, posixProcessRef)
-	register(PosixProcRlimitsErrorOnDup, rfc2119.Must, posixProcessRef)
-	register(LinuxProcCapError, rfc2119.Must, linuxProcessRef)
-	register(LinuxProcOomScoreAdjSet, rfc2119.Must, linuxProcessRef)
-	register(LinuxProcOomScoreAdjNotSet, rfc2119.Must, linuxProcessRef)
-	register(PlatformSpecConfOnWindowsSet, rfc2119.Must, platformSpecificConfigurationRef)
-	register(PosixHooksPathAbs, rfc2119.Must, posixPlatformHooksRef)
-	register(PosixHooksTimeoutPositive, rfc2119.Must, posixPlatformHooksRef)
-	register(PosixHooksCalledInOrder, rfc2119.Must, posixPlatformHooksRef)
-	register(PosixHooksStateToStdin, rfc2119.Must, posixPlatformHooksRef)
-	register(PrestartTiming, rfc2119.Must, prestartRef)
-	register(PoststartTiming, rfc2119.Must, poststartRef)
-	register(PoststopTiming, rfc2119.Must, poststopRef)
-	register(AnnotationsKeyValueMap, rfc2119.Must, annotationsRef)
-	register(AnnotationsKeyString, rfc2119.Must, annotationsRef)
-	register(AnnotationsKeyRequired, rfc2119.Must, annotationsRef)
-	register(AnnotationsKeyReversedDomain, rfc2119.Should, annotationsRef)
-	register(AnnotationsKeyReservedNS, rfc2119.Must, annotationsRef)
-	register(AnnotationsKeyIgnoreUnknown, rfc2119.Must, annotationsRef)
-	register(AnnotationsValueString, rfc2119.Must, annotationsRef)
-	register(ExtensibilityIgnoreUnknownProp, rfc2119.Must, extensibilityRef)
-	register(ValidValues, rfc2119.Must, validValuesRef)
-}
