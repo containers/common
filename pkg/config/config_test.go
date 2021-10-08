@@ -702,6 +702,7 @@ image_copy_tmp_dir="storage"`
 			conf := Config{}
 			content := bytes.NewBufferString("")
 			logrus.SetOutput(content)
+			logrus.SetLevel(logrus.DebugLevel)
 			err := readConfigFromFile("testdata/containers_broken.conf", &conf)
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(conf.Containers.NetNS).To(gomega.Equal("bridge"))
