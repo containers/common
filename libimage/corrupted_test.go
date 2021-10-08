@@ -33,7 +33,7 @@ func TestCorruptedLayers(t *testing.T) {
 	image := pulledImages[0]
 
 	// Inpsecting a healthy image should work.
-	_, err = image.Inspect(ctx, false)
+	_, err = image.Inspect(ctx, nil)
 	require.NoError(t, err, "inspecting healthy image should work")
 
 	exists, err = runtime.Exists(imageName)
@@ -64,7 +64,7 @@ func TestCorruptedLayers(t *testing.T) {
 	image.reload() // clear the cached data
 
 	// Now inspecting the image must fail!
-	_, err = image.Inspect(ctx, false)
+	_, err = image.Inspect(ctx, nil)
 	require.Error(t, err, "inspecting corrupted image should fail")
 
 	err = image.isCorrupted(imageName)
@@ -87,6 +87,6 @@ func TestCorruptedLayers(t *testing.T) {
 	image = pulledImages[0]
 
 	// Inspecting a repaired image should work.
-	_, err = image.Inspect(ctx, false)
+	_, err = image.Inspect(ctx, nil)
 	require.NoError(t, err, "inspecting repaired image should work")
 }

@@ -80,7 +80,7 @@ func TestPushOtherPlatform(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, pulledImages, 1)
 
-	data, err := pulledImages[0].Inspect(ctx, false)
+	data, err := pulledImages[0].Inspect(ctx, nil)
 	require.NoError(t, err)
 	require.Equal(t, "arm64", data.Architecture)
 
