@@ -157,7 +157,7 @@ func TestImageFunctions(t *testing.T) {
 	require.True(t, size > 0)
 
 	// Now compare the inspect data to what we expect.
-	imageData, err := image.Inspect(ctx, true)
+	imageData, err := image.Inspect(ctx, &InspectOptions{WithParent: true, WithSize: true})
 	require.NoError(t, err)
 	require.Equal(t, image.ID(), imageData.ID, "inspect data should match")
 	require.Equal(t, repoTags, imageData.RepoTags, "inspect data should match")
