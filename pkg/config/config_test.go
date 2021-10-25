@@ -22,6 +22,10 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
+			defaultSysctls := []string{
+				"net.ipv4.ping_group_range=0 0",
+				"net.ipv6.conf.all.accept_dad=0",
+			}
 			defaultConfig, err := NewConfig("")
 
 			// Then
@@ -32,6 +36,7 @@ var _ = Describe("Config", func() {
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
+			gomega.Expect(defaultConfig.Containers.DefaultSysctls).To(gomega.BeEquivalentTo(defaultSysctls))
 		})
 
 		It("should succeed with devices", func() {
