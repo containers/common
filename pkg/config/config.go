@@ -1151,7 +1151,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 	if searchPATH {
 		return exec.LookPath(name)
 	}
-	configHint := "To resolve this error, set the helper_binaries_dir key in the `[engine]` section of containers.conf to directory containing your helper binaries."
+	configHint := "To resolve this error, set the helper_binaries_dir key in the `[engine]` section of containers.conf to the directory containing your helper binaries."
 	if len(c.Engine.HelperBinariesDir) == 0 {
 		return "", errors.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
 	}
