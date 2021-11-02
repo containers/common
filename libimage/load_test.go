@@ -33,6 +33,7 @@ func TestLoad(t *testing.T) {
 		{"testdata/oci-name-only.tar.gz", false, 1, []string{"localhost/pretty-empty:latest"}},
 		{"testdata/oci-non-docker-name.tar.gz", true, 0, nil},
 		{"testdata/oci-registry-name.tar.gz", false, 1, []string{"example.com/empty:latest"}},
+		{"testdata/oci-two-images.tar.xz", false, 2, []string{"example.com/empty:latest", "example.com/empty/but:different"}},
 		{"testdata/oci-unnamed.tar.gz", false, 1, []string{"sha256:5c8aca8137ac47e84c69ae93ce650ce967917cc001ba7aad5494073fac75b8b6"}},
 		{"testdata/buildkit-oci.tar", false, 1, []string{"github.com/buildkit/archive:oci"}},
 	} {

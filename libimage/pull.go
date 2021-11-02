@@ -150,6 +150,10 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	case dockerArchiveTransport.Transport.Name():
 		pulledImages, pullError = r.copyFromDockerArchive(ctx, ref, &options.CopyOptions)
 
+	// OCI ARCHIVE
+	case ociArchiveTransport.Transport.Name():
+		pulledImages, pullError = r.copyFromOCIArchive(ctx, ref, &options.CopyOptions)
+
 	// ALL OTHER TRANSPORTS
 	default:
 		pulledImages, pullError = r.copyFromDefault(ctx, ref, &options.CopyOptions)
@@ -211,29 +215,6 @@ func (r *Runtime) copyFromDefault(ctx context.Context, ref types.ImageReference,
 		split := strings.SplitN(ref.StringWithinTransport(), ":", 2)
 		storageName = toLocalImageName(split[0])
 		imageName = storageName
-
-	case ociArchiveTransport.Transport.Name():
-		manifestDescriptor, err := ociArchiveTransport.LoadManifestDescriptor(ref)
-		if err != nil {
-			return nil, err
-		}
-		storageName = nameFromAnnotations(manifestDescriptor.Annotations)
-		switch len(storageName) {
-		case 0:
-			// If there's no reference name in the annotations, compute an ID.
-			storageName, err = getImageID(ctx, ref, nil)
-			if err != nil {
-				return nil, err
-			}
-			imageName = "sha256:" + storageName[1:]
-		default:
-			named, err := NormalizeName(storageName)
-			if err != nil {
-				return nil, err
-			}
-			imageName = named.String()
-			storageName = imageName
-		}
 
 	case storageTransport.Transport.Name():
 		storageName = ref.StringWithinTransport()
@@ -341,6 +322,65 @@ func (r *Runtime) copyFromDockerArchiveReaderReference(ctx context.Context, read
 	}
 
 	return destNames, nil
+}
+
+func (r *Runtime) copyFromOCIArchive(ctx context.Context, readerRef types.ImageReference, options *CopyOptions) ([]string, error) {
+	reader, err := ociArchiveTransport.NewReader(ctx, &r.systemContext, readerRef)
+	if err != nil {
+		return nil, err
+	}
+	return r.copyFromOCIArchiveReader(ctx, reader, options)
+}
+
+func (r *Runtime) copyFromOCIArchiveReader(ctx context.Context, reader *ociArchiveTransport.Reader, options *CopyOptions) ([]string, error) {
+	c, err := r.newCopier(options)
+	if err != nil {
+		return nil, err
+	}
+	defer c.close()
+
+	list, err := reader.List()
+	if err != nil {
+		return nil, err
+	}
+
+	var names []string
+
+	for _, l := range list {
+		var storageName, imageName string
+
+		storageName = nameFromAnnotations(l.ManifestDescriptor.Annotations)
+		switch len(storageName) {
+		case 0:
+			// If there's no reference name in the annotations, compute an ID.
+			storageName, err = getImageID(ctx, l.ImageRef, nil)
+			if err != nil {
+				return nil, err
+			}
+			imageName = "sha256:" + storageName[1:]
+		default:
+			named, err := NormalizeName(storageName)
+			if err != nil {
+				return nil, err
+			}
+			imageName = named.String()
+			storageName = imageName
+		}
+
+		// Create a storage reference.
+		destRef, err := storageTransport.Transport.ParseStoreReference(r.store, storageName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "parsing %q", storageName)
+		}
+
+		if _, err := c.copy(ctx, l.ImageRef, destRef); err != nil {
+			return nil, err
+		}
+
+		names = append(names, imageName)
+	}
+
+	return names, nil
 }
 
 // copyFromRegistry pulls the specified, possibly unqualified, name from a

@@ -53,7 +53,7 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 			if err != nil {
 				return nil, ociArchiveTransport.Transport.Name(), err
 			}
-			images, err := r.copyFromDefault(ctx, ref, &options.CopyOptions)
+			images, err := r.loadMultiImageOCIArchive(ctx, ref, &options.CopyOptions)
 			return images, ociArchiveTransport.Transport.Name(), err
 		},
 
@@ -127,6 +127,25 @@ func (r *Runtime) loadMultiImageDockerArchive(ctx context.Context, ref types.Ima
 			}
 			copiedImages = append(copiedImages, names...)
 		}
+	}
+
+	return copiedImages, nil
+}
+
+func (r *Runtime) loadMultiImageOCIArchive(ctx context.Context, ref types.ImageReference, options *CopyOptions) ([]string, error) {
+	reader, err := ociArchiveTransport.NewReader(ctx, r.systemContextCopy(), ref)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := reader.Close(); err != nil {
+			logrus.Errorf(err.Error())
+		}
+	}()
+
+	copiedImages, err := r.copyFromOCIArchiveReader(ctx, reader, options)
+	if err != nil {
+		return nil, err
 	}
 
 	return copiedImages, nil

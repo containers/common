@@ -9,7 +9,7 @@ import (
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/manifest"
-	ociArchiveTransport "github.com/containers/image/v5/oci/archive"
+	"github.com/containers/image/v5/oci/archive"
 	ociTransport "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/types"
 	ociv1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -46,8 +46,8 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 	case 1:
 		// All formats support saving 1.
 	default:
-		if format != "docker-archive" {
-			return errors.Errorf("unsupported format %q for saving multiple images (only docker-archive)", format)
+		if format != "docker-archive" && format != "oci-archive" {
+			return errors.Errorf("unsupported format %q for saving multiple images (only docker-archive and oci-archive)", format)
 		}
 		if len(options.AdditionalTags) > 0 {
 			return errors.Errorf("cannot save multiple images with multiple tags")
@@ -56,15 +56,17 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 
 	// Dispatch the save operations.
 	switch format {
-	case "oci-archive", "oci-dir", "docker-dir":
+	case "oci-dir", "docker-dir":
 		if len(names) > 1 {
 			return errors.Errorf("%q does not support saving multiple images (%v)", format, names)
 		}
 		return r.saveSingleImage(ctx, names[0], format, path, options)
-
 	case "docker-archive":
 		options.ManifestMIMEType = manifest.DockerV2Schema2MediaType
-		return r.saveDockerArchive(ctx, names, path, options)
+		return r.saveArchive(ctx, names, format, path, options)
+	case "oci-archive":
+		options.ManifestMIMEType = ociv1.MediaTypeImageManifest
+		return r.saveArchive(ctx, names, format, path, options)
 	}
 
 	return errors.Errorf("unsupported format %q for saving images", format)
@@ -98,9 +100,6 @@ func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string
 	// Prepare the destination reference.
 	var destRef types.ImageReference
 	switch format {
-	case "oci-archive":
-		destRef, err = ociArchiveTransport.NewReference(path, tag)
-
 	case "oci-dir":
 		destRef, err = ociTransport.NewReference(path, tag)
 		options.ManifestMIMEType = ociv1.MediaTypeImageManifest
@@ -127,17 +126,18 @@ func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string
 	return err
 }
 
+type localImage struct {
+	image     *Image
+	tags      []reference.NamedTagged
+	destNames []string
+}
+
 // saveDockerArchive saves the specified images indicated by names to the path.
 // It loads all images from the local containers storage and assembles the meta
 // data needed to properly save images.  Since multiple names could refer to
 // the *same* image, we need to dance a bit and store additional "names".
 // Those can then be used as additional tags when copying.
-func (r *Runtime) saveDockerArchive(ctx context.Context, names []string, path string, options *SaveOptions) error {
-	type localImage struct {
-		image *Image
-		tags  []reference.NamedTagged
-	}
-
+func (r *Runtime) saveArchive(ctx context.Context, names []string, format, path string, options *SaveOptions) (finalErr error) {
 	additionalTags := []reference.NamedTagged{}
 	for _, tag := range options.AdditionalTags {
 		named, err := NormalizeName(tag)
@@ -180,6 +180,7 @@ func (r *Runtime) saveDockerArchive(ctx context.Context, names []string, path st
 			if withTag {
 				local.tags = append(local.tags, tagged)
 			}
+			local.destNames = append(local.destNames, tagged.String())
 		}
 		localImages[image.ID()] = local
 		if r.eventChannel != nil {
@@ -187,11 +188,40 @@ func (r *Runtime) saveDockerArchive(ctx context.Context, names []string, path st
 		}
 	}
 
+	switch format {
+	case "docker-archive":
+		if err := r.saveDockerArchive(ctx, path, orderedIDs, localImages, options); err != nil {
+			return err
+		}
+
+	case "oci-archive":
+		if err := r.saveOCIArchive(ctx, path, orderedIDs, localImages, options); err != nil {
+			return err
+		}
+
+	default:
+		return errors.Errorf("internal error: cannot save multiple images to format %q", format)
+	}
+
+	return nil
+}
+
+func (r *Runtime) saveDockerArchive(ctx context.Context, path string, orderedIDs []string, localImages map[string]*localImage, options *SaveOptions) (finalErr error) {
 	writer, err := dockerArchiveTransport.NewWriter(r.systemContextCopy(), path)
 	if err != nil {
 		return err
 	}
-	defer writer.Close()
+	defer func() {
+		err := writer.Close()
+		if err == nil {
+			return
+		}
+		if finalErr == nil {
+			finalErr = err
+			return
+		}
+		finalErr = errors.Wrap(finalErr, err.Error())
+	}()
 
 	for _, id := range orderedIDs {
 		local, exists := localImages[id]
@@ -222,6 +252,54 @@ func (r *Runtime) saveDockerArchive(ctx context.Context, names []string, path st
 			return err
 		}
 	}
+	return finalErr
+}
 
-	return nil
+func (r *Runtime) saveOCIArchive(ctx context.Context, path string, orderedIDs []string, localImages map[string]*localImage, options *SaveOptions) (finalErr error) {
+	writer, err := archive.NewWriter(ctx, r.systemContextCopy(), path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err := writer.Close()
+		if err == nil {
+			return
+		}
+		if finalErr == nil {
+			finalErr = err
+		}
+		finalErr = errors.Wrap(finalErr, err.Error())
+	}()
+
+	for _, id := range orderedIDs {
+		local, exists := localImages[id]
+		if !exists {
+			return errors.Errorf("internal error: saveOCIArchive: ID %s not found in local map", id)
+		}
+
+		copyOpts := options.CopyOptions
+
+		c, err := r.newCopier(&copyOpts)
+		if err != nil {
+			return err
+		}
+		defer c.close()
+
+		for _, destName := range local.destNames {
+			destRef, err := writer.NewReference(destName)
+			if err != nil {
+				return err
+			}
+
+			srcRef, err := local.image.StorageReference()
+			if err != nil {
+				return err
+			}
+
+			if _, err := c.copy(ctx, srcRef, destRef); err != nil {
+				return err
+			}
+		}
+	}
+	return finalErr
 }
