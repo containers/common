@@ -27,9 +27,9 @@ type SaveOptions struct {
 }
 
 // Save saves one or more images indicated by `names` in the specified `format`
-// to `path`.  Supported formats are oci-archive, docker-archive, oci-dir and
-// docker-dir.  The latter two adhere to the dir transport in the corresponding
-// oci or docker v2s2 format.  Please note that only docker-archive supports
+// to `path`.  Supported formats are oci-archive, compat-archive, oci-dir and
+// dir.  The latter two adhere to the dir transport in the corresponding
+// oci or docker v2s2 format.  Please note that only compat-archive supports
 // saving more than one images.  Other formats will yield an error attempting
 // to save more than one.
 func (r *Runtime) Save(ctx context.Context, names []string, format, path string, options *SaveOptions) error {
@@ -46,8 +46,8 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 	case 1:
 		// All formats support saving 1.
 	default:
-		if format != "docker-archive" {
-			return errors.Errorf("unsupported format %q for saving multiple images (only docker-archive)", format)
+		if format != "docker-archive" && format != "compat-archive" {
+			return errors.Errorf("unsupported format %q for saving multiple images (only compat-archive)", format)
 		}
 		if len(options.AdditionalTags) > 0 {
 			return errors.Errorf("cannot save multiple images with multiple tags")
@@ -56,13 +56,13 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 
 	// Dispatch the save operations.
 	switch format {
-	case "oci-archive", "oci-dir", "docker-dir":
+	case "oci-archive", "oci-dir", "docker-dir", "dir":
 		if len(names) > 1 {
 			return errors.Errorf("%q does not support saving multiple images (%v)", format, names)
 		}
 		return r.saveSingleImage(ctx, names[0], format, path, options)
 
-	case "docker-archive":
+	case "docker-archive", "compat-archive":
 		options.ManifestMIMEType = manifest.DockerV2Schema2MediaType
 		return r.saveDockerArchive(ctx, names, path, options)
 	}
@@ -72,7 +72,7 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 }
 
 // saveSingleImage saves the specified image name to the specified path.
-// Supported formats are "oci-archive", "oci-dir" and "docker-dir".
+// Supported formats are "oci-archive", "oci-dir" and "docker-dir", "dir".
 func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string, options *SaveOptions) error {
 	image, imageName, err := r.LookupImage(name, nil)
 	if err != nil {
@@ -105,7 +105,7 @@ func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string
 		destRef, err = ociTransport.NewReference(path, tag)
 		options.ManifestMIMEType = ociv1.MediaTypeImageManifest
 
-	case "docker-dir":
+	case "docker-dir", "dir":
 		destRef, err = dirTransport.NewReference(path)
 		options.ManifestMIMEType = manifest.DockerV2Schema2MediaType
 

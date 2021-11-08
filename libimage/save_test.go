@@ -19,9 +19,9 @@ func TestSave(t *testing.T) {
 	// Prefetch alpine, busybox.
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
-	_, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	_, err := runtime.Pull(ctx, "quay.io/libpod/alpine:latest", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
-	_, err = runtime.Pull(ctx, "docker.io/library/busybox:latest", config.PullPolicyAlways, pullOptions)
+	_, err = runtime.Pull(ctx, "quay.io/libpod/busybox:latest", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
 
 	// Save the two images into a multi-image archive.  This way, we can
@@ -32,7 +32,7 @@ func TestSave(t *testing.T) {
 	require.NoError(t, err)
 	imageCache.Close()
 	defer os.Remove(imageCache.Name())
-	err = runtime.Save(ctx, []string{"alpine", "busybox"}, "docker-archive", imageCache.Name(), saveOptions)
+	err = runtime.Save(ctx, []string{"alpine", "busybox"}, "compat-archive", imageCache.Name(), saveOptions)
 	require.NoError(t, err)
 
 	loadOptions := &LoadOptions{}
@@ -58,13 +58,18 @@ func TestSave(t *testing.T) {
 		{[]string{"busybox"}, nil, "oci-archive", false, false},
 		// oci-archive doesn't support multi-image archives
 		{[]string{"busybox", "alpine"}, nil, "oci-archive", false, true},
-		// docker
+		// compat
 		{[]string{"busybox"}, nil, "docker-archive", false, false},
+		{[]string{"busybox"}, nil, "compat-archive", false, false},
 		{[]string{"busybox"}, []string{"localhost/tag:1", "quay.io/repo/image:tag"}, "docker-archive", false, false},
+		{[]string{"busybox"}, []string{"localhost/tag:1", "quay.io/repo/image:tag"}, "compat-archive", false, false},
 		{[]string{"busybox"}, nil, "docker-dir", true, false},
+		{[]string{"busybox"}, nil, "dir", true, false},
 		{[]string{"busybox", "alpine"}, nil, "docker-archive", false, false},
+		{[]string{"busybox", "alpine"}, nil, "compat-archive", false, false},
 		// additional tags and multi-images conflict
 		{[]string{"busybox", "alpine"}, []string{"tag"}, "docker-archive", false, true},
+		{[]string{"busybox", "alpine"}, []string{"tag"}, "compat-archive", false, true},
 	} {
 		// First clean up all images and load the cache.
 		_, rmErrors := runtime.RemoveImages(ctx, nil, nil)
@@ -100,7 +105,7 @@ func TestSave(t *testing.T) {
 		// Now make sure that all specified names (and tags) resolve to
 		// an image the local containers storage.  Note that names are
 		// only preserved in archives.
-		if strings.HasSuffix(test.format, "-dir") {
+		if strings.HasSuffix(test.format, "dir") {
 			continue
 		}
 		_, err = runtime.ListImages(ctx, namesAndTags, nil)

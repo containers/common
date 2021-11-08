@@ -14,8 +14,8 @@ import (
 func TestImageFunctions(t *testing.T) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
-	busyboxLatest := "docker.io/library/busybox:latest"
-	busyboxDigest := "docker.io/library/busybox@"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
+	busyboxDigest := "quay.io/libpod/busybox@"
 
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
@@ -142,7 +142,7 @@ func TestImageFunctions(t *testing.T) {
 	require.False(t, hasDifferentDigest, "image with same digest should have the same manifest (and hence digest)")
 
 	// Different images -> different digests
-	remoteRef, err = alltransports.ParseImageName("docker://docker.io/library/alpine:latest")
+	remoteRef, err = alltransports.ParseImageName("docker://quay.io/libpod/alpine:latest")
 	require.NoError(t, err)
 	hasDifferentDigest, err = image.HasDifferentDigest(ctx, remoteRef, nil)
 	require.NoError(t, err)
@@ -191,7 +191,7 @@ func TestInspectHealthcheck(t *testing.T) {
 func TestTag(t *testing.T) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
-	busyboxLatest := "docker.io/library/busybox:latest"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
 
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
@@ -242,7 +242,7 @@ func TestTag(t *testing.T) {
 func TestUntag(t *testing.T) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
-	busyboxLatest := "docker.io/library/busybox:latest"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
 
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
