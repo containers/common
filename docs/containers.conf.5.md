@@ -278,6 +278,12 @@ Options are:
 The `network` table contains settings pertaining to the management of CNI
 plugins.
 
+**network_backend**="cni"
+
+Network backend determines what network driver will be used to set up and tear down container networks.
+Valid values are "cni" and "netavark".
+Changing this value may require restarting all running containers.
+
 **cni_plugin_dirs**=[]
 
 List of paths to directories where CNI plugin binaries are located.
