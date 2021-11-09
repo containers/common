@@ -66,6 +66,20 @@ func inSlice(slice []string, s string) bool {
 	return false
 }
 
+func getArchitectures(config *Seccomp, newConfig *specs.LinuxSeccomp) error {
+	if len(config.Architectures) != 0 && len(config.ArchMap) != 0 {
+		return errors.New("'architectures' and 'archMap' were specified in the seccomp profile, use either 'architectures' or 'archMap'")
+	}
+
+	// if config.Architectures == 0 then libseccomp will figure out the architecture to use
+	if len(config.Architectures) != 0 {
+		for _, a := range config.Architectures {
+			newConfig.Architectures = append(newConfig.Architectures, specs.Arch(a))
+		}
+	}
+	return nil
+}
+
 func setupSeccomp(config *Seccomp, rs *specs.Spec) (*specs.LinuxSeccomp, error) {
 	if config == nil {
 		return nil, nil
@@ -84,15 +98,8 @@ func setupSeccomp(config *Seccomp, rs *specs.Spec) (*specs.LinuxSeccomp, error) 
 		arch = native.String()
 	}
 
-	if len(config.Architectures) != 0 && len(config.ArchMap) != 0 {
-		return nil, errors.New("'architectures' and 'archMap' were specified in the seccomp profile, use either 'architectures' or 'archMap'")
-	}
-
-	// if config.Architectures == 0 then libseccomp will figure out the architecture to use
-	if len(config.Architectures) != 0 {
-		for _, a := range config.Architectures {
-			newConfig.Architectures = append(newConfig.Architectures, specs.Arch(a))
-		}
+	if err := getArchitectures(config, newConfig); err != nil {
+		return nil, err
 	}
 
 	if len(config.ArchMap) != 0 {
