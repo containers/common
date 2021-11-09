@@ -168,6 +168,26 @@ func TestImageFunctions(t *testing.T) {
 	require.Equal(t, image.NamesHistory(), imageData.NamesHistory, "inspect data should match")
 }
 
+func TestInspectHealthcheck(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	imageName := "quay.io/libpod/healthcheck:config-only"
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+	pulledImages, err := runtime.Pull(ctx, imageName, config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+	image := pulledImages[0]
+
+	// Now compare the inspect data to what we expect.
+	imageData, err := image.Inspect(ctx, nil)
+	require.NoError(t, err)
+	require.NotNil(t, imageData.HealthCheck, "health check should be found in config")
+	require.Equal(t, []string{"CMD-SHELL", "curl -f http://localhost/ || exit 1"}, imageData.HealthCheck.Test, "health check should be found in config")
+}
+
 func TestTag(t *testing.T) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
