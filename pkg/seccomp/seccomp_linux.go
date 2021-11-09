@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/opencontainers/runtime-spec/specs-go"
 	libseccomp "github.com/seccomp/libseccomp-golang"
@@ -80,6 +81,23 @@ func getArchitectures(config *Seccomp, newConfig *specs.LinuxSeccomp) error {
 	return nil
 }
 
+func getErrno(errno string, def *uint) (*uint, error) {
+	if errno == "" {
+		return def, nil
+	}
+	v, err := strconv.ParseUint(errno, 10, 32)
+	if err == nil {
+		v2 := uint(v)
+		return &v2, nil
+	}
+
+	v2, found := errnoArch[errno]
+	if !found {
+		return nil, fmt.Errorf("unknown errno %s", errno)
+	}
+	return &v2, nil
+}
+
 func setupSeccomp(config *Seccomp, rs *specs.Spec) (*specs.LinuxSeccomp, error) {
 	if config == nil {
 		return nil, nil
@@ -118,7 +136,11 @@ func setupSeccomp(config *Seccomp, rs *specs.Spec) (*specs.LinuxSeccomp, error) 
 	}
 
 	newConfig.DefaultAction = specs.LinuxSeccompAction(config.DefaultAction)
-	newConfig.DefaultErrnoRet = config.DefaultErrnoRet
+
+	newConfig.DefaultErrnoRet, err = getErrno(config.DefaultErrno, config.DefaultErrnoRet)
+	if err != nil {
+		return nil, err
+	}
 
 Loop:
 	// Loop through all syscall blocks and convert them to libcontainer format after filtering them
@@ -152,12 +174,17 @@ Loop:
 			return nil, errors.New("'name' and 'names' were specified in the seccomp profile, use either 'name' or 'names'")
 		}
 
+		errno, err := getErrno(call.Errno, call.ErrnoRet)
+		if err != nil {
+			return nil, err
+		}
+
 		if call.Name != "" {
-			newConfig.Syscalls = append(newConfig.Syscalls, createSpecsSyscall([]string{call.Name}, call.Action, call.Args, call.ErrnoRet))
+			newConfig.Syscalls = append(newConfig.Syscalls, createSpecsSyscall([]string{call.Name}, call.Action, call.Args, errno))
 		}
 
 		if len(call.Names) > 0 {
-			newConfig.Syscalls = append(newConfig.Syscalls, createSpecsSyscall(call.Names, call.Action, call.Args, call.ErrnoRet))
+			newConfig.Syscalls = append(newConfig.Syscalls, createSpecsSyscall(call.Names, call.Action, call.Args, errno))
 		}
 	}
 
