@@ -16,11 +16,11 @@ import (
 
 // filterFunc is a prototype for a positive image filter.  Returning `true`
 // indicates that the image matches the criteria.
-type filterFunc func(*Image) (bool, error)
+type filterFunc func(*Image, []interface{}) (bool, error)
 
 // filterImages returns a slice of images which are passing all specified
 // filters.
-func filterImages(images []*Image, filters []filterFunc) ([]*Image, error) {
+func filterImages(images []*Image, filters []filterFunc, registries []interface{}) ([]*Image, error) {
 	if len(filters) == 0 {
 		return images, nil
 	}
@@ -29,7 +29,7 @@ func filterImages(images []*Image, filters []filterFunc) ([]*Image, error) {
 		include := true
 		var err error
 		for _, filter := range filters {
-			include, err = filter(images[i])
+			include, err = filter(images[i], registries)
 			if err != nil {
 				return nil, err
 			}
@@ -158,6 +158,34 @@ func (r *Runtime) compileImageFilters(ctx context.Context, options *ListImagesOp
 	return filterFuncs, nil
 }
 
+func filterNames(filter string, names []string, registries []interface{}) (bool, error) {
+	for _, name := range names {
+		newName := strings.ReplaceAll(name, "/", "|")
+		match, _ := filepath.Match(filter, newName)
+		if match {
+			return true, nil
+		}
+		for _, reg := range registries {
+			newName = strings.TrimPrefix(name, fmt.Sprintf("%s/", reg))
+			newName = strings.TrimPrefix(newName, "library/")
+			newName = strings.ReplaceAll(newName, "/", "|")
+			match, _ = filepath.Match(filter, newName)
+			if match {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+func setupFilter(value string) string {
+	filter := value
+	if !strings.Contains(filter, ":") {
+		filter = fmt.Sprintf("%s:*", value)
+	}
+	return strings.ReplaceAll(filter, "/", "|")
+}
+
 // filterReference creates a reference filter for matching the specified value.
 func filterReference(value string) filterFunc {
 	// Replacing all '/' with '|' so that filepath.Match() can work '|'
@@ -165,26 +193,18 @@ func filterReference(value string) filterFunc {
 	//
 	// TODO: this has been copied from Podman and requires some more review
 	// and especially tests.
-	filter := fmt.Sprintf("*%s*", value)
-	filter = strings.ReplaceAll(filter, "/", "|")
-	return func(img *Image) (bool, error) {
+	filter := setupFilter(value)
+	return func(img *Image, registries []interface{}) (bool, error) {
 		if len(value) < 1 {
 			return true, nil
 		}
-		for _, name := range img.Names() {
-			newName := strings.ReplaceAll(name, "/", "|")
-			match, _ := filepath.Match(filter, newName)
-			if match {
-				return true, nil
-			}
-		}
-		return false, nil
+		return filterNames(filter, img.Names(), registries)
 	}
 }
 
 // filterLabel creates a label for matching the specified value.
 func filterLabel(ctx context.Context, value string) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		labels, err := img.Labels(ctx)
 		if err != nil {
 			return false, err
@@ -195,28 +215,28 @@ func filterLabel(ctx context.Context, value string) filterFunc {
 
 // filterAfter creates an after filter for matching the specified value.
 func filterAfter(value time.Time) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		return img.Created().After(value), nil
 	}
 }
 
 // filterBefore creates a before filter for matching the specified value.
 func filterBefore(value time.Time) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		return img.Created().Before(value), nil
 	}
 }
 
 // filterReadOnly creates a readonly filter for matching the specified value.
 func filterReadOnly(value bool) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		return img.IsReadOnly() == value, nil
 	}
 }
 
 // filterContainers creates a container filter for matching the specified value.
 func filterContainers(value string, fn IsExternalContainerFunc) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		ctrs, err := img.Containers()
 		if err != nil {
 			return false, err
@@ -242,7 +262,7 @@ func filterContainers(value string, fn IsExternalContainerFunc) filterFunc {
 
 // filterDangling creates a dangling filter for matching the specified value.
 func filterDangling(ctx context.Context, value bool, tree *layerTree) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		isDangling, err := img.isDangling(ctx, tree)
 		if err != nil {
 			return false, err
@@ -253,7 +273,7 @@ func filterDangling(ctx context.Context, value bool, tree *layerTree) filterFunc
 
 // filterID creates an image-ID filter for matching the specified value.
 func filterID(value string) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		return img.ID() == value, nil
 	}
 }
@@ -262,7 +282,7 @@ func filterID(value string) filterFunc {
 // considered to be an intermediate image if it is dangling (i.e., no tags) and
 // has no children (i.e., no other image depends on it).
 func filterIntermediate(ctx context.Context, value bool, tree *layerTree) filterFunc {
-	return func(img *Image) (bool, error) {
+	return func(img *Image, _ []interface{}) (bool, error) {
 		isIntermediate, err := img.isIntermediate(ctx, tree)
 		if err != nil {
 			return false, err

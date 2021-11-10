@@ -8,6 +8,7 @@ import (
 
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/pkg/shortnames"
+	"github.com/containers/image/v5/pkg/sysregistriesv2"
 	storageTransport "github.com/containers/image/v5/storage"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
@@ -558,7 +559,18 @@ func (r *Runtime) ListImages(ctx context.Context, names []string, options *ListI
 		filters = append(filters, compiledFilters...)
 	}
 
-	return filterImages(images, filters)
+	registries, err := sysregistriesv2.UnqualifiedSearchRegistries(r.systemContextCopy())
+	if err != nil {
+		return nil, err
+	}
+	registries = append([]string{"localhost"}, registries...)
+
+	regI := make([]interface{}, len(registries))
+	for i, v := range registries {
+		regI[i] = v
+	}
+
+	return filterImages(images, filters, regI)
 }
 
 // RemoveImagesOptions allow for customizing image removal.
