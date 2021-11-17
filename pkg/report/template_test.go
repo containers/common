@@ -113,7 +113,7 @@ func TestTemplate_trim(t *testing.T) {
 func TestTemplate_DefaultFuncs(t *testing.T) {
 	tmpl := NewTemplate("TestTemplate")
 	// Throw in trim function to ensure default 'join' is still available
-	tmpl, e := tmpl.Funcs(FuncMap{"trim": strings.TrimSpace}).Parse(`{{join .ID "\n"}}`)
+	tmpl, e := tmpl.Funcs(FuncMap{"trim": strings.TrimSpace}).Parse(`{{join .ID "-"}}`)
 	assert.NoError(t, e)
 
 	var buf bytes.Buffer
@@ -121,7 +121,7 @@ func TestTemplate_DefaultFuncs(t *testing.T) {
 		"ID": {"ident1", "ident2", "ident3"},
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "ident1\nident2\nident3\n", buf.String())
+	assert.Equal(t, "ident1-ident2-ident3\n", buf.String())
 }
 
 func TestTemplate_ReplaceFuncs(t *testing.T) {
