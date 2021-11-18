@@ -29,6 +29,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(5))
+			gomega.Expect(defaultConfig.NetNS()).To(gomega.BeEquivalentTo("private"))
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))

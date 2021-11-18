@@ -341,7 +341,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := NewConfig("")
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Containers.NetNS).To(gomega.Equal(""))
+		gomega.Expect(config.Containers.NetNS).To(gomega.Equal("private"))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
