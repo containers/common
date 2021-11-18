@@ -225,7 +225,7 @@ func defaultSecretConfig() SecretConfig {
 func defaultMachineConfig() MachineConfig {
 	return MachineConfig{
 		CPUs:     1,
-		DiskSize: 10,
+		DiskSize: 100,
 		Image:    "testing",
 		Memory:   2048,
 	}

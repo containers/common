@@ -389,7 +389,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := NewConfig("")
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Machine.DiskSize).To(gomega.Equal(uint64(10)))
+		gomega.Expect(config.Machine.DiskSize).To(gomega.Equal(uint64(100)))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
