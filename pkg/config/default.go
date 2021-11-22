@@ -244,6 +244,8 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
 
+	c.CompatAPIEnforceDockerHub = true
+
 	if path, ok := os.LookupEnv("CONTAINERS_STORAGE_CONF"); ok {
 		types.SetDefaultConfigFilePath(path)
 	}
