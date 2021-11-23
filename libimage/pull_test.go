@@ -122,3 +122,23 @@ func TestPullPlatforms(t *testing.T) {
 	require.NoError(t, err, "lookup busybox - by arm")
 	require.NotNil(t, image, "lookup busybox - by local arch")
 }
+
+func TestPullPolicy(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+	pullOptions := &PullOptions{}
+
+	pulledImages, err := runtime.Pull(ctx, "alpine", config.PullPolicyNever, pullOptions)
+	require.Error(t, err, "Never pull different arch alpine")
+	require.Nil(t, pulledImages, "lookup alpine")
+
+	pulledImages, err = runtime.Pull(ctx, "alpine", config.PullPolicyNewer, pullOptions)
+	require.NoError(t, err, "Newer pull different arch alpine")
+	require.NotNil(t, pulledImages, "lookup alpine")
+
+	pulledImages, err = runtime.Pull(ctx, "alpine", config.PullPolicyNever, pullOptions)
+	require.NoError(t, err, "Never pull different arch alpine")
+	require.NotNil(t, pulledImages, "lookup alpine")
+
+}
