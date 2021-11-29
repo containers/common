@@ -88,6 +88,7 @@ func makeManifest(layer, config []byte) v1.Manifest {
 		Versioned: specs.Versioned{
 			SchemaVersion: 2,
 		},
+		MediaType: v1.MediaTypeImageManifest,
 		Config: v1.Descriptor{
 			MediaType: v1.MediaTypeImageConfig,
 			Digest:    digest.Canonical.FromBytes(config),
@@ -182,6 +183,7 @@ func TestSupplemented(t *testing.T) {
 		Versioned: specs.Versioned{
 			SchemaVersion: 2,
 		},
+		MediaType: v1.MediaTypeImageIndex,
 		Manifests: []v1.Descriptor{
 			{
 				MediaType: v1.MediaTypeImageManifest,
