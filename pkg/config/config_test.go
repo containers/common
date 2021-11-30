@@ -336,10 +336,13 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
 			if useSystemd() {
 				gomega.Expect(config.Engine.CgroupManager).To(gomega.BeEquivalentTo("systemd"))
-				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("journald"))
-				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			} else {
 				gomega.Expect(config.Engine.CgroupManager).To(gomega.BeEquivalentTo("cgroupfs"))
+			}
+			if useJournald() {
+				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("journald"))
+				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("journald"))
+			} else {
 				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("file"))
 				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			}
