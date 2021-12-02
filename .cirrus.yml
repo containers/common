@@ -17,8 +17,8 @@ env:
     ####
     #### image names to test with (double-quotes around names are critical)
     ####
-    FEDORA_NAME: "fedora-34"
-    IMAGE_SUFFIX: "c6431352024203264"
+    FEDORA_NAME: "fedora-35"
+    IMAGE_SUFFIX: "c6226133906620416"
     FEDORA_CONTAINER_FQIN: "quay.io/libpod/fedora_podman:${IMAGE_SUFFIX}"
 
 
@@ -34,20 +34,7 @@ testing_task:
     image: "${FEDORA_CONTAINER_FQIN}"
 
   test_script:
-    - apt-get update && apt-get -qq install libdevmapper-dev libbtrfs-dev libseccomp-dev
-    - |
-      cat >keyspec <<EOF
-      %echo Generating a default key
-      %no-protection
-      Key-Type: default
-      Subkey-Type: default
-      Name-Real: Tester
-      Name-Email: tester@localhost
-      Expire-Date: 0
-      %commit
-      %echo done
-      EOF
-    - gpg --batch --gen-key keyspec
+    - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
     - make vendor
     - make build
     - make install.tools
