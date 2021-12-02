@@ -17,8 +17,8 @@ env:
     ####
     #### image names to test with (double-quotes around names are critical)
     ####
-    FEDORA_NAME: "fedora-34"
-    IMAGE_SUFFIX: "c6431352024203264"
+    FEDORA_NAME: "fedora-35"
+    IMAGE_SUFFIX: "c6226133906620416"
     FEDORA_CONTAINER_FQIN: "quay.io/libpod/fedora_podman:${IMAGE_SUFFIX}"
 
 
@@ -47,7 +47,7 @@ testing_task:
       %commit
       %echo done
       EOF
-    - gpg --batch --gen-key keyspec
+    - gpg --batch --quick-gen-key keyspec
     - make vendor
     - make build
     - make install.tools
