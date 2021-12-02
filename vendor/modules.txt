@@ -163,8 +163,10 @@ github.com/containers/storage/pkg/truncindex
 github.com/containers/storage/pkg/unshare
 github.com/containers/storage/types
 # github.com/coreos/go-systemd/v22 v22.3.2
+## explicit
 github.com/coreos/go-systemd/v22/dbus
-# github.com/cyphar/filepath-securejoin v0.2.2
+# github.com/cyphar/filepath-securejoin v0.2.3
+## explicit
 github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -217,12 +219,14 @@ github.com/docker/go-metrics
 # github.com/docker/go-units v0.4.0
 ## explicit
 github.com/docker/go-units
-# github.com/fsnotify/fsnotify v1.4.9
+# github.com/fsnotify/fsnotify v1.5.1
+## explicit
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 ## explicit
 github.com/ghodss/yaml
-# github.com/godbus/dbus/v5 v5.0.4
+# github.com/godbus/dbus/v5 v5.0.6
+## explicit
 github.com/godbus/dbus/v5
 # github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/gogoproto
@@ -287,7 +291,7 @@ github.com/mistifyio/go-zfs
 github.com/mitchellh/mapstructure
 # github.com/moby/sys/mountinfo v0.5.0
 github.com/moby/sys/mountinfo
-# github.com/moby/term v0.0.0-20201216013528-df9cb8a40635
+# github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 ## explicit
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
@@ -444,7 +448,8 @@ go.opencensus.io/internal
 go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+# golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+## explicit
 golang.org/x/crypto/cast5
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
@@ -479,7 +484,7 @@ golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+# golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 ## explicit
 golang.org/x/term
 # golang.org/x/text v0.3.7
