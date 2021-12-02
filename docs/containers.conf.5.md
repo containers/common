@@ -567,6 +567,10 @@ not be by other drivers.
 Determines whether file copied into a container will have changed ownership to
 the primary uid/gid of the container.
 
+**compression_format**=""
+
+Specifies the compression format to use when pushing an image.  Supported values are: `gzip`, `zstd` and `zstd:chunked`.
+
 ## SERVICE DESTINATION TABLE
 The `service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
 
