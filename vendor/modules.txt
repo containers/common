@@ -50,7 +50,7 @@ github.com/containerd/containerd/platforms
 # github.com/containerd/stargz-snapshotter/estargz v0.10.1
 github.com/containerd/stargz-snapshotter/estargz
 github.com/containerd/stargz-snapshotter/estargz/errorutil
-# github.com/containers/image/v5 v5.17.0
+# github.com/containers/image/v5 v5.17.1-0.20211201214147-603ec1341d58
 ## explicit
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory

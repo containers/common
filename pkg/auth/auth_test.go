@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/containers/image/v5/docker/reference"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var _ = Describe("Config", func() {
@@ -66,73 +66,76 @@ var _ = Describe("Config", func() {
 	})
 })
 
-func TestParseRegistryArgument(t *testing.T) {
+func TestParseCredentialsKey(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
 		name               string
 		arg                string
 		acceptRepositories bool
-		shouldErr          bool
-		expect             func(key, registry string, ref reference.Named)
+		expectedKey        string // or "" if we expect failure
+		expectedRegistry   string
 	}{
 		{
 			name:               "success repository",
 			arg:                "quay.io/user",
 			acceptRepositories: true,
-			shouldErr:          false,
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "quay.io/user", key)
-				assert.Equal(t, "quay.io", registry)
-				assert.NotNil(t, ref)
-			},
+			expectedKey:        "quay.io/user",
+			expectedRegistry:   "quay.io",
 		},
 		{
 			name:               "success no repository",
 			arg:                "quay.io",
 			acceptRepositories: true,
-			shouldErr:          false,
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "quay.io", key)
-				assert.Equal(t, "quay.io", registry)
-				assert.Nil(t, ref)
-			},
+			expectedKey:        "quay.io",
+			expectedRegistry:   "quay.io",
+		},
+		{
+			name:               "a docker.io top-level namespace",
+			arg:                "docker.io/user",
+			acceptRepositories: true,
+			expectedKey:        "docker.io/user",
+			expectedRegistry:   "docker.io",
+		},
+		{
+			name:               "a single docker.io/library repo",
+			arg:                "docker.io/library/user",
+			acceptRepositories: true,
+			expectedKey:        "docker.io/library/user",
+			expectedRegistry:   "docker.io",
 		},
 		{
 			name:               "with http[s] prefix",
 			arg:                "https://quay.io",
 			acceptRepositories: true,
-			shouldErr:          true,
+			expectedKey:        "",
 		},
 		{
 			name:               "failure with tag",
 			arg:                "quay.io/username/image:tag",
 			acceptRepositories: true,
-			shouldErr:          true,
+			expectedKey:        "",
 		},
 		{
 			name:               "failure parse reference",
 			arg:                "quay.io/:tag",
 			acceptRepositories: true,
-			shouldErr:          true,
+			expectedKey:        "",
 		},
 		{
 			name:               "success accept no repository",
 			arg:                "https://quay.io/user",
 			acceptRepositories: false,
-			shouldErr:          false,
-			expect: func(key, registry string, ref reference.Named) {
-				assert.Equal(t, "quay.io", key)
-				assert.Equal(t, "quay.io", registry)
-				assert.Nil(t, ref)
-			},
+			expectedKey:        "quay.io",
+			expectedRegistry:   "quay.io",
 		},
 	} {
-		key, registry, ref, err := parseRegistryArgument(tc.arg, tc.acceptRepositories)
-		if tc.shouldErr {
+		key, registry, err := parseCredentialsKey(tc.arg, tc.acceptRepositories)
+		if tc.expectedKey == "" {
 			assert.Error(t, err, tc.name)
 		} else {
-			assert.NoError(t, err, tc.name)
-			tc.expect(key, registry, ref)
+			require.NoError(t, err, tc.name)
+			assert.Equal(t, tc.expectedKey, key, tc.name)
+			assert.Equal(t, tc.expectedRegistry, registry)
 		}
 	}
 }
