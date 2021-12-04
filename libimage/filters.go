@@ -3,6 +3,7 @@ package libimage
 import (
 	"context"
 	"fmt"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -131,7 +132,7 @@ func (r *Runtime) compileImageFilters(ctx context.Context, filters []string) ([]
 			filterFuncs = append(filterFuncs, filterReadOnly(readOnly))
 
 		case "reference":
-			filterFuncs = append(filterFuncs, filterReference(value))
+			filterFuncs = append(filterFuncs, filterReferences(value))
 
 		case "until":
 			ts, err := timetype.GetTimestamp(value, time.Now())
@@ -153,20 +154,43 @@ func (r *Runtime) compileImageFilters(ctx context.Context, filters []string) ([]
 	return filterFuncs, nil
 }
 
-// filterReference creates a reference filter for matching the specified value.
-func filterReference(value string) filterFunc {
+// filterReferences creates a reference filter for matching the specified value.
+func filterReferences(value string) filterFunc {
 	return func(img *Image) (bool, error) {
 		refs, err := img.NamesReferences()
 		if err != nil {
 			return false, err
 		}
+
 		for _, ref := range refs {
-			match, err := reference.FamiliarMatch(value, ref)
-			if err != nil {
-				return false, err
+			refString := ref.String() // FQN with tag/digest
+			candidates := []string{refString}
+
+			// Split the reference into 3 components (twice if diggested/tagged):
+			// 1) Fully-qualified reference
+			// 2) Without domain
+			// 3) Without domain and path
+			if named, isNamed := ref.(reference.Named); isNamed {
+				candidates = append(candidates,
+					reference.Path(named),                           // path/name without tag/digest (Path() removes it)
+					refString[strings.LastIndex(refString, "/")+1:]) // name with tag/digest
+
+				trimmedString := reference.TrimNamed(named).String()
+				if refString != trimmedString {
+					tagOrDigest := refString[len(trimmedString):]
+					candidates = append(candidates,
+						trimmedString,                     // FQN without tag/digest
+						reference.Path(named)+tagOrDigest, // path/name with tag/digest
+						trimmedString[strings.LastIndex(trimmedString, "/")+1:]) // name without tag/digest
+				}
 			}
-			if match {
-				return true, nil
+
+			for _, candidate := range candidates {
+				// path.Match() is also used by Docker's reference.FamiliarMatch().
+				matched, _ := path.Match(value, candidate)
+				if matched {
+					return true, nil
+				}
 			}
 		}
 		return false, nil
