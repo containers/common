@@ -32,25 +32,35 @@ func TestFilterReference(t *testing.T) {
 
 	err = busybox.Tag("localhost/image:tag")
 	require.NoError(t, err)
-	err = alpine.Tag("localhost/image:another-tag")
+	err = alpine.Tag("localhost/another-image:tag")
+	require.NoError(t, err)
+	err = alpine.Tag("docker.io/library/image:another-tag")
 	require.NoError(t, err)
 
 	for _, test := range []struct {
 		filter  string
 		matches int
 	}{
-		{"image", 0},
-		{"localhost/image", 2},
+		{"image", 2},
+		{"*mage*", 2},
+		{"image:*", 2},
+		{"image:tag", 1},
+		{"image:another-tag", 1},
+		{"localhost/image", 1},
 		{"localhost/image:tag", 1},
-		{"localhost/image:another-tag", 1},
+		{"library/image", 1},
+		{"docker.io/library/image*", 1},
+		{"docker.io/library/image:*", 1},
+		{"docker.io/library/image:another-tag", 1},
 		{"localhost/*", 2},
-		{"localhost/image:*tag", 2},
-		{"busybox", 0},
-		{"alpine", 0},
+		{"localhost/image:*tag", 1},
+		{"localhost/*mage:*ag", 2},
 		{"quay.io/libpod/busybox", 1},
 		{"quay.io/libpod/alpine", 1},
 		{"quay.io/libpod", 0},
 		{"quay.io/libpod/*", 2},
+		{"busybox", 1},
+		{"alpine", 1},
 	} {
 		listOptions := &ListImagesOptions{
 			Filters: []string{"reference=" + test.filter},
