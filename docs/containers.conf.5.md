@@ -621,14 +621,22 @@ Number of CPU's a machine is created with.
 
 The size of the disk in GB created when init-ing a podman-machine VM
 
-**image**="testing"
+**image**=""
 
 Default image used when creating a new VM using `podman machine init`.
-Options: `testing`, `stable`, `next`, or a custom path or download URL to an image
+Options: On Linux/Mac, `testing`, `stable`, `next`. On Windows, the major
+version of the OS (e.g `35`). For all platforms you can alternatively specify
+a custom path or download URL to an image. The default is `testing` on
+Linux/Mac, and `35` on Windows.
 
 **memory**=2048
 
 Memory in MB a machine is created with.
+
+**user**=""
+
+Username to use and create on the podman machine OS for rootless container
+access. The default value is `user`. On Linux/Mac the default is`core`.
 
 # FILES
 
