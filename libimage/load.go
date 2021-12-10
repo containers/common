@@ -57,6 +57,17 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 			return images, ociArchiveTransport.Transport.Name(), err
 		},
 
+		// DOCKER-ARCHIVE
+		func() ([]string, string, error) {
+			logrus.Debugf("-> Attempting to load %q as a Docker archive", path)
+			ref, err := dockerArchiveTransport.ParseReference(path)
+			if err != nil {
+				return nil, dockerArchiveTransport.Transport.Name(), err
+			}
+			images, err := r.loadMultiImageDockerArchive(ctx, ref, &options.CopyOptions)
+			return images, dockerArchiveTransport.Transport.Name(), err
+		},
+
 		// DIR
 		func() ([]string, string, error) {
 			logrus.Debugf("-> Attempting to load %q as a Docker dir", path)
