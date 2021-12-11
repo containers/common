@@ -56,8 +56,8 @@ build-cross:
 	$(call go-build,linux,ppc64le,${BUILDTAGS})
 	$(call go-build,linux,s390x,${BUILDTAGS})
 	$(call go-build,darwin,amd64,${BUILDTAGS})
-	$(call go-build,windows,amd64,remote ${BUILDTAGS})
-	$(call go-build,windows,386,remote ${BUILDTAGS})
+	$(call go-build,windows,amd64,${BUILDTAGS})
+	$(call go-build,windows,386,${BUILDTAGS})
 
 .PHONY: all
 all: build-amd64 build-386
