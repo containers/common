@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/containers/storage/pkg/unshare"
 	systemdDbus "github.com/coreos/go-systemd/v22/dbus"
@@ -18,6 +19,7 @@ import (
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -527,12 +529,23 @@ func rmDirRecursively(path string) error {
 			}
 		}
 	}
-	if err := os.Remove(path); err != nil {
-		if !os.IsNotExist(err) {
-			return errors.Wrapf(err, "remove %s", path)
+
+	attempts := 0
+	for {
+		err := os.Remove(path)
+		if err == nil || os.IsNotExist(err) {
+			return nil
 		}
+		if errors.Is(err, unix.EBUSY) {
+			// attempt up to 5 seconds if the cgroup is busy
+			if attempts < 500 {
+				time.Sleep(time.Millisecond * 10)
+				attempts++
+				continue
+			}
+		}
+		return errors.Wrapf(err, "remove %s", path)
 	}
-	return nil
 }
 
 // DeleteByPathConn deletes the specified cgroup path using the specified
