@@ -19,12 +19,20 @@ import (
 // indicates that the image matches the criteria.
 type filterFunc func(*Image) (bool, error)
 
-func matches(image *Image, filters map[string][]filterFunc) (bool, error) {
+// Apply the specified filters.  At least one filter of each key must apply.
+func (i *Image) applyFilters(filters map[string][]filterFunc) (bool, error) {
 	for key := range filters { // and
 		matches := false
 		for _, filter := range filters[key] { // or
-			match, err := filter(image)
+			match, err := filter(i)
 			if err != nil {
+				// Some images may have been corrupted in the
+				// meantime, so do an extra check and make the
+				// error non-fatal (see containers/podman/issues/12582).
+				if errCorrupted := i.isCorrupted(""); errCorrupted != nil {
+					logrus.Errorf(errCorrupted.Error())
+					return false, nil
+				}
 				return false, err
 			}
 			if match {
@@ -50,13 +58,13 @@ func (r *Runtime) filterImages(ctx context.Context, images []*Image, options *Li
 		return nil, err
 	}
 	result := []*Image{}
-	for _, i := range images {
-		match, err := matches(i, filters)
+	for i := range images {
+		match, err := images[i].applyFilters(filters)
 		if err != nil {
 			return nil, err
 		}
 		if match {
-			result = append(result, i)
+			result = append(result, images[i])
 		}
 	}
 	return result, nil
