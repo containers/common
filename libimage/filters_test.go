@@ -70,3 +70,48 @@ func TestFilterReference(t *testing.T) {
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filter, listedImages)
 	}
 }
+
+func TestFilterManifest(t *testing.T) {
+	busyboxLatest := "quay.io/libpod/busybox:latest"
+	alpineLatest := "quay.io/libpod/alpine:latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	pulledImages, err := runtime.Pull(ctx, busyboxLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	pulledImages, err = runtime.Pull(ctx, alpineLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	_, err = runtime.CreateManifestList("manifest-alpine")
+	require.NoError(t, err)
+
+	for _, test := range []struct {
+		filters []string
+		matches int
+	}{
+		{nil, 3},
+		{[]string{"manifest=false"}, 2},
+		{[]string{"manifest=true"}, 1},
+		{[]string{"reference=busybox"}, 1},
+		{[]string{"reference=*alpine"}, 2},
+		{[]string{"manifest=true", "reference=*alpine"}, 1},
+		{[]string{"manifest=false", "reference=*alpine"}, 1},
+		{[]string{"manifest=true", "reference=busybox"}, 0},
+		{[]string{"manifest=false", "reference=busybox"}, 1},
+	} {
+		listOptions := &ListImagesOptions{
+			Filters: test.filters,
+		}
+		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		require.NoError(t, err, "%v", test)
+		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
+	}
+}

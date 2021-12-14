@@ -21,10 +21,12 @@ type filterFunc func(*Image) (bool, error)
 
 // Apply the specified filters.  At least one filter of each key must apply.
 func (i *Image) applyFilters(filters map[string][]filterFunc) (bool, error) {
+	matches := false
 	for key := range filters { // and
-		matches := false
+		matches = false
 		for _, filter := range filters[key] { // or
-			match, err := filter(i)
+			var err error
+			matches, err = filter(i)
 			if err != nil {
 				// Some images may have been corrupted in the
 				// meantime, so do an extra check and make the
@@ -35,15 +37,15 @@ func (i *Image) applyFilters(filters map[string][]filterFunc) (bool, error) {
 				}
 				return false, err
 			}
-			if match {
-				return true, nil
+			if matches {
+				break
 			}
 		}
 		if !matches {
 			return false, nil
 		}
 	}
-	return false, nil
+	return matches, nil
 }
 
 // filterImages returns a slice of images which are passing all specified
@@ -160,6 +162,14 @@ func (r *Runtime) compileImageFilters(ctx context.Context, options *ListImagesOp
 			}
 			filter = filterReadOnly(readOnly)
 
+		case "manifest":
+			manifest, err := r.bool(duplicate, key, value)
+			if err != nil {
+				return nil, err
+			}
+			duplicate[key] = true
+			filter = filterManifest(ctx, manifest)
+
 		case "reference":
 			filter = filterReferences(value)
 
@@ -227,6 +237,17 @@ func (r *Runtime) bool(duplicate map[string]bool, key, value string) (bool, erro
 		return false, errors.Wrapf(err, "non-boolean value %q for %s filter", key, value)
 	}
 	return set, nil
+}
+
+// filterManifest filters whether or not the image is a manifest list
+func filterManifest(ctx context.Context, value bool) filterFunc {
+	return func(img *Image) (bool, error) {
+		isManifestList, err := img.IsManifestList(ctx)
+		if err != nil {
+			return false, err
+		}
+		return isManifestList == value, nil
+	}
 }
 
 // filterReferences creates a reference filter for matching the specified value.
