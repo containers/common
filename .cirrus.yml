@@ -51,6 +51,7 @@ testing_task:
     - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
     - make vendor
     - make build
+    - make build-cross
     - make install.tools
     - make validate
     - make test
