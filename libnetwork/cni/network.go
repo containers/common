@@ -70,7 +70,7 @@ type InitConfig struct {
 
 // NewCNINetworkInterface creates the ContainerNetwork interface for the CNI backend.
 // Note: The networks are not loaded from disk until a method is called.
-func NewCNINetworkInterface(conf InitConfig) (types.ContainerNetwork, error) {
+func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 	// TODO: consider using a shared memory lock
 	lock, err := lockfile.GetLockfile(conf.LockFile)
 	if err != nil {
@@ -203,7 +203,7 @@ func (n *cniNetwork) createDefaultNetwork() (*network, error) {
 			{Subnet: n.defaultSubnet},
 		},
 	}
-	return n.networkCreate(net, true)
+	return n.networkCreate(&net, true)
 }
 
 // getNetwork will lookup a network by name or ID. It returns an

@@ -18,6 +18,7 @@ import (
 
 // NetworkCreate will take a partial filled Network and fill the
 // missing fields. It creates the Network and returns the full Network.
+// nolint:gocritic
 func (n *netavarkNetwork) NetworkCreate(net types.Network) (types.Network, error) {
 	n.lock.Lock()
 	defer n.lock.Unlock()
@@ -25,7 +26,7 @@ func (n *netavarkNetwork) NetworkCreate(net types.Network) (types.Network, error
 	if err != nil {
 		return types.Network{}, err
 	}
-	network, err := n.networkCreate(net, false)
+	network, err := n.networkCreate(&net, false)
 	if err != nil {
 		return types.Network{}, err
 	}
@@ -34,7 +35,7 @@ func (n *netavarkNetwork) NetworkCreate(net types.Network) (types.Network, error
 	return *network, nil
 }
 
-func (n *netavarkNetwork) networkCreate(newNetwork types.Network, defaultNet bool) (*types.Network, error) {
+func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bool) (*types.Network, error) {
 	// if no driver is set use the default one
 	if newNetwork.Driver == "" {
 		newNetwork.Driver = types.DefaultNetworkDriver
@@ -60,7 +61,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork types.Network, defaultNet boo
 		}
 	}
 
-	err := internalutil.CommonNetworkCreate(n, &newNetwork)
+	err := internalutil.CommonNetworkCreate(n, newNetwork)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork types.Network, defaultNet boo
 
 	switch newNetwork.Driver {
 	case types.BridgeNetworkDriver:
-		err = internalutil.CreateBridge(n, &newNetwork, usedNetworks)
+		err = internalutil.CreateBridge(n, newNetwork, usedNetworks)
 		if err != nil {
 			return nil, err
 		}
@@ -139,7 +140,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork types.Network, defaultNet boo
 		return nil, errors.Wrapf(types.ErrInvalidArg, "unsupported driver %s", newNetwork.Driver)
 	}
 
-	err = internalutil.ValidateSubnets(&newNetwork, usedNetworks)
+	err = internalutil.ValidateSubnets(newNetwork, usedNetworks)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +166,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork types.Network, defaultNet boo
 		}
 	}
 
-	return &newNetwork, nil
+	return newNetwork, nil
 }
 
 // NetworkRemove will remove the Network with the given name or ID.

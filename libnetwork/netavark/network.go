@@ -79,7 +79,7 @@ type InitConfig struct {
 
 // NewNetworkInterface creates the ContainerNetwork interface for the netavark backend.
 // Note: The networks are not loaded from disk until a method is called.
-func NewNetworkInterface(conf InitConfig) (types.ContainerNetwork, error) {
+func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 	// TODO: consider using a shared memory lock
 	lock, err := lockfile.GetLockfile(conf.LockFile)
 	if err != nil {
@@ -251,7 +251,7 @@ func (n *netavarkNetwork) createDefaultNetwork() (*types.Network, error) {
 			{Subnet: n.defaultSubnet},
 		},
 	}
-	return n.networkCreate(net, true)
+	return n.networkCreate(&net, true)
 }
 
 // getNetwork will lookup a network by name or ID. It returns an

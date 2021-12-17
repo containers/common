@@ -22,16 +22,15 @@ import (
 	"time"
 
 	"github.com/containernetworking/plugins/pkg/ns"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
-	"github.com/vishvananda/netlink"
-
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/libnetwork/util"
 	"github.com/containers/common/pkg/netns"
 	"github.com/containers/storage/pkg/stringid"
 	"github.com/containers/storage/pkg/unshare"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
 )
 
 var _ = Describe("run netavark", func() {
@@ -97,7 +96,7 @@ var _ = Describe("run netavark", func() {
 
 	JustBeforeEach(func() {
 		var err error
-		libpodNet, err = getNetworkInterface(confDir, false)
+		libpodNet, err = getNetworkInterface(confDir)
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}

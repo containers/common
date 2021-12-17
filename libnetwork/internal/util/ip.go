@@ -60,7 +60,7 @@ func getRandomIPv6Subnet() (net.IPNet, error) {
 	// read 8 random bytes
 	_, err := rand.Read(ip)
 	if err != nil {
-		return net.IPNet{}, nil
+		return net.IPNet{}, err
 	}
 	// first byte must be FD as per RFC3879
 	ip[0] = 0xfd

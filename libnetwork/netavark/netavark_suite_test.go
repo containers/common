@@ -32,10 +32,9 @@ func init() {
 	}
 }
 
-func getNetworkInterface(confDir string, machine bool) (types.ContainerNetwork, error) {
-	return netavark.NewNetworkInterface(netavark.InitConfig{
+func getNetworkInterface(confDir string) (types.ContainerNetwork, error) {
+	return netavark.NewNetworkInterface(&netavark.InitConfig{
 		NetworkConfigDir: confDir,
-		IsMachine:        machine,
 		NetavarkBinary:   netavarkBinary,
 		IPAMDBPath:       filepath.Join(confDir, "ipam.db"),
 		LockFile:         filepath.Join(confDir, "netavark.lock"),

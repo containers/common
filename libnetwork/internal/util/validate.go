@@ -23,24 +23,24 @@ func ValidateSubnet(s *types.Subnet, addGateway bool, usedNetworks []*net.IPNet)
 	// Reparse to ensure subnet is valid.
 	// Do not use types.ParseCIDR() because we want the ip to be
 	// the network address and not a random ip in the subnet.
-	_, net, err := net.ParseCIDR(s.Subnet.String())
+	_, n, err := net.ParseCIDR(s.Subnet.String())
 	if err != nil {
 		return errors.Wrap(err, "subnet invalid")
 	}
 
 	// check that the new subnet does not conflict with existing ones
-	if NetworkIntersectsWithNetworks(net, usedNetworks) {
-		return errors.Errorf("subnet %s is already used on the host or by another config", net.String())
+	if NetworkIntersectsWithNetworks(n, usedNetworks) {
+		return errors.Errorf("subnet %s is already used on the host or by another config", n.String())
 	}
 
-	s.Subnet = types.IPNet{IPNet: *net}
+	s.Subnet = types.IPNet{IPNet: *n}
 	if s.Gateway != nil {
 		if !s.Subnet.Contains(s.Gateway) {
 			return errors.Errorf("gateway %s not in subnet %s", s.Gateway, &s.Subnet)
 		}
 		util.NormalizeIP(&s.Gateway)
 	} else if addGateway {
-		ip, err := util.FirstIPInSubnet(net)
+		ip, err := util.FirstIPInSubnet(n)
 		if err != nil {
 			return err
 		}
@@ -91,11 +91,12 @@ func ValidateSetupOptions(n NetUtil, namespacePath string, options types.SetupOp
 		return errors.New("must specify at least one network")
 	}
 	for name, netOpts := range options.Networks {
+		netOpts := netOpts
 		network, err := n.Network(name)
 		if err != nil {
 			return err
 		}
-		err = validatePerNetworkOpts(network, netOpts)
+		err = validatePerNetworkOpts(network, &netOpts)
 		if err != nil {
 			return err
 		}
@@ -104,7 +105,7 @@ func ValidateSetupOptions(n NetUtil, namespacePath string, options types.SetupOp
 }
 
 // validatePerNetworkOpts checks that all given static ips are in a subnet on this network
-func validatePerNetworkOpts(network *types.Network, netOpts types.PerNetworkOptions) error {
+func validatePerNetworkOpts(network *types.Network, netOpts *types.PerNetworkOptions) error {
 	if netOpts.InterfaceName == "" {
 		return errors.Errorf("interface name on network %s is empty", network.Name)
 	}

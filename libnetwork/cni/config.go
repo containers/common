@@ -16,6 +16,7 @@ import (
 
 // NetworkCreate will take a partial filled Network and fill the
 // missing fields. It creates the Network and returns the full Network.
+// nolint:gocritic
 func (n *cniNetwork) NetworkCreate(net types.Network) (types.Network, error) {
 	n.lock.Lock()
 	defer n.lock.Unlock()
@@ -23,7 +24,7 @@ func (n *cniNetwork) NetworkCreate(net types.Network) (types.Network, error) {
 	if err != nil {
 		return types.Network{}, err
 	}
-	network, err := n.networkCreate(net, false)
+	network, err := n.networkCreate(&net, false)
 	if err != nil {
 		return types.Network{}, err
 	}
@@ -34,7 +35,7 @@ func (n *cniNetwork) NetworkCreate(net types.Network) (types.Network, error) {
 
 // networkCreate will fill out the given network struct and return the new network entry.
 // If defaultNet is true it will not validate against used subnets and it will not write the cni config to disk.
-func (n *cniNetwork) networkCreate(newNetwork types.Network, defaultNet bool) (*network, error) {
+func (n *cniNetwork) networkCreate(newNetwork *types.Network, defaultNet bool) (*network, error) {
 	// if no driver is set use the default one
 	if newNetwork.Driver == "" {
 		newNetwork.Driver = types.DefaultNetworkDriver
@@ -46,7 +47,7 @@ func (n *cniNetwork) networkCreate(newNetwork types.Network, defaultNet bool) (*
 		return nil, errors.Wrap(types.ErrInvalidArg, "ID can not be set for network create")
 	}
 
-	err := internalutil.CommonNetworkCreate(n, &newNetwork)
+	err := internalutil.CommonNetworkCreate(n, newNetwork)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +69,12 @@ func (n *cniNetwork) networkCreate(newNetwork types.Network, defaultNet bool) (*
 
 	switch newNetwork.Driver {
 	case types.BridgeNetworkDriver:
-		err = internalutil.CreateBridge(n, &newNetwork, usedNetworks)
+		err = internalutil.CreateBridge(n, newNetwork, usedNetworks)
 		if err != nil {
 			return nil, err
 		}
 	case types.MacVLANNetworkDriver, types.IPVLANNetworkDriver:
-		err = createIPMACVLAN(&newNetwork)
+		err = createIPMACVLAN(newNetwork)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +82,7 @@ func (n *cniNetwork) networkCreate(newNetwork types.Network, defaultNet bool) (*
 		return nil, errors.Wrapf(types.ErrInvalidArg, "unsupported driver %s", newNetwork.Driver)
 	}
 
-	err = internalutil.ValidateSubnets(&newNetwork, usedNetworks)
+	err = internalutil.ValidateSubnets(newNetwork, usedNetworks)
 	if err != nil {
 		return nil, err
 	}
@@ -95,11 +96,11 @@ func (n *cniNetwork) networkCreate(newNetwork types.Network, defaultNet bool) (*
 		newNetwork.DNSEnabled = false
 	}
 
-	cniConf, path, err := n.createCNIConfigListFromNetwork(&newNetwork, !defaultNet)
+	cniConf, path, err := n.createCNIConfigListFromNetwork(newNetwork, !defaultNet)
 	if err != nil {
 		return nil, err
 	}
-	return &network{cniNet: cniConf, libpodNet: &newNetwork, filename: path}, nil
+	return &network{cniNet: cniConf, libpodNet: newNetwork, filename: path}, nil
 }
 
 // NetworkRemove will remove the Network with the given name or ID.

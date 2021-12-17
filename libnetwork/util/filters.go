@@ -9,9 +9,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GenerateNetworkFilters(filters map[string][]string) ([]types.FilterFunc, error) {
-	filterFuncs := make([]types.FilterFunc, 0, len(filters))
-	for key, filterValues := range filters {
+func GenerateNetworkFilters(f map[string][]string) ([]types.FilterFunc, error) {
+	filterFuncs := make([]types.FilterFunc, 0, len(f))
+	for key, filterValues := range f {
 		filterFunc, err := createFilterFuncs(key, filterValues)
 		if err != nil {
 			return nil, err
@@ -46,9 +46,9 @@ func createFilterFuncs(key string, filterValues []string) (types.FilterFunc, err
 	return createPruneFilterFuncs(key, filterValues)
 }
 
-func GenerateNetworkPruneFilters(filters map[string][]string) ([]types.FilterFunc, error) {
-	filterFuncs := make([]types.FilterFunc, 0, len(filters))
-	for key, filterValues := range filters {
+func GenerateNetworkPruneFilters(f map[string][]string) ([]types.FilterFunc, error) {
+	filterFuncs := make([]types.FilterFunc, 0, len(f))
+	for key, filterValues := range f {
 		filterFunc, err := createPruneFilterFuncs(key, filterValues)
 		if err != nil {
 			return nil, err

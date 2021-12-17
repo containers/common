@@ -33,7 +33,7 @@ var _ = Describe("IPAM", func() {
 	})
 
 	JustBeforeEach(func() {
-		libpodNet, err := NewNetworkInterface(InitConfig{
+		libpodNet, err := NewNetworkInterface(&InitConfig{
 			NetworkConfigDir: networkConfDir,
 			IPAMDBPath:       filepath.Join(networkConfDir, "ipam.db"),
 			LockFile:         filepath.Join(networkConfDir, "netavark.lock"),

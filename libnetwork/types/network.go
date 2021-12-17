@@ -69,7 +69,7 @@ type IPNet struct {
 
 // ParseCIDR parse a string to IPNet
 func ParseCIDR(cidr string) (IPNet, error) {
-	ip, net, err := net.ParseCIDR(cidr)
+	ip, subnet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return IPNet{}, err
 	}
@@ -78,8 +78,8 @@ func ParseCIDR(cidr string) (IPNet, error) {
 	if ipv4 != nil {
 		ip = ipv4
 	}
-	net.IP = ip
-	return IPNet{*net}, err
+	subnet.IP = ip
+	return IPNet{*subnet}, err
 }
 
 func (n *IPNet) MarshalText() ([]byte, error) {
@@ -87,11 +87,11 @@ func (n *IPNet) MarshalText() ([]byte, error) {
 }
 
 func (n *IPNet) UnmarshalText(text []byte) error {
-	net, err := ParseCIDR(string(text))
+	subnet, err := ParseCIDR(string(text))
 	if err != nil {
 		return err
 	}
-	*n = net
+	*n = subnet
 	return nil
 }
 
@@ -253,7 +253,7 @@ type PortMapping struct {
 }
 
 // OCICNIPortMapping maps to the standard CNI portmapping Capability.
-// Deprecated, do not use this struct for new fields. This only exists
+// Deprecated: Do not use this struct for new fields. This only exists
 // for backwards compatibility.
 type OCICNIPortMapping struct {
 	// HostPort is the port number on the host.

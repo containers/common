@@ -10,13 +10,12 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/containers/common/libnetwork/types"
+	"github.com/containers/common/libnetwork/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	gomegaTypes "github.com/onsi/gomega/types"
 	"github.com/sirupsen/logrus"
-
-	"github.com/containers/common/libnetwork/types"
-	"github.com/containers/common/libnetwork/util"
 )
 
 var _ = Describe("Config", func() {
@@ -39,7 +38,7 @@ var _ = Describe("Config", func() {
 
 	JustBeforeEach(func() {
 		var err error
-		libpodNet, err = getNetworkInterface(cniConfDir, false)
+		libpodNet, err = getNetworkInterface(cniConfDir)
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
@@ -111,7 +110,7 @@ var _ = Describe("Config", func() {
 			Expect(network2).To(Equal(network1))
 
 			// create a new interface to force a config load from disk
-			libpodNet, err = getNetworkInterface(cniConfDir, false)
+			libpodNet, err = getNetworkInterface(cniConfDir)
 			Expect(err).To(BeNil())
 
 			network2, err = libpodNet.NetworkInspect(network1.Name)
@@ -351,7 +350,7 @@ var _ = Describe("Config", func() {
 				grepInFile(path, `"mode": "`+mode+`"`)
 
 				// reload configs from disk
-				libpodNet, err = getNetworkInterface(cniConfDir, false)
+				libpodNet, err = getNetworkInterface(cniConfDir)
 				Expect(err).To(BeNil())
 
 				network2, err := libpodNet.NetworkInspect(network1.Name)
@@ -417,7 +416,7 @@ var _ = Describe("Config", func() {
 			Expect(network1.Subnets[0].LeaseRange).To(BeNil())
 
 			// reload configs from disk
-			libpodNet, err = getNetworkInterface(cniConfDir, false)
+			libpodNet, err = getNetworkInterface(cniConfDir)
 			Expect(err).To(BeNil())
 			// check the the networks are identical
 			network2, err := libpodNet.NetworkInspect(network1.Name)
@@ -667,7 +666,7 @@ var _ = Describe("Config", func() {
 			Expect(network1.Subnets[0].LeaseRange.EndIP.String()).To(Equal(endIP))
 
 			// create a new interface to force a config load from disk
-			libpodNet, err = getNetworkInterface(cniConfDir, false)
+			libpodNet, err = getNetworkInterface(cniConfDir)
 			Expect(err).To(BeNil())
 
 			network1, err = libpodNet.NetworkInspect(network1.Name)
@@ -1364,7 +1363,7 @@ var _ = Describe("Config", func() {
 
 })
 
-func grepInFile(path string, match string) {
+func grepInFile(path, match string) {
 	data, err := ioutil.ReadFile(path)
 	ExpectWithOffset(1, err).To(BeNil())
 	ExpectWithOffset(1, string(data)).To(ContainSubstring(match))

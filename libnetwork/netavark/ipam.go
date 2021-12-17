@@ -56,6 +56,8 @@ func newIPAMError(cause error, msg string, args ...interface{}) *ipamError {
 // openDB will open the ipam database
 // Note that the caller has to Close it.
 func (n *netavarkNetwork) openDB() (*bbolt.DB, error) {
+	// linter complains about the octal value
+	// nolint:gocritic
 	db, err := bbolt.Open(n.ipamDBPath, 0600, nil)
 	if err != nil {
 		return nil, newIPAMError(err, "failed to open database %s", n.ipamDBPath)
@@ -94,8 +96,8 @@ func (n *netavarkNetwork) allocIPs(opts *types.NetworkOptions) error {
 			// requestIPs is the list of ips which should be used for this container
 			requestIPs := make([]net.IP, 0, len(network.Subnets))
 
-			for _, subnet := range network.Subnets {
-				subnetBkt, err := netBkt.CreateBucketIfNotExists([]byte(subnet.Subnet.String()))
+			for i := range network.Subnets {
+				subnetBkt, err := netBkt.CreateBucketIfNotExists([]byte(network.Subnets[i].Subnet.String()))
 				if err != nil {
 					return newIPAMError(err, "failed to create/get subnet bucket for network %s", netName)
 				}
@@ -104,7 +106,7 @@ func (n *netavarkNetwork) allocIPs(opts *types.NetworkOptions) error {
 				// in this case the user wants this one and we should not assign a free one
 				var ip net.IP
 				for _, staticIP := range netOpts.StaticIPs {
-					if subnet.Subnet.Contains(staticIP) {
+					if network.Subnets[i].Subnet.Contains(staticIP) {
 						ip = staticIP
 						break
 					}
@@ -119,7 +121,7 @@ func (n *netavarkNetwork) allocIPs(opts *types.NetworkOptions) error {
 						return newIPAMError(nil, "requested ip address %s is already allocated to container ID %s", ip.String(), string(id))
 					}
 				} else {
-					ip, err = getFreeIPFromBucket(subnetBkt, subnet)
+					ip, err = getFreeIPFromBucket(subnetBkt, &network.Subnets[i])
 					if err != nil {
 						return err
 					}
@@ -160,7 +162,7 @@ func (n *netavarkNetwork) allocIPs(opts *types.NetworkOptions) error {
 	return err
 }
 
-func getFreeIPFromBucket(bucket *bbolt.Bucket, subnet types.Subnet) (net.IP, error) {
+func getFreeIPFromBucket(bucket *bbolt.Bucket, subnet *types.Subnet) (net.IP, error) {
 	var rangeStart net.IP
 	var rangeEnd net.IP
 	if subnet.LeaseRange != nil {

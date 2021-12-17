@@ -24,16 +24,15 @@ import (
 	"time"
 
 	"github.com/containernetworking/plugins/pkg/ns"
+	"github.com/containers/common/libnetwork/types"
+	"github.com/containers/common/pkg/netns"
+	"github.com/containers/storage/pkg/stringid"
+	"github.com/containers/storage/pkg/unshare"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
-
-	"github.com/containers/common/libnetwork/types"
-	"github.com/containers/common/pkg/netns"
-	"github.com/containers/storage/pkg/stringid"
-	"github.com/containers/storage/pkg/unshare"
 )
 
 var _ = Describe("run CNI", func() {
@@ -98,7 +97,7 @@ var _ = Describe("run CNI", func() {
 
 	JustBeforeEach(func() {
 		var err error
-		libpodNet, err = getNetworkInterface(cniConfDir, false)
+		libpodNet, err = getNetworkInterface(cniConfDir)
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
@@ -141,7 +140,7 @@ var _ = Describe("run CNI", func() {
 				Expect(res[defNet].DNSSearchDomains).To(BeEmpty())
 
 				// reload the interface so the networks are reload from disk
-				libpodNet, err := getNetworkInterface(cniConfDir, false)
+				libpodNet, err := getNetworkInterface(cniConfDir)
 				Expect(err).To(BeNil())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
@@ -398,7 +397,7 @@ var _ = Describe("run CNI", func() {
 					i, err := net.InterfaceByName(intName1)
 					Expect(err).To(BeNil())
 					Expect(i.Name).To(Equal(intName1))
-					Expect(i.HardwareAddr).To(Equal((net.HardwareAddr)(macInt1)))
+					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
 					addrs, err := i.Addrs()
 					Expect(err).To(BeNil())
 					subnet := &net.IPNet{

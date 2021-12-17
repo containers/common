@@ -69,8 +69,9 @@ func (n *cniNetwork) Setup(namespacePath string, options types.SetupOptions) (ma
 
 	results := make(map[string]types.StatusBlock, len(options.Networks))
 	for name, netOpts := range options.Networks {
+		netOpts := netOpts
 		network := n.networks[name]
-		rt := getRuntimeConfig(namespacePath, options.ContainerName, options.ContainerID, name, ports, netOpts)
+		rt := getRuntimeConfig(namespacePath, options.ContainerName, options.ContainerID, name, ports, &netOpts)
 
 		// If we have more than one static ip we need parse the ips via runtime config,
 		// make sure to add the ips capability to the first plugin otherwise it doesn't get the ips
@@ -157,7 +158,7 @@ func CNIResultToStatus(res cnitypes.Result) (types.StatusBlock, error) {
 	return result, nil
 }
 
-func getRuntimeConfig(netns, conName, conID, networkName string, ports []cniPortMapEntry, opts types.PerNetworkOptions) *libcni.RuntimeConf {
+func getRuntimeConfig(netns, conName, conID, networkName string, ports []cniPortMapEntry, opts *types.PerNetworkOptions) *libcni.RuntimeConf {
 	rt := &libcni.RuntimeConf{
 		ContainerID: conID,
 		NetNS:       netns,
@@ -230,7 +231,8 @@ func (n *cniNetwork) teardown(namespacePath string, options types.TeardownOption
 
 	var multiErr *multierror.Error
 	for name, netOpts := range options.Networks {
-		rt := getRuntimeConfig(namespacePath, options.ContainerName, options.ContainerID, name, ports, netOpts)
+		netOpts := netOpts
+		rt := getRuntimeConfig(namespacePath, options.ContainerName, options.ContainerID, name, ports, &netOpts)
 
 		cniConfList, newRt, err := getCachedNetworkConfig(n.cniConf, name, rt)
 		if err == nil {

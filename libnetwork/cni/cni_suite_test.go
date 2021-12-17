@@ -25,11 +25,10 @@ func TestCni(t *testing.T) {
 	RunSpecs(t, "CNI Suite")
 }
 
-func getNetworkInterface(cniConfDir string, machine bool) (types.ContainerNetwork, error) {
-	return cni.NewCNINetworkInterface(cni.InitConfig{
+func getNetworkInterface(cniConfDir string) (types.ContainerNetwork, error) {
+	return cni.NewCNINetworkInterface(&cni.InitConfig{
 		CNIConfigDir:  cniConfDir,
 		CNIPluginDirs: cniPluginDirs,
-		IsMachine:     machine,
 		LockFile:      filepath.Join(cniConfDir, "cni.lock"),
 	})
 }

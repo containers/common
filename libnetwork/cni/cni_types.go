@@ -133,7 +133,7 @@ func newNcList(name, version string, labels, options map[string]string) ncList {
 }
 
 // newHostLocalBridge creates a new LocalBridge for host-local
-func newHostLocalBridge(name string, isGateWay, ipMasq bool, mtu int, vlan int, ipamConf ipamConfig) *hostLocalBridge {
+func newHostLocalBridge(name string, isGateWay, ipMasq bool, mtu, vlan int, ipamConf *ipamConfig) *hostLocalBridge {
 	caps := make(map[string]bool)
 	caps["ips"] = true
 	bridge := hostLocalBridge{
@@ -144,7 +144,7 @@ func newHostLocalBridge(name string, isGateWay, ipMasq bool, mtu int, vlan int, 
 		MTU:         mtu,
 		HairpinMode: true,
 		Vlan:        vlan,
-		IPAM:        ipamConf,
+		IPAM:        *ipamConf,
 	}
 	// if we use host-local set the ips cap to ensure we can set static ips via runtime config
 	if ipamConf.PluginType == types.HostLocalIPAMDriver {
@@ -255,10 +255,10 @@ func hasDNSNamePlugin(paths []string) bool {
 }
 
 // newVLANPlugin creates a macvlanconfig with a given device name
-func newVLANPlugin(pluginType, device, mode string, mtu int, ipam ipamConfig) VLANConfig {
+func newVLANPlugin(pluginType, device, mode string, mtu int, ipam *ipamConfig) VLANConfig {
 	m := VLANConfig{
 		PluginType: pluginType,
-		IPAM:       ipam,
+		IPAM:       *ipam,
 	}
 	if mtu > 0 {
 		m.MTU = mtu

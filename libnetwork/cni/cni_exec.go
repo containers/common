@@ -87,7 +87,7 @@ func (e *cniExec) ExecPlugin(ctx context.Context, pluginPath string, stdinData [
 }
 
 // annotatePluginError parses the common cni plugin error json.
-func annotatePluginError(err error, plugin string, stdout []byte, stderr []byte) error {
+func annotatePluginError(err error, plugin string, stdout, stderr []byte) error {
 	pluginName := filepath.Base(plugin)
 	emsg := cniPluginError{
 		plugin: pluginName,

@@ -76,7 +76,7 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 			network.Options["vlan"] = strconv.Itoa(bridge.Vlan)
 		}
 
-		err = convertIPAMConfToNetwork(&network, bridge.IPAM, confPath)
+		err = convertIPAMConfToNetwork(&network, &bridge.IPAM, confPath)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 			network.Options["mode"] = vlan.Mode
 		}
 
-		err = convertIPAMConfToNetwork(&network, vlan.IPAM, confPath)
+		err = convertIPAMConfToNetwork(&network, &vlan.IPAM, confPath)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +126,7 @@ func findPluginByName(plugins []*libcni.NetworkConfig, name string) bool {
 
 // convertIPAMConfToNetwork converts A cni IPAMConfig to libpod network subnets.
 // It returns an array of subnets and an extra bool if dhcp is configured.
-func convertIPAMConfToNetwork(network *types.Network, ipam ipamConfig, confPath string) error {
+func convertIPAMConfToNetwork(network *types.Network, ipam *ipamConfig, confPath string) error {
 	if ipam.PluginType == types.DHCPIPAMDriver {
 		network.IPAMOptions["driver"] = types.DHCPIPAMDriver
 		return nil
@@ -288,7 +288,7 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 
 	switch network.Driver {
 	case types.BridgeNetworkDriver:
-		bridge := newHostLocalBridge(network.NetworkInterface, isGateway, ipMasq, mtu, vlan, ipamConf)
+		bridge := newHostLocalBridge(network.NetworkInterface, isGateway, ipMasq, mtu, vlan, &ipamConf)
 		plugins = append(plugins, bridge, newPortMapPlugin(), newFirewallPlugin(), newTuningPlugin())
 		// if we find the dnsname plugin we add configuration for it
 		if hasDNSNamePlugin(n.cniPluginDirs) && network.DNSEnabled {
@@ -297,10 +297,10 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 		}
 
 	case types.MacVLANNetworkDriver:
-		plugins = append(plugins, newVLANPlugin(types.MacVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, ipamConf))
+		plugins = append(plugins, newVLANPlugin(types.MacVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, &ipamConf))
 
 	case types.IPVLANNetworkDriver:
-		plugins = append(plugins, newVLANPlugin(types.IPVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, ipamConf))
+		plugins = append(plugins, newVLANPlugin(types.IPVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, &ipamConf))
 
 	default:
 		return nil, "", errors.Errorf("driver %q is not supported by cni", network.Driver)
