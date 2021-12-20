@@ -116,3 +116,11 @@ linters-settings:
       - unnecessaryBlock
   gocyclo:
     min-complexity: 35
+
+issues:
+    # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - dupl
