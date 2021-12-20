@@ -36,6 +36,7 @@ define go-get
 endef
 
 define go-build
+	CGO_ENABLED=0 \
 	GOOS=$(1) GOARCH=$(2) $(GO) build -tags "$(3)" ./...
 endef
 
@@ -48,8 +49,8 @@ endef
 build-cross:
 	$(call go-build-c,linux) # attempt to build without tags
 	$(call go-build-c,linux,,${BUILDTAGS})
-	$(call go-build-c,linux,386,${BUILDTAGS})
-	$(call go-build,linux) # attempt to build without tags
+	$(call go-build,linux,386,${BUILDTAGS})
+	$(call go-build-c,linux) # attempt to build without tags
 	$(call go-build,linux,386,${BUILDTAGS})
 	$(call go-build,linux,arm,${BUILDTAGS})
 	$(call go-build,linux,arm64,${BUILDTAGS})
