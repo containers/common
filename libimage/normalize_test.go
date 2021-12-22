@@ -7,6 +7,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNormalizePlatform(t *testing.T) {
+	type platform struct {
+		os, arch, variant string
+	}
+	for _, test := range []struct {
+		input, expected platform
+	}{
+		{
+			platform{"", "", ""},
+			platform{"", "", ""},
+		},
+		{
+			platform{"foo", "", "garbage"},
+			platform{"foo", "", "garbage"},
+		},
+		{
+			platform{"&", "invalid", "os"},
+			platform{"&", "invalid", "os"},
+		},
+		{
+			platform{"linux", "", ""},
+			platform{"linux", "", ""},
+		},
+		{
+			platform{"LINUX", "", ""},
+			platform{"linux", "", ""},
+		},
+		{
+			platform{"", "aarch64", ""},
+			platform{"", "arm64", ""},
+		},
+		{
+			platform{"macos", "x86_64", ""},
+			platform{"darwin", "amd64", ""},
+		},
+		{
+			platform{"linux", "amd64", ""},
+			platform{"linux", "amd64", ""},
+		},
+		{
+			platform{"linux", "arm64", "v8"},
+			platform{"linux", "arm64", "v8"},
+		},
+		{
+			platform{"linux", "aarch64", ""},
+			platform{"linux", "arm64", ""},
+		},
+	} {
+		os, arch, variant := NormalizePlatform(test.input.os, test.input.arch, test.input.variant)
+		assert.Equal(t, test.expected.os, os, test.input)
+		assert.Equal(t, test.expected.arch, arch, test.input)
+		assert.Equal(t, test.expected.variant, variant, test.input)
+	}
+}
+
 func TestNormalizeName(t *testing.T) {
 	const digestSuffix = "@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
