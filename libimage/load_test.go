@@ -27,12 +27,14 @@ func TestLoad(t *testing.T) {
 		{"testdata/docker-two-names.tar.xz", false, 1, []string{"localhost/pretty-empty:latest", "example.com/empty:latest"}},
 		{"testdata/docker-two-images.tar.xz", false, 2, []string{"example.com/empty:latest", "example.com/empty/but:different"}},
 		{"testdata/docker-unnamed.tar.xz", false, 1, []string{"sha256:ec9293436c2e66da44edb9efb8d41f6b13baf62283ebe846468bc992d76d7951"}},
+		{"testdata/buildkit-docker.tar", false, 1, []string{"github.com/buildkit/archive:docker"}},
 
 		// OCI ARCHIVE
 		{"testdata/oci-name-only.tar.gz", false, 1, []string{"localhost/pretty-empty:latest"}},
 		{"testdata/oci-non-docker-name.tar.gz", true, 0, nil},
 		{"testdata/oci-registry-name.tar.gz", false, 1, []string{"example.com/empty:latest"}},
 		{"testdata/oci-unnamed.tar.gz", false, 1, []string{"sha256:5c8aca8137ac47e84c69ae93ce650ce967917cc001ba7aad5494073fac75b8b6"}},
+		{"testdata/buildkit-oci.tar", false, 1, []string{"github.com/buildkit/archive:oci"}},
 	} {
 		loadedImages, err := runtime.Load(ctx, test.input, loadOptions)
 		if test.expectError {
