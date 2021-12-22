@@ -2,7 +2,6 @@ package libimage
 
 import (
 	"context"
-	"fmt"
 	"path"
 	"strconv"
 	"strings"
