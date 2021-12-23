@@ -123,7 +123,12 @@ func TestPullPlatforms(t *testing.T) {
 
 	image, _, err = runtime.LookupImage(withTag, &LookupImageOptions{Architecture: "arm"})
 	require.NoError(t, err, "lookup busybox - by arm")
-	require.NotNil(t, image, "lookup busybox - by local arch")
+	require.NotNil(t, image, "lookup busybox - by arm")
+
+	pullOptions.Architecture = "aarch64"
+	pulledImages, err = runtime.Pull(ctx, withTag, config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err, "pull busybox - aarch64")
+	require.Len(t, pulledImages, 1)
 }
 
 func TestPullPolicy(t *testing.T) {
