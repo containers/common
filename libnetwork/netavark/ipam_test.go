@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"path/filepath"
 
 	"github.com/containers/common/libnetwork/types"
 	. "github.com/onsi/ginkgo"
@@ -37,7 +36,7 @@ var _ = Describe("IPAM", func() {
 	JustBeforeEach(func() {
 		libpodNet, err := NewNetworkInterface(&InitConfig{
 			NetworkConfigDir: networkConfDir,
-			IPAMDBPath:       filepath.Join(networkConfDir, "ipam.db"),
+			NetworkRunDir:    networkConfDir,
 		})
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")

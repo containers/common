@@ -43,6 +43,7 @@ func NetworkBackend(store storage.Store, conf *config.Config, syslog bool) (type
 		}
 		netInt, err := netavark.NewNetworkInterface(&netavark.InitConfig{
 			NetworkConfigDir: filepath.Join(store.GraphRoot(), "networks"),
+			NetworkRunDir:    filepath.Join(store.RunRoot(), "networks"),
 			NetavarkBinary:   netavarkBin,
 			DefaultNetwork:   conf.Network.DefaultNetwork,
 			DefaultSubnet:    conf.Network.DefaultSubnet,

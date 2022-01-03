@@ -12,7 +12,6 @@ import (
 
 	"github.com/containers/common/libnetwork/internal/util"
 	"github.com/containers/common/libnetwork/types"
-	pkgutil "github.com/containers/common/pkg/util"
 	"github.com/containers/storage/pkg/lockfile"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -54,9 +53,8 @@ type InitConfig struct {
 	// NetavarkBinary is the path to the netavark binary.
 	NetavarkBinary string
 
-	// IPAMDBPath is the path to the ipam database. This should be on a tmpfs.
-	// If empty defaults to XDG_RUNTIME_DIR/netavark/ipam.db or /run/netavark/ipam.db as root.
-	IPAMDBPath string
+	// NetworkRunDir is where temporary files are stored, i.e.the ipam db.
+	NetworkRunDir string
 
 	// DefaultNetwork is the name for the default network.
 	DefaultNetwork string
@@ -91,31 +89,18 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		return nil, errors.Wrap(err, "failed to parse default subnet")
 	}
 
-	ipamdbPath := conf.IPAMDBPath
-	if ipamdbPath == "" {
-		runDir, err := pkgutil.GetRuntimeDir()
-		if err != nil {
-			return nil, err
-		}
-		// as root runtimeDir is empty so use /run
-		if runDir == "" {
-			runDir = "/run"
-		}
-		ipamdbPath = filepath.Join(runDir, "netavark")
-		if err := os.MkdirAll(ipamdbPath, 0700); err != nil {
-			return nil, errors.Wrap(err, "failed to create ipam db path")
-		}
-		ipamdbPath = filepath.Join(ipamdbPath, "ipam.db")
+	if err := os.MkdirAll(conf.NetworkConfigDir, 0755); err != nil {
+		return nil, err
 	}
 
-	if err := os.MkdirAll(conf.NetworkConfigDir, 0755); err != nil {
+	if err := os.MkdirAll(conf.NetworkRunDir, 0755); err != nil {
 		return nil, err
 	}
 
 	n := &netavarkNetwork{
 		networkConfigDir: conf.NetworkConfigDir,
 		netavarkBinary:   conf.NetavarkBinary,
-		ipamDBPath:       ipamdbPath,
+		ipamDBPath:       filepath.Join(conf.NetworkRunDir, "ipam.db"),
 		defaultNetwork:   defaultNetworkName,
 		defaultSubnet:    defaultNet,
 		lock:             lock,

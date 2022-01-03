@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -36,7 +35,7 @@ func getNetworkInterface(confDir string) (types.ContainerNetwork, error) {
 	return netavark.NewNetworkInterface(&netavark.InitConfig{
 		NetworkConfigDir: confDir,
 		NetavarkBinary:   netavarkBinary,
-		IPAMDBPath:       filepath.Join(confDir, "ipam.db"),
+		NetworkRunDir:    confDir,
 	})
 }
 
