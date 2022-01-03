@@ -203,7 +203,6 @@ func DefaultConfig() (*Config, error) {
 			UserNSSize:         DefaultUserNSSize,
 		},
 		Network: NetworkConfig{
-			NetworkBackend:   "cni",
 			DefaultNetwork:   "podman",
 			DefaultSubnet:    DefaultSubnet,
 			NetworkConfigDir: cniConfig,
