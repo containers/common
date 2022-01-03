@@ -38,7 +38,6 @@ var _ = Describe("IPAM", func() {
 		libpodNet, err := NewNetworkInterface(&InitConfig{
 			NetworkConfigDir: networkConfDir,
 			IPAMDBPath:       filepath.Join(networkConfDir, "ipam.db"),
-			LockFile:         filepath.Join(networkConfDir, "netavark.lock"),
 		})
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")

@@ -37,7 +37,6 @@ func getNetworkInterface(confDir string) (types.ContainerNetwork, error) {
 		NetworkConfigDir: confDir,
 		NetavarkBinary:   netavarkBinary,
 		IPAMDBPath:       filepath.Join(confDir, "ipam.db"),
-		LockFile:         filepath.Join(confDir, "netavark.lock"),
 	})
 }
 

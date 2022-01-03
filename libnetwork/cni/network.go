@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -63,16 +64,13 @@ type InitConfig struct {
 
 	// IsMachine describes whenever podman runs in a podman machine environment.
 	IsMachine bool
-
-	// LockFile is the path to lock file.
-	LockFile string
 }
 
 // NewCNINetworkInterface creates the ContainerNetwork interface for the CNI backend.
 // Note: The networks are not loaded from disk until a method is called.
 func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 	// TODO: consider using a shared memory lock
-	lock, err := lockfile.GetLockfile(conf.LockFile)
+	lock, err := lockfile.GetLockfile(filepath.Join(conf.CNIConfigDir, "cni.lock"))
 	if err != nil {
 		return nil, err
 	}

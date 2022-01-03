@@ -124,6 +124,5 @@ func getCniInterface(conf *config.Config) (types.ContainerNetwork, error) {
 		DefaultNetwork: conf.Network.DefaultNetwork,
 		DefaultSubnet:  conf.Network.DefaultSubnet,
 		IsMachine:      conf.Engine.MachineEnabled,
-		LockFile:       filepath.Join(conf.Network.NetworkConfigDir, "cni.lock"),
 	})
 }

@@ -33,9 +33,6 @@ type netavarkNetwork struct {
 	// ipamDBPath is the path to the ip allocation bolt db
 	ipamDBPath string
 
-	// isMachine describes whenever podman runs in a podman machine environment.
-	isMachine bool
-
 	// syslog describes whenever the netavark debbug output should be log to the syslog as well.
 	// This will use logrus to do so, make sure logrus is set up to log to the syslog.
 	syslog bool
@@ -66,12 +63,6 @@ type InitConfig struct {
 	// DefaultSubnet is the default subnet for the default network.
 	DefaultSubnet string
 
-	// IsMachine describes whenever podman runs in a podman machine environment.
-	IsMachine bool
-
-	// LockFile is the path to lock file.
-	LockFile string
-
 	// Syslog describes whenever the netavark debbug output should be log to the syslog as well.
 	// This will use logrus to do so, make sure logrus is set up to log to the syslog.
 	Syslog bool
@@ -81,7 +72,7 @@ type InitConfig struct {
 // Note: The networks are not loaded from disk until a method is called.
 func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 	// TODO: consider using a shared memory lock
-	lock, err := lockfile.GetLockfile(conf.LockFile)
+	lock, err := lockfile.GetLockfile(filepath.Join(conf.NetworkConfigDir, "netavark.lock"))
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +118,6 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		ipamDBPath:       ipamdbPath,
 		defaultNetwork:   defaultNetworkName,
 		defaultSubnet:    defaultNet,
-		isMachine:        conf.IsMachine,
 		lock:             lock,
 		syslog:           conf.Syslog,
 	}
