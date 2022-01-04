@@ -2,6 +2,7 @@ package parse
 
 import (
 	"os"
+	"reflect"
 	"runtime"
 	"syscall"
 	"testing"
@@ -67,6 +68,18 @@ func TestIsValidDeviceMode(t *testing.T) {
 	assert.True(t, isValidDeviceMode("rw"))
 	assert.True(t, isValidDeviceMode("rm"))
 	assert.True(t, isValidDeviceMode("rwm"))
+}
+
+func TestIsValidVolumeOption(t *testing.T) {
+	options, err := ValidateVolumeOpts([]string{"upperdir=test", "workdir=test2"})
+	assert.NoError(t, err)
+	assert.True(t, reflect.DeepEqual([]string{"upperdir=test", "workdir=test2"}, options))
+
+	_, err = ValidateVolumeOpts([]string{"workdir=test2", "workdir=test3"})
+	assert.Error(t, err)
+
+	_, err = ValidateVolumeOpts([]string{"upperdir=test2", "upperdir=test3"})
+	assert.Error(t, err)
 }
 
 func TestDeviceFromPath(t *testing.T) {
