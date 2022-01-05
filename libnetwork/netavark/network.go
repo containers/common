@@ -116,6 +116,11 @@ func (n *netavarkNetwork) Drivers() []string {
 	return []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver}
 }
 
+// DefaultNetworkName will return the default netavark network name.
+func (n *netavarkNetwork) DefaultNetworkName() string {
+	return n.defaultNetwork
+}
+
 func (n *netavarkNetwork) loadNetworks() error {
 	// check the mod time of the config dir
 	f, err := os.Stat(n.networkConfigDir)
