@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -76,6 +77,40 @@ func TestUnmarshalMacAddress(t *testing.T) {
 			}
 			if !reflect.DeepEqual(mac, test.want) {
 				t.Errorf("types.HardwareAddress Unmarshal() got = %v, want %v", mac, test.want)
+			}
+		})
+	}
+}
+
+func TestMarshalMacAddress(t *testing.T) {
+	tests := []struct {
+		name    string
+		arg     types.HardwareAddr
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "marshal mac",
+			arg:  types.HardwareAddr{0x44, 0x33, 0x22, 0x44, 0x33, 0x22},
+			want: `"44:33:22:44:33:22"`,
+		},
+	}
+
+	for _, tt := range tests {
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
+			g, err := json.Marshal(test.arg)
+			got := string(g)
+			fmt.Println(got)
+			if (err != nil) != test.wantErr {
+				t.Errorf("types.HardwareAddress Marshal() error = %v, wantErr %v", err, test.wantErr)
+				return
+			}
+			if test.wantErr {
+				return
+			}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("types.HardwareAddress Marshal() got = %v, want %v", got, test.want)
 			}
 		})
 	}

@@ -106,8 +106,8 @@ func (h *HardwareAddr) String() string {
 	return (*net.HardwareAddr)(h).String()
 }
 
-func (h *HardwareAddr) MarshalText() ([]byte, error) {
-	return []byte((*net.HardwareAddr)(h).String()), nil
+func (h HardwareAddr) MarshalText() ([]byte, error) {
+	return []byte(h.String()), nil
 }
 
 func (h *HardwareAddr) UnmarshalJSON(text []byte) error {
