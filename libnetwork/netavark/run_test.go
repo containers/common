@@ -127,10 +127,12 @@ var _ = Describe("run netavark", func() {
 					Networks: map[string]types.PerNetworkOptions{
 						defNet: {
 							InterfaceName: intName,
+							StaticMAC:     types.HardwareAddr{0x44, 0x33, 0x22, 0x44, 0x33, 0x22},
 						},
 					},
 				},
 			}
+
 			res, err := libpodNet.Setup(netNSContainer.Path(), opts)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(HaveLen(1))
@@ -208,6 +210,48 @@ var _ = Describe("run netavark", func() {
 			Expect(err).ToNot(HaveOccurred())
 			wg.Wait()
 		})
+	})
+
+	It("static mac", func() {
+		runTest(func() {
+			defNet := types.DefaultNetworkName
+			intName := "eth0"
+			mac := types.HardwareAddr{0x44, 0x33, 0x22, 0x44, 0x33, 0x22}
+			opts := types.SetupOptions{
+				NetworkOptions: types.NetworkOptions{
+					ContainerID:   "someID",
+					ContainerName: "someName",
+					Networks: map[string]types.PerNetworkOptions{
+						defNet: {
+							InterfaceName: intName,
+							StaticMAC:     mac,
+						},
+					},
+				},
+			}
+
+			res, err := libpodNet.Setup(netNSContainer.Path(), opts)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res).To(HaveLen(1))
+			Expect(res).To(HaveKey(defNet))
+			Expect(res[defNet].Interfaces).To(HaveKey(intName))
+			Expect(res[defNet].Interfaces[intName].Subnets).To(HaveLen(1))
+			macAddress := res[defNet].Interfaces[intName].MacAddress
+			Expect(macAddress).To(Equal(mac))
+
+			// check in the container namespace if the settings are applied
+			err = netNSContainer.Do(func(_ ns.NetNS) error {
+				defer GinkgoRecover()
+				i, err := net.InterfaceByName(intName)
+				Expect(err).To(BeNil())
+				Expect(i.Name).To(Equal(intName))
+				Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macAddress)))
+				return nil
+			})
+			Expect(err).To(BeNil())
+
+		})
+
 	})
 
 	It("setup two containers", func() {
@@ -298,7 +342,7 @@ var _ = Describe("run netavark", func() {
 			Expect(gw1.String()).To(Equal("10.0.0.1"))
 			ip2 := res[netName].Interfaces[intName].Subnets[1].IPNet.IP
 			Expect(ip2.String()).To(ContainSubstring("fd10:88:a::"))
-			gw2 := res[netName].Interfaces[intName].Subnets[0].Gateway
+			gw2 := res[netName].Interfaces[intName].Subnets[1].Gateway
 			Expect(gw2.String()).To(Equal("fd10:88:a::1"))
 			Expect(res[netName].Interfaces[intName].MacAddress).To(HaveLen(6))
 

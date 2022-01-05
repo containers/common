@@ -29,7 +29,6 @@ func getNetworkInterface(cniConfDir string) (types.ContainerNetwork, error) {
 	return cni.NewCNINetworkInterface(&cni.InitConfig{
 		CNIConfigDir:  cniConfDir,
 		CNIPluginDirs: cniPluginDirs,
-		LockFile:      filepath.Join(cniConfDir, "cni.lock"),
 	})
 }
 

@@ -33,6 +33,13 @@ const (
 	IPVLANModeL3s = "l3s"
 )
 
+type NetworkBackend string
+
+const (
+	CNI      NetworkBackend = "cni"
+	Netavark NetworkBackend = "netavark"
+)
+
 // ValidMacVLANModes is the list of valid mode options for the macvlan driver
 var ValidMacVLANModes = []string{MacVLANModeBridge, MacVLANModePrivate, MacVLANModeVepa, MacVLANModePassthru}
 
