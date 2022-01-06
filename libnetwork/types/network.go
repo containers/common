@@ -28,6 +28,10 @@ type ContainerNetwork interface {
 	// Drivers will return the list of supported network drivers
 	// for this interface.
 	Drivers() []string
+
+	// DefaultNetworkName will return the default network name
+	// for this interface.
+	DefaultNetworkName() string
 }
 
 // Network describes the Network attributes.

@@ -109,6 +109,11 @@ func (n *cniNetwork) Drivers() []string {
 	return []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver}
 }
 
+// DefaultNetworkName will return the default cni network name.
+func (n *cniNetwork) DefaultNetworkName() string {
+	return n.defaultNetwork
+}
+
 func (n *cniNetwork) loadNetworks() error {
 	// check the mod time of the config dir
 	f, err := os.Stat(n.cniConfigDir)
