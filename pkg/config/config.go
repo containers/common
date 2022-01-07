@@ -48,15 +48,16 @@ const (
 	BoltDBStateStore RuntimeStateStore = iota
 )
 
-var ProxyEnvMap = map[string]bool{
-	"http_proxy":  true,
-	"https_proxy": true,
-	"ftp_proxy":   true,
-	"no_proxy":    true,
-	"HTTP_PROXY":  true,
-	"HTTPS_PROXY": true,
-	"FTP_PROXY":   true,
-	"NO_PROXY":    true,
+// ProxyEnv is a list of Proxy Environment variables
+var ProxyEnv = []string{
+	"http_proxy",
+	"https_proxy",
+	"ftp_proxy",
+	"no_proxy",
+	"HTTP_PROXY",
+	"HTTPS_PROXY",
+	"FTP_PROXY",
+	"NO_PROXY",
 }
 
 // Config contains configuration options for container tools
@@ -908,7 +909,7 @@ func (c *Config) GetDefaultEnvEx(envHost, httpProxy bool) []string {
 	if envHost {
 		env = append(env, os.Environ()...)
 	} else if httpProxy {
-		for p := range ProxyEnvMap {
+		for _, p := range ProxyEnv {
 			if val, ok := os.LookupEnv(p); ok {
 				env = append(env, fmt.Sprintf("%s=%s", p, val))
 			}
