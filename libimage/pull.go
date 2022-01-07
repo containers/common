@@ -243,14 +243,8 @@ func (r *Runtime) copyFromDefault(ctx context.Context, ref types.ImageReference,
 		imageName = named.String()
 
 	default:
-		// Path-based transports (e.g., dir) may include invalid
-		// characters, so we should pessimistically generate an ID
-		// instead of looking at the StringWithinTransport().
-		storageName, err = getImageID(ctx, ref, nil)
-		if err != nil {
-			return nil, err
-		}
-		imageName = "sha256:" + storageName[1:]
+		storageName = toLocalImageName(ref.StringWithinTransport())
+		imageName = storageName
 	}
 
 	// Create a storage reference.
