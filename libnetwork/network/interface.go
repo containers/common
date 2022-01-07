@@ -14,6 +14,7 @@ import (
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/config"
 	"github.com/containers/storage"
+	"github.com/containers/storage/pkg/ioutils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -64,13 +65,14 @@ func defaultNetworkBackend(store storage.Store, conf *config.Config) (backend ty
 	file := filepath.Join(store.GraphRoot(), defaultNetworkBackendFileName)
 	b, err := ioutil.ReadFile(file)
 	if err == nil {
-		if string(b) == string(types.Netavark) {
+		val := string(b)
+		if val == string(types.Netavark) {
 			return types.Netavark, nil
 		}
-		if string(b) == string(types.CNI) {
+		if val == string(types.CNI) {
 			return types.CNI, nil
 		}
-		return "", fmt.Errorf("unknown network backend value in %q", file)
+		return "", fmt.Errorf("unknown network backend value %q in %q", val, file)
 	}
 	// fail for all errors except ENOENT
 	if !errors.Is(err, os.ErrNotExist) {
@@ -81,7 +83,8 @@ func defaultNetworkBackend(store storage.Store, conf *config.Config) (backend ty
 	defer func() {
 		// only write when there is no error
 		if err == nil {
-			if err := ioutil.WriteFile(file, []byte(backend), 0644); err != nil {
+			// nolint:gocritic
+			if err := ioutils.AtomicWriteFile(file, []byte(backend), 0644); err != nil {
 				logrus.Errorf("could not write network backend to file: %v", err)
 			}
 		}
