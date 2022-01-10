@@ -18,10 +18,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+type testNewRuntimeOptions struct {
+	registriesConfPath string
+}
+
 // Create a new Runtime that can be used for testing.  The second return value
 // is a clean-up function that should be called by users to make sure all
 // temporary test data gets removed.
-func testNewRuntime(t *testing.T) (runtime *Runtime, cleanup func()) {
+func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Runtime, cleanup func()) {
 	workdir, err := ioutil.TempDir("", "testStorageRuntime")
 	require.NoError(t, err)
 	storeOptions := &storage.StoreOptions{
@@ -34,6 +38,10 @@ func testNewRuntime(t *testing.T) (runtime *Runtime, cleanup func()) {
 	systemContext := &types.SystemContext{
 		SystemRegistriesConfPath:    "testdata/registries.conf",
 		SystemRegistriesConfDirPath: "/dev/null",
+	}
+
+	if len(options) == 1 && options[0].registriesConfPath != "" {
+		systemContext.SystemRegistriesConfPath = options[0].registriesConfPath
 	}
 
 	runtime, err = RuntimeFromStoreOptions(&RuntimeOptions{SystemContext: systemContext}, storeOptions)

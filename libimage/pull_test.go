@@ -128,6 +128,36 @@ func TestPullPlatforms(t *testing.T) {
 	require.Len(t, pulledImages, 1)
 }
 
+func TestPullPlatformsWithEmptyRegistriesConf(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t, testNewRuntimeOptions{registriesConfPath: "/dev/null"})
+	defer cleanup()
+	ctx := context.Background()
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	localArch := goruntime.GOARCH
+	localOS := goruntime.GOOS
+
+	imageName := "quay.io/libpod/busybox"
+	newTag := "crazy:train"
+
+	pulledImages, err := runtime.Pull(ctx, imageName, config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err, "pull "+imageName)
+	require.Len(t, pulledImages, 1)
+
+	err = pulledImages[0].Tag(newTag)
+	require.NoError(t, err, "tag")
+
+	// See containers/podman/issues/12707: a custom platform will enforce
+	// pulling via newer. Older versions enforced always which can lead to
+	// errors.
+	pullOptions.OS = localOS
+	pullOptions.Architecture = localArch
+	pulledImages, err = runtime.Pull(ctx, newTag, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err, "pull "+newTag)
+	require.Len(t, pulledImages, 1)
+}
+
 func TestPullPolicy(t *testing.T) {
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
