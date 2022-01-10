@@ -910,6 +910,24 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(Equal("unsupported macvlan network option abc"))
 		})
 
+		It("create macvlan config with mtu", func() {
+			subnet := "10.1.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver: "macvlan",
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+				Options: map[string]string{
+					"mtu": "9000",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.Name).ToNot(BeEmpty())
+			Expect(network1.Options).To(HaveKeyWithValue("mtu", "9000"))
+		})
+
 	})
 
 	Context("network load valid existing ones", func() {
