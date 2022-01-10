@@ -14,8 +14,9 @@ import (
 func TestImageFunctions(t *testing.T) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
-	busyboxLatest := "docker.io/library/busybox:latest"
-	busyboxDigest := "docker.io/library/busybox@"
+	busybox := "docker.io/library/busybox"
+	busyboxLatest := busybox + ":latest"
+	busyboxDigest := busybox + "@"
 
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
@@ -61,6 +62,14 @@ func TestImageFunctions(t *testing.T) {
 	digests := image.Digests()
 	require.Len(t, digests, 2)
 	require.Equal(t, origDigest.String(), digests[0].String(), "first recoreded digest should be the one of the image")
+
+	// containers/podman/issues/12729: make sure manifest lookup returns
+	// the correct error for both digests.
+	for _, digest := range digests {
+		_, err := runtime.LookupManifestList(busybox + "@" + digest.String())
+		require.Error(t, err, "Manifest lookup should fail on an ordinary image")
+		require.Equal(t, ErrNotAManifestList, errors.Cause(err))
+	}
 
 	// Below mostly smoke tests.
 	require.False(t, image.IsReadOnly())
