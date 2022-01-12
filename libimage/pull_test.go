@@ -94,6 +94,13 @@ func TestPullPlatforms(t *testing.T) {
 	require.NoError(t, err, "pull busybox")
 	require.Len(t, pulledImages, 1)
 
+	// Repulling with a bogus architecture should yield an error and not
+	// choose the local image.
+	pullOptions.Architecture = "bogus"
+	_, err = runtime.Pull(ctx, withTag, config.PullPolicyNewer, pullOptions)
+	require.Error(t, err, "pulling with a bogus architecture must fail even if there is a local image of another architecture")
+	require.Contains(t, err.Error(), "no image found in manifest list for architecture bogus")
+
 	image, _, err := runtime.LookupImage(withTag, nil)
 	require.NoError(t, err, "lookup busybox")
 	require.NotNil(t, image, "lookup busybox")
