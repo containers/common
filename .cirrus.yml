@@ -5,6 +5,8 @@ env:
     ####
     #### Global variables used for all tasks
     ####
+    # Netavark branch to download binary from
+    NETAVARK_BRANCH: "main"
     # Overrides default location (/tmp/cirrus) for repo clone
     GOPATH: &gopath "/var/tmp/go"
     GOBIN: "${GOPATH}/bin"
@@ -44,11 +46,23 @@ gce_instance:
 testing_task:
   alias: testing
   name: "Testing on $FEDORA_NAME"
-
-  test_script:
+  env:
+    NETAVARK_DIRPATH: "/usr/local/libexec/podman"
+    NETAVARK_BINARY: "${NETAVARK_DIRPATH}/netavark"  # unit-tests sensitive to this
+  setup_script:
     - mkdir "$GOLANGCI_LINT_CACHE"
-    - export PATH="$PATH:$GOPATH/bin"
     - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
+    # TODO: Remove this when netavark is installed by RPM in VM images
+    - curl --fail --location -o /tmp/netavark.zip "https://api.cirrus-ci.com/v1/artifact/github/containers/netavark/success/binary.zip?branch=${NETAVARK_BRANCH}"
+    - mkdir -vp "${NETAVARK_DIRPATH}"
+    - cd "${NETAVARK_DIRPATH}"
+    - unzip /tmp/netavark.zip
+    # DEBUG: - mv netavark.debug netavark
+    - chmod 0755 ./netavark
+    - restorecon -F -v "${NETAVARK_DIRPATH}"
+    # TODO: end of netavark setup
+  test_script:
+    - export PATH="$PATH:$GOPATH/bin"
     - make vendor
     - make build
     - make build-cross
