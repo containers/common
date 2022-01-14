@@ -310,7 +310,11 @@ If the default network does not exist, it will be automatically created the firs
 
 **network_config_dir**="/etc/cni/net.d/"
 
-Path to the directory where CNI configuration files are located.
+Path to the directory where network configuration files are located.
+For the CNI backend the default is "/etc/cni/net.d" as root
+and "$HOME/.config/cni/net.d" as rootless.
+For the netavark backend "/etc/containers/networks" is used as root
+and "$graphroot/networks" as rootless.
 
 **volumes**=[]
 
