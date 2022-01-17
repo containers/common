@@ -378,6 +378,10 @@ Environment variables to be used when running the container engine (e.g., Podman
 Note these environment variables will not be used within the container. Set the env section under [containers] table,
 if you want to set environment variables for the container.
 
+**events_logfile_path**=""
+
+Define where event logs will be stored, when events_logger is "file".
+
 **events_logger**="journald"
 
 Default method to use when logging events.

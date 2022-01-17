@@ -346,6 +346,7 @@ image_copy_tmp_dir="storage"`
 				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("file"))
 				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			}
+			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(config.Engine.TmpDir + "/events/events.log"))
 
 		})
 
@@ -380,6 +381,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Containers.LogSizeMax).To(gomega.Equal(int64(100000)))
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
 			gomega.Expect(config.Engine.ImageDefaultFormat).To(gomega.Equal("v2s2"))
+			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo("/tmp/events.log"))
 			path, err := config.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/tmp/foobar"))
