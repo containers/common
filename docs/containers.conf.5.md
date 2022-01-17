@@ -278,11 +278,15 @@ Options are:
 The `network` table contains settings pertaining to the management of CNI
 plugins.
 
-**network_backend**="cni"
+**network_backend**=""
 
 Network backend determines what network driver will be used to set up and tear down container networks.
 Valid values are "cni" and "netavark".
-Changing this value may require restarting all running containers.
+The default value is empty which means that it will automatically choose CNI or netavark. If there are
+already containers/images or CNI networks preset it will choose CNI.
+
+Before changing this value all containers must be stopped otherwise it is likely that
+iptables rules and network interfaces might leak on the host. A reboot will fix this.
 
 **cni_plugin_dirs**=[]
 
@@ -301,16 +305,20 @@ cni_plugin_dirs = [
 
 **default_network**="podman"
 
-The network name of the default CNI network to attach pods to.
+The network name of the default network to attach pods to.
 
 **default_subnet**="10.88.0.0/16"
 
-The subnet to use for the default CNI network (named above in **default_network**).
+The subnet to use for the default network (named above in **default_network**).
 If the default network does not exist, it will be automatically created the first time a tool is run using this subnet.
 
 **network_config_dir**="/etc/cni/net.d/"
 
-Path to the directory where CNI configuration files are located.
+Path to the directory where network configuration files are located.
+For the CNI backend the default is "/etc/cni/net.d" as root
+and "$HOME/.config/cni/net.d" as rootless.
+For the netavark backend "/etc/containers/networks" is used as root
+and "$graphroot/networks" as rootless.
 
 **volumes**=[]
 
