@@ -191,7 +191,7 @@ func MountsWithUIDGID(mountLabel, containerWorkingDir, mountFile, mountPoint str
 	_, err := os.Stat("/etc/system-fips")
 	switch {
 	case err == nil:
-		if err := addFIPSModeSubscription(&subscriptionMounts, containerWorkingDir, mountPoint, mountLabel, uid, gid); err != nil {
+		if err := addFIPSModeSubscription(&subscriptionMounts, containerWorkingDir, mountLabel, uid, gid); err != nil {
 			logrus.Errorf("Adding FIPS mode subscription to container: %v", err)
 		}
 	case os.IsNotExist(err):
@@ -304,7 +304,7 @@ func addSubscriptionsFromMountsFile(filePath, mountLabel, containerWorkingDir st
 // root filesystem if /etc/system-fips exists on hosts.
 // This enables the container to be FIPS compliant and run openssl in
 // FIPS mode as the host is also in FIPS mode.
-func addFIPSModeSubscription(mounts *[]rspec.Mount, containerWorkingDir, mountPoint, mountLabel string, uid, gid int) error {
+func addFIPSModeSubscription(mounts *[]rspec.Mount, containerWorkingDir, mountLabel string, uid, gid int) error {
 	subscriptionsDir := "/run/secrets"
 	ctrDirOnHost := filepath.Join(containerWorkingDir, subscriptionsDir)
 	if _, err := os.Stat(ctrDirOnHost); os.IsNotExist(err) {
@@ -337,8 +337,7 @@ func addFIPSModeSubscription(mounts *[]rspec.Mount, containerWorkingDir, mountPo
 
 	srcBackendDir := "/usr/share/crypto-policies/back-ends/FIPS"
 	destDir := "/etc/crypto-policies/back-ends"
-	srcOnHost := filepath.Join(mountPoint, srcBackendDir)
-	if _, err := os.Stat(srcOnHost); err != nil {
+	if _, err := os.Stat(srcBackendDir); err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -347,7 +346,7 @@ func addFIPSModeSubscription(mounts *[]rspec.Mount, containerWorkingDir, mountPo
 
 	if !mountExists(*mounts, destDir) {
 		m := rspec.Mount{
-			Source:      srcOnHost,
+			Source:      srcBackendDir,
 			Destination: destDir,
 			Type:        "bind",
 			Options:     []string{"bind", "rprivate"},
