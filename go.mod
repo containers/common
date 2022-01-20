@@ -19,7 +19,7 @@ require (
 	github.com/godbus/dbus/v5 v5.0.6
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/jinzhu/copier v0.3.4
+	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
