@@ -222,11 +222,6 @@ is imposed.
 
 Copy the content from the underlying image into the newly created volume when the container is created instead of when it is started. If `false`, the container engine will not copy the content until the container is started. Setting it to `true` may have negative performance implications.
 
-**rootless_networking**="slirp4netns"
-
-Set type of networking rootless containers should use.  Valid options are `slirp4netns`
-or `cni`.
-
 **seccomp_profile**="/usr/share/containers/seccomp.json"
 
 Path to the seccomp.json profile which is used as the default seccomp profile
