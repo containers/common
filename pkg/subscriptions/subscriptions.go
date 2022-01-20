@@ -327,7 +327,7 @@ func addFIPSModeSubscription(mounts *[]rspec.Mount, containerRunDir, mountPoint,
 		if err != nil {
 			return errors.Wrap(err, "creating system-fips file in container for FIPS mode")
 		}
-		defer file.Close()
+		file.Close()
 	}
 
 	if !mountExists(*mounts, subscriptionsDir) {
