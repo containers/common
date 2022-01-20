@@ -301,10 +301,14 @@ func addSubscriptionsFromMountsFile(filePath, mountLabel, containerRunDir string
 	return mounts, nil
 }
 
-// addFIPSModeSubscription creates /run/secrets/system-fips in the container
-// root filesystem if /etc/system-fips exists on hosts.
-// This enables the container to be FIPS compliant and run openssl in
-// FIPS mode as the host is also in FIPS mode.
+// addFIPSModeSubscription adds mounts to the `mounts` slice that are needed for the container to run openssl in FIPs mode
+// (i.e: be FIPs compliant).
+// It should only be called if /etc/system-fips exists on host.
+// It primarily does two things:
+// - creates /run/secrets/system-fips in the container root filesystem, and adds it to the `mounts` slice.
+// - If `/etc/crypto-policies/back-ends` already exists inside of the container, it creates
+//   `/usr/share/crypto-policies/back-ends/FIPS` inside the container as well.
+//   It is done from within the container to ensure to avoid policy incompatibility between the container and host.
 func addFIPSModeSubscription(mounts *[]rspec.Mount, containerRunDir, mountPoint, mountLabel string, uid, gid int) error {
 	subscriptionsDir := "/run/secrets"
 	ctrDirOnHost := filepath.Join(containerRunDir, subscriptionsDir)
