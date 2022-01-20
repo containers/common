@@ -151,7 +151,8 @@ func getMountsMap(path string) (string, string, error) { //nolint
 // mountLabel: MAC/SELinux label for container content
 // containerRunDir: Private data for storing subscriptions on the host mounted in container.
 // mountFile: Additional mount points required for the container.
-// mountPoint: Container image mountpoint
+// mountPoint: Container image mountpoint, or the directory from the hosts perspective that
+//   corresponds to `/` in the container.
 // uid: to assign to content created for subscriptions
 // gid: to assign to content created for subscriptions
 // rootless: indicates whether container is running in rootless mode
