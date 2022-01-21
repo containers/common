@@ -129,7 +129,7 @@ test-unit:
 
 .PHONY: codespell
 codespell:
-	codespell -S bin,vendor,.git,go.sum,changelog.txt,.cirrus.yml,"RELEASE_NOTES.md,*.xz,*.gz,*.tar,*.tgz,bin2img,*ico,*.png,*.1,*.5,copyimg,*.orig,apidoc.go" -L uint,iff,od,seeked,splitted,marge,ERROR,hist,ether -w
+	codespell -S bin,vendor,.git,go.sum,changelog.txt,.cirrus.yml,"RELEASE_NOTES.md,*.xz,*.gz,*.tar,*.tgz,bin2img,*ico,*.png,*.1,*.5,copyimg,*.orig,apidoc.go" -L creat,uint,iff,od,seeked,splitted,marge,ERROR,hist,ether -w
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean
