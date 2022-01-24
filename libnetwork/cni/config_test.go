@@ -249,6 +249,30 @@ var _ = Describe("Config", func() {
 			grepInFile(path, `"type": "host-local"`)
 		})
 
+		// https://github.com/containers/podman/issues/12971
+		It("create macvlan with a used subnet", func() {
+			subnet := "127.0.0.0/8"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver: "macvlan",
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.Name).ToNot(BeEmpty())
+			path := filepath.Join(cniConfDir, network1.Name+".conflist")
+			Expect(path).To(BeARegularFile())
+			Expect(network1.ID).ToNot(BeEmpty())
+			Expect(network1.Driver).To(Equal("macvlan"))
+			Expect(network1.Subnets).To(HaveLen(1))
+			Expect(network1.Subnets[0].Subnet.String()).To(Equal(subnet))
+			Expect(network1.Subnets[0].Gateway.String()).To(Equal("127.0.0.1"))
+			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "host-local"))
+			grepInFile(path, `"type": "host-local"`)
+		})
+
 		It("create ipvlan config with subnet", func() {
 			subnet := "10.1.0.0/24"
 			n, _ := types.ParseCIDR(subnet)
