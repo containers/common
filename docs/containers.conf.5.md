@@ -11,7 +11,7 @@ a TOML format that can be easily modified and versioned.
 
 Container engines read the /usr/share/containers/containers.conf and
 /etc/containers/containers.conf, and /etc/containers/containers.conf.d/*.conf files
-if they exist.  When running in rootless mode, they also read
+if they exist. When running in rootless mode, they also read
 $HOME/.config/containers/containers.conf and
 $HOME/.config/containers/containers.conf.d/*.conf files.
 
@@ -159,7 +159,7 @@ Run an init inside the container that forwards signals and reaps processes.
 **init_path**="/usr/libexec/podman/catatonit"
 
 Path to the container-init binary, which forwards signals and reaps processes
-within containers.  Note that the container-init binary will only be used when
+within containers. Note that the container-init binary will only be used when
 the `--init` for podman-create and podman-run is set.
 
 **ipcns**="private"
@@ -191,7 +191,7 @@ limit is never exceeded.
 
 **log_tag**=""
 
-Default format tag for container log messages.  This is useful for creating a specific tag for container log messages. Container log messages default to using the truncated container ID as a tag.
+Default format tag for container log messages. This is useful for creating a specific tag for container log messages. Container log messages default to using the truncated container ID as a tag.
 
 **netns**="private"
 
@@ -203,7 +203,7 @@ Options are:
 
 **no_hosts**=false
 
-Create /etc/hosts for the container.  By default, container engines manage
+Create /etc/hosts for the container. By default, container engines manage
 /etc/hosts, automatically adding  the container's  own  IP  address.
 
 **pidns**="private"
@@ -377,7 +377,7 @@ Disabling this can save memory.
 
 **env**=[]
 
-Environment variables to be used when running the container engine (e.g., Podman, Buildah).  For example "http_proxy=internal.proxy.company.com".
+Environment variables to be used when running the container engine (e.g., Podman, Buildah). For example "http_proxy=internal.proxy.company.com".
 Note these environment variables will not be used within the container. Set the env section under [containers] table,
 if you want to set environment variables for the container.
 
@@ -435,21 +435,26 @@ Not setting this field will fall back to containers/image defaults. (6)
 
 **infra_command**="/pause"
 
-Command to run the infra container.
-
-**infra_image**="k8s.gcr.io/pause:3.4.1"
-
-Infra (pause) container image name for pod infra containers.  When running a
-pod, we start a `pause` process in a container to hold open the namespaces
-associated with the  pod.  This container does nothing other then sleep,
+Infra (pause) container image command for pod infra containers. When running a
+pod, we start a `/pause` process in a container to hold open the namespaces
+associated with the pod. This container does nothing other then sleep,
 reserving the pods resources for the lifetime of the pod.
+
+**infra_image**=""
+
+Infra (pause) container image for pod infra containers. When running a
+pod, we start a `pause` process in a container to hold open the namespaces
+associated with the pod. This container does nothing other then sleep,
+reserving the pods resources for the lifetime of the pod. By default container
+engines run a builtin container using the pause executable. If you want override
+specify an image to pull.
 
 **lock_type**="shm"
 
 Specify the locking mechanism to use; valid values are "shm" and "file".
 Change the default only if you are sure of what you are doing, in general
 "file" is useful only on platforms where cgo is not available for using the
-faster "shm" lock type.  You may need to run "podman system renumber" after you
+faster "shm" lock type. You may need to run "podman system renumber" after you
 change the lock type.
 
 **machine_enabled**=false
@@ -460,13 +465,13 @@ container inside the VM to to host.
 
 **multi_image_archive**=false
 
-Allows for creating archives (e.g., tarballs) with more than one image.  Some container engines, such as Podman, interpret additional arguments as tags for one image and hence do not store more than one image.  The default behavior can be altered with this option.
+Allows for creating archives (e.g., tarballs) with more than one image. Some container engines, such as Podman, interpret additional arguments as tags for one image and hence do not store more than one image. The default behavior can be altered with this option.
 
 **namespace**=""
 
 Default engine namespace. If the engine is joined to a namespace, it will see
 only containers and pods that were created in the same namespace, and will
-create new containers and pods in that namespace.  The default namespace is "",
+create new containers and pods in that namespace. The default namespace is "",
 which corresponds to no namespace. When no namespace is set, all containers
 and pods are visible.
 
@@ -499,7 +504,7 @@ Whether to use chroot instead of pivot_root in the runtime.
 **num_locks**=2048
 
 Number of locks available for containers and pods. Each created container or
-pod consumes one lock.  The default number available is 2048.  If this is
+pod consumes one lock. The default number available is 2048. If this is
 changed, a lock renumbering must be performed, using the
 `podman system renumber` command.
 
@@ -535,8 +540,8 @@ The list of OCI runtimes that support running containers without CGroups.
 
 **image_copy_tmp_dir**="/var/tmp"
 
-Default location for storing temporary container image content.  Can be
-overridden with the TMPDIR environment variable.  If you specify "storage", then
+Default location for storing temporary container image content. Can be
+overridden with the TMPDIR environment variable. If you specify "storage", then
 the location of the container/storage tmp directory will be used. If set then it
 is the users responsibility to cleanup storage. Configure tmpfiles.d(5) to
 cleanup storage.
@@ -576,7 +581,7 @@ the primary uid/gid of the container.
 
 **compression_format**=""
 
-Specifies the compression format to use when pushing an image.  Supported values are: `gzip`, `zstd` and `zstd:chunked`.
+Specifies the compression format to use when pushing an image. Supported values are: `gzip`, `zstd` and `zstd:chunked`.
 
 ## SERVICE DESTINATION TABLE
 The `service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
@@ -656,7 +661,7 @@ configuration. Rootless users can further override fields in the config by
 creating a config file stored in the `$HOME/.config/containers/containers.conf` file.
 
 If the `CONTAINERS_CONF` path environment variable is set, just
-this path will be used.  This is primarily used for testing.
+this path will be used. This is primarily used for testing.
 
 Fields specified in the containers.conf file override the default options, as
 well as options in previously read containers.conf files.

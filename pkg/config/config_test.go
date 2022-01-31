@@ -30,6 +30,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(5))
 			gomega.Expect(defaultConfig.NetNS()).To(gomega.BeEquivalentTo("private"))
+			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo(""))
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
@@ -221,6 +222,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions).To(gomega.BeEquivalentTo(networkCmdOptions))
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
+			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
 		})
 
 		It("test GetDefaultEnvEx", func() {
