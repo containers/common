@@ -9,7 +9,7 @@ require (
 	github.com/containernetworking/plugins v1.0.1
 	github.com/containers/image/v5 v5.19.0
 	github.com/containers/ocicrypt v1.1.2
-	github.com/containers/storage v1.38.1
+	github.com/containers/storage v1.38.2
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.7.1+incompatible
