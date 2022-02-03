@@ -44,3 +44,8 @@ require (
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 )
+
+retract (
+	v1.0.1 // This version is used only to publish retraction of v1.0.1.
+	v1.0.0 // We reverted to v0.… version numbers; the v1.0.0 tag was actually deleted.
+)
