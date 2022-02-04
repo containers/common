@@ -616,7 +616,7 @@ var _ = Describe("Config", func() {
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.Subnets).To(HaveLen(1))
 			Expect(network1.Subnets[0].Subnet.String()).ToNot(BeEmpty())
-			Expect(network1.Subnets[0].Gateway).To(BeNil())
+			Expect(network1.Subnets[0].Gateway.String()).ToNot(BeEmpty())
 			Expect(network1.Internal).To(BeTrue())
 		})
 
@@ -729,9 +729,11 @@ var _ = Describe("Config", func() {
 				Internal:   true,
 				DNSEnabled: true,
 			}
-			_, err := libpodNet.NetworkCreate(network)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("cannot set internal and dns enabled"))
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Internal).To(Equal(true))
+			Expect(network1.DNSEnabled).To(Equal(true))
 		})
 
 		It("network inspect partial ID", func() {
