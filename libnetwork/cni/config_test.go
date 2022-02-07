@@ -847,6 +847,9 @@ var _ = Describe("Config", func() {
 			Expect(network1.Subnets[0].Subnet.String()).ToNot(BeEmpty())
 			Expect(network1.Subnets[0].Gateway).To(BeNil())
 			Expect(network1.Internal).To(BeTrue())
+			path := filepath.Join(cniConfDir, network1.Name+".conflist")
+			Expect(path).To(BeARegularFile())
+			grepNotFile(path, `"0.0.0.0/0"`)
 		})
 
 		It("create network with labels", func() {
@@ -1388,9 +1391,21 @@ var _ = Describe("Config", func() {
 })
 
 func grepInFile(path, match string) {
+	grepFile(false, path, match)
+}
+
+func grepNotFile(path, match string) {
+	grepFile(true, path, match)
+}
+
+func grepFile(not bool, path, match string) {
 	data, err := ioutil.ReadFile(path)
 	ExpectWithOffset(1, err).To(BeNil())
-	ExpectWithOffset(1, string(data)).To(ContainSubstring(match))
+	matcher := ContainSubstring(match)
+	if not {
+		matcher = Not(matcher)
+	}
+	ExpectWithOffset(1, string(data)).To(matcher)
 }
 
 // HaveNetworkName is a custom GomegaMatcher to match a network name
