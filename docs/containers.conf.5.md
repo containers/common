@@ -307,6 +307,25 @@ The network name of the default network to attach pods to.
 The subnet to use for the default network (named above in **default_network**).
 If the default network does not exist, it will be automatically created the first time a tool is run using this subnet.
 
+**default_subnet_pools**=[]
+
+DefaultSubnetPools is a list of subnets and size which are used to
+allocate subnets automatically for podman network create.
+It will iterate through the list and will pick the first free subnet
+with the given size. This is only used for ipv4 subnets, ipv6 subnets
+are always assigned randomly.
+
+The default list is (10.89.0.0-10.255.255.0/24):
+```
+default_subnet_pools = [
+  {"base" = "10.89.0.0/16", "size" = 24},
+  {"base" = "10.90.0.0/15", "size" = 24},
+  {"base" = "10.92.0.0/14", "size" = 24},
+  {"base" = "10.96.0.0/11", "size" = 24},
+  {"base" = "10.128.0.0/9", "size" = 24},
+]
+```
+
 **network_config_dir**="/etc/cni/net.d/"
 
 Path to the directory where network configuration files are located.
