@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/containers/common/libnetwork/types"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 )
@@ -81,6 +82,56 @@ var _ = Describe("Config Local", func() {
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
+	})
+
+	It("should fail on invalid subnet pool", func() {
+		validDirPath, err := ioutil.TempDir("", "config-empty")
+		if err != nil {
+			panic(err)
+		}
+		defer os.RemoveAll(validDirPath)
+		// Given
+		sut.Network.NetworkConfigDir = validDirPath
+		sut.Network.CNIPluginDirs = []string{validDirPath}
+
+		net, _ := types.ParseCIDR("10.0.0.0/24")
+		sut.Network.DefaultSubnetPools = []SubnetPool{
+			{Base: &net, Size: 16},
+		}
+
+		// When
+		err = sut.Network.Validate()
+
+		// Then
+		gomega.Expect(err).NotTo(gomega.BeNil())
+
+		sut.Network.DefaultSubnetPools = []SubnetPool{
+			{Base: &net, Size: 33},
+		}
+
+		// When
+		err = sut.Network.Validate()
+
+		// Then
+		gomega.Expect(err).NotTo(gomega.BeNil())
+	})
+
+	It("parse network subnet pool", func() {
+		config, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		net1, _ := types.ParseCIDR("10.89.0.0/16")
+		net2, _ := types.ParseCIDR("10.90.0.0/15")
+		gomega.Expect(config.Network.DefaultSubnetPools).To(gomega.Equal(
+			[]SubnetPool{{
+				Base: &net1,
+				Size: 24,
+			}, {
+				Base: &net2,
+				Size: 24,
+			}},
+		))
+
 	})
 
 	It("should fail during runtime", func() {
