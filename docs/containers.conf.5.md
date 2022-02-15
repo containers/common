@@ -268,6 +268,12 @@ Options are:
   `private` Create private UTS Namespace for the container.
   `host`    Share host UTS Namespace with the container.
 
+**volumes**=[]
+
+List of volumes.
+Specified as "directory-on-host:directory-in-container:options".
+
+Example:  "/db:/var/lib/db:ro".
 
 ## NETWORK TABLE
 The `network` table contains settings pertaining to the management of CNI
@@ -314,13 +320,6 @@ For the CNI backend the default is "/etc/cni/net.d" as root
 and "$HOME/.config/cni/net.d" as rootless.
 For the netavark backend "/etc/containers/networks" is used as root
 and "$graphroot/networks" as rootless.
-
-**volumes**=[]
-
-List of volumes.
-Specified as "directory-on-host:directory-in-container:options".
-
-Example:  "/db:/var/lib/db:ro".
 
 ## ENGINE TABLE
 The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
