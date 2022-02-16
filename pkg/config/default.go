@@ -406,15 +406,14 @@ func probeConmon(conmonBinary string) error {
 	cmd := exec.Command(conmonBinary, "--version")
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return err
 	}
 	r := regexp.MustCompile(`^conmon version (?P<Major>\d+).(?P<Minor>\d+).(?P<Patch>\d+)`)
 
 	matches := r.FindStringSubmatch(out.String())
 	if len(matches) != 4 {
-		return errors.Wrap(err, _conmonVersionFormatErr)
+		return errors.New(_conmonVersionFormatErr)
 	}
 	major, err := strconv.Atoi(matches[1])
 	if err != nil {
