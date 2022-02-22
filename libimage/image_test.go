@@ -22,6 +22,11 @@ func TestImageFunctions(t *testing.T) {
 	defer cleanup()
 	ctx := context.Background()
 
+	// Looking up image by invalid sha.
+	_, _, err := runtime.LookupImage("sha256:aa", nil)
+	require.Error(t, err, "invalid hex value")
+	require.Contains(t, err.Error(), errNoHexValue.Error())
+
 	// Pull busybox:latest, get its digest and then perform a digest pull.
 	// It's effectively pulling the same image twice but we need the digest
 	// for some of the tests below.

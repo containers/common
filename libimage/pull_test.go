@@ -187,3 +187,37 @@ func TestPullPolicy(t *testing.T) {
 	require.NotNil(t, pulledImages, "lookup alpine")
 
 }
+
+func TestShortNameAndIDconflict(t *testing.T) {
+	// Regression test for https://github.com/containers/podman/issues/12761
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	busybox, err := runtime.Pull(ctx, "busybox", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, busybox, 1)
+
+	alpine, err := runtime.Pull(ctx, "alpine", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, alpine, 1)
+
+	// Tag the alpine image with the first character of busybox's ID to
+	// cause a conflict when looking up the image. The expected outcome is
+	// that short names always have precedence of IDs.
+	c := busybox[0].ID()[0:1]
+	err = alpine[0].Tag(c)
+	require.NoError(t, err, "tag")
+
+	// Short name is selected over ID.
+	img, _, err := runtime.LookupImage(c, nil)
+	require.NoError(t, err)
+	require.Equal(t, alpine[0].ID(), img.ID())
+
+	// Not matching short name, so ID is selected.
+	img, _, err = runtime.LookupImage(busybox[0].ID()[0:2], nil)
+	require.NoError(t, err)
+	require.Equal(t, busybox[0].ID(), img.ID())
+}
