@@ -17,6 +17,7 @@ type Seccomp struct {
 	Architectures []Arch         `json:"architectures,omitempty"`
 	ArchMap       []Architecture `json:"archMap,omitempty"`
 	Syscalls      []*Syscall     `json:"syscalls"`
+	Flags         []string       `json:"flags,omitempty"`
 }
 
 // Architecture is used to represent a specific architecture
