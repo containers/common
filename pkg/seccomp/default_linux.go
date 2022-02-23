@@ -47,6 +47,8 @@ func DefaultProfile() *Seccomp {
 	enosys := uint(unix.ENOSYS)
 	eperm := uint(unix.EPERM)
 
+	flags := []string{SeccompFilterFlagSpecALlow}
+
 	syscalls := []*Syscall{
 		{
 			Names: []string{
@@ -882,5 +884,6 @@ func DefaultProfile() *Seccomp {
 		DefaultErrnoRet: &enosys,
 		ArchMap:         arches(),
 		Syscalls:        syscalls,
+		Flags:           flags,
 	}
 }

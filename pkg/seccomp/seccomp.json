@@ -1037,5 +1037,8 @@
 			},
 			"excludes": {}
 		}
+	],
+	"flags": [
+		"SECCOMP_FILTER_FLAG_SPEC_ALLOW"
 	]
 }

@@ -20,6 +20,18 @@ type Seccomp struct {
 	Flags         []string       `json:"flags,omitempty"`
 }
 
+const (
+	// SeccompFilterFlagLog is the filter to return actions except
+	// SECCOMP_RET_ALLOW should be logged. An administrator may override this
+	// filter flag by preventing specific actions from being logged via the
+	// /proc/sys/kernel/seccomp/actions_logged file. (since Linux 4.14)
+	SeccompFilterFlagLog = "SECCOMP_FILTER_FLAG_LOG"
+
+	// SeccompFilterFlagSpecALlow can be used to disable Speculative Store
+	// Bypass mitigation. (since Linux 4.17)
+	SeccompFilterFlagSpecALlow = "SECCOMP_FILTER_FLAG_SPEC_ALLOW"
+)
+
 // Architecture is used to represent a specific architecture
 // and its sub-architectures
 type Architecture struct {
