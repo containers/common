@@ -88,7 +88,7 @@ func TestPullPlatforms(t *testing.T) {
 	localArch := goruntime.GOARCH
 	localOS := goruntime.GOOS
 
-	withTag := "busybox:musl"
+	withTag := "quay.io/libpod/busybox:musl"
 
 	pulledImages, err := runtime.Pull(ctx, withTag, config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err, "pull busybox")
