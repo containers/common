@@ -27,10 +27,10 @@ engines like [CRI-O][cri-o], [Buildah][buildah], [Podman][podman] and
 [Docker][docker], and container runtimes like OCI [Runc][runc] to control the
 syscalls available to containers.
 
-[cri-o]: https://github.com/kubernetes-incubator/cri-o/pulls
-[buildah]: https://github.com/projectatomic/buildah
-[podman]: https://github.com/projectatomic/podman
-[docker]: https://github.com/docker/docker
+[cri-o]: https://github.com/cri-o/cri-o
+[buildah]: https://github.com/containers/buildah
+[podman]: https://github.com/containers/podman
+[docker]: https://github.com/moby/moby
 [runc]: https://github.com/opencontainers/runc
 
 ## Supported build tags
