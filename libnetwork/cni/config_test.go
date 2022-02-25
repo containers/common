@@ -344,7 +344,25 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("parent interface idonotexists does not exist"))
 		})
 
-		It("create macvlan config with internal should fail", func() {
+		It("create macvlan config with internal and dhcp should fail", func() {
+			subnet := "10.1.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver:   "macvlan",
+				Internal: true,
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+			}
+			net1, err := libpodNet.NetworkCreate(network)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(net1.Internal).To(Equal(true))
+			path := filepath.Join(cniConfDir, net1.Name+".conflist")
+			Expect(path).To(BeARegularFile())
+			grepNotFile(path, `"0.0.0.0/0"`)
+		})
+
+		It("create macvlan config with internal and subnet should not fail", func() {
 			network := types.Network{
 				Driver:   "macvlan",
 				Internal: true,

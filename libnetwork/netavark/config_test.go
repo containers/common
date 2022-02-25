@@ -797,10 +797,15 @@ var _ = Describe("Config", func() {
 		})
 
 		It("create macvlan config with internal", func() {
-			network := types.Network{Driver: "macvlan", Internal: true}
-			_, err := libpodNet.NetworkCreate(network)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("internal is not supported with macvlan"))
+			subnet := "10.0.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{Driver: "macvlan",
+				Internal: true,
+				Subnets:  []types.Subnet{{Subnet: n}},
+			}
+			net1, err := libpodNet.NetworkCreate(network)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(net1.Internal).To(Equal(true))
 		})
 
 		It("create macvlan config with subnet", func() {
