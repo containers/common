@@ -286,6 +286,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.CgroupManager = defaultCgroupManager()
 	c.ServiceTimeout = uint(5)
 	c.StopTimeout = uint(10)
+	c.ExitCommandDelay = uint(5 * 60)
 	c.NetworkCmdOptions = []string{
 		"enable_ipv6=true",
 	}
