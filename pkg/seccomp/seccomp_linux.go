@@ -125,6 +125,9 @@ func setupSeccomp(config *Seccomp, rs *specs.Spec) (*specs.LinuxSeccomp, error) 
 		newConfig.Flags = append(newConfig.Flags, specs.LinuxSeccompFlag(flag))
 	}
 
+	newConfig.ListenerPath = config.ListenerPath
+	newConfig.ListenerMetadata = config.ListenerMetadata
+
 	if len(config.ArchMap) != 0 {
 		for _, a := range config.ArchMap {
 			seccompArch, ok := nativeToSeccomp[arch]
