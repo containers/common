@@ -19,6 +19,12 @@ var (
 	rootlessRuntimeDir     string
 )
 
+// isWriteableOnlyByOwner checks that the specified permission mask allows write
+// access only to the owner.
+func isWriteableOnlyByOwner(perm os.FileMode) bool {
+	return (perm & 0722) == 0700
+}
+
 // GetRuntimeDir returns the runtime directory
 func GetRuntimeDir() (string, error) {
 	var rootlessRuntimeDirError error
@@ -43,7 +49,7 @@ func GetRuntimeDir() (string, error) {
 				logrus.Debugf("unable to make temp dir: %v", err)
 			}
 			st, err := os.Stat(tmpDir)
-			if err == nil && int(st.Sys().(*syscall.Stat_t).Uid) == os.Geteuid() && st.Mode().Perm() == 0700 {
+			if err == nil && int(st.Sys().(*syscall.Stat_t).Uid) == os.Geteuid() && isWriteableOnlyByOwner(st.Mode().Perm()) {
 				runtimeDir = tmpDir
 			}
 		}
@@ -53,7 +59,7 @@ func GetRuntimeDir() (string, error) {
 				logrus.Debugf("unable to make temp dir %v", err)
 			}
 			st, err := os.Stat(tmpDir)
-			if err == nil && int(st.Sys().(*syscall.Stat_t).Uid) == os.Geteuid() && st.Mode().Perm() == 0700 {
+			if err == nil && int(st.Sys().(*syscall.Stat_t).Uid) == os.Geteuid() && isWriteableOnlyByOwner(st.Mode().Perm()) {
 				runtimeDir = tmpDir
 			}
 		}
