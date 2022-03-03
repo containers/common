@@ -2,38 +2,57 @@ package archive
 
 import (
 	"context"
+	"fmt"
 	"io"
-	"os"
 
+	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/types"
-	"github.com/containers/storage/pkg/archive"
 	digest "github.com/opencontainers/go-digest"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 type ociArchiveImageDestination struct {
-	ref          ociArchiveReference
-	unpackedDest types.ImageDestination
-	tempDirRef   tempDirOCIRef
+	ref                   ociArchiveReference
+	individualWriterOrNil *Writer
+	unpackedDest          types.ImageDestination
 }
 
 // newImageDestination returns an ImageDestination for writing to an existing directory.
 func newImageDestination(ctx context.Context, sys *types.SystemContext, ref ociArchiveReference) (types.ImageDestination, error) {
-	tempDirRef, err := createOCIRef(sys, ref.image)
-	if err != nil {
-		return nil, errors.Wrapf(err, "creating oci reference")
+	var (
+		archive, individualWriterOrNil *Writer
+		err                            error
+	)
+
+	if ref.sourceIndex != -1 {
+		return nil, fmt.Errorf("destination reference must not contain a manifest index @%d: %w", ref.sourceIndex, invalidOciArchiveErr)
 	}
-	unpackedDest, err := tempDirRef.ociRefExtracted.NewImageDestination(ctx, sys)
-	if err != nil {
-		if err := tempDirRef.deleteTempDir(); err != nil {
-			return nil, errors.Wrapf(err, "deleting temp directory %q", tempDirRef.tempDirectory)
+
+	if ref.archiveWriter != nil {
+		archive = ref.archiveWriter
+		individualWriterOrNil = nil
+	} else {
+		archive, err = NewWriter(ctx, sys, ref.file)
+		if err != nil {
+			return nil, err
 		}
+		individualWriterOrNil = archive
+	}
+	newref, err := layout.NewReference(archive.tempDir, ref.image)
+	if err != nil {
+		archive.Close()
 		return nil, err
 	}
-	return &ociArchiveImageDestination{ref: ref,
-		unpackedDest: unpackedDest,
-		tempDirRef:   tempDirRef}, nil
+	dst, err := newref.NewImageDestination(ctx, sys)
+	if err != nil {
+		archive.Close()
+		return nil, err
+	}
+
+	return &ociArchiveImageDestination{
+		unpackedDest:          dst,
+		individualWriterOrNil: individualWriterOrNil,
+		ref:                   ref,
+	}, nil
 }
 
 // Reference returns the reference used to set up this destination.
@@ -42,13 +61,12 @@ func (d *ociArchiveImageDestination) Reference() types.ImageReference {
 }
 
 // Close removes resources associated with an initialized ImageDestination, if any
-// Close deletes the temp directory of the oci-archive image
 func (d *ociArchiveImageDestination) Close() error {
-	defer func() {
-		err := d.tempDirRef.deleteTempDir()
-		logrus.Debugf("Error deleting temporary directory: %v", err)
-	}()
-	return d.unpackedDest.Close()
+	defer d.unpackedDest.Close()
+	if d.ref.archiveWriter != nil || d.individualWriterOrNil == nil {
+		return nil
+	}
+	return d.individualWriterOrNil.Close()
 }
 
 func (d *ociArchiveImageDestination) SupportedManifestMIMETypes() []string {
@@ -135,34 +153,7 @@ func (d *ociArchiveImageDestination) PutSignatures(ctx context.Context, signatur
 // after the directory is made, it is tarred up into a file and the directory is deleted
 func (d *ociArchiveImageDestination) Commit(ctx context.Context, unparsedToplevel types.UnparsedImage) error {
 	if err := d.unpackedDest.Commit(ctx, unparsedToplevel); err != nil {
-		return errors.Wrapf(err, "storing image %q", d.ref.image)
+		return fmt.Errorf("storing image %q: %w", d.ref.image, err)
 	}
-
-	// path of directory to tar up
-	src := d.tempDirRef.tempDirectory
-	// path to save tarred up file
-	dst := d.ref.resolvedFile
-	return tarDirectory(src, dst)
-}
-
-// tar converts the directory at src and saves it to dst
-func tarDirectory(src, dst string) error {
-	// input is a stream of bytes from the archive of the directory at path
-	input, err := archive.Tar(src, archive.Uncompressed)
-	if err != nil {
-		return errors.Wrapf(err, "retrieving stream of bytes from %q", src)
-	}
-
-	// creates the tar file
-	outFile, err := os.Create(dst)
-	if err != nil {
-		return errors.Wrapf(err, "creating tar file %q", dst)
-	}
-	defer outFile.Close()
-
-	// copies the contents of the directory to the tar file
-	// TODO: This can take quite some time, and should ideally be cancellable using a context.Context.
-	_, err = io.Copy(outFile, input)
-
-	return err
+	return nil
 }

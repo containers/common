@@ -3,6 +3,7 @@ package layout
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -27,6 +28,9 @@ type ociImageDestination struct {
 
 // newImageDestination returns an ImageDestination for writing to an existing directory.
 func newImageDestination(sys *types.SystemContext, ref ociReference) (types.ImageDestination, error) {
+	if ref.sourceIndex != -1 {
+		return nil, fmt.Errorf("Destination reference must not contain a manifest index @%d", ref.sourceIndex)
+	}
 	var index *imgspecv1.Index
 	if indexExists(ref) {
 		var err error
@@ -112,7 +116,7 @@ func (d *ociImageDestination) IgnoresEmbeddedDockerReference() bool {
 
 // HasThreadSafePutBlob indicates whether PutBlob can be executed concurrently.
 func (d *ociImageDestination) HasThreadSafePutBlob() bool {
-	return false
+	return true
 }
 
 // PutBlob writes contents of stream and returns data representing the result.

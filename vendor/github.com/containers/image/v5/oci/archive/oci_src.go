@@ -2,40 +2,67 @@ package archive
 
 import (
 	"context"
+	"fmt"
 	"io"
 
+	"github.com/containers/image/v5/oci/layout"
 	ocilayout "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/types"
 	digest "github.com/opencontainers/go-digest"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 type ociArchiveImageSource struct {
-	ref         ociArchiveReference
-	unpackedSrc types.ImageSource
-	tempDirRef  tempDirOCIRef
+	ref                   ociArchiveReference
+	unpackedSrc           types.ImageSource
+	individualReaderOrNil *Reader
 }
 
 // newImageSource returns an ImageSource for reading from an existing directory.
-// newImageSource untars the file and saves it in a temp directory
 func newImageSource(ctx context.Context, sys *types.SystemContext, ref ociArchiveReference) (types.ImageSource, error) {
-	tempDirRef, err := createUntarTempDir(sys, ref)
-	if err != nil {
-		return nil, errors.Wrap(err, "creating temp directory")
+	var (
+		archive, individualReaderOrNil *Reader
+		newref                         types.ImageReference
+		err                            error
+	)
+
+	if ref.archiveReader != nil {
+		archive = ref.archiveReader
+		individualReaderOrNil = nil
+	} else {
+		archive, err = NewReader(ctx, sys, ref)
+		if err != nil {
+			return nil, err
+		}
+		individualReaderOrNil = archive
 	}
 
-	unpackedSrc, err := tempDirRef.ociRefExtracted.NewImageSource(ctx, sys)
-	if err != nil {
-		if err := tempDirRef.deleteTempDir(); err != nil {
-			return nil, errors.Wrapf(err, "deleting temp directory %q", tempDirRef.tempDirectory)
+	if ref.sourceIndex != -1 {
+		newref, err = layout.NewIndexReference(archive.tempDirectory, ref.sourceIndex)
+		if err != nil {
+			archive.Close()
+			return nil, err
 		}
+	} else {
+		newref, err = layout.NewReference(archive.tempDirectory, ref.image)
+		if err != nil {
+			archive.Close()
+			return nil, err
+		}
+	}
+
+	src, err := newref.NewImageSource(ctx, sys)
+	if err != nil {
+		archive.Close()
 		return nil, err
 	}
-	return &ociArchiveImageSource{ref: ref,
-		unpackedSrc: unpackedSrc,
-		tempDirRef:  tempDirRef}, nil
+
+	return &ociArchiveImageSource{
+		unpackedSrc:           src,
+		ref:                   ref,
+		individualReaderOrNil: individualReaderOrNil,
+	}, nil
 }
 
 // LoadManifestDescriptor loads the manifest
@@ -48,11 +75,11 @@ func LoadManifestDescriptor(imgRef types.ImageReference) (imgspecv1.Descriptor, 
 func LoadManifestDescriptorWithContext(sys *types.SystemContext, imgRef types.ImageReference) (imgspecv1.Descriptor, error) {
 	ociArchRef, ok := imgRef.(ociArchiveReference)
 	if !ok {
-		return imgspecv1.Descriptor{}, errors.Errorf("error typecasting, need type ociArchiveReference")
+		return imgspecv1.Descriptor{}, fmt.Errorf("error typecasting, need type ociArchiveReference")
 	}
 	tempDirRef, err := createUntarTempDir(sys, ociArchRef)
 	if err != nil {
-		return imgspecv1.Descriptor{}, errors.Wrap(err, "creating temp directory")
+		return imgspecv1.Descriptor{}, fmt.Errorf("creating temp directory: %w", err)
 	}
 	defer func() {
 		err := tempDirRef.deleteTempDir()
@@ -61,7 +88,7 @@ func LoadManifestDescriptorWithContext(sys *types.SystemContext, imgRef types.Im
 
 	descriptor, err := ocilayout.LoadManifestDescriptor(tempDirRef.ociRefExtracted)
 	if err != nil {
-		return imgspecv1.Descriptor{}, errors.Wrap(err, "loading index")
+		return imgspecv1.Descriptor{}, fmt.Errorf("loading index: %w", err)
 	}
 	return descriptor, nil
 }
@@ -72,13 +99,12 @@ func (s *ociArchiveImageSource) Reference() types.ImageReference {
 }
 
 // Close removes resources associated with an initialized ImageSource, if any.
-// Close deletes the temporary directory at dst
 func (s *ociArchiveImageSource) Close() error {
-	defer func() {
-		err := s.tempDirRef.deleteTempDir()
-		logrus.Debugf("error deleting tmp dir: %v", err)
-	}()
-	return s.unpackedSrc.Close()
+	defer s.unpackedSrc.Close()
+	if s.ref.archiveReader != nil || s.individualReaderOrNil == nil {
+		return nil
+	}
+	return s.individualReaderOrNil.Close()
 }
 
 // GetManifest returns the image's manifest along with its MIME type (which may be empty when it can't be determined but the manifest is available).
