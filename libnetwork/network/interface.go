@@ -61,11 +61,7 @@ func NetworkBackend(store storage.Store, conf *config.Config, syslog bool) (type
 			return "", nil, err
 		}
 
-		aardvarkBin, err := conf.FindHelperBinary(aardvarkBinary, false)
-		if err != nil {
-			// this is not a fatal error we can still use netavark without dns
-			logrus.Warnf("%s binary not found, container dns will not be enabled", aardvarkBinary)
-		}
+		aardvarkBin, _ := conf.FindHelperBinary(aardvarkBinary, false)
 
 		confDir := conf.Network.NetworkConfigDir
 		if confDir == "" {
