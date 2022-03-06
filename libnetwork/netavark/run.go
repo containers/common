@@ -44,6 +44,16 @@ func (n *netavarkNetwork) Setup(namespacePath string, options types.SetupOptions
 		return nil, errors.Wrap(err, "failed to convert net opts")
 	}
 
+	// Warn users if one or more networks have dns enabled
+	// but aardvark-dns binary is not configured
+	for _, network := range netavarkOpts.Networks {
+		if network != nil && network.DNSEnabled && n.aardvarkBinary == "" {
+			// this is not a fatal error we can still use container without dns
+			logrus.Warnf("aardvark-dns binary not found, container dns will not be enabled")
+			break
+		}
+	}
+
 	// trace output to get the json
 	if logrus.IsLevelEnabled(logrus.TraceLevel) {
 		b, err := json.Marshal(&netavarkOpts)
