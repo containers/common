@@ -63,7 +63,7 @@ github.com/containernetworking/cni/pkg/types/create
 github.com/containernetworking/cni/pkg/types/internal
 github.com/containernetworking/cni/pkg/utils
 github.com/containernetworking/cni/pkg/version
-# github.com/containernetworking/plugins v1.1.0
+# github.com/containernetworking/plugins v1.1.1
 ## explicit
 github.com/containernetworking/plugins/pkg/ns
 # github.com/containers/image/v5 v5.19.2-0.20220224100137-1045fb70b094
