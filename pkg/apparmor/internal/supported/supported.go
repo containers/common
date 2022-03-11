@@ -40,9 +40,6 @@ func NewAppArmorVerifier() *ApparmorVerifier {
 // - AppArmor is disabled by the host system
 // - the `apparmor_parser` binary is not discoverable
 func (a *ApparmorVerifier) IsSupported() error {
-	if a.impl.UnshareIsRootless() {
-		return errors.New("AppAmor is not supported on rootless containers")
-	}
 	if !a.impl.RuncIsEnabled() {
 		return errors.New("AppArmor not supported by the host system")
 	}
