@@ -130,6 +130,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		if err != nil {
 			return nil, err
 		}
+		defer f.Close()
 		enc := json.NewEncoder(f)
 		enc.SetIndent("", "     ")
 		err = enc.Encode(newNetwork)
