@@ -14,7 +14,6 @@ import (
 	"text/template"
 
 	"github.com/containers/common/pkg/apparmor/internal/supported"
-	"github.com/containers/storage/pkg/unshare"
 	runcaa "github.com/opencontainers/runc/libcontainer/apparmor"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -77,10 +76,6 @@ func macroExists(m string) bool {
 // InstallDefault generates a default profile and loads it into the kernel
 // using 'apparmor_parser'.
 func InstallDefault(name string) error {
-	if unshare.IsRootless() {
-		return ErrApparmorRootless
-	}
-
 	p := profileData{
 		Name: name,
 	}
@@ -137,12 +132,9 @@ func DefaultContent(name string) ([]byte, error) {
 }
 
 // IsLoaded checks if a profile with the given name has been loaded into the
-// kernel.
+// kernel. This function checks for the existence of a profile by reading
+// /sys/kernel/security/apparmor/profiles, and hence requires root permissions.
 func IsLoaded(name string) (bool, error) {
-	if name != "" && unshare.IsRootless() {
-		return false, errors.Wrapf(ErrApparmorRootless, "cannot load AppArmor profile %q", name)
-	}
-
 	file, err := os.Open("/sys/kernel/security/apparmor/profiles")
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -238,23 +230,11 @@ func parseAAParserVersion(output string) (int, error) {
 // CheckProfileAndLoadDefault checks if the specified profile is loaded and
 // loads the DefaultLibpodProfile if the specified on is prefixed by
 // DefaultLipodProfilePrefix.  This allows to always load and apply the latest
-// default AppArmor profile.  Note that AppArmor requires root.  If it's a
-// default profile, return DefaultLipodProfilePrefix, otherwise the specified
-// one.
+// default AppArmor profile. If it's a default profile, return
+// DefaultLipodProfilePrefix, otherwise the specified one.
 func CheckProfileAndLoadDefault(name string) (string, error) {
 	if name == "unconfined" {
 		return name, nil
-	}
-
-	// AppArmor is not supported in rootless mode as it requires root
-	// privileges.  Return an error in case a specific profile is specified.
-	if unshare.IsRootless() {
-		if name != "" {
-			return "", errors.Wrapf(ErrApparmorRootless, "cannot load AppArmor profile %q", name)
-		} else {
-			logrus.Debug("Skipping loading default AppArmor profile (rootless mode)")
-			return "", nil
-		}
 	}
 
 	// Check if AppArmor is disabled and error out if a profile is to be set.
@@ -271,13 +251,6 @@ func CheckProfileAndLoadDefault(name string) (string, error) {
 	} else if !strings.HasPrefix(name, ProfilePrefix) {
 		// If the specified name is not a default one, ignore it and return the
 		// name.
-		isLoaded, err := IsLoaded(name)
-		if err != nil {
-			return "", errors.Wrapf(err, "verify if profile %s is loaded", name)
-		}
-		if !isLoaded {
-			return "", errors.Errorf("AppArmor profile %q specified but not loaded", name)
-		}
 		return name, nil
 	}
 
