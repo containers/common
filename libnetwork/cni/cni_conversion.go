@@ -133,7 +133,13 @@ func convertIPAMConfToNetwork(network *types.Network, ipam *ipamConfig, confPath
 	}
 
 	if ipam.PluginType != types.HostLocalIPAMDriver {
-		return errors.Errorf("unsupported ipam plugin %s in %s", ipam.PluginType, confPath)
+		// This is not an error. While we only support certain ipam drivers, we
+		// cannot make it fail for unsupported ones. CNI is still able to use them,
+		// just our translation logic cannot convert this into a Network.
+		// For the same reason this is not warning, it would just be annoying for
+		// everyone using a unknown ipam driver.
+		logrus.Infof("unsupported ipam plugin %q in %s", ipam.PluginType, confPath)
+		return nil
 	}
 
 	network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver

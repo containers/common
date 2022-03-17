@@ -1,0 +1,34 @@
+{
+   "cniVersion": "0.4.0",
+   "name": "ipam-empty",
+   "plugins": [
+      {
+         "type": "bridge",
+         "bridge": "cni-podman124",
+         "isGateway": true,
+         "ipMasq": true,
+         "hairpinMode": true,
+         "ipam": {}
+      },
+      {
+         "type": "portmap",
+         "capabilities": {
+            "portMappings": true
+         }
+      },
+      {
+         "type": "firewall",
+         "backend": ""
+      },
+      {
+         "type": "tuning"
+      },
+      {
+         "type": "dnsname",
+         "domainName": "dns.podman",
+         "capabilities": {
+            "aliases": true
+         }
+      }
+   ]
+}

@@ -34,6 +34,7 @@ var _ = Describe("Config", func() {
 		}
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
+		logrus.SetLevel(logrus.InfoLevel)
 	})
 
 	JustBeforeEach(func() {
@@ -45,6 +46,7 @@ var _ = Describe("Config", func() {
 	})
 
 	AfterEach(func() {
+		logrus.SetLevel(logrus.InfoLevel)
 		os.RemoveAll(cniConfDir)
 	})
 
@@ -1071,6 +1073,8 @@ var _ = Describe("Config", func() {
 
 	Context("network load valid existing ones", func() {
 
+		numberOfConfigFiles := 0
+
 		BeforeEach(func() {
 			dir := "testfiles/valid"
 			files, err := ioutil.ReadDir(dir)
@@ -1088,26 +1092,41 @@ var _ = Describe("Config", func() {
 					Fail("Failed to copy test files")
 				}
 			}
+			numberOfConfigFiles = len(files)
 		})
 
 		It("load networks from disk", func() {
+			logrus.SetLevel(logrus.WarnLevel)
 			nets, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(9))
+			Expect(nets).To(HaveLen(numberOfConfigFiles))
 			// test the we do not show logrus warnings/errors
 			logString := logBuffer.String()
 			Expect(logString).To(BeEmpty())
 		})
 
+		It("load networks from disk with log level debug", func() {
+			logrus.SetLevel(logrus.DebugLevel)
+			nets, err := libpodNet.NetworkList()
+			Expect(err).To(BeNil())
+			Expect(nets).To(HaveLen(numberOfConfigFiles))
+			// check for the unsupported ipam plugin message
+			logString := logBuffer.String()
+			Expect(logString).ToNot(BeEmpty())
+			Expect(logString).To(ContainSubstring("unsupported ipam plugin \\\"\\\" in %s", cniConfDir+"/ipam-none.conflist"))
+			Expect(logString).To(ContainSubstring("unsupported ipam plugin \\\"\\\" in %s", cniConfDir+"/ipam-empty.conflist"))
+			Expect(logString).To(ContainSubstring("unsupported ipam plugin \\\"static\\\" in %s", cniConfDir+"/ipam-static.conflist"))
+		})
+
 		It("change network struct fields should not affect network struct in the backend", func() {
 			nets, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(9))
+			Expect(nets).To(HaveLen(numberOfConfigFiles))
 
 			nets[0].Name = "myname"
 			nets, err = libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(9))
+			Expect(nets).To(HaveLen(numberOfConfigFiles))
 			Expect(nets).ToNot(ContainElement(HaveNetworkName("myname")))
 
 			network, err := libpodNet.NetworkInspect("bridge")
@@ -1230,6 +1249,15 @@ var _ = Describe("Config", func() {
 			))
 		})
 
+		It("ipam static network", func() {
+			network, err := libpodNet.NetworkInspect("ipam-static")
+			Expect(err).To(BeNil())
+			Expect(network.Name).To(Equal("ipam-static"))
+			Expect(network.ID).To(HaveLen(64))
+			Expect(network.Driver).To(Equal("bridge"))
+			Expect(network.Subnets).To(HaveLen(0))
+		})
+
 		It("network list with filters (name)", func() {
 			filters := map[string][]string{
 				"name": {"internal", "bridge"},
@@ -1304,10 +1332,12 @@ var _ = Describe("Config", func() {
 
 			networks, err := libpodNet.NetworkList(filterFuncs...)
 			Expect(err).To(BeNil())
-			Expect(networks).To(HaveLen(9))
+			Expect(networks).To(HaveLen(numberOfConfigFiles))
 			Expect(networks).To(ConsistOf(HaveNetworkName("internal"), HaveNetworkName("bridge"),
 				HaveNetworkName("mtu"), HaveNetworkName("vlan"), HaveNetworkName("podman"),
-				HaveNetworkName("label"), HaveNetworkName("macvlan"), HaveNetworkName("macvlan_mtu"), HaveNetworkName("dualstack")))
+				HaveNetworkName("label"), HaveNetworkName("macvlan"), HaveNetworkName("macvlan_mtu"),
+				HaveNetworkName("dualstack"), HaveNetworkName("ipam-none"), HaveNetworkName("ipam-empty"),
+				HaveNetworkName("ipam-static")))
 		})
 
 		It("network list with filters (label)", func() {
