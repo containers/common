@@ -128,7 +128,7 @@ func findPluginByName(plugins []*libcni.NetworkConfig, name string) bool {
 // It returns an array of subnets and an extra bool if dhcp is configured.
 func convertIPAMConfToNetwork(network *types.Network, ipam *ipamConfig, confPath string) error {
 	if ipam.PluginType == types.DHCPIPAMDriver {
-		network.IPAMOptions["driver"] = types.DHCPIPAMDriver
+		network.IPAMOptions[types.Driver] = types.DHCPIPAMDriver
 		return nil
 	}
 
@@ -136,7 +136,7 @@ func convertIPAMConfToNetwork(network *types.Network, ipam *ipamConfig, confPath
 		return errors.Errorf("unsupported ipam plugin %s in %s", ipam.PluginType, confPath)
 	}
 
-	network.IPAMOptions["driver"] = types.HostLocalIPAMDriver
+	network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
 	for _, r := range ipam.Ranges {
 		for _, ipam := range r {
 			s := types.Subnet{}
