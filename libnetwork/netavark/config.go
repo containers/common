@@ -155,7 +155,7 @@ func createMacvlan(network *types.Network) error {
 	if len(network.Subnets) == 0 {
 		return errors.Errorf("macvlan driver needs at least one subnet specified, DHCP is not supported with netavark")
 	}
-	network.IPAMOptions["driver"] = types.HostLocalIPAMDriver
+	network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
 
 	// validate the given options, we do not need them but just check to make sure they are valid
 	for key, value := range network.Options {

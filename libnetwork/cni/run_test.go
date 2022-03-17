@@ -93,6 +93,7 @@ var _ = Describe("run CNI", func() {
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		logrus.SetLevel(logrus.WarnLevel)
 	})
 
 	JustBeforeEach(func() {
@@ -104,6 +105,7 @@ var _ = Describe("run CNI", func() {
 	})
 
 	AfterEach(func() {
+		logrus.SetLevel(logrus.InfoLevel)
 		os.RemoveAll(cniConfDir)
 
 		netns.UnmountNS(netNSTest)

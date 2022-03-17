@@ -1,0 +1,49 @@
+{
+   "cniVersion": "0.4.0",
+   "name": "ipam-static",
+   "plugins": [
+      {
+         "type": "bridge",
+         "bridge": "cni-podman125",
+         "isGateway": true,
+         "ipMasq": true,
+         "hairpinMode": true,
+         "ipam": {
+            "type": "static",
+            "routes": [
+               {
+                  "dst": "0.0.0.0/0"
+               }
+            ],
+            "addresses": [
+               [
+                  {
+                     "subnet": "10.89.0.89/16",
+                     "gateway": "10.89.0.1"
+                  }
+               ]
+            ]
+         }
+      },
+      {
+         "type": "portmap",
+         "capabilities": {
+            "portMappings": true
+         }
+      },
+      {
+         "type": "firewall",
+         "backend": ""
+      },
+      {
+         "type": "tuning"
+      },
+      {
+         "type": "dnsname",
+         "domainName": "dns.podman",
+         "capabilities": {
+            "aliases": true
+         }
+      }
+   ]
+}
