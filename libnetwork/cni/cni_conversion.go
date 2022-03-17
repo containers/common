@@ -128,76 +128,76 @@ func findPluginByName(plugins []*libcni.NetworkConfig, name string) bool {
 // convertIPAMConfToNetwork converts A cni IPAMConfig to libpod network subnets.
 // It returns an array of subnets and an extra bool if dhcp is configured.
 func convertIPAMConfToNetwork(network *types.Network, ipam *ipamConfig, confPath string) error {
-	if ipam.PluginType == types.DHCPIPAMDriver {
+	switch ipam.PluginType {
+	case "":
+		network.IPAMOptions[types.Driver] = types.NoneIPAMDriver
+	case types.DHCPIPAMDriver:
 		network.IPAMOptions[types.Driver] = types.DHCPIPAMDriver
-		return nil
-	}
+	case types.HostLocalIPAMDriver:
+		network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
+		for _, r := range ipam.Ranges {
+			for _, ipam := range r {
+				s := types.Subnet{}
 
-	if ipam.PluginType != types.HostLocalIPAMDriver {
+				// Do not use types.ParseCIDR() because we want the ip to be
+				// the network address and not a random ip in the sub.
+				_, sub, err := net.ParseCIDR(ipam.Subnet)
+				if err != nil {
+					return err
+				}
+				s.Subnet = types.IPNet{IPNet: *sub}
+
+				// gateway
+				var gateway net.IP
+				if ipam.Gateway != "" {
+					gateway = net.ParseIP(ipam.Gateway)
+					if gateway == nil {
+						return errors.Errorf("failed to parse gateway ip %s", ipam.Gateway)
+					}
+					// convert to 4 byte if ipv4
+					util.NormalizeIP(&gateway)
+				} else if !network.Internal {
+					// only add a gateway address if the network is not internal
+					gateway, err = util.FirstIPInSubnet(sub)
+					if err != nil {
+						return errors.Errorf("failed to get first ip in subnet %s", sub.String())
+					}
+				}
+				s.Gateway = gateway
+
+				var rangeStart net.IP
+				var rangeEnd net.IP
+				if ipam.RangeStart != "" {
+					rangeStart = net.ParseIP(ipam.RangeStart)
+					if rangeStart == nil {
+						return errors.Errorf("failed to parse range start ip %s", ipam.RangeStart)
+					}
+				}
+				if ipam.RangeEnd != "" {
+					rangeEnd = net.ParseIP(ipam.RangeEnd)
+					if rangeEnd == nil {
+						return errors.Errorf("failed to parse range end ip %s", ipam.RangeEnd)
+					}
+				}
+				if rangeStart != nil || rangeEnd != nil {
+					s.LeaseRange = &types.LeaseRange{}
+					s.LeaseRange.StartIP = rangeStart
+					s.LeaseRange.EndIP = rangeEnd
+				}
+				if util.IsIPv6(s.Subnet.IP) {
+					network.IPv6Enabled = true
+				}
+				network.Subnets = append(network.Subnets, s)
+			}
+		}
+	default:
 		// This is not an error. While we only support certain ipam drivers, we
 		// cannot make it fail for unsupported ones. CNI is still able to use them,
 		// just our translation logic cannot convert this into a Network.
 		// For the same reason this is not warning, it would just be annoying for
 		// everyone using a unknown ipam driver.
 		logrus.Infof("unsupported ipam plugin %q in %s", ipam.PluginType, confPath)
-		return nil
-	}
-
-	network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
-	for _, r := range ipam.Ranges {
-		for _, ipam := range r {
-			s := types.Subnet{}
-
-			// Do not use types.ParseCIDR() because we want the ip to be
-			// the network address and not a random ip in the sub.
-			_, sub, err := net.ParseCIDR(ipam.Subnet)
-			if err != nil {
-				return err
-			}
-			s.Subnet = types.IPNet{IPNet: *sub}
-
-			// gateway
-			var gateway net.IP
-			if ipam.Gateway != "" {
-				gateway = net.ParseIP(ipam.Gateway)
-				if gateway == nil {
-					return errors.Errorf("failed to parse gateway ip %s", ipam.Gateway)
-				}
-				// convert to 4 byte if ipv4
-				util.NormalizeIP(&gateway)
-			} else if !network.Internal {
-				// only add a gateway address if the network is not internal
-				gateway, err = util.FirstIPInSubnet(sub)
-				if err != nil {
-					return errors.Errorf("failed to get first ip in subnet %s", sub.String())
-				}
-			}
-			s.Gateway = gateway
-
-			var rangeStart net.IP
-			var rangeEnd net.IP
-			if ipam.RangeStart != "" {
-				rangeStart = net.ParseIP(ipam.RangeStart)
-				if rangeStart == nil {
-					return errors.Errorf("failed to parse range start ip %s", ipam.RangeStart)
-				}
-			}
-			if ipam.RangeEnd != "" {
-				rangeEnd = net.ParseIP(ipam.RangeEnd)
-				if rangeEnd == nil {
-					return errors.Errorf("failed to parse range end ip %s", ipam.RangeEnd)
-				}
-			}
-			if rangeStart != nil || rangeEnd != nil {
-				s.LeaseRange = &types.LeaseRange{}
-				s.LeaseRange.StartIP = rangeStart
-				s.LeaseRange.EndIP = rangeEnd
-			}
-			if util.IsIPv6(s.Subnet.IP) {
-				network.IPv6Enabled = true
-			}
-			network.Subnets = append(network.Subnets, s)
-		}
+		network.IPAMOptions[types.Driver] = ipam.PluginType
 	}
 	return nil
 }

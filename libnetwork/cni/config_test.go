@@ -1114,8 +1114,6 @@ var _ = Describe("Config", func() {
 			// check for the unsupported ipam plugin message
 			logString := logBuffer.String()
 			Expect(logString).ToNot(BeEmpty())
-			Expect(logString).To(ContainSubstring("unsupported ipam plugin \\\"\\\" in %s", cniConfDir+"/ipam-none.conflist"))
-			Expect(logString).To(ContainSubstring("unsupported ipam plugin \\\"\\\" in %s", cniConfDir+"/ipam-empty.conflist"))
 			Expect(logString).To(ContainSubstring("unsupported ipam plugin \\\"static\\\" in %s", cniConfDir+"/ipam-static.conflist"))
 		})
 
@@ -1258,6 +1256,27 @@ var _ = Describe("Config", func() {
 			Expect(network.ID).To(HaveLen(64))
 			Expect(network.Driver).To(Equal("bridge"))
 			Expect(network.Subnets).To(HaveLen(0))
+			Expect(network.IPAMOptions).To(HaveKeyWithValue("driver", "static"))
+		})
+
+		It("ipam none network", func() {
+			network, err := libpodNet.NetworkInspect("ipam-none")
+			Expect(err).To(BeNil())
+			Expect(network.Name).To(Equal("ipam-none"))
+			Expect(network.ID).To(HaveLen(64))
+			Expect(network.Driver).To(Equal("bridge"))
+			Expect(network.Subnets).To(HaveLen(0))
+			Expect(network.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
+		})
+
+		It("ipam empty network", func() {
+			network, err := libpodNet.NetworkInspect("ipam-empty")
+			Expect(err).To(BeNil())
+			Expect(network.Name).To(Equal("ipam-empty"))
+			Expect(network.ID).To(HaveLen(64))
+			Expect(network.Driver).To(Equal("bridge"))
+			Expect(network.Subnets).To(HaveLen(0))
+			Expect(network.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
 		})
 
 		It("network list with filters (name)", func() {
