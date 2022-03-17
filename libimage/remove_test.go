@@ -37,8 +37,20 @@ func TestRemoveImages(t *testing.T) {
 	require.False(t, rmReports[0].Removed)
 	require.Equal(t, []string{"localhost/foobar:latest"}, rmReports[0].Untagged)
 
+	// "foobar" has already been removed, so we'd get an error
+	_, rmErrors = runtime.RemoveImages(ctx, []string{"foobar"}, nil)
+	require.NotNil(t, rmErrors)
+	// ... unless we set Ignore=true
+	rmReports, rmErrors = runtime.RemoveImages(ctx, []string{"foobar"}, &RemoveImagesOptions{Ignore: true})
+	require.Nil(t, rmErrors)
+	require.Len(t, rmReports, 0)
+
 	// The busybox image is still present even if foobar was force removed.
 	exists, err := runtime.Exists(busyboxLatest)
 	require.NoError(t, err)
 	require.True(t, exists)
+
+	rmReports, rmErrors = runtime.RemoveImages(ctx, []string{"foobar", "busybox"}, &RemoveImagesOptions{Ignore: true})
+	require.Nil(t, rmErrors)
+	require.Len(t, rmReports, 1)
 }
