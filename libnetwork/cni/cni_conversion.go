@@ -225,10 +225,13 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 	var (
 		routes     []ipamRoute
 		ipamRanges [][]ipamLocalHostRangeConf
-		ipamConf   ipamConfig
+		ipamConf   *ipamConfig
 		err        error
 	)
-	if len(network.Subnets) > 0 {
+
+	ipamDriver := network.IPAMOptions[types.Driver]
+	switch ipamDriver {
+	case types.HostLocalIPAMDriver:
 		defIpv4Route := false
 		defIpv6Route := false
 		for _, subnet := range network.Subnets {
@@ -257,9 +260,15 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 				routes = append(routes, route)
 			}
 		}
-		ipamConf = newIPAMHostLocalConf(routes, ipamRanges)
-	} else {
-		ipamConf = ipamConfig{PluginType: "dhcp"}
+		conf := newIPAMHostLocalConf(routes, ipamRanges)
+		ipamConf = &conf
+	case types.DHCPIPAMDriver:
+		ipamConf = &ipamConfig{PluginType: "dhcp"}
+
+	case types.NoneIPAMDriver:
+		// do nothing
+	default:
+		return nil, "", errors.Errorf("unsupported ipam driver %q", ipamDriver)
 	}
 
 	vlan := 0
@@ -314,7 +323,7 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 
 	switch network.Driver {
 	case types.BridgeNetworkDriver:
-		bridge := newHostLocalBridge(network.NetworkInterface, isGateway, ipMasq, mtu, vlan, &ipamConf)
+		bridge := newHostLocalBridge(network.NetworkInterface, isGateway, ipMasq, mtu, vlan, ipamConf)
 		plugins = append(plugins, bridge, newPortMapPlugin(), newFirewallPlugin(), newTuningPlugin())
 		// if we find the dnsname plugin we add configuration for it
 		if hasDNSNamePlugin(n.cniPluginDirs) && network.DNSEnabled {
@@ -323,10 +332,10 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 		}
 
 	case types.MacVLANNetworkDriver:
-		plugins = append(plugins, newVLANPlugin(types.MacVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, &ipamConf))
+		plugins = append(plugins, newVLANPlugin(types.MacVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, ipamConf))
 
 	case types.IPVLANNetworkDriver:
-		plugins = append(plugins, newVLANPlugin(types.IPVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, &ipamConf))
+		plugins = append(plugins, newVLANPlugin(types.IPVLANNetworkDriver, network.NetworkInterface, vlanPluginMode, mtu, ipamConf))
 
 	default:
 		return nil, "", errors.Errorf("driver %q is not supported by cni", network.Driver)

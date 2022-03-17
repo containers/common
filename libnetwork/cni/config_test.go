@@ -167,6 +167,86 @@ var _ = Describe("Config", func() {
 			Expect(network1.Internal).To(BeFalse())
 		})
 
+		It("create bridge config with none ipam driver", func() {
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "none",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.IPAMOptions).ToNot(BeEmpty())
+			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
+			Expect(network1.Subnets).To(HaveLen(0))
+
+			// reload configs from disk
+			libpodNet, err = getNetworkInterface(cniConfDir)
+			Expect(err).To(BeNil())
+
+			network2, err := libpodNet.NetworkInspect(network1.Name)
+			Expect(err).To(BeNil())
+			Expect(network2).To(Equal(network1))
+		})
+
+		It("create bridge config with none ipam driver and subnets", func() {
+			subnet := "10.1.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "none",
+				},
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("none ipam driver is set but subnets are given"))
+		})
+
+		It("create bridge config with dhcp ipam driver", func() {
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "dhcp",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.IPAMOptions).ToNot(BeEmpty())
+			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "dhcp"))
+			Expect(network1.Subnets).To(HaveLen(0))
+
+			// reload configs from disk
+			libpodNet, err = getNetworkInterface(cniConfDir)
+			Expect(err).To(BeNil())
+
+			network2, err := libpodNet.NetworkInspect(network1.Name)
+			Expect(err).To(BeNil())
+			Expect(network2).To(Equal(network1))
+		})
+
+		It("create bridge config with none hdcp driver and subnets", func() {
+			subnet := "10.1.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "dhcp",
+				},
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("dhcp ipam driver is set but subnets are given"))
+		})
+
 		It("create bridge with same name should fail", func() {
 			network := types.Network{
 				Driver:           "bridge",
@@ -1069,6 +1149,18 @@ var _ = Describe("Config", func() {
 			_, err = libpodNet.NetworkCreate(network)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("subnet 10.10.0.0/24 is already used on the host or by another config"))
+		})
+
+		It("create network with invalid ipam driver", func() {
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "blah",
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("unsupported ipam driver \"blah\""))
 		})
 	})
 
