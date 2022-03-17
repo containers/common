@@ -1163,6 +1163,7 @@ var _ = Describe("Config", func() {
 			Expect(network.Driver).To(Equal("macvlan"))
 			Expect(network.Subnets).To(HaveLen(0))
 			// DHCP
+			Expect(network.IPAMOptions).To(HaveKeyWithValue("driver", "dhcp"))
 		})
 
 		It("internal network", func() {
