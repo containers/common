@@ -8,7 +8,7 @@ require (
 	github.com/containernetworking/cni v1.0.1
 	github.com/containernetworking/plugins v1.1.1
 	github.com/containers/image/v5 v5.19.2-0.20220224100137-1045fb70b094
-	github.com/containers/ocicrypt v1.1.2
+	github.com/containers/ocicrypt v1.1.3
 	github.com/containers/storage v1.38.2
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/disiqueira/gotree/v3 v3.0.2
