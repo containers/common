@@ -162,12 +162,14 @@ Path to the container-init binary, which forwards signals and reaps processes
 within containers. Note that the container-init binary will only be used when
 the `--init` for podman-create and podman-run is set.
 
-**ipcns**="private"
+**ipcns**="shareable"
 
 Default way to to create a IPC namespace for the container.
 Options are:
-  `private` Create private IPC Namespace for the container.
-  `host`    Share host IPC Namespace with the container.
+  `host`     Share host IPC Namespace with the container.
+  `none`     Create shareable IPC Namespace for the container without a private /dev/shm.
+  `private`  Create private IPC Namespace for the container, other containers are not allowed to share it.
+  `shareable` Create shareable IPC Namespace for the container.
 
 **keyring**=true
 
