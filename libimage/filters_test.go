@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/containers/common/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -106,6 +107,113 @@ func TestFilterManifest(t *testing.T) {
 		{[]string{"manifest=false", "reference=*alpine"}, 1},
 		{[]string{"manifest=true", "reference=busybox"}, 0},
 		{[]string{"manifest=false", "reference=busybox"}, 1},
+		{[]string{"manifest!=false"}, 1},
+		{[]string{"manifest!=true"}, 2},
+		{[]string{"reference!=busybox"}, 2},
+		{[]string{"reference!=*alpine"}, 1},
+		{[]string{"manifest!=true", "reference!=*alpine"}, 1},
+		{[]string{"manifest!=false", "reference!=*alpine"}, 0},
+		{[]string{"manifest!=true", "reference!=busybox"}, 1},
+		{[]string{"manifest!=false", "reference!=busybox"}, 1},
+	} {
+		listOptions := &ListImagesOptions{
+			Filters: test.filters,
+		}
+		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		require.NoError(t, err, "%v", test)
+		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
+	}
+}
+
+func TestFilterAfterSinceBeforeUntil(t *testing.T) {
+	testLatest := "quay.io/libpod/alpine_labels:latest"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
+	alpineLatest := "quay.io/libpod/alpine:latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	pulledImages, err := runtime.Pull(ctx, testLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	pulledImages, err = runtime.Pull(ctx, busyboxLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	pulledImages, err = runtime.Pull(ctx, alpineLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+	alpine := pulledImages[0]
+
+	err = alpine.Tag("test:tag")
+	require.NoError(t, err)
+
+	now := time.Until(time.Now()).String()
+
+	for _, test := range []struct {
+		filters []string
+		matches int
+	}{
+		{nil, 3},
+		{[]string{"after=test:tag"}, 2},
+		{[]string{"after!=test:tag"}, 1},
+		{[]string{"since=test:tag"}, 2},
+		{[]string{"since!=test:tag"}, 1},
+		{[]string{"before=test:tag"}, 0},
+		{[]string{"before!=test:tag"}, 3},
+		{[]string{"until=" + now}, 3},
+		{[]string{"until!=" + now}, 0},
+	} {
+		listOptions := &ListImagesOptions{
+			Filters: test.filters,
+		}
+		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		require.NoError(t, err, "%v", test)
+		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
+	}
+}
+
+func TestFilterIdLabel(t *testing.T) {
+	testLatest := "quay.io/libpod/alpine_labels:latest"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
+	alpineLatest := "quay.io/libpod/alpine:latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	pulledImages, err := runtime.Pull(ctx, testLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	pulledImages, err = runtime.Pull(ctx, busyboxLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+
+	pulledImages, err = runtime.Pull(ctx, alpineLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+	alpine := pulledImages[0]
+
+	identity := alpine.ID()
+
+	for _, test := range []struct {
+		filters []string
+		matches int
+	}{
+		{nil, 3},
+		{[]string{"id=" + identity}, 1},
+		{[]string{"id!=" + identity}, 2},
+		{[]string{"label=PODMAN=/usr/bin/podman run -it --name NAME -e NAME=NAME -e IMAGE=IMAGE IMAGE echo podman"}, 1},
+		{[]string{"label!=PODMAN=/usr/bin/podman run -it --name NAME -e NAME=NAME -e IMAGE=IMAGE IMAGE echo podman"}, 2},
 	} {
 		listOptions := &ListImagesOptions{
 			Filters: test.filters,
