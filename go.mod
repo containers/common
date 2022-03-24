@@ -13,7 +13,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.8.1+incompatible
-	github.com/docker/docker v20.10.13+incompatible
+	github.com/docker/docker v20.10.14+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/godbus/dbus/v5 v5.1.0
