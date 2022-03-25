@@ -775,4 +775,25 @@ env=["foo=bar"]`
 			gomega.Expect(err).To(gomega.BeNil())
 		})
 	})
+
+	It("write default config should be empty", func() {
+		defer os.Unsetenv("CONTAINERS_CONF")
+		os.Setenv("CONTAINERS_CONF", "/dev/null")
+		conf, err := ReadCustomConfig()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		f, err := ioutil.TempFile("", "container-common-test")
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		defer f.Close()
+		defer os.Remove(f.Name())
+		os.Setenv("CONTAINERS_CONF", f.Name())
+		err = conf.Write()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		b, err := ioutil.ReadFile(f.Name())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		// config should only contain empty stanzas
+		gomega.Expect(string(b)).To(gomega.
+			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n"))
+
+	})
 })
