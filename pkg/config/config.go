@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -649,17 +650,14 @@ func readConfigFromFile(path string, config *Config) error {
 func addConfigs(dirPath string, configs []string) ([]string, error) {
 	newConfigs := []string{}
 
-	err := filepath.Walk(dirPath,
+	err := filepath.WalkDir(dirPath,
 		// WalkFunc to read additional configs
-		func(path string, info os.FileInfo, err error) error {
+		func(path string, d fs.DirEntry, err error) error {
 			switch {
 			case err != nil:
 				// return error (could be a permission problem)
 				return err
-			case info == nil:
-				// this should only happen when err != nil but let's be sure
-				return nil
-			case info.IsDir():
+			case d.IsDir():
 				if path != dirPath {
 					// make sure to not recurse into sub-directories
 					return filepath.SkipDir
