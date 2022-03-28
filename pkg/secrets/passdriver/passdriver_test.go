@@ -1,6 +1,7 @@
 package passdriver
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -9,17 +10,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const gpgTestID = "tester@localhost"
+const gpgTestID = "testing@passdriver"
 
 func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
 	base, err := ioutil.TempDir(os.TempDir(), "pass-test")
 	require.NoError(t, err)
+	gpghomedir, err := ioutil.TempDir(os.TempDir(), "gpg-dir")
+	require.NoError(t, err)
+
 	driver, err = NewDriver(map[string]string{
-		"root": base,
-		"key":  gpgTestID,
+		"root":       base,
+		"key":        gpgTestID,
+		"gpghomedir": gpghomedir,
 	})
 	require.NoError(t, err)
-	return driver, func() { os.RemoveAll(base) }
+
+	driver.gpg(context.TODO(), nil, nil, "--batch", "--passphrase", "--quick-generate-key", "testing@passdriver")
+	return driver, func() {
+		os.RemoveAll(base)
+		os.RemoveAll(gpghomedir)
+	}
 }
 
 func TestStoreAndLookup(t *testing.T) {
