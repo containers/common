@@ -794,7 +794,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{Driver: "macvlan"}
 			_, err := libpodNet.NetworkCreate(network)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("macvlan driver needs at least one subnet specified, DHCP is not supported with netavark"))
+			Expect(err.Error()).To(Equal("macvlan driver needs at least one subnet specified, DHCP is not yet supported with netavark"))
 		})
 
 		It("create macvlan config with internal", func() {
@@ -955,6 +955,69 @@ var _ = Describe("Config", func() {
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.Options).To(HaveKeyWithValue("mtu", "9000"))
+		})
+
+		It("create bridge config with none ipam driver", func() {
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "none",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.IPAMOptions).ToNot(BeEmpty())
+			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
+			Expect(network1.Subnets).To(HaveLen(0))
+
+			// reload configs from disk
+			libpodNet, err = getNetworkInterface(networkConfDir)
+			Expect(err).To(BeNil())
+
+			network2, err := libpodNet.NetworkInspect(network1.Name)
+			Expect(err).To(BeNil())
+			EqualNetwork(network2, network1)
+		})
+
+		It("create bridge config with none ipam driver and subnets", func() {
+			subnet := "10.1.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver: "bridge",
+				IPAMOptions: map[string]string{
+					"driver": "none",
+				},
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("none ipam driver is set but subnets are given"))
+		})
+
+		It("create macvlan config with none ipam driver", func() {
+			network := types.Network{
+				Driver: "macvlan",
+				IPAMOptions: map[string]string{
+					"driver": "none",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("macvlan"))
+			Expect(network1.IPAMOptions).ToNot(BeEmpty())
+			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
+			Expect(network1.Subnets).To(HaveLen(0))
+
+			// reload configs from disk
+			libpodNet, err = getNetworkInterface(networkConfDir)
+			Expect(err).To(BeNil())
+
+			network2, err := libpodNet.NetworkInspect(network1.Name)
+			Expect(err).To(BeNil())
+			EqualNetwork(network2, network1)
 		})
 
 	})

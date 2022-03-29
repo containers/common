@@ -830,6 +830,91 @@ var _ = Describe("run CNI", func() {
 				Expect(err).To(BeNil())
 			})
 		})
+
+		It("setup ipam driver none network", func() {
+			runTest(func() {
+				network := types.Network{
+					IPAMOptions: map[string]string{
+						types.Driver: types.NoneIPAMDriver,
+					},
+				}
+				network1, err := libpodNet.NetworkCreate(network)
+				Expect(err).To(BeNil())
+
+				intName1 := "eth0"
+				netName1 := network1.Name
+
+				setupOpts := types.SetupOptions{
+					NetworkOptions: types.NetworkOptions{
+						ContainerID: stringid.GenerateNonCryptoID(),
+						Networks: map[string]types.PerNetworkOptions{
+							netName1: {
+								InterfaceName: intName1,
+							},
+						},
+					},
+				}
+
+				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
+				Expect(err).To(BeNil())
+				Expect(res).To(HaveLen(1))
+
+				Expect(res).To(HaveKey(netName1))
+				Expect(res[netName1].Interfaces).To(HaveKey(intName1))
+				Expect(res[netName1].Interfaces[intName1].Subnets).To(HaveLen(0))
+				macInt1 := res[netName1].Interfaces[intName1].MacAddress
+				Expect(macInt1).To(HaveLen(6))
+
+				// check in the container namespace if the settings are applied
+				err = netNSContainer.Do(func(_ ns.NetNS) error {
+					defer GinkgoRecover()
+					i, err := net.InterfaceByName(intName1)
+					Expect(err).To(BeNil())
+					Expect(i.Name).To(Equal(intName1))
+					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
+					addrs, err := i.Addrs()
+					Expect(err).To(BeNil())
+					// we still have the ipv6 link local address
+					Expect(addrs).To(HaveLen(1))
+					addr, ok := addrs[0].(*net.IPNet)
+					Expect(ok).To(BeTrue(), "cast address to ipnet")
+					// make sure we are link local
+					Expect(addr.IP.IsLinkLocalUnicast()).To(BeTrue(), "ip is link local address")
+
+					// check loopback adapter
+					i, err = net.InterfaceByName("lo")
+					Expect(err).To(BeNil())
+					Expect(i.Name).To(Equal("lo"))
+					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
+					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
+					return nil
+				})
+				Expect(err).To(BeNil())
+
+				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
+				Expect(err).To(BeNil())
+				logString := logBuffer.String()
+				Expect(logString).To(BeEmpty())
+
+				// check in the container namespace that the interface is removed
+				err = netNSContainer.Do(func(_ ns.NetNS) error {
+					defer GinkgoRecover()
+					_, err := net.InterfaceByName(intName1)
+					Expect(err).To(HaveOccurred())
+
+					// check that only the loopback adapter is left
+					ints, err := net.Interfaces()
+					Expect(err).To(BeNil())
+					Expect(ints).To(HaveLen(1))
+					Expect(ints[0].Name).To(Equal("lo"))
+					Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
+					Expect(ints[0].Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
+
+					return nil
+				})
+				Expect(err).To(BeNil())
+			})
+		})
 	})
 
 	Context("network setup test with networks from disk", func() {

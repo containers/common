@@ -399,10 +399,10 @@ var _ = Describe("IPAM", func() {
 		}
 	})
 
-	It("ipam with dhcp driver should not set ips", func() {
+	It("ipam with none driver should not set ips", func() {
 		network, err := networkInterface.NetworkCreate(types.Network{
 			IPAMOptions: map[string]string{
-				"driver": types.DHCPIPAMDriver,
+				"driver": types.NoneIPAMDriver,
 			},
 		})
 		Expect(err).ToNot(HaveOccurred())
