@@ -121,7 +121,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		return nil, errors.Wrapf(types.ErrInvalidArg, "unsupported driver %s", newNetwork.Driver)
 	}
 
-	// add gatway when not internal or dns enabled
+	// add gateway when not internal or dns enabled
 	addGateway := !newNetwork.Internal || newNetwork.DNSEnabled
 	err = internalutil.ValidateSubnets(newNetwork, addGateway, usedNetworks)
 	if err != nil {

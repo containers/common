@@ -590,7 +590,7 @@ Number of seconds to wait for container to exit before sending kill signal.
 
 **exit_command_delay**=300
 
-Number of seconds to wait for the API process for the exec call before sending exit command mimicing the Docker behavior of 5 minutes (in seconds).
+Number of seconds to wait for the API process for the exec call before sending exit command mimicking the Docker behavior of 5 minutes (in seconds).
 
 **tmp_dir**="/run/libpod"
 
