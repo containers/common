@@ -96,6 +96,9 @@ func (n *cniNetwork) networkCreate(newNetwork *types.Network, defaultNet bool) (
 	// generate the network ID
 	newNetwork.ID = getNetworkIDFromName(newNetwork.Name)
 
+	// when we do not have ipam we must disable dns
+	internalutil.IpamNoneDisableDns(newNetwork)
+
 	// FIXME: Should this be a hard error?
 	if newNetwork.DNSEnabled && newNetwork.Internal && hasDNSNamePlugin(n.cniPluginDirs) {
 		logrus.Warnf("dnsname and internal networks are incompatible. dnsname plugin not configured for network %s", newNetwork.Name)

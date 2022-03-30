@@ -121,6 +121,9 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		return nil, errors.Wrapf(types.ErrInvalidArg, "unsupported driver %s", newNetwork.Driver)
 	}
 
+	// when we do not have ipam we must disable dns
+	internalutil.IpamNoneDisableDns(newNetwork)
+
 	// add gateway when not internal or dns enabled
 	addGateway := !newNetwork.Internal || newNetwork.DNSEnabled
 	err = internalutil.ValidateSubnets(newNetwork, addGateway, usedNetworks)

@@ -837,6 +837,7 @@ var _ = Describe("run CNI", func() {
 					IPAMOptions: map[string]string{
 						types.Driver: types.NoneIPAMDriver,
 					},
+					DNSEnabled: true,
 				}
 				network1, err := libpodNet.NetworkCreate(network)
 				Expect(err).To(BeNil())
