@@ -11,7 +11,7 @@ import (
 	"os"
 
 	"github.com/containers/common/libnetwork/types"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 )
