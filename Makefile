@@ -1,39 +1,9 @@
-export GO111MODULE=off
-
 GO ?= go
 GO_BUILD=$(GO) build
-# Go module support: set `-mod=vendor` to use the vendored sources
-ifeq ($(shell go help mod >/dev/null 2>&1 && echo true), true)
-	GO_BUILD=GO111MODULE=on $(GO) build -mod=vendor
-endif
 BUILDTAGS := containers_image_openpgp,systemd,exclude_graphdriver_devicemapper
 DESTDIR ?=
 PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
-PROJECT := github.com/containers/common
-
-# Enforce the GOPROXY to make sure dependencies are resovled consistently
-# across different environments.
-export GOPROXY := https://proxy.golang.org
-
-# If GOPATH not specified, use one in the local directory
-ifeq ($(GOPATH),)
-export GOPATH := $(CURDIR)/_output
-unexport GOBIN
-endif
-FIRST_GOPATH := $(firstword $(subst :, ,$(GOPATH)))
-GOPKGDIR := $(FIRST_GOPATH)/src/$(PROJECT)
-GOPKGBASEDIR ?= $(shell dirname "$(GOPKGDIR)")
-
-GOBIN := $(shell $(GO) env GOBIN)
-ifeq ($(GOBIN),)
-GOBIN := $(FIRST_GOPATH)/bin
-endif
-
-define go-get
-	env GO111MODULE=off \
-		$(GO) get -u ${1}
-endef
 
 define go-build
 	CGO_ENABLED=0 \
@@ -90,9 +60,9 @@ vendor-in-container:
 
 .PHONY: vendor
 vendor:
-	GO111MODULE=on $(GO) mod tidy
-	GO111MODULE=on $(GO) mod vendor
-	GO111MODULE=on $(GO) mod verify
+	$(GO) mod tidy
+	$(GO) mod vendor
+	$(GO) mod verify
 
 .PHONY: install.tools
 install.tools: build/golangci-lint .install.md2man
@@ -106,9 +76,7 @@ build/golangci-lint:
 
 
 .install.md2man:
-	if [ ! -x "$(GOBIN)/go-md2man" ]; then \
-		   $(call go-get,github.com/cpuguy83/go-md2man); \
-	fi
+	$(GO) install github.com/cpuguy83/go-md2man/v2@latest
 
 .PHONY: install
 install:
@@ -124,8 +92,8 @@ test: test-unit
 test-unit:
 	go test --tags $(BUILDTAGS) -v ./libimage
 	go test --tags $(BUILDTAGS) -v ./libnetwork/...
-	go test --tags $(BUILDTAGS) -v $(PROJECT)/pkg/...
-	go test --tags remote,seccomp,$(BUILDTAGS) -v $(PROJECT)/pkg/...
+	go test --tags $(BUILDTAGS) -v ./pkg/...
+	go test --tags remote,seccomp,$(BUILDTAGS) -v ./pkg/...
 
 .PHONY: codespell
 codespell:
