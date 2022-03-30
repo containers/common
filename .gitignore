@@ -4,6 +4,7 @@
 /docs/*.[158].gz
 *.o
 *.rej
+*.test
 *.orig
 .gopathok
 .idea*
