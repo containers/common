@@ -173,10 +173,12 @@ var _ = Describe("Config", func() {
 				IPAMOptions: map[string]string{
 					"driver": "none",
 				},
+				DNSEnabled: true,
 			}
 			network1, err := libpodNet.NetworkCreate(network)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.DNSEnabled).To(BeFalse())
 			Expect(network1.IPAMOptions).ToNot(BeEmpty())
 			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
 			Expect(network1.Subnets).To(HaveLen(0))
