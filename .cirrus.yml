@@ -27,7 +27,7 @@ env:
 
 
 # Default, hard-coded max timeout is 2-hours.
-timeout_in: 30m  # no need to wait 2-hours before timing out
+timeout_in: 60m  # no need to wait 2-hours before timing out
 
 gcp_credentials: ENCRYPTED[dd6a042d1805167e38d8b79494f691b86637e68f072eba24220901435afd8d71c63f9006803142447326319102f68b7f]
 
