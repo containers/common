@@ -28,7 +28,6 @@ var _ = Describe("IPAM", func() {
 		networkConfDir, err = ioutil.TempDir("", "podman_netavark_test")
 		if err != nil {
 			Fail("Failed to create tmpdir")
-
 		}
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
@@ -45,7 +44,8 @@ var _ = Describe("IPAM", func() {
 
 		networkInterface = libpodNet.(*netavarkNetwork)
 		// run network list to force a network load
-		networkInterface.NetworkList()
+		_, err = networkInterface.NetworkList()
+		Expect(err).To(BeNil())
 	})
 
 	AfterEach(func() {
@@ -430,5 +430,4 @@ var _ = Describe("IPAM", func() {
 		err = networkInterface.deallocIPs(opts)
 		Expect(err).ToNot(HaveOccurred())
 	})
-
 })

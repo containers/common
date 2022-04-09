@@ -45,7 +45,7 @@ var _ = Describe("run netavark", func() {
 	// runTest is a helper function to run a test. It ensures that each test
 	// is run in its own netns. It also creates a mountns to mount a tmpfs to /var/lib/cni.
 	runTest := func(run func()) {
-		netNSTest.Do(func(_ ns.NetNS) error {
+		_ = netNSTest.Do(func(_ ns.NetNS) error {
 			defer GinkgoRecover()
 			// we have to setup the loopback adapter in this netns to use port forwarding
 			link, err := netlink.LinkByName("lo")
@@ -106,13 +106,13 @@ var _ = Describe("run netavark", func() {
 	AfterEach(func() {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 		logrus.SetLevel(logrus.InfoLevel)
-		os.RemoveAll(confDir)
+		_ = os.RemoveAll(confDir)
 
-		netns.UnmountNS(netNSTest)
-		netNSTest.Close()
+		_ = netns.UnmountNS(netNSTest)
+		_ = netNSTest.Close()
 
-		netns.UnmountNS(netNSContainer)
-		netNSContainer.Close()
+		_ = netns.UnmountNS(netNSContainer)
+		_ = netNSContainer.Close()
 
 		_ = os.Unsetenv("NETAVARK_FW")
 	})
@@ -250,9 +250,7 @@ var _ = Describe("run netavark", func() {
 				return nil
 			})
 			Expect(err).To(BeNil())
-
 		})
-
 	})
 
 	It("setup two containers", func() {
@@ -288,8 +286,8 @@ var _ = Describe("run netavark", func() {
 
 			netNSContainer2, err := netns.NewNS()
 			Expect(err).ToNot(HaveOccurred())
-			defer netns.UnmountNS(netNSContainer2)
-			defer netNSContainer2.Close()
+			defer netns.UnmountNS(netNSContainer2) //nolint:errcheck
+			defer netNSContainer2.Close()          //nolint:errcheck
 
 			res, err = libpodNet.Setup(netNSContainer2.Path(), setupOpts2)
 			Expect(err).ToNot(HaveOccurred())
@@ -799,7 +797,8 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			conn, err := ln.Accept()
 			Expect(err).To(BeNil())
 			defer conn.Close()
-			conn.SetDeadline(time.Now().Add(1 * time.Second))
+			err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+			Expect(err).To(BeNil())
 			data, err := ioutil.ReadAll(conn)
 			Expect(err).To(BeNil())
 			Expect(string(data)).To(Equal(expectedData))
@@ -810,7 +809,8 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			Port: port,
 		})
 		Expect(err).To(BeNil())
-		conn.SetDeadline(time.Now().Add(1 * time.Second))
+		err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+		Expect(err).To(BeNil())
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()

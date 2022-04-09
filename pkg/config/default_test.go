@@ -15,8 +15,12 @@ func prepareProbeBinary(t *testing.T, expectedOutput string) (path string) {
 	require.Nil(t, err)
 	defer func() { require.Nil(t, f.Close()) }()
 
-	f.Chmod(os.FileMode(0755))
-	f.WriteString(fmt.Sprintf("#!/usr/bin/env sh\necho %q", expectedOutput))
+	err = f.Chmod(os.FileMode(0o755))
+	require.Nil(t, err)
+
+	_, err = f.WriteString(fmt.Sprintf("#!/usr/bin/env sh\necho %q", expectedOutput))
+	require.Nil(t, err)
+
 	return f.Name()
 }
 

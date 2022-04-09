@@ -58,10 +58,11 @@ func TestCorruptedLayers(t *testing.T) {
 	// Now write back the layers without the first layer!
 	data, err = json.Marshal(layers[1:])
 	require.NoError(t, err, "unmarshaling layers.json")
-	err = ioutils.AtomicWriteFile(indexPath, data, 0600) // nolint
+	err = ioutils.AtomicWriteFile(indexPath, data, 0o600) // nolint
 	require.NoError(t, err, "writing back layers.json")
 
-	image.reload() // clear the cached data
+	err = image.reload() // clear the cached data
+	require.NoError(t, err)
 
 	// Now inspecting the image must fail!
 	_, err = image.Inspect(ctx, nil)
