@@ -42,7 +42,7 @@ func makeLayer(t *testing.T) []byte {
 		Typeflag: tar.TypeReg,
 		Name:     "tmpfile",
 		Size:     int64(len),
-		Mode:     0644,
+		Mode:     0o644,
 		Uname:    "root",
 		Gname:    "root",
 		ModTime:  time.Now(),

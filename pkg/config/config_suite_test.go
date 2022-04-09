@@ -16,9 +16,7 @@ const (
 	invalidPath = "/wrong"
 )
 
-var (
-	sut *Config
-)
+var sut *Config
 
 func beforeEach() {
 	sut = defaultConfig()

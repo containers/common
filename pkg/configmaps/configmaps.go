@@ -99,7 +99,7 @@ func NewManager(rootPath string) (*ConfigMapManager, error) {
 		return nil, errors.Wrapf(errInvalidPath, "path must be absolute: %s", rootPath)
 	}
 	// the lockfile functions require that the rootPath dir is executable
-	if err := os.MkdirAll(rootPath, 0700); err != nil {
+	if err := os.MkdirAll(rootPath, 0o700); err != nil {
 		return nil, err
 	}
 
@@ -234,7 +234,6 @@ func (s *ConfigMapManager) List() ([]ConfigMap, error) {
 	var ls []ConfigMap
 	for _, v := range configMaps {
 		ls = append(ls, v)
-
 	}
 	return ls, nil
 }

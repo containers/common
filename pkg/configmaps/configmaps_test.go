@@ -44,6 +44,7 @@ func TestAddSecretAndLookupData(t *testing.T) {
 		t.Errorf("error: configmap data not equal")
 	}
 }
+
 func TestAddConfigMapName(t *testing.T) {
 	manager, testpath, err := setup()
 	require.NoError(t, err)

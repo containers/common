@@ -31,7 +31,6 @@ var _ = Describe("Config", func() {
 		cniConfDir, err = ioutil.TempDir("", "podman_cni_test")
 		if err != nil {
 			Fail("Failed to create tmpdir")
-
 		}
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
@@ -52,7 +51,6 @@ var _ = Describe("Config", func() {
 	})
 
 	Context("basic network config tests", func() {
-
 		It("check default network config exists", func() {
 			networks, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
@@ -1167,7 +1165,6 @@ var _ = Describe("Config", func() {
 	})
 
 	Context("network load valid existing ones", func() {
-
 		numberOfConfigFiles := 0
 
 		BeforeEach(func() {
@@ -1182,7 +1179,7 @@ var _ = Describe("Config", func() {
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
-				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0700)
+				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
@@ -1516,7 +1513,6 @@ var _ = Describe("Config", func() {
 	})
 
 	Context("network load invalid existing ones", func() {
-
 		BeforeEach(func() {
 			dir := "testfiles/invalid"
 			files, err := ioutil.ReadDir(dir)
@@ -1529,7 +1525,7 @@ var _ = Describe("Config", func() {
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
-				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0700)
+				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
@@ -1548,9 +1544,7 @@ var _ = Describe("Config", func() {
 			Expect(logString).To(ContainSubstring("broken.conflist: error parsing configuration list"))
 			Expect(logString).To(ContainSubstring("invalid_gateway.conflist could not be converted to a libpod config, skipping: failed to parse gateway ip 10.89.8"))
 		})
-
 	})
-
 })
 
 func grepInFile(path, match string) {

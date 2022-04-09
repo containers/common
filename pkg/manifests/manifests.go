@@ -16,31 +16,22 @@ import (
 type List interface {
 	AddInstance(manifestDigest digest.Digest, manifestSize int64, manifestType, os, architecture, osVersion string, osFeatures []string, variant string, features []string, annotations []string) error
 	Remove(instanceDigest digest.Digest) error
-
 	SetURLs(instanceDigest digest.Digest, urls []string) error
 	URLs(instanceDigest digest.Digest) ([]string, error)
-
 	SetAnnotations(instanceDigest *digest.Digest, annotations map[string]string) error
 	Annotations(instanceDigest *digest.Digest) (map[string]string, error)
-
 	SetOS(instanceDigest digest.Digest, os string) error
 	OS(instanceDigest digest.Digest) (string, error)
-
 	SetArchitecture(instanceDigest digest.Digest, arch string) error
 	Architecture(instanceDigest digest.Digest) (string, error)
-
 	SetOSVersion(instanceDigest digest.Digest, osVersion string) error
 	OSVersion(instanceDigest digest.Digest) (string, error)
-
 	SetVariant(instanceDigest digest.Digest, variant string) error
 	Variant(instanceDigest digest.Digest) (string, error)
-
 	SetFeatures(instanceDigest digest.Digest, features []string) error
 	Features(instanceDigest digest.Digest) ([]string, error)
-
 	SetOSFeatures(instanceDigest digest.Digest, osFeatures []string) error
 	OSFeatures(instanceDigest digest.Digest) ([]string, error)
-
 	Serialize(mimeType string) ([]byte, error)
 	Instances() []digest.Digest
 	OCIv1() *v1.Index
