@@ -47,7 +47,7 @@ var DefaultFuncs = FuncMap{
 	"lower":    strings.ToLower,
 	"pad":      padWithSpace,
 	"split":    strings.Split,
-	"title":    strings.Title,
+	"title":    strings.Title, //nolint:staticcheck
 	"truncate": truncateWithLength,
 	"upper":    strings.ToUpper,
 }
