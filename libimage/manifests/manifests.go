@@ -405,9 +405,7 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 func (l *list) Remove(instanceDigest digest.Digest) error {
 	err := l.List.Remove(instanceDigest)
 	if err == nil {
-		if _, needToDelete := l.instances[instanceDigest]; needToDelete {
-			delete(l.instances, instanceDigest)
-		}
+		delete(l.instances, instanceDigest)
 	}
 	return err
 }
