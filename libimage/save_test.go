@@ -92,7 +92,7 @@ func TestSave(t *testing.T) {
 		_, rmErrors = runtime.RemoveImages(ctx, nil, nil)
 		require.Nil(t, rmErrors)
 
-		namesAndTags := append(test.names, test.tags...)
+		namesAndTags := append(test.names, test.tags...) //nolint:gocritic // ignore "appendAssign: append result not assigned to the same slice"
 		loadedImages, err := runtime.Load(ctx, tmp, loadOptions)
 		require.NoError(t, err)
 		require.Len(t, loadedImages, len(namesAndTags))
