@@ -384,10 +384,8 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 			}
 			instanceInfo.instanceDigest = &manifestDigest
 			instanceInfo.Size = int64(len(manifestBytes))
-		} else {
-			if manifestDigest == "" {
-				manifestDigest = *instanceInfo.instanceDigest
-			}
+		} else if manifestDigest == "" {
+			manifestDigest = *instanceInfo.instanceDigest
 		}
 		err = l.List.AddInstance(*instanceInfo.instanceDigest, instanceInfo.Size, manifestType, instanceInfo.OS, instanceInfo.Architecture, instanceInfo.OSVersion, instanceInfo.OSFeatures, instanceInfo.Variant, instanceInfo.Features, instanceInfo.Annotations)
 		if err != nil {
