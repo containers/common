@@ -42,7 +42,7 @@ var _ = Describe("IPAM", func() {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
 
-		networkInterface = libpodNet.(*netavarkNetwork)
+		networkInterface = libpodNet.(*netavarkNetwork) //nolint:errcheck // It is always *netavarkNetwork here.
 		// run network list to force a network load
 		_, err = networkInterface.NetworkList()
 		Expect(err).To(BeNil())
