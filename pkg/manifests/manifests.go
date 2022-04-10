@@ -442,38 +442,37 @@ func (l *list) preferOCI() bool {
 // Serialize encodes the list using the specified format, or by selecting one
 // which it thinks is appropriate.
 func (l *list) Serialize(mimeType string) ([]byte, error) {
-	var manifestBytes []byte
+	var (
+		res []byte
+		err error
+	)
 	switch mimeType {
 	case "":
 		if l.preferOCI() {
-			manifest, err := json.Marshal(&l.oci)
+			res, err = json.Marshal(&l.oci)
 			if err != nil {
 				return nil, errors.Wrapf(err, "error marshalling OCI image index")
 			}
-			manifestBytes = manifest
 		} else {
-			manifest, err := json.Marshal(&l.docker)
+			res, err = json.Marshal(&l.docker)
 			if err != nil {
 				return nil, errors.Wrapf(err, "error marshalling Docker manifest list")
 			}
-			manifestBytes = manifest
 		}
 	case v1.MediaTypeImageIndex:
-		manifest, err := json.Marshal(&l.oci)
+		res, err = json.Marshal(&l.oci)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error marshalling OCI image index")
 		}
-		manifestBytes = manifest
 	case manifest.DockerV2ListMediaType:
-		manifest, err := json.Marshal(&l.docker)
+		res, err = json.Marshal(&l.docker)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error marshalling Docker manifest list")
 		}
-		manifestBytes = manifest
 	default:
 		return nil, errors.Wrapf(ErrManifestTypeNotSupported, "serializing list to type %q not implemented", mimeType)
 	}
-	return manifestBytes, nil
+	return res, nil
 }
 
 // Instances returns the list of image instances mentioned in this list.
