@@ -377,6 +377,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("container-default"))
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Containers.BaseHostsFile).To(gomega.BeEquivalentTo("/etc/hosts2"))
+			gomega.Expect(config.Containers.HostContainersInternalIP).To(gomega.BeEquivalentTo("1.2.3.4"))
 		})
 
 		It("contents of passed-in file should override others", func() {

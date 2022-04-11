@@ -150,6 +150,16 @@ environment variables to the container.
 
 Pass all host environment variables into the container.
 
+**host_containers_internal_ip**=""
+
+Set the ip for the host.containers.internal entry in the containers /etc/hosts
+file. This can be set to "none" to disable adding this entry. By default it
+will automatically choose the host ip.
+
+NOTE: When using podman machine this entry will never be added to the containers
+hosts file instead the gvproxy dns resolver will resolve this hostname. Therefore
+it is not possible to disable the entry in this case.
+
 **http_proxy**=true
 
 Default proxy environment variables will be passed into the container.
