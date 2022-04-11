@@ -4,6 +4,7 @@ run:
     - apparmor
     - seccomp
     - selinux
+    - systemd
     - exclude_graphdriver_btrfs
     - containers_image_openpgp
   concurrency: 6
