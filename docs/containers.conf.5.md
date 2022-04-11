@@ -59,6 +59,13 @@ Example: "run.oci.keep_original_groups=1"
 Used to change the name of the default AppArmor profile of container engines.
 The default profile name is "container-default".
 
+**base_hosts_file**=""
+
+The hosts entries from the base hosts file are added to the containers hosts
+file. This must be either an absolute path or as special values "image" which
+uses the hosts file from the container image or "none" which means
+no base hosts file is used. The default is "" which will use /etc/hosts.
+
 **cgroups**="enabled"
 
 Determines  whether  the  container will create CGroups.

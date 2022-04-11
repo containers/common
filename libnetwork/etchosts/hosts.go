@@ -8,12 +8,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/containers/common/pkg/config"
 	"github.com/containers/common/pkg/util"
 )
 
 const (
-	// DefaultHostsFile is the default path to the hosts file
-	DefaultHostsFile       = "/etc/hosts"
 	hostContainersInternal = "host.containers.internal"
 	localhost              = "localhost"
 )
@@ -265,7 +264,7 @@ func parseHostsFile(file string) (HostEntries, error) {
 	if err != nil {
 		// do not error when the default hosts file does not exists
 		// https://github.com/containers/podman/issues/12667
-		if errors.Is(err, os.ErrNotExist) && file == DefaultHostsFile {
+		if errors.Is(err, os.ErrNotExist) && file == config.DefaultHostsFile {
 			return nil, nil
 		}
 		return nil, err
