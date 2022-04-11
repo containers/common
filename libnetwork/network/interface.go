@@ -121,7 +121,6 @@ func defaultNetworkBackend(store storage.Store, conf *config.Config) (backend ty
 	defer func() {
 		// only write when there is no error
 		if err == nil {
-			// nolint:gocritic
 			if err := ioutils.AtomicWriteFile(file, []byte(backend), 0o644); err != nil {
 				logrus.Errorf("could not write network backend to file: %v", err)
 			}

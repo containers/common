@@ -1344,7 +1344,6 @@ func HaveNetworkName(name string) gomegaTypes.GomegaMatcher {
 }
 
 // EqualNetwork must be used because comparing the time with deep equal does not work
-// nolint:gocritic
 func EqualNetwork(net1, net2 types.Network) {
 	ExpectWithOffset(1, net1.Created.Equal(net2.Created)).To(BeTrue(), "net1 created: %v is not equal net2 created: %v", net1.Created, net2.Created)
 	net1.Created = time.Time{}
