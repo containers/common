@@ -64,6 +64,22 @@ type Network struct {
 	Options map[string]string `json:"options,omitempty"`
 	// IPAMOptions contains options used for the ip assignment.
 	IPAMOptions map[string]string `json:"ipam_options,omitempty"`
+	// Containers has network information about each container connected
+	// to the network
+	Containers map[string]ContainerNetwork `json:"containers"`
+}
+
+// ContainerNetworkInfo is a compatibility struct for docker and
+// is used during network inspect.
+type ContainerNetworkInfo struct {
+	// Name is the container name
+	Name string `json:"name"`
+	// MacAddress of the container's network connection
+	MacAddress HardwareAddr `json:"MacAddress"`
+	// IPv4Address for the container's network connection
+	IPv4 net.IPNet `json:"IPv4Address"`
+	// IPv6Address for the container's network connection
+	IPv6 net.IPNet `json:"IPv6Address"`
 }
 
 // IPNet is used as custom net.IPNet type to add Marshal/Unmarshal methods.
