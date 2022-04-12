@@ -681,6 +681,13 @@ Memory in MB a machine is created with.
 Username to use and create on the podman machine OS for rootless container
 access. The default value is `user`. On Linux/Mac the default is`core`.
 
+**volumes**=["$HOME:$HOME"]
+
+Host directories to be mounted as volumes into the VM by default.
+Environment variables like $HOME as well as complete paths are supported for
+the source and destination. An optional third field `:ro` can be used to
+tell the container engines to mount the volume readonly.
+
 # FILES
 
 **containers.conf**
