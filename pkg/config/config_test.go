@@ -364,7 +364,7 @@ image_copy_tmp_dir="storage"`
 				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			}
 			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(config.Engine.TmpDir + "/events/events.log"))
-			gomega.Expect(config.Engine.EventsLogFileMaxSize).To(gomega.Equal(uint64(0)))
+			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(DefaultEventsLogSizeMax))
 		})
 
 		It("should success with valid user file path", func() {
@@ -402,7 +402,7 @@ image_copy_tmp_dir="storage"`
 			path, err := config.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/tmp/foobar"))
-			gomega.Expect(config.Engine.EventsLogFileMaxSize).To(gomega.BeEquivalentTo(uint64(500)))
+			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(uint64(500)))
 		})
 
 		It("should fail with invalid value", func() {

@@ -127,6 +127,9 @@ const (
 	// DefaultLogSizeMax is the default value for the maximum log size
 	// allowed for a container. Negative values mean that no limit is imposed.
 	DefaultLogSizeMax = -1
+	// DefaultEventsLogSize is the default value for the maximum events log size
+	// before rotation.
+	DefaultEventsLogSizeMax = uint64(1000000)
 	// DefaultPidsLimit is the default value for maximum number of processes
 	// allowed inside a container
 	DefaultPidsLimit = 2048
@@ -260,6 +263,8 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.TmpDir = tmp
 
 	c.EventsLogFilePath = filepath.Join(c.TmpDir, "events", "events.log")
+
+	c.EventsLogFileMaxSize = eventsLogMaxSize(DefaultEventsLogSizeMax)
 
 	c.CompatAPIEnforceDockerHub = true
 
@@ -462,6 +467,10 @@ func probeConmon(conmonBinary string) error {
 // NetNS returns the default network namespace
 func (c *Config) NetNS() string {
 	return c.Containers.NetNS
+}
+
+func (c EngineConfig) EventsLogMaxSize() uint64 {
+	return uint64(c.EventsLogFileMaxSize)
 }
 
 // SecurityOptions returns the default security options
