@@ -74,3 +74,18 @@ func getLocalIP() string {
 	}
 	return ip
 }
+
+// GetNetworkHostEntries returns HostEntries for all ips in the network status
+// with the given hostnames.
+func GetNetworkHostEntries(netStatus map[string]types.StatusBlock, names ...string) HostEntries {
+	hostEntries := make(HostEntries, 0, len(netStatus))
+	for _, status := range netStatus {
+		for _, netInt := range status.Interfaces {
+			for _, netAddress := range netInt.Subnets {
+				e := HostEntry{IP: netAddress.IPNet.IP.String(), Names: names}
+				hostEntries = append(hostEntries, e)
+			}
+		}
+	}
+	return hostEntries
+}
