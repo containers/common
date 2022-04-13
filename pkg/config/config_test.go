@@ -203,6 +203,14 @@ image_copy_tmp_dir="storage"`
 				"TERM=xterm",
 			}
 
+			volumes := []string{
+				"$HOME:$HOME",
+			}
+
+			newVolumes := []string{
+				os.ExpandEnv("$HOME:$HOME"),
+			}
+
 			networkCmdOptions := []string{
 				"enable_ipv6=true",
 			}
@@ -224,6 +232,15 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
+			gomega.Expect(defaultConfig.Machine.Volumes).To(gomega.BeEquivalentTo(volumes))
+			newV, err := defaultConfig.MachineVolumes()
+			if newVolumes[0] == ":" {
+				// $HOME is not set
+				gomega.Expect(err).To(gomega.HaveOccurred())
+			} else {
+				gomega.Expect(err).To(gomega.BeNil())
+				gomega.Expect(newV).To(gomega.BeEquivalentTo(newVolumes))
+			}
 		})
 
 		It("test GetDefaultEnvEx", func() {
