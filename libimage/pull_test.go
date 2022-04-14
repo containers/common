@@ -185,7 +185,6 @@ func TestPullPolicy(t *testing.T) {
 	pulledImages, err = runtime.Pull(ctx, "alpine", config.PullPolicyNever, pullOptions)
 	require.NoError(t, err, "Never pull different arch alpine")
 	require.NotNil(t, pulledImages, "lookup alpine")
-
 }
 
 func TestShortNameAndIDconflict(t *testing.T) {

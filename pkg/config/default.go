@@ -109,7 +109,6 @@ func parseSubnetPool(subnet string, size int) SubnetPool {
 		Base: &nettypes.IPNet{IPNet: *n},
 		Size: size,
 	}
-
 }
 
 const (
@@ -156,7 +155,6 @@ const (
 
 // DefaultConfig defines the default values from containers.conf
 func DefaultConfig() (*Config, error) {
-
 	defaultEngineConfig, err := defaultConfigFromMemory()
 	if err != nil {
 		return nil, err
@@ -399,10 +397,10 @@ func defaultTmpDir() (string, error) {
 	}
 	libpodRuntimeDir := filepath.Join(runtimeDir, "libpod")
 
-	if err := os.Mkdir(libpodRuntimeDir, 0700|os.ModeSticky); err != nil {
+	if err := os.Mkdir(libpodRuntimeDir, 0o700|os.ModeSticky); err != nil {
 		if !os.IsExist(err) {
 			return "", err
-		} else if err := os.Chmod(libpodRuntimeDir, 0700|os.ModeSticky); err != nil {
+		} else if err := os.Chmod(libpodRuntimeDir, 0o700|os.ModeSticky); err != nil {
 			// The directory already exist, just set the sticky bit
 			return "", errors.Wrap(err, "set sticky bit on")
 		}

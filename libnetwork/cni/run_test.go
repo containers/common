@@ -49,15 +49,15 @@ var _ = Describe("run CNI", func() {
 	// runTest is a helper function to run a test. It ensures that each test
 	// is run in its own netns. It also creates a mountns to mount a tmpfs to /var/lib/cni.
 	runTest := func(run func()) {
-		netNSTest.Do(func(_ ns.NetNS) error {
+		_ = netNSTest.Do(func(_ ns.NetNS) error {
 			defer GinkgoRecover()
-			err := os.MkdirAll(cniVarDir, 0755)
+			err := os.MkdirAll(cniVarDir, 0o755)
 			Expect(err).To(BeNil(), "Failed to create cniVarDir")
 			err = unix.Unshare(unix.CLONE_NEWNS)
 			Expect(err).To(BeNil(), "Failed to create new mountns")
 			err = unix.Mount("tmpfs", cniVarDir, "tmpfs", unix.MS_NOEXEC|unix.MS_NOSUID|unix.MS_NODEV, "")
 			Expect(err).To(BeNil(), "Failed to mount tmpfs for cniVarDir")
-			defer unix.Unmount(cniVarDir, 0)
+			defer unix.Unmount(cniVarDir, 0) //nolint:errcheck
 
 			// we have to setup the loopback adapter in this netns to use port forwarding
 			link, err := netlink.LinkByName("lo")
@@ -107,17 +107,16 @@ var _ = Describe("run CNI", func() {
 
 	AfterEach(func() {
 		logrus.SetLevel(logrus.InfoLevel)
-		os.RemoveAll(cniConfDir)
+		_ = os.RemoveAll(cniConfDir)
 
-		netns.UnmountNS(netNSTest)
-		netNSTest.Close()
+		_ = netns.UnmountNS(netNSTest)
+		_ = netNSTest.Close()
 
-		netns.UnmountNS(netNSContainer)
-		netNSContainer.Close()
+		_ = netns.UnmountNS(netNSContainer)
+		_ = netNSContainer.Close()
 	})
 
 	Context("network setup test", func() {
-
 		It("run with default config", func() {
 			runTest(func() {
 				defNet := types.DefaultNetworkName
@@ -658,7 +657,6 @@ var _ = Describe("run CNI", func() {
 				})
 				Expect(err).To(BeNil())
 			})
-
 		})
 
 		It("dual stack network with static ips", func() {
@@ -919,7 +917,6 @@ var _ = Describe("run CNI", func() {
 	})
 
 	Context("network setup test with networks from disk", func() {
-
 		BeforeEach(func() {
 			dir := "testfiles/valid"
 			files, err := ioutil.ReadDir(dir)
@@ -932,7 +929,7 @@ var _ = Describe("run CNI", func() {
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
-				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0700)
+				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
@@ -984,7 +981,7 @@ var _ = Describe("run CNI", func() {
 				Expect(mask2).To(HaveLen(4))
 
 				// because this net has dns we should always teardown otherwise we leak a dnsmasq process
-				defer libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
+				defer libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts)) //nolint:errcheck
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
 				Expect(err).To(BeNil())
 				Expect(res).To(HaveLen(1))
@@ -1073,11 +1070,9 @@ var _ = Describe("run CNI", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
-
 	})
 
 	Context("invalid network setup test", func() {
-
 		It("static ip not in subnet", func() {
 			runTest(func() {
 				defNet := types.DefaultNetworkName
@@ -1387,7 +1382,8 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			defer wg.Done()
 			conn, err := ln.Accept()
 			Expect(err).To(BeNil())
-			conn.SetDeadline(time.Now().Add(1 * time.Second))
+			err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+			Expect(err).To(BeNil())
 			data, err := ioutil.ReadAll(conn)
 			Expect(err).To(BeNil())
 			Expect(string(data)).To(Equal(expectedData))
@@ -1400,7 +1396,8 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			Port: port,
 		})
 		Expect(err).To(BeNil())
-		conn.SetDeadline(time.Now().Add(1 * time.Second))
+		err = conn.SetDeadline(time.Now().Add(1 * time.Second))
+		Expect(err).To(BeNil())
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()

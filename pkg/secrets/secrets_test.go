@@ -44,6 +44,7 @@ func TestAddSecretAndLookupData(t *testing.T) {
 		t.Errorf("error: secret data not equal")
 	}
 }
+
 func TestAddSecretName(t *testing.T) {
 	manager, testpath, err := setup()
 	require.NoError(t, err)

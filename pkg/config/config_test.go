@@ -39,7 +39,8 @@ var _ = Describe("Config", func() {
 
 		It("should succeed with devices", func() {
 			// Given
-			sut.Containers.Devices = []string{"/dev/null:/dev/null:rw",
+			sut.Containers.Devices = []string{
+				"/dev/null:/dev/null:rw",
 				"/dev/sdc/",
 				"/dev/sdc:/dev/xvdc",
 				"/dev/sdc:rm",
@@ -98,9 +99,7 @@ var _ = Describe("Config", func() {
 			defaultConfig, _ := NewConfig("")
 			// EnableLabeling should match whether or not SELinux is enabled on the host
 			gomega.Expect(defaultConfig.Containers.EnableLabeling).To(gomega.Equal(selinux.GetEnabled()))
-
 		})
-
 	})
 
 	Describe("ValidateNetworkConfig", func() {
@@ -155,7 +154,6 @@ image_copy_tmp_dir="storage"`
 
 			OCIRuntimeMap := map[string][]string{
 				"kata": {
-
 					"/usr/bin/kata-runtime",
 					"/usr/sbin/kata-runtime",
 					"/usr/local/bin/kata-runtime",
@@ -244,7 +242,6 @@ image_copy_tmp_dir="storage"`
 		})
 
 		It("test GetDefaultEnvEx", func() {
-
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"TERM=xterm",
@@ -368,7 +365,6 @@ image_copy_tmp_dir="storage"`
 			}
 			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(config.Engine.TmpDir + "/events/events.log"))
 			gomega.Expect(config.Engine.EventsLogFileMaxSize).To(gomega.Equal(uint64(0)))
-
 		})
 
 		It("should success with valid user file path", func() {
@@ -690,9 +686,9 @@ image_copy_tmp_dir="storage"`
 				gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 				conf := file.Name() + ".conf"
 
-				os.Rename(file.Name(), conf)
+				err = os.Rename(file.Name(), conf)
+				gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 				return conf
-
 			}
 			configs := []string{
 				"test1",
@@ -811,6 +807,5 @@ env=["foo=bar"]`
 		// config should only contain empty stanzas
 		gomega.Expect(string(b)).To(gomega.
 			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n"))
-
 	})
 })

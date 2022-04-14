@@ -132,7 +132,6 @@ var _ = Describe("Config Local", func() {
 				Size: 24,
 			}},
 		))
-
 	})
 
 	It("should fail during runtime", func() {
@@ -263,7 +262,6 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config.Engine.Env).To(gomega.BeEquivalentTo(expectedEnv))
 		gomega.Expect(os.Getenv("super")).To(gomega.BeEquivalentTo("duper"))
 		gomega.Expect(os.Getenv("foo")).To(gomega.BeEquivalentTo("bar"))
-
 	})
 
 	It("Expect Remote to be False", func() {
@@ -316,7 +314,8 @@ var _ = Describe("Config Local", func() {
 		os.Setenv("CONTAINERS_CONF", tmpfile)
 		config, err := ReadCustomConfig()
 		gomega.Expect(err).To(gomega.BeNil())
-		config.Containers.Devices = []string{"/dev/null:/dev/null:rw",
+		config.Containers.Devices = []string{
+			"/dev/null:/dev/null:rw",
 			"/dev/sdc/",
 			"/dev/sdc:/dev/xvdc",
 			"/dev/sdc:rm",
@@ -470,5 +469,4 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config2.Machine.Memory).To(gomega.Equal(uint64(1024)))
 	})
-
 })

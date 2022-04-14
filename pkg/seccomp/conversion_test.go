@@ -83,7 +83,6 @@ func TestSpecToSeccomp(t *testing.T) {
 		input    *specs.LinuxSeccomp
 		expected func(*Seccomp, error)
 	}{
-
 		{ // success
 			input: &specs.LinuxSeccomp{
 				DefaultAction: specs.ActKill,

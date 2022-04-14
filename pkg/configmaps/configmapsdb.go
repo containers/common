@@ -177,7 +177,7 @@ func (s *ConfigMapManager) store(entry *ConfigMap) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(s.configMapDBPath, marshalled, 0600)
+	err = ioutil.WriteFile(s.configMapDBPath, marshalled, 0o600)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func (s *ConfigMapManager) delete(nameOrID string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(s.configMapDBPath, marshalled, 0600)
+	err = ioutil.WriteFile(s.configMapDBPath, marshalled, 0o600)
 	if err != nil {
 		return err
 	}

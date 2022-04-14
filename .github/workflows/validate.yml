@@ -7,6 +7,8 @@ on:
       - main
       - v*
   pull_request:
+env:
+  LINT_VERSION: v1.45
 
 jobs:
   codespell:
@@ -18,3 +20,20 @@ jobs:
       run: pip install codespell
     - name: run codespell
       run: codespell
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 1.x # latest stable
+    - name: install deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install libseccomp-dev libdevmapper-dev
+    - name: lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: "${{ env.LINT_VERSION }}"
+    - name: validate seccomp
+      run: ./tools/validate_seccomp.sh ./pkg/seccomp

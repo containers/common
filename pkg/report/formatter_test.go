@@ -71,11 +71,15 @@ func TestFormatter_ParseTable(t *testing.T) {
 		{&tabwriter.Writer{}, OriginUser, "table {{ .ID}}\n", "Identity\nc061a0839e\nf10fc2e11057\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a\n"},
 		{&tabwriter.Writer{}, OriginUser, `table {{ .ID}}\n`, "Identity\nc061a0839e\nf10fc2e11057\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a\n"},
 		{&tabwriter.Writer{}, OriginUser, "table {{.ID}}", "Identity\nc061a0839e\nf10fc2e11057\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a\n"},
-		{&tabwriter.Writer{}, OriginUser, "table {{.ID}}\t{{.Value}}",
-			"Identity                          Value\nc061a0839e                        one\nf10fc2e11057                      two\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a  three\n"},
+		{
+			&tabwriter.Writer{}, OriginUser, "table {{.ID}}\t{{.Value}}",
+			"Identity                          Value\nc061a0839e                        one\nf10fc2e11057                      two\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a  three\n",
+		},
 		{&bytes.Buffer{}, OriginUser, "{{range .}}{{.ID}}\tID{{end}}", "c061a0839e\tIDf10fc2e11057\tID1eb6fab5aa8f4b5cbfd3e66aa35e9b2a\tID\n"},
-		{&tabwriter.Writer{}, OriginPodman, "Value\tIdent\n{{range .}}{{.ID}}\tID{{end}}",
-			"Value       Ident\nIdentity    ID\nValue       Ident\nc061a0839e  IDf10fc2e11057  ID1eb6fab5aa8f4b5cbfd3e66aa35e9b2a  ID\n"},
+		{
+			&tabwriter.Writer{}, OriginPodman, "Value\tIdent\n{{range .}}{{.ID}}\tID{{end}}",
+			"Value       Ident\nIdentity    ID\nValue       Ident\nc061a0839e  IDf10fc2e11057  ID1eb6fab5aa8f4b5cbfd3e66aa35e9b2a  ID\n",
+		},
 		{&bytes.Buffer{}, OriginUser, "{{range .}}{{.ID}}\tID\n{{end}}", "c061a0839e\tID\nf10fc2e11057\tID\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a\tID\n\n"},
 		{&bytes.Buffer{}, OriginUser, `{{range .}}{{.ID}}{{end -}}`, "c061a0839ef10fc2e110571eb6fab5aa8f4b5cbfd3e66aa35e9b2a"},
 	}
@@ -92,10 +96,11 @@ func TestFormatter_ParseTable(t *testing.T) {
 			assert.IsType(t, tc.Type, rpt.Writer())
 
 			if rpt.RenderHeaders {
-				rpt.Execute([]map[string]string{{
+				err = rpt.Execute([]map[string]string{{
 					"ID":    "Identity",
 					"Value": "Value",
 				}})
+				assert.NoError(t, err)
 			}
 			err = rpt.Execute([...]map[string]string{
 				{"ID": "c061a0839e", "Value": "one"},

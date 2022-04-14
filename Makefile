@@ -67,13 +67,9 @@ vendor:
 .PHONY: install.tools
 install.tools: build/golangci-lint .install.md2man
 
+build/golangci-lint: VERSION=v1.45.2
 build/golangci-lint:
-	export \
-		VERSION=v1.30.0 \
-		URL=https://raw.githubusercontent.com/golangci/golangci-lint \
-		BINDIR=build && \
-	curl -sfL $$URL/$$VERSION/install.sh | sh -s $$VERSION
-
+	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/$(VERSION)/install.sh | sh -s -- -b ./build $(VERSION)
 
 .install.md2man:
 	$(GO) install github.com/cpuguy83/go-md2man/v2@latest

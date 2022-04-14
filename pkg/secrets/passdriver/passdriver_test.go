@@ -25,7 +25,9 @@ func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
 	})
 	require.NoError(t, err)
 
-	driver.gpg(context.TODO(), nil, nil, "--batch", "--passphrase", "--quick-generate-key", "testing@passdriver")
+	err = driver.gpg(context.TODO(), nil, nil, "--batch", "--passphrase", "--quick-generate-key", "testing@passdriver")
+	require.NoError(t, err)
+
 	return driver, func() {
 		os.RemoveAll(base)
 		os.RemoveAll(gpghomedir)
@@ -180,5 +182,4 @@ func TestDelete(t *testing.T) {
 			}
 		})
 	}
-
 }

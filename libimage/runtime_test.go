@@ -49,7 +49,7 @@ func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Ru
 	require.Equal(t, runtime.systemContext.BigFilesTemporaryDir, tmpdir())
 
 	cleanup = func() {
-		runtime.Shutdown(true)
+		_ = runtime.Shutdown(true)
 		_ = os.RemoveAll(workdir)
 	}
 

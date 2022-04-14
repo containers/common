@@ -18,9 +18,7 @@ const (
 	dockerFixture    = "testdata/fedora.list.json"
 )
 
-var (
-	_ List = &list{}
-)
+var _ List = &list{}
 
 func TestMain(m *testing.M) {
 	if reexec.Init() {

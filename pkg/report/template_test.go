@@ -85,7 +85,6 @@ func TestTemplate_Parse(t *testing.T) {
 			}})
 			assert.NoError(t, err)
 			assert.Equal(t, "Ident\n", buf.String())
-
 		})
 		buf.Reset()
 	}

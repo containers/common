@@ -42,7 +42,6 @@ func TestCreateManifestList(t *testing.T) {
 // Following test ensure that `Tag` tags the manifest list instead of resolved image.
 // Both the tags should point to same image id
 func TestCreateAndTagManifestList(t *testing.T) {
-
 	tagName := "testlisttagged"
 	listName := "testlist"
 	runtime, cleanup := testNewRuntime(t)
@@ -80,7 +79,6 @@ func TestCreateAndTagManifestList(t *testing.T) {
 // Test tags two manifestlist and deletes one of them and
 // confirms if other one is not deleted.
 func TestCreateAndRemoveManifestList(t *testing.T) {
-
 	tagName := "manifestlisttagged"
 	listName := "manifestlist"
 	runtime, cleanup := testNewRuntime(t)
@@ -113,5 +111,4 @@ func TestCreateAndRemoveManifestList(t *testing.T) {
 	// output should contain log of untagging the original manifestlist
 	require.True(t, rmReports[0].Removed)
 	require.Equal(t, []string{"localhost/manifestlist:latest"}, rmReports[0].Untagged)
-
 }

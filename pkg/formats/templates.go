@@ -20,7 +20,7 @@ var basicFunctions = template.FuncMap{
 	},
 	"split":    strings.Split,
 	"join":     strings.Join,
-	"title":    strings.Title,
+	"title":    strings.Title, //nolint:staticcheck
 	"lower":    strings.ToLower,
 	"upper":    strings.ToUpper,
 	"pad":      padWithSpace,
