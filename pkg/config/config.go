@@ -304,6 +304,10 @@ type EngineConfig struct {
 	// MachineEnabled indicates if Podman is running in a podman-machine VM
 	MachineEnabled bool `toml:"machine_enabled,omitempty"`
 
+	// MachineHostType indicates the type of machine if Podman is running inside a
+	// podman-machine instance
+	MachineHostType string `toml:"machine_host_type,omitempty"`
+
 	// MultiImageArchive - if true, the container engine allows for storing
 	// archives (e.g., of the docker-archive transport) with multiple
 	// images.  By default, Podman creates single-image archives.

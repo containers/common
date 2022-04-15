@@ -381,6 +381,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	// constants.
 	c.LockType = "shm"
 	c.MachineEnabled = false
+	c.MachineHostType = ""
 	c.ChownCopiedFiles = true
 
 	return c, nil
