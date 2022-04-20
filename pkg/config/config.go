@@ -252,7 +252,7 @@ type EngineConfig struct {
 
 	// EventsLogFileMaxSize sets the maximum size for the events log. When the limit is exceeded,
 	// the logfile is rotated and the old one is deleted.
-	EventsLogFileMaxSize uint64 `toml:"events_logfile_max_size,omitempty,omitzero"`
+	EventsLogFileMaxSize eventsLogMaxSize `toml:"events_logfile_max_size,omitzero"`
 
 	// EventsLogger determines where events should be logged.
 	EventsLogger string `toml:"events_logger,omitempty"`
@@ -1260,4 +1260,34 @@ func (c *Config) setupEnv() error {
 		}
 	}
 	return nil
+}
+
+// eventsLogMaxSize is the type used by EventsLogFileMaxSize
+type eventsLogMaxSize uint64
+
+// UnmarshalText parses the JSON encoding of eventsLogMaxSize and
+// stores it in a value.
+func (e *eventsLogMaxSize) UnmarshalText(text []byte) error {
+	// REMOVE once writing works
+	if string(text) == "" {
+		return nil
+	}
+	val, err := units.FromHumanSize((string(text)))
+	if err != nil {
+		return err
+	}
+	if val < 0 {
+		return fmt.Errorf("events log file max size cannot be negative: %s", string(text))
+	}
+	*e = eventsLogMaxSize(uint64(val))
+	return nil
+}
+
+// MarshalText returns the JSON encoding of eventsLogMaxSize.
+func (e eventsLogMaxSize) MarshalText() ([]byte, error) {
+	if uint64(e) == DefaultEventsLogSizeMax || e == 0 {
+		v := []byte{}
+		return v, nil
+	}
+	return []byte(fmt.Sprintf("%d", e)), nil
 }

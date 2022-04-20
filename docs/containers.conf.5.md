@@ -405,10 +405,13 @@ if you want to set environment variables for the container.
 
 Define where event logs will be stored, when events_logger is "file".
 
-**events_logfile_max_size**=0
+**events_logfile_max_size**="1m"
 
-Sets the maximum size for events_logfile_path in bytes. When the limit is exceeded,
-the logfile will be rotated and the old one will be deleted.
+Sets the maximum size for events_logfile_path. 
+The unit can be b (bytes), k (kilobytes), m (megabytes) or g (gigabytes).
+The format for the size is `<number><unit>`, e.g., `1b` or `3g`.
+If no unit is included then the size will be in bytes.
+When the limit is exceeded, the logfile will be rotated and the old one will be deleted.
 If the maximumn size is set to 0, then no limit will be applied,
 and the logfile will not be rotated.
 
