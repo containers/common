@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
-	github.com/mitchellh/mapstructure v1.4.3
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.19.0
 	github.com/opencontainers/go-digest v1.0.0
