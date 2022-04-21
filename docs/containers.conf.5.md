@@ -59,6 +59,13 @@ Example: "run.oci.keep_original_groups=1"
 Used to change the name of the default AppArmor profile of container engines.
 The default profile name is "container-default".
 
+**base_hosts_file**=""
+
+The hosts entries from the base hosts file are added to the containers hosts
+file. This must be either an absolute path or as special values "image" which
+uses the hosts file from the container image or "none" which means
+no base hosts file is used. The default is "" which will use /etc/hosts.
+
 **cgroups**="enabled"
 
 Determines  whether  the  container will create CGroups.
@@ -142,6 +149,16 @@ environment variables to the container.
 **env_host**=false
 
 Pass all host environment variables into the container.
+
+**host_containers_internal_ip**=""
+
+Set the ip for the host.containers.internal entry in the containers /etc/hosts
+file. This can be set to "none" to disable adding this entry. By default it
+will automatically choose the host ip.
+
+NOTE: When using podman machine this entry will never be added to the containers
+hosts file instead the gvproxy dns resolver will resolve this hostname. Therefore
+it is not possible to disable the entry in this case.
 
 **http_proxy**=true
 
