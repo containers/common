@@ -434,8 +434,15 @@ and the logfile will not be rotated.
 
 **events_logger**="journald"
 
-Default method to use when logging events.
-Valid values: `file`, `journald`, and `none`.
+The default method to use when logging events.  
+
+The default method is different based on the platform that
+Podman is being run upon.  To determine the current value,
+use this command:
+
+`podman info --format {{.Host.EventLogger}`
+
+Valid values are: `file`, `journald`, and `none`.
 
 **helper_binaries_dir**=["/usr/libexec/podman", ...]
 
