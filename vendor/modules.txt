@@ -43,7 +43,7 @@ github.com/cespare/xxhash/v2
 github.com/chzyer/readline
 # github.com/containerd/cgroups v1.0.3
 github.com/containerd/cgroups/stats/v1
-# github.com/containerd/containerd v1.6.2
+# github.com/containerd/containerd v1.6.3
 ## explicit
 github.com/containerd/containerd/errdefs
 github.com/containerd/containerd/log
@@ -184,6 +184,7 @@ github.com/containers/storage/types
 ## explicit
 github.com/coreos/go-systemd/v22/dbus
 # github.com/cyphar/filepath-securejoin v0.2.3
+## explicit
 github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -372,7 +373,7 @@ github.com/pkg/errors
 github.com/pmezard/go-difflib/difflib
 # github.com/proglottis/gpgme v0.1.1
 github.com/proglottis/gpgme
-# github.com/prometheus/client_golang v1.11.0
+# github.com/prometheus/client_golang v1.11.1
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
