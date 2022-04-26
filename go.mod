@@ -4,13 +4,14 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v1.1.0
-	github.com/containerd/containerd v1.6.2
+	github.com/containerd/containerd v1.6.3
 	github.com/containernetworking/cni v1.0.1
 	github.com/containernetworking/plugins v1.1.1
 	github.com/containers/image/v5 v5.19.2-0.20220224100137-1045fb70b094
 	github.com/containers/ocicrypt v1.1.3
 	github.com/containers/storage v1.39.0
 	github.com/coreos/go-systemd/v22 v22.3.2
+	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.14+incompatible
