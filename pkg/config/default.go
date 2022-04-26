@@ -323,6 +323,9 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 			"/usr/lib/cri-o-runc/sbin/runc",
 			"/run/current-system/sw/bin/runc",
 		},
+		"runj": {
+			"/usr/local/bin/runj",
+		},
 		"kata": {
 			"/usr/bin/kata-runtime",
 			"/usr/sbin/kata-runtime",

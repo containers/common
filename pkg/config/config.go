@@ -803,7 +803,7 @@ func (c *Config) Validate() error {
 
 func (c *EngineConfig) findRuntime() string {
 	// Search for crun first followed by runc, kata, runsc
-	for _, name := range []string{"crun", "runc", "kata", "runsc"} {
+	for _, name := range []string{"crun", "runc", "runj", "kata", "runsc"} {
 		for _, v := range c.OCIRuntimes[name] {
 			if _, err := os.Stat(v); err == nil {
 				return name
