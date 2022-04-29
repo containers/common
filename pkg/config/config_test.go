@@ -362,6 +362,7 @@ image_copy_tmp_dir="storage"`
 			}
 			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(config.Engine.TmpDir + "/events/events.log"))
 			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(DefaultEventsLogSizeMax))
+			gomega.Expect(config.Engine.PodExitPolicy).To(gomega.Equal(PodExitPolicyContinue))
 		})
 
 		It("should success with valid user file path", func() {
@@ -402,6 +403,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/tmp/foobar"))
 			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(uint64(500)))
+			gomega.Expect(config.Engine.PodExitPolicy).To(gomega.BeEquivalentTo(PodExitPolicyStop))
 		})
 
 		It("should fail with invalid value", func() {

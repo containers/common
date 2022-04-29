@@ -549,6 +549,15 @@ pod consumes one lock. The default number available is 2048. If this is
 changed, a lock renumbering must be performed, using the
 `podman system renumber` command.
 
+**pod_exit_policy**="continue"
+
+Set the exit policy of the pod when the last container exits.  Supported policies are:
+
+| Exit Policy        | Description                                                                 |
+| ------------------ | --------------------------------------------------------------------------- |
+| *continue*         | The pod continues running when the last container exits. Used by default.   |
+| *stop*             | The pod is stopped when the last container exits. Used in `play kube`.      |
+
 **pull_policy**="always"|"missing"|"never"
 
 Pull image before running or creating a container. The default is **missing**.
