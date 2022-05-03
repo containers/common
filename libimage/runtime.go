@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/containers/common/pkg/config"
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/pkg/shortnames"
 	storageTransport "github.com/containers/image/v5/storage"
@@ -22,13 +23,16 @@ import (
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // tmpdir returns a path to a temporary directory.
-func tmpdir() string {
-	tmpdir := os.Getenv("TMPDIR")
-	if tmpdir == "" {
-		tmpdir = "/var/tmp"
+func tmpdir() (string, error) {
+	var tmpdir string
+	defaultContainerConfig, err := config.Default()
+	if err == nil {
+		tmpdir, err = defaultContainerConfig.ImageCopyTmpDir()
+		if err == nil {
+			return tmpdir, nil
+		}
 	}
-
-	return tmpdir
+	return tmpdir, err
 }
 
 // RuntimeOptions allow for creating a customized Runtime.
@@ -103,7 +107,11 @@ func RuntimeFromStore(store storage.Store, options *RuntimeOptions) (*Runtime, e
 		systemContext = types.SystemContext{}
 	}
 	if systemContext.BigFilesTemporaryDir == "" {
-		systemContext.BigFilesTemporaryDir = tmpdir()
+		tmpdir, err := tmpdir()
+		if err != nil {
+			return nil, err
+		}
+		systemContext.BigFilesTemporaryDir = tmpdir
 	}
 
 	setRegistriesConfPath(&systemContext)
