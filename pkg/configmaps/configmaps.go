@@ -79,6 +79,9 @@ type ConfigMap struct {
 // ConfigMapsDriver interfaces with the configMaps data store.
 // The driver stores the actual bytes of configMap data, as opposed to
 // the configMap metadata.
+//
+// revive does not like the name because the package is already called configmaps
+//nolint:revive
 type ConfigMapsDriver interface {
 	// List lists all configMap ids in the configMaps data store
 	List() ([]string, error)
@@ -272,9 +275,8 @@ func getDriver(name string, opts map[string]string) (ConfigMapsDriver, error) {
 	if name == "file" {
 		if path, ok := opts["path"]; ok {
 			return filedriver.NewDriver(path)
-		} else {
-			return nil, errors.Wrap(errInvalidDriverOpt, "need path for filedriver")
 		}
+		return nil, errors.Wrap(errInvalidDriverOpt, "need path for filedriver")
 	}
 	return nil, errInvalidDriver
 }

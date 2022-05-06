@@ -13,6 +13,9 @@ linters:
   enable:
     - dupl
     - gocritic
+    - unparam
+    - exportloopref
+    - revive
 linters-settings:
   errcheck:
     check-type-assertions: true
