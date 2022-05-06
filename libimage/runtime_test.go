@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/containers/common/pkg/config"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/reexec"
@@ -46,7 +47,9 @@ func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Ru
 
 	runtime, err = RuntimeFromStoreOptions(&RuntimeOptions{SystemContext: systemContext}, storeOptions)
 	require.NoError(t, err)
-	require.Equal(t, runtime.systemContext.BigFilesTemporaryDir, tmpdir())
+	tmpd, err := tmpdir()
+	require.NoError(t, err)
+	require.Equal(t, runtime.systemContext.BigFilesTemporaryDir, tmpd)
 
 	cleanup = func() {
 		_ = runtime.Shutdown(true)
@@ -56,4 +59,44 @@ func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Ru
 	sys := runtime.SystemContext()
 	require.NotNil(t, sys)
 	return runtime, cleanup
+}
+
+func TestTmpdir(t *testing.T) {
+	tmpStr := "TMPDIR"
+	tmp, tmpSet := os.LookupEnv(tmpStr)
+
+	confStr := "CONTAINERS_CONF"
+	conf, confSet := os.LookupEnv(confStr)
+
+	os.Setenv(confStr, "testdata/containers.conf")
+	_, err := config.Reload()
+	require.NoError(t, err)
+
+	tmpd, err := tmpdir()
+	require.NoError(t, err)
+	require.Equal(t, "/tmp/from/containers.conf", tmpd)
+
+	if confSet {
+		os.Setenv(confStr, conf)
+	} else {
+		os.Unsetenv(confStr)
+	}
+	_, err = config.Reload()
+	require.NoError(t, err)
+
+	os.Unsetenv(tmpStr)
+	tmpd, err = tmpdir()
+	require.NoError(t, err)
+	require.Equal(t, "/var/tmp", tmpd)
+
+	os.Setenv(tmpStr, "/tmp/test")
+	tmpd, err = tmpdir()
+	require.NoError(t, err)
+	require.Equal(t, "/tmp/test", tmpd)
+	if tmpSet {
+		os.Setenv(tmpStr, tmp)
+	} else {
+		os.Unsetenv(tmpStr)
+	}
+
 }
