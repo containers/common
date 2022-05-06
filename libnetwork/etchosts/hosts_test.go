@@ -296,9 +296,8 @@ func TestNew(t *testing.T) {
 			if tt.wantErrString != "" {
 				assert.ErrorContains(t, err, tt.wantErrString)
 				return
-			} else {
-				assert.NoError(t, err, "New() failed")
 			}
+			assert.NoError(t, err, "New() failed")
 
 			content, err := ioutil.ReadFile(targetFile)
 			assert.NoErrorf(t, err, "failed to read target host file: %v", err)
@@ -362,9 +361,8 @@ func TestAdd(t *testing.T) {
 			if tt.wantErrString != "" {
 				assert.ErrorContains(t, err, tt.wantErrString)
 				return
-			} else {
-				assert.NoError(t, err, "Add() failed")
 			}
+			assert.NoError(t, err, "Add() failed")
 
 			content, err := ioutil.ReadFile(hostFile)
 			assert.NoErrorf(t, err, "failed to read host file: %v", err)
@@ -459,9 +457,8 @@ func TestAddIfExists(t *testing.T) {
 			if tt.wantErrString != "" {
 				assert.ErrorContains(t, err, tt.wantErrString)
 				return
-			} else {
-				assert.NoError(t, err, "AddIfExists() failed")
 			}
+			assert.NoError(t, err, "AddIfExists() failed")
 
 			content, err := ioutil.ReadFile(hostFile)
 			assert.NoErrorf(t, err, "failed to read host file: %v", err)
