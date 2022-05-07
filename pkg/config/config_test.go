@@ -396,7 +396,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config).ToNot(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
-			gomega.Expect(config.Containers.LogDriver).To(gomega.Equal("journald"))
+			gomega.Expect(config.Containers.LogDriver).To(gomega.Equal("file"))
 			gomega.Expect(config.Containers.LogTag).To(gomega.Equal("{{.Name}}|{{.ID}}"))
 			gomega.Expect(config.Containers.LogSizeMax).To(gomega.Equal(int64(100000)))
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
@@ -811,5 +811,30 @@ env=["foo=bar"]`
 		// config should only contain empty stanzas
 		gomega.Expect(string(b)).To(gomega.
 			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n"))
+	})
+
+	It("test LoggingValid", func() {
+		err := LoggingValid("bogus", "file")
+		gomega.Expect(err).To(gomega.HaveOccurred())
+		gomega.Expect(err.Error()).To(gomega.Equal("invalid LogDriver \"bogus\" must be one of \"file, k8s-file, journald, none\""))
+		err = LoggingValid("file", "bogus")
+		gomega.Expect(err).To(gomega.HaveOccurred())
+		gomega.Expect(err.Error()).To(gomega.Equal("invalid EventsLogger \"bogus\" must be one of \"file, journald, none\""))
+
+		for _, logDriver := range []string{"file", "k8s-file", "journald"} {
+			for _, eventsLogger := range []string{"file", "journald", "none"} {
+				err := LoggingValid(logDriver, eventsLogger)
+				switch {
+				case eventsLogger == "file" && logDriver == "k8s-file":
+					fallthrough
+				case eventsLogger == "none", logDriver == "none":
+					fallthrough
+				case eventsLogger == logDriver:
+					gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				default:
+					gomega.Expect(err).To(gomega.HaveOccurred())
+				}
+			}
+		}
 	})
 })

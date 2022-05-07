@@ -13,6 +13,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/capabilities"
+	"github.com/containers/common/pkg/util"
 	"github.com/containers/storage/pkg/unshare"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
@@ -636,6 +637,10 @@ func NewConfig(userConfigPath string) (*Config, error) {
 	}
 
 	if err := config.setupEnv(); err != nil {
+		return nil, err
+	}
+
+	if err := LoggingValid(config.Containers.LogDriver, config.Engine.EventsLogger); err != nil {
 		return nil, err
 	}
 
@@ -1304,4 +1309,30 @@ func (e eventsLogMaxSize) MarshalText() ([]byte, error) {
 		return v, nil
 	}
 	return []byte(fmt.Sprintf("%d", e)), nil
+}
+
+func LoggingValid(logDriver string, eventsLogger string) error {
+
+	validLogDriver := []string{"file", "k8s-file", "journald", "none"}
+	validEventsLogger := []string{"file", "journald", "none"}
+	if !util.StringInSlice(logDriver, validLogDriver) {
+		return errors.Errorf("invalid LogDriver %q must be one of %q", logDriver, strings.Join(validLogDriver, ", "))
+	}
+	if !util.StringInSlice(eventsLogger, validEventsLogger) {
+		return errors.Errorf("invalid EventsLogger %q must be one of %q", eventsLogger, strings.Join(validEventsLogger, ", "))
+	}
+	logErr := errors.Errorf("invalid logging combination LogDriver %q is not allowed with EventsLogger %q", logDriver, eventsLogger)
+	switch logDriver {
+	case "none":
+		break
+	case "file", "k8s-file":
+		if eventsLogger == "journald" {
+			return logErr
+		}
+	case "journald":
+		if eventsLogger == "file" {
+			return logErr
+		}
+	}
+	return nil
 }
