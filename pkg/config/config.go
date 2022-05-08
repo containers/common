@@ -24,10 +24,6 @@ const (
 	// _configPath is the path to the containers/containers.conf
 	// inside a given config directory.
 	_configPath = "containers/containers.conf"
-	// DefaultContainersConfig holds the default containers config path
-	DefaultContainersConfig = "/usr/share/" + _configPath
-	// OverrideContainersConfig holds the default config path overridden by the root user
-	OverrideContainersConfig = "/etc/" + _configPath
 	// UserOverrideContainersConfig holds the containers config path overridden by the rootless user
 	UserOverrideContainersConfig = ".config/" + _configPath
 )
