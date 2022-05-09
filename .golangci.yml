@@ -16,6 +16,8 @@ linters:
     - unparam
     - exportloopref
     - revive
+    - prealloc
+    - makezero
 linters-settings:
   errcheck:
     check-type-assertions: true

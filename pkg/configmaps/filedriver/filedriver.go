@@ -55,7 +55,7 @@ func (d *Driver) List() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var allID []string
+	allID := make([]string, 0, len(configMapData))
 	for k := range configMapData {
 		allID = append(allID, k)
 	}

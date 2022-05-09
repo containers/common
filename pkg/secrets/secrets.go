@@ -240,7 +240,7 @@ func (s *SecretsManager) List() ([]Secret, error) {
 	if err != nil {
 		return nil, err
 	}
-	var ls []Secret
+	ls := make([]Secret, 0, len(secrets))
 	for _, v := range secrets {
 		ls = append(ls, v)
 	}

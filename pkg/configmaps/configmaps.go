@@ -234,7 +234,7 @@ func (s *ConfigMapManager) List() ([]ConfigMap, error) {
 	if err != nil {
 		return nil, err
 	}
-	var ls []ConfigMap
+	ls := make([]ConfigMap, 0, len(configMaps))
 	for _, v := range configMaps {
 		ls = append(ls, v)
 	}
