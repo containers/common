@@ -10,10 +10,15 @@ define go-build
 	GOOS=$(1) GOARCH=$(2) $(GO) build -tags "$(3)" ./...
 endef
 
+ifeq ($(shell uname -s),Linux)
 define go-build-c
 	CGO_ENABLED=1 \
 	GOOS=$(1) GOARCH=$(2) $(GO) build -tags "$(3)" ./...
 endef
+else
+define go-build-c
+endef
+endif
 
 .PHONY:
 build-cross:
