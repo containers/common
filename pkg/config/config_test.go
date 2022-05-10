@@ -173,6 +173,9 @@ image_copy_tmp_dir="storage"`
 					"/bin/runc",
 					"/usr/lib/cri-o-runc/sbin/runc",
 				},
+				"runj": {
+					"/usr/local/bin/runj",
+				},
 				"crun": {
 					"/usr/bin/crun",
 					"/usr/local/bin/crun",
