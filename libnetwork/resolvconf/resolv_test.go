@@ -19,14 +19,15 @@ options edns0
 
 func TestNew(t *testing.T) {
 	tests := []struct {
-		name        string
-		baseContent string
-		nameservers []string
-		options     []string
-		searches    []string
-		ipv6        bool
-		hostns      bool
-		want        string
+		name            string
+		baseContent     string
+		nameservers     []string
+		options         []string
+		searches        []string
+		ipv6            bool
+		hostns          bool
+		keepHostServers bool
+		want            string
 	}{
 		{
 			name:        "simple resolv.conf",
@@ -68,12 +69,36 @@ func TestNew(t *testing.T) {
 			want:        "nameserver 1.1.1.1\noptions edns0\n",
 		},
 		{
+			name:            "dot in searches should unset all search domains even with keepHostServers",
+			baseContent:     resolv2,
+			searches:        []string{"."},
+			keepHostServers: true,
+			want:            "nameserver 1.1.1.1\noptions edns0\n",
+		},
+		{
 			name:        "overwrite all",
 			baseContent: resolv2,
 			nameservers: []string{"1.2.3.4", "5.6.7.8"},
 			options:     []string{"ndots:2"},
 			searches:    []string{"test.com"},
 			want:        "search test.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\noptions ndots:2\n",
+		},
+		{
+			name:        "overwrite all and unset search",
+			baseContent: resolv2,
+			nameservers: []string{"1.2.3.4", "5.6.7.8"},
+			options:     []string{"ndots:2"},
+			searches:    []string{"."},
+			want:        "nameserver 1.2.3.4\nnameserver 5.6.7.8\noptions ndots:2\n",
+		},
+		{
+			name:            "set all and keep host server",
+			baseContent:     resolv2,
+			nameservers:     []string{"1.2.3.4", "5.6.7.8"},
+			options:         []string{"ndots:2"},
+			searches:        []string{"test.com"},
+			keepHostServers: true,
+			want:            "search test.com example.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\nnameserver 1.1.1.1\noptions ndots:2 edns0\n",
 		},
 		{
 			name:        "localhost nameservers should be filtered and use defaults instead",
@@ -112,13 +137,14 @@ func TestNew(t *testing.T) {
 				}
 			}
 			err = New(&Params{
-				Path:           target,
-				Nameservers:    tt.nameservers,
-				Searches:       tt.searches,
-				Options:        tt.options,
-				IPv6Enabled:    tt.ipv6,
-				Namespaces:     namespaces,
-				resolvConfPath: base,
+				Path:            target,
+				Nameservers:     tt.nameservers,
+				Searches:        tt.searches,
+				Options:         tt.options,
+				IPv6Enabled:     tt.ipv6,
+				KeepHostServers: tt.keepHostServers,
+				Namespaces:      namespaces,
+				resolvConfPath:  base,
 			})
 			assert.NoError(t, err, "New()")
 			content, err := os.ReadFile(target)

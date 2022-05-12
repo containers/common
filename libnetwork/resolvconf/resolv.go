@@ -28,6 +28,10 @@ type Params struct {
 	Namespaces []specs.LinuxNamespace
 	// IPv6Enabled will filter ipv6 nameservers when not set to true.
 	IPv6Enabled bool
+	// KeepHostServers can be set when it is required to still keep the
+	// original resolv.conf content even when custom Nameserver/Searches/Options
+	// are set. In this case they will be appended to the given values.
+	KeepHostServers bool
 	// Nameservers is a list of nameservers the container should use,
 	// instead of the default ones from the host.
 	Nameservers []string
@@ -116,7 +120,7 @@ func unsetSearchDomainsIfNeeded(searches []string) []string {
 // New creates a new resolv.conf file with the given params.
 func New(params *Params) error {
 	// short path, if everything is given there is no need to actually read the hosts /etc/resolv.conf
-	if len(params.Nameservers) > 0 && len(params.Options) > 0 && len(params.Searches) > 0 {
+	if len(params.Nameservers) > 0 && len(params.Options) > 0 && len(params.Searches) > 0 && !params.KeepHostServers {
 		return build(params.Path, params.Nameservers, unsetSearchDomainsIfNeeded(params.Searches), params.Options)
 	}
 
@@ -128,20 +132,20 @@ func New(params *Params) error {
 	content = filterResolvDNS(content, params.IPv6Enabled, !hostNS)
 
 	nameservers := params.Nameservers
-	if len(nameservers) == 0 {
-		nameservers = getNameservers(content)
+	if len(nameservers) == 0 || params.KeepHostServers {
+		nameservers = append(nameservers, getNameservers(content)...)
 	}
 
-	searches := params.Searches
-	if len(searches) == 0 {
-		searches = getSearchDomains(content)
-	} else {
-		searches = unsetSearchDomainsIfNeeded(searches)
+	searches := unsetSearchDomainsIfNeeded(params.Searches)
+	// if no params.Searches then use host ones
+	// otherwise make sure that they were no explicitly unset before adding host ones
+	if len(params.Searches) == 0 || (params.KeepHostServers && len(searches) > 0) {
+		searches = append(searches, getSearchDomains(content)...)
 	}
 
 	options := params.Options
-	if len(options) == 0 {
-		options = getOptions(content)
+	if len(options) == 0 || params.KeepHostServers {
+		options = append(options, getOptions(content)...)
 	}
 
 	return build(params.Path, nameservers, searches, options)
