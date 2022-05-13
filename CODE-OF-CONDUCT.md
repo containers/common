@@ -1,4 +1,4 @@
-![Containers Logo](images/containers.png)
+![Containers Logo](https://github.com/containers/common/blob/main/logos/containers-full-horiz.png)
 ## Containers Community Code of Conduct
 
 ### Contributor Code of Conduct
