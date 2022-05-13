@@ -13,6 +13,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/capabilities"
+	"github.com/containers/common/pkg/util"
 	"github.com/containers/storage/pkg/unshare"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
@@ -45,6 +46,8 @@ const (
 	// BoltDBStateStore is a state backed by a BoltDB database
 	BoltDBStateStore RuntimeStateStore = iota
 )
+
+var validImageVolumeModes = []string{"bind", "tmpfs", "ignore"}
 
 // ProxyEnv is a list of Proxy Environment variables
 var ProxyEnv = []string{
@@ -292,6 +295,10 @@ type EngineConfig struct {
 	// image pulled and pushed match the format of the source image.
 	// Building/committing defaults to OCI.
 	ImageDefaultFormat string `toml:"image_default_format,omitempty"`
+
+	// ImageVolumeMode Tells container engines how to handle the builtin
+	// image volumes.  Acceptable values are "bind", "tmpfs", and "ignore".
+	ImageVolumeMode string `toml:"image_volume_mode,omitempty"`
 
 	// InfraCommand is the command run to start up a pod infra container.
 	InfraCommand string `toml:"infra_command,omitempty"`
@@ -820,6 +827,9 @@ func (c *EngineConfig) Validate() error {
 		return err
 	}
 
+	if err := ValidateImageVolumeMode(c.ImageVolumeMode); err != nil {
+		return err
+	}
 	// Check if the pullPolicy from containers.conf is valid
 	// if it is invalid returns the error
 	pullPolicy := strings.ToLower(c.PullPolicy)
@@ -1303,4 +1313,15 @@ func (e eventsLogMaxSize) MarshalText() ([]byte, error) {
 		return v, nil
 	}
 	return []byte(fmt.Sprintf("%d", e)), nil
+}
+
+func ValidateImageVolumeMode(mode string) error {
+	if mode == "" {
+		return nil
+	}
+	if util.StringInSlice(mode, validImageVolumeModes) {
+		return nil
+	}
+
+	return fmt.Errorf("invalid image volume mode %q required value: %s", mode, strings.Join(validImageVolumeModes, ", "))
 }

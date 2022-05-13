@@ -33,6 +33,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.NetNS()).To(gomega.BeEquivalentTo("private"))
 			gomega.Expect(defaultConfig.IPCNS()).To(gomega.BeEquivalentTo("shareable"))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo(""))
+			gomega.Expect(defaultConfig.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("bind"))
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
@@ -378,6 +379,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Containers.BaseHostsFile).To(gomega.BeEquivalentTo("/etc/hosts2"))
 			gomega.Expect(config.Containers.HostContainersInternalIP).To(gomega.BeEquivalentTo("1.2.3.4"))
+			gomega.Expect(config.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("tmpfs"))
 		})
 
 		It("contents of passed-in file should override others", func() {
@@ -811,5 +813,14 @@ env=["foo=bar"]`
 		// config should only contain empty stanzas
 		gomega.Expect(string(b)).To(gomega.
 			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n"))
+	})
+
+	It("validate ImageVolumeMode", func() {
+		for _, mode := range append(validImageVolumeModes, "") {
+			err := ValidateImageVolumeMode(mode)
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		}
+		err := ValidateImageVolumeMode("bogus")
+		gomega.Expect(err).To(gomega.HaveOccurred())
 	})
 })
