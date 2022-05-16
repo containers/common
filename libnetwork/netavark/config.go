@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	internalutil "github.com/containers/common/libnetwork/internal/util"
@@ -107,6 +108,11 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 					return nil, err
 				}
 
+			case "isolate":
+				_, err = strconv.ParseBool(value)
+				if err != nil {
+					return nil, err
+				}
 			default:
 				return nil, errors.Errorf("unsupported bridge network option %s", key)
 			}
