@@ -1020,6 +1020,34 @@ var _ = Describe("Config", func() {
 			Expect(err).To(BeNil())
 			EqualNetwork(network2, network1)
 		})
+
+		It("create network with isolate option", func() {
+			for _, val := range []string{"true", "1"} {
+				network := types.Network{
+					Options: map[string]string{
+						"isolate": val,
+					},
+				}
+				network1, err := libpodNet.NetworkCreate(network)
+				Expect(err).To(BeNil())
+				Expect(network1.Driver).To(Equal("bridge"))
+				Expect(network1.Options).ToNot(BeNil())
+				path := filepath.Join(networkConfDir, network1.Name+".json")
+				Expect(path).To(BeARegularFile())
+				grepInFile(path, `"isolate": "true"`)
+				Expect(network1.Options).To(HaveKeyWithValue("isolate", "true"))
+			}
+		})
+
+		It("create network with invalid isolate option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					"isolate": "123",
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+		})
 	})
 
 	Context("network load valid existing ones", func() {
