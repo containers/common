@@ -18,6 +18,7 @@ linters:
     - revive
     - prealloc
     - makezero
+    - gofumpt
 linters-settings:
   errcheck:
     check-type-assertions: true

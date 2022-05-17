@@ -77,7 +77,6 @@ type Config struct {
 // ContainersConfig represents the "containers" TOML config table
 // containers global options for containers tools
 type ContainersConfig struct {
-
 	// Devices to add to all containers
 	Devices []string `toml:"devices,omitempty"`
 
