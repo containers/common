@@ -65,8 +65,6 @@ testing_task:
     - make vendor
     - make build
     - make build-cross
-    - make install.tools
-    - make validate
     - make test
 
 
