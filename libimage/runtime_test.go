@@ -98,5 +98,4 @@ func TestTmpdir(t *testing.T) {
 	} else {
 		os.Unsetenv(tmpStr)
 	}
-
 }
