@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
     - uses: actions/setup-go@v3
       with:
         go-version: 1.x # latest stable
@@ -35,5 +37,11 @@ jobs:
       uses: golangci/golangci-lint-action@v3
       with:
         version: "${{ env.LINT_VERSION }}"
+    # Extra linters, only checking new code from a pull request.
+    - name: lint-extra
+      if: github.event_name == 'pull_request'
+      run: |
+        golangci-lint run --config .golangci-extra.yml --new-from-rev=HEAD~1 --out-format=github-actions
+
     - name: validate seccomp
       run: ./tools/validate_seccomp.sh ./pkg/seccomp
