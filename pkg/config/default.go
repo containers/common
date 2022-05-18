@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -19,7 +20,6 @@ import (
 	"github.com/containers/storage/pkg/unshare"
 	"github.com/containers/storage/types"
 	"github.com/opencontainers/selinux/go-selinux"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ const (
 
 	// _conmonVersionFormatErr is used when the expected versio-format of conmon
 	// has changed.
-	_conmonVersionFormatErr = "conmon version changed format"
+	_conmonVersionFormatErr = "conmon version changed format: %w"
 
 	// _defaultGraphRoot points to the default path of the graph root.
 	_defaultGraphRoot = "/var/lib/containers/storage"
@@ -83,7 +83,7 @@ var (
 		"CAP_SYS_CHROOT",
 	}
 
-	// It may seem a bit unconventional, but it is necessary to do so.
+	// Search these locations in which CNIPlugins can be installed.
 	DefaultCNIPluginDirs = []string{
 		"/usr/local/libexec/cni",
 		"/usr/libexec/cni",
@@ -151,7 +151,7 @@ const (
 	DefaultRootlessSignaturePolicyPath = "containers/policy.json"
 	// DefaultShmSize is the default upper limit on the size of tmpfs mounts.
 	DefaultShmSize = "65536k"
-	// DefaultUserNSSize default value.
+	// DefaultUserNSSize indicates the default number of UIDs allocated for user namespace within a container.
 	DefaultUserNSSize = 65536
 	// OCIBufSize limits maximum LogSizeMax.
 	OCIBufSize = 8192
@@ -416,7 +416,7 @@ func defaultTmpDir() (string, error) {
 			return "", err
 		} else if err := os.Chmod(libpodRuntimeDir, 0o700|os.ModeSticky); err != nil {
 			// The directory already exists, so we try to make sure it's private and has the sticky bit set on it.
-			return "", errors.Wrap(err, "set sticky bit on")
+			return "", fmt.Errorf("set sticky bit on: %w", err)
 		}
 	}
 	return filepath.Join(libpodRuntimeDir, "tmp"), nil
@@ -439,7 +439,7 @@ func probeConmon(conmonBinary string) error {
 	}
 	major, err := strconv.Atoi(matches[1])
 	if err != nil {
-		return errors.Wrap(err, _conmonVersionFormatErr)
+		return fmt.Errorf(_conmonVersionFormatErr, err)
 	}
 	if major < _conmonMinMajorVersion {
 		return ErrConmonOutdated
@@ -450,7 +450,7 @@ func probeConmon(conmonBinary string) error {
 
 	minor, err := strconv.Atoi(matches[2])
 	if err != nil {
-		return errors.Wrap(err, _conmonVersionFormatErr)
+		return fmt.Errorf(_conmonVersionFormatErr, err)
 	}
 	if minor < _conmonMinMinorVersion {
 		return ErrConmonOutdated
@@ -461,7 +461,7 @@ func probeConmon(conmonBinary string) error {
 
 	patch, err := strconv.Atoi(matches[3])
 	if err != nil {
-		return errors.Wrap(err, _conmonVersionFormatErr)
+		return fmt.Errorf(_conmonVersionFormatErr, err)
 	}
 	if patch < _conmonMinPatchVersion {
 		return ErrConmonOutdated
@@ -532,7 +532,7 @@ func (c *Config) Env() []string {
 	return c.Containers.Env
 }
 
-// InitPath returns the default init path to add to containers.
+// InitPath returns location where init program added to containers when users specify the --init flag.
 func (c *Config) InitPath() string {
 	return c.Containers.InitPath
 }
@@ -623,10 +623,10 @@ func machineVolumes(volumes []string) ([]string, error) {
 		vol := os.ExpandEnv(v)
 		split := strings.Split(vol, ":")
 		if len(split) < 2 || len(split) > 3 {
-			return nil, errors.Errorf("invalid machine volume %s, 2 or 3 fields required", v)
+			return nil, fmt.Errorf("invalid machine volume %s, 2 or 3 fields required", v)
 		}
 		if split[0] == "" || split[1] == "" {
-			return nil, errors.Errorf("invalid machine volume %s, fields must container data", v)
+			return nil, fmt.Errorf("invalid machine volume %s, fields must container data", v)
 		}
 		translatedVolumes = append(translatedVolumes, vol)
 	}
