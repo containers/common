@@ -2,6 +2,7 @@ package libimage
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -9,6 +10,17 @@ import (
 )
 
 func TestLoad(t *testing.T) {
+	// Make sure that loading images does not leave any artifacts in TMPDIR
+	// behind (containers/podman/issues/14287).
+	tmpdir := t.TempDir()
+	os.Setenv("TMPDIR", tmpdir)
+	defer func() {
+		dir, err := ioutil.ReadDir(tmpdir)
+		require.NoError(t, err)
+		require.Len(t, dir, 0)
+		os.Unsetenv("TMPDIR")
+	}()
+
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
 	ctx := context.Background()
