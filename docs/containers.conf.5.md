@@ -487,6 +487,14 @@ Default transport method for pulling and pushing images.
 Maximum number of image layers to be copied (pulled/pushed) simultaneously.
 Not setting this field will fall back to containers/image defaults. (6)
 
+**image_volume_mode**="bind"
+
+Tells container engines how to handle the builtin image volumes.
+
+* bind: An anonymous named volume will be  created  and  mounted into the container.
+* tmpfs: The volume is mounted onto the container as a tmpfs, which allows the users to create content that disappears when the container is stopped.
+* ignore: All volumes are just ignored and no action is taken.
+
 **infra_command**="/pause"
 
 Infra (pause) container image command for pod infra containers. When running a
