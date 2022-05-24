@@ -13,6 +13,7 @@ import (
 	"github.com/containers/storage/pkg/lockfile"
 	"github.com/containers/storage/pkg/stringid"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 // maxSecretSize is the max size for secret data - 512kB
@@ -128,7 +129,7 @@ func NewManager(rootPath string) (*SecretsManager, error) {
 // Store takes a name, creates a secret and stores the secret metadata and the secret payload.
 // It returns a generated ID that is associated with the secret.
 // The max size for secret data is 512kB.
-func (s *SecretsManager) Store(name string, data []byte, driverType string, driverOpts map[string]string) (string, error) {
+func (s *SecretsManager) Store(name string, data []byte, kubeSecret bool, driverType string, driverOpts map[string]string) (string, error) {
 	err := validateSecretName(name)
 	if err != nil {
 		return "", err
@@ -171,6 +172,16 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 	secr.Metadata = make(map[string]string)
 	secr.CreatedAt = time.Now()
 	secr.DriverOptions = driverOpts
+
+	if kubeSecret {
+		secr.Metadata["secret-structure"] = "kube"
+		_, err = unmarshalKube(data)
+		if err != nil {
+			return "", errors.Wrapf(err, "invalid structure for kubernetes data")
+		}
+	} else {
+		secr.Metadata["secret-structure"] = "native"
+	}
 
 	driver, err := getDriver(driverType, driverOpts)
 	if err != nil {
@@ -266,6 +277,70 @@ func (s *SecretsManager) LookupSecretData(nameOrID string) (*Secret, []byte, err
 		return nil, nil, err
 	}
 	return secret, data, nil
+}
+
+// LookupKubeSecretData returns secret metadata as well as secret data in a map.
+// The map contains string data names mapped to data chunks. This format is used in kubernetes.
+// The secret data can be looked up using its name, ID, or partial ID.
+// Users must also provide dataNames to search for within the raw file data.
+func (s *SecretsManager) LookupKubeSecretData(nameOrID string, dataNames []string) (*Secret, map[string][]byte, error) {
+	s.lockfile.Lock()
+	defer s.lockfile.Unlock()
+
+	secret, err := s.lookupSecret(nameOrID)
+	if err != nil {
+		return nil, nil, err
+	}
+	driver, err := getDriver(secret.Driver, secret.DriverOptions)
+	if err != nil {
+		return nil, nil, err
+	}
+	data, err := driver.Lookup(secret.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	allData, err := unmarshalKube(data)
+	if err != nil {
+		return nil, nil, err
+	}
+	finalData := make(map[string][]byte)
+
+	for name, entry := range allData {
+		for _, lookup := range dataNames {
+			if name == lookup {
+				finalData[name] = entry
+			}
+		}
+	}
+	return secret, finalData, nil
+}
+
+// unmarshalKube is a helper function used in storage to test sanity of the data as well as
+// retrieval for parsing the proper data tags given by the user.
+func unmarshalKube(data []byte) (map[string][]byte, error) {
+	type kubeData struct {
+		API      string            `yaml:"apiVersion"`
+		Data     map[string]string `yaml:"data"`
+		Kind     string            `yaml:"kind"`
+		Metadata map[string]string `yaml:"metadata"`
+		Type     string            `yaml:"type"`
+	}
+
+	finalData := make(map[string][]byte)
+
+	k := &kubeData{}
+	err := yaml.Unmarshal(data, &k)
+	if err != nil {
+		return nil, err
+	}
+
+	for key, data := range k.Data {
+		b := []byte(data)
+		finalData[key] = b
+	}
+
+	return finalData, err
 }
 
 // validateSecretName checks if the secret name is valid.

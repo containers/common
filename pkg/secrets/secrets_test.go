@@ -32,7 +32,7 @@ func TestAddSecretAndLookupData(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupSecret("mysecret")
@@ -51,28 +51,28 @@ func TestAddSecretName(t *testing.T) {
 	defer cleanup(testpath)
 
 	// test one char secret name
-	_, err = manager.Store("a", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("a", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupSecret("a")
 	require.NoError(t, err)
 
 	// name too short
-	_, err = manager.Store("", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
 	// name too long
-	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaiz", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaiz", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
 	// invalid chars
-	_, err = manager.Store("??", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("??", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
-	_, err = manager.Store("-a", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("-a", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
-	_, err = manager.Store("a-", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("a-", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
-	_, err = manager.Store(".a", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store(".a", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
-	_, err = manager.Store("a.", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("a.", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
 }
 
@@ -81,10 +81,10 @@ func TestAddMultipleSecrets(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	id, err := manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	id, err := manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
-	id2, err := manager.Store("mysecret2", []byte("mydata2"), drivertype, opts)
+	id2, err := manager.Store("mysecret2", []byte("mydata2"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	secrets, err := manager.List()
@@ -115,10 +115,10 @@ func TestAddSecretDupName(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.Error(t, err)
 }
 
@@ -129,10 +129,10 @@ func TestAddSecretPrefix(t *testing.T) {
 
 	// If the randomly generated secret id is something like "abcdeiuoergnadufigh"
 	// we should still allow someone to store a secret with the name "abcd" or "a"
-	secretID, err := manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	secretID, err := manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
-	_, err = manager.Store(secretID[0:5], []byte("mydata"), drivertype, opts)
+	_, err = manager.Store(secretID[0:5], []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 }
 
@@ -141,7 +141,7 @@ func TestRemoveSecret(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupSecret("mysecret")
@@ -171,7 +171,7 @@ func TestLookupAllSecrets(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	id, err := manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	id, err := manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	// inspect using secret name
@@ -185,7 +185,7 @@ func TestInspectSecretId(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	id, err := manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	id, err := manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupSecret("mysecret")
@@ -217,12 +217,44 @@ func TestSecretList(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("mysecret", []byte("mydata"), false, drivertype, opts)
 	require.NoError(t, err)
-	_, err = manager.Store("mysecret2", []byte("mydata2"), drivertype, opts)
+	_, err = manager.Store("mysecret2", []byte("mydata2"), false, drivertype, opts)
 	require.NoError(t, err)
 
 	allSecrets, err := manager.List()
 	require.NoError(t, err)
 	require.Len(t, allSecrets, 2)
+}
+
+func TestSecretKubeFormat(t *testing.T) {
+	manager, testpath, err := setup()
+	require.NoError(t, err)
+	defer cleanup(testpath)
+
+	secret := `
+    apiVersion: v1
+    data:
+      mydata1: 1234
+      mydata2: 5678
+    kind: Secret
+    metadata:
+      name: mysecret
+    type: Opaque`
+
+	_, err = manager.Store("mysecret", []byte(secret), true, drivertype, opts)
+	require.NoError(t, err)
+
+	_, err = manager.lookupSecret("mysecret")
+	require.NoError(t, err)
+
+	_, data, err := manager.LookupKubeSecretData("mysecret", []string{"mydata1"})
+	require.NoError(t, err)
+
+	val, ok := data["mydata1"]
+	require.True(t, ok)
+
+	if !bytes.Equal(val, []byte("1234")) {
+		t.Errorf("error: secret data not equal")
+	}
 }
