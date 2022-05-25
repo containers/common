@@ -94,7 +94,7 @@ func TestAddRemove(t *testing.T) {
 	if unshare.IsRootless() {
 		t.Skip("Test can only run as root")
 	}
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	ref, err := alltransports.ParseImageName(otherListImage)
 	assert.Nilf(t, err, "ParseImageName(%q)", otherListImage)
@@ -163,7 +163,7 @@ func TestReference(t *testing.T) {
 	if unshare.IsRootless() {
 		t.Skip("Test can only run as root")
 	}
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	dir, err := ioutil.TempDir("", "manifests")
 	assert.Nilf(t, err, "error creating temporary directory")
@@ -263,7 +263,7 @@ func TestPush(t *testing.T) {
 	if unshare.IsRootless() {
 		t.Skip("Test can only run as root")
 	}
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	dir, err := ioutil.TempDir("", "manifests")
 	assert.Nilf(t, err, "error creating temporary directory")
