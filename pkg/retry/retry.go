@@ -96,6 +96,14 @@ func isRetryable(err error) bool {
 			}
 		}
 		return true
+	case net.Error:
+		if e.Timeout() {
+			return true
+		}
+		if unwrappable, ok := e.(unwrapper); ok {
+			err = unwrappable.Unwrap()
+			return isRetryable(err)
+		}
 	case unwrapper: // Test this last, because various error types might implement .Unwrap()
 		err = e.Unwrap()
 		return isRetryable(err)
