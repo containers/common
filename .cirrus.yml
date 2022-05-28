@@ -5,8 +5,6 @@ env:
     ####
     #### Global variables used for all tasks
     ####
-    # Netavark branch to download binary from
-    NETAVARK_BRANCH: "main"
     # Overrides default location (/tmp/cirrus) for repo clone
     GOPATH: &gopath "/var/tmp/go"
     GOBIN: "${GOPATH}/bin"
@@ -20,8 +18,8 @@ env:
     ####
     #### image names to test with (double-quotes around names are critical)
     ####
-    FEDORA_NAME: "fedora-35"
-    IMAGE_SUFFIX: "c6454758209748992"
+    FEDORA_NAME: "fedora-36"
+    IMAGE_SUFFIX: "c5878804328480768"
     FEDORA_CACHE_IMAGE_NAME: "fedora-${IMAGE_SUFFIX}"
     FEDORA_CONTAINER_FQIN: "quay.io/libpod/fedora_podman:${IMAGE_SUFFIX}"
 
@@ -47,21 +45,13 @@ testing_task:
   alias: testing
   name: "Testing on $FEDORA_NAME"
   env:
-    NETAVARK_DIRPATH: "/usr/local/libexec/podman"
-    NETAVARK_BINARY: "${NETAVARK_DIRPATH}/netavark"  # unit-tests sensitive to this
-  setup_script:
-    - mkdir "$GOLANGCI_LINT_CACHE"
-    # TODO: Remove this when netavark is installed by RPM in VM images
-    - curl --fail --location -o /tmp/netavark.zip "https://api.cirrus-ci.com/v1/artifact/github/containers/netavark/success/binary.zip?branch=${NETAVARK_BRANCH}"
-    - mkdir -vp "${NETAVARK_DIRPATH}"
-    - cd "${NETAVARK_DIRPATH}"
-    - unzip /tmp/netavark.zip
-    # DEBUG: - mv netavark.debug netavark
-    - chmod 0755 ./netavark
-    - restorecon -F -v "${NETAVARK_DIRPATH}"
-    # TODO: end of netavark setup
+    NETAVARK_BINARY: "/usr/libexec/podman/netavark"
   test_script:
+    # TODO: Remove '|| dnf install' part once package is included in VM image
+    - dnf install -y /var/cache/download/podman-plugins*.rpm || dnf install -y podman-plugins
+    - mkdir "$GOLANGCI_LINT_CACHE"
     - export PATH="$PATH:$GOPATH/bin"
+    - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
     - make vendor
     - make build
     - make build-cross
