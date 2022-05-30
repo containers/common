@@ -3,6 +3,7 @@ package libimage
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -378,7 +379,7 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, options *Loo
 		image = instance
 	}
 
-	matches, err := r.imageReferenceMatchesContext(ref, options)
+	matches, err := r.imageReferenceMatchesContext(ref, name, options, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -499,7 +500,7 @@ func (r *Runtime) ResolveName(name string) (string, error) {
 
 // imageReferenceMatchesContext return true if the specified reference matches
 // the platform (os, arch, variant) as specified by the lookup options.
-func (r *Runtime) imageReferenceMatchesContext(ref types.ImageReference, options *LookupImageOptions) (bool, error) {
+func (r *Runtime) imageReferenceMatchesContext(ref types.ImageReference, name string, options *LookupImageOptions, writer io.Writer) (bool, error) {
 	if options.Architecture+options.OS+options.Variant == "" {
 		return true, nil
 	}
@@ -515,20 +516,29 @@ func (r *Runtime) imageReferenceMatchesContext(ref types.ImageReference, options
 		return false, err
 	}
 
-	if options.Architecture != "" && options.Architecture != data.Architecture {
-		logrus.Debugf("architecture %q does not match architecture %q of image %s", options.Architecture, data.Architecture, ref)
-		return false, nil
-	}
-	if options.OS != "" && options.OS != data.Os {
-		logrus.Debugf("OS %q does not match OS %q of image %s", options.OS, data.Os, ref)
-		return false, nil
-	}
-	if options.Variant != "" && options.Variant != data.Variant {
-		logrus.Debugf("variant %q does not match variant %q of image %s", options.Variant, data.Variant, ref)
-		return false, nil
+	writeMessage := func(msg string) {
+		if writer == nil {
+			logrus.Warn(msg)
+		} else {
+			fmt.Fprintf(writer, "WARNING: %s\n", msg)
+		}
 	}
 
-	return true, nil
+	matches := true
+	if options.Architecture != "" && options.Architecture != data.Architecture {
+		writeMessage(fmt.Sprintf("requested architecture %q does not match architecture %q of image %s", options.Architecture, data.Architecture, name))
+		matches = false
+	}
+	if options.OS != "" && options.OS != data.Os {
+		writeMessage(fmt.Sprintf("requested OS %q does not match OS %q of image %s", options.OS, data.Os, name))
+		matches = false
+	}
+	if options.Variant != "" && options.Variant != data.Variant {
+		writeMessage(fmt.Sprintf("requested variant %q does not match variant %q of image %s", options.Variant, data.Variant, name))
+		matches = false
+	}
+
+	return matches, nil
 }
 
 // IsExternalContainerFunc allows for checking whether the specified container

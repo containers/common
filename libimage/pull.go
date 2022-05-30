@@ -160,10 +160,18 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	}
 
 	localImages := []*Image{}
+	lookupOptions := &LookupImageOptions{Architecture: options.Architecture, OS: options.OS, Variant: options.Variant}
 	for _, name := range pulledImages {
 		local, _, err := r.LookupImage(name, nil)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error locating pulled image %q name in containers storage", name)
+		}
+		ref, err := local.StorageReference()
+		if err != nil {
+			return nil, fmt.Errorf("creating storage reference for pulled image %q: %w", name, err)
+		}
+		if _, err := r.imageReferenceMatchesContext(ref, name, lookupOptions, options.Writer); err != nil {
+			return nil, fmt.Errorf("checking platform for pulled image %q: %w", name, err)
 		}
 		localImages = append(localImages, local)
 	}
