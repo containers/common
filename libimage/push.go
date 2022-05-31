@@ -2,10 +2,12 @@ package libimage
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/reference"
+	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/sirupsen/logrus"
 )
@@ -85,5 +87,21 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 
 	defer c.close()
 
-	return c.copy(ctx, srcRef, destRef)
+	manifestBytes, err := c.copy(ctx, srcRef, destRef)
+	if err != nil {
+		return nil, err
+	}
+	manifestDigest, err := manifest.Digest(manifestBytes)
+	if err != nil {
+		return nil, err
+	}
+	// Tag for pushed remote digest i.e repo@remote-digest
+	remoteDigest := strings.TrimPrefix(manifestDigest.String(), "sha256:")
+	pushedTag := destRef.DockerReference().Name() + ":" + remoteDigest
+	logrus.Debugf("Successfully pushed image and now creating local tag %q", pushedTag)
+	err = image.Tag(pushedTag)
+	if err != nil {
+		logrus.Debugf("Failed creating local tag for %q just pushed image: %s", pushedTag, err)
+	}
+	return manifestBytes, nil
 }
