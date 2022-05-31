@@ -3,7 +3,6 @@ package libimage
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -379,21 +378,24 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, options *Loo
 		image = instance
 	}
 
-	matches, err := r.imageReferenceMatchesContext(ref, name, options, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// NOTE: if the user referenced by ID we must optimistically assume
-	// that they know what they're doing.  Given, we already did the
-	// manifest limbo above, we may already have resolved it.
-	if !matches && !strings.HasPrefix(image.ID(), candidate) {
-		return nil, nil
-	}
 	// Also print the string within the storage transport.  That may aid in
 	// debugging when using additional stores since we see explicitly where
 	// the store is and which driver (options) are used.
 	logrus.Debugf("Found image %q as %q in local containers storage (%s)", name, candidate, ref.StringWithinTransport())
+
+	// Ignore the (fatal) error since the image may be corrupted, which
+	// will bubble up at other places.  During lookup, we just return it as
+	// is.
+	if matchError, customPlatform, _ := image.matchesPlatform(context.Background(), options.Architecture, options.OS, options.Variant); matchError != nil {
+		if customPlatform {
+			logrus.Debugf("%v", matchError)
+			// Return nil if the user clearly requested a custom
+			// platform and the located image does not match.
+			return nil, nil
+		}
+		logrus.Warnf("%v", matchError)
+	}
+
 	return image, nil
 }
 
@@ -496,49 +498,6 @@ func (r *Runtime) ResolveName(name string) (string, error) {
 	}
 
 	return normalized.String(), nil
-}
-
-// imageReferenceMatchesContext return true if the specified reference matches
-// the platform (os, arch, variant) as specified by the lookup options.
-func (r *Runtime) imageReferenceMatchesContext(ref types.ImageReference, name string, options *LookupImageOptions, writer io.Writer) (bool, error) {
-	if options.Architecture+options.OS+options.Variant == "" {
-		return true, nil
-	}
-
-	ctx := context.Background()
-	img, err := ref.NewImage(ctx, &r.systemContext)
-	if err != nil {
-		return false, err
-	}
-	defer img.Close()
-	data, err := img.Inspect(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	writeMessage := func(msg string) {
-		if writer == nil {
-			logrus.Warn(msg)
-		} else {
-			fmt.Fprintf(writer, "WARNING: %s\n", msg)
-		}
-	}
-
-	matches := true
-	if options.Architecture != "" && options.Architecture != data.Architecture {
-		writeMessage(fmt.Sprintf("requested architecture %q does not match architecture %q of image %s", options.Architecture, data.Architecture, name))
-		matches = false
-	}
-	if options.OS != "" && options.OS != data.Os {
-		writeMessage(fmt.Sprintf("requested OS %q does not match OS %q of image %s", options.OS, data.Os, name))
-		matches = false
-	}
-	if options.Variant != "" && options.Variant != data.Variant {
-		writeMessage(fmt.Sprintf("requested variant %q does not match variant %q of image %s", options.Variant, data.Variant, name))
-		matches = false
-	}
-
-	return matches, nil
 }
 
 // IsExternalContainerFunc allows for checking whether the specified container
