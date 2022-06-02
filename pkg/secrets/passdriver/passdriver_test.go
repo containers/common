@@ -25,12 +25,23 @@ func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
 	})
 	require.NoError(t, err)
 
-	err = driver.gpg(context.TODO(), nil, nil, "--batch", "--passphrase", "--quick-generate-key", "testing@passdriver")
+	f, err := ioutil.TempFile("", "pass.txt")
+	defer require.NoError(t, err)
+
+	_, err = f.Write([]byte("123"))
+	require.NoError(t, err)
+
+	// give the gpg setup something else than nil for stdout
+	// #1057 fixed a bug where users could not be promted or receive error output when using third party pass drivers
+	// there really is no way to test this besides check that giving os.Stdout does not cause a panic
+	// as well as giving a password file that can be read.
+	err = driver.gpg(context.TODO(), nil, os.Stdout, "--batch", "--passphrase-file", f.Name(), "--quick-generate-key", "testing@passdriver123")
 	require.NoError(t, err)
 
 	return driver, func() {
 		os.RemoveAll(base)
 		os.RemoveAll(gpghomedir)
+		os.Remove(f.Name())
 	}
 }
 

@@ -126,7 +126,7 @@ func (d *Driver) Lookup(id string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := d.gpg(context.TODO(), nil, out, "--decrypt", key); err != nil {
+	if err := d.gpg(context.TODO(), os.Stdin, out, "--decrypt", key); err != nil {
 		return nil, errors.Wrapf(errNoSecretData, id)
 	}
 	if out.Len() == 0 {
@@ -145,7 +145,7 @@ func (d *Driver) Store(id string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	return d.gpg(context.TODO(), in, nil, "--encrypt", "-r", d.KeyID, "-o", key)
+	return d.gpg(context.TODO(), in, os.Stdout, "--encrypt", "-r", d.KeyID, "-o", key)
 }
 
 // Delete removes the secret associated with the specified ID.  An error is returned if no matching secret is found.
@@ -164,7 +164,11 @@ func (d *Driver) gpg(ctx context.Context, in io.Reader, out io.Writer, args ...s
 	if d.GPGHomedir != "" {
 		args = append([]string{"--homedir", d.GPGHomedir}, args...)
 	}
-	cmd := exec.CommandContext(ctx, "gpg", args...)
+	gpg, err := exec.LookPath("gpg")
+	if err != nil {
+		return err
+	}
+	cmd := exec.CommandContext(ctx, gpg, args...)
 	cmd.Env = os.Environ()
 	cmd.Stdin = in
 	cmd.Stdout = out
