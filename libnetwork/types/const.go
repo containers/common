@@ -41,6 +41,7 @@ type NetworkBackend string
 const (
 	CNI      NetworkBackend = "cni"
 	Netavark NetworkBackend = "netavark"
+	Dummy    NetworkBackend = "dummy"
 )
 
 // ValidMacVLANModes is the list of valid mode options for the macvlan driver
