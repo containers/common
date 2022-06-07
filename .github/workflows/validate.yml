@@ -41,11 +41,15 @@ jobs:
       uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # v3
       with:
         version: "${{ env.LINT_VERSION }}"
+        only-new-issues: true
     # Extra linters, only checking new code from a pull request.
+    - name: Extra golangci-lint config. switcharoo
+      run: mv .golangci-extra.yml golangci.yml
     - name: lint-extra
-      if: github.event_name == 'pull_request'
-      run: |
-        golangci-lint run --config .golangci-extra.yml --new-from-rev=HEAD~1 --out-format=github-actions
+      uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # v3
+      with:
+        version: "${{ env.LINT_VERSION }}"
+        only-new-issues: true
 
     - name: validate seccomp
       run: ./tools/validate_seccomp.sh ./pkg/seccomp
