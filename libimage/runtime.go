@@ -182,6 +182,9 @@ type LookupImageOptions struct {
 	// Lookup an image matching the specified variant.
 	Variant string
 
+	// Controls the behavior when checking the platform of an image.
+	PlatformPolicy PlatformPolicy
+
 	// If set, do not look for items/instances in the manifest list that
 	// match the current platform but return the manifest list as is.
 	// only check for manifest list, return ErrNotAManifestList if not found.
@@ -383,6 +386,13 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, options *Loo
 	// the store is and which driver (options) are used.
 	logrus.Debugf("Found image %q as %q in local containers storage (%s)", name, candidate, ref.StringWithinTransport())
 
+	// Do not perform any further platform checks if the image was
+	// requested by ID.  In that case, we must assume that the user/tool
+	// know what they're doing.
+	if strings.HasPrefix(image.ID(), candidate) {
+		return image, nil
+	}
+
 	// Ignore the (fatal) error since the image may be corrupted, which
 	// will bubble up at other places.  During lookup, we just return it as
 	// is.
@@ -393,7 +403,12 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, options *Loo
 			// platform and the located image does not match.
 			return nil, nil
 		}
-		logrus.Warnf("%v", matchError)
+		switch options.PlatformPolicy {
+		case PlatformPolicyDefault:
+			logrus.Debugf("%v", matchError)
+		case PlatformPolicyWarn:
+			logrus.Warnf("%v", matchError)
+		}
 	}
 
 	return image, nil
