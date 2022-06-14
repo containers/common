@@ -315,7 +315,7 @@ func New(path string, resources *configs.Resources) (*CgroupControl, error) {
 }
 
 // NewSystemd creates a new cgroup control
-func NewSystemd(path string) (*CgroupControl, error) {
+func NewSystemd(path string, resources *configs.Resources) (*CgroupControl, error) {
 	cgroup2, err := IsCgroup2UnifiedMode()
 	if err != nil {
 		return nil, err
@@ -324,9 +324,12 @@ func NewSystemd(path string) (*CgroupControl, error) {
 		cgroup2: cgroup2,
 		systemd: true,
 		config: &configs.Cgroup{
-			Path: path,
+			Path:      path,
+			Resources: resources,
+			Rootless:  unshare.IsRootless(),
 		},
 	}
+
 	return control, nil
 }
 
@@ -386,7 +389,7 @@ func (c *CgroupControl) CreateSystemdUnit(path string) error {
 	}
 	defer conn.Close()
 
-	return systemdCreate(path, conn)
+	return systemdCreate(c.config.Resources, path, conn)
 }
 
 // GetUserConnection returns an user connection to D-BUS
@@ -408,7 +411,7 @@ func (c *CgroupControl) CreateSystemdUserUnit(path string, uid int) error {
 	}
 	defer conn.Close()
 
-	return systemdCreate(path, conn)
+	return systemdCreate(c.config.Resources, path, conn)
 }
 
 func dbusAuthConnection(uid int, createBus func(opts ...dbus.ConnOption) (*dbus.Conn, error)) (*dbus.Conn, error) {
