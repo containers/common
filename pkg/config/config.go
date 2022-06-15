@@ -709,6 +709,13 @@ func systemConfigs() ([]string, error) {
 	configs := []string{}
 	path := os.Getenv("CONTAINERS_CONF")
 	if path != "" {
+		// Podman cleanup process may not fire if the path isn't
+		// absolute.
+		path, err = filepath.Abs(path)
+		if err != nil {
+			return nil, err
+		}
+		os.Setenv("CONTAINERS_CONF", path)
 		if _, err := os.Stat(path); err != nil {
 			return nil, fmt.Errorf("CONTAINERS_CONF file: %w", err)
 		}
