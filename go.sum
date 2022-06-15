@@ -276,8 +276,8 @@ github.com/containernetworking/plugins v0.9.1/go.mod h1:xP/idU2ldlzN6m4p5LmGiwRD
 github.com/containernetworking/plugins v1.0.1/go.mod h1:QHCfGpaTwYTbbH+nZXKVTxNBDZcxSOplJT5ico8/FLE=
 github.com/containernetworking/plugins v1.1.1 h1:+AGfFigZ5TiQH00vhR8qPeSatj53eNGz0C1d3wVYlHE=
 github.com/containernetworking/plugins v1.1.1/go.mod h1:Sr5TH/eBsGLXK/h71HeLfX19sZPp3ry5uHSkI4LPxV8=
-github.com/containers/image/v5 v5.21.2-0.20220607134551-a4c340b1a21f h1:W2WuE4CjD/8Uq0HCovyg5a5CFcwHaFDkQBh5Ed8a2Wc=
-github.com/containers/image/v5 v5.21.2-0.20220607134551-a4c340b1a21f/go.mod h1:imgJRZxNBt/O8fQef6s6GTbHSYFK/iUBOpHMzAmQJ+g=
+github.com/containers/image/v5 v5.21.2-0.20220615100411-a78a00792916 h1:oSECh/ekVE1zVbgNii0uARLdTeYw5x/7HJsLpTz+CTU=
+github.com/containers/image/v5 v5.21.2-0.20220615100411-a78a00792916/go.mod h1:hEf8L08Hrh/3fK4vLf5l7988MJmij2swfCBUzqgnhF4=
 github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a h1:spAGlqziZjCJL25C6F1zsQY05tfCKE9F5YwtEWWe6hU=
 github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a/go.mod h1:9rfv8iPl1ZP7aqh9YA68wnZv2NUDbXdcdPHVz0pFbPY=
 github.com/containers/ocicrypt v1.0.1/go.mod h1:MeJDzk1RJHv89LjsH0Sp5KTY3ZYkjXO/C+bKAeWFIrc=
@@ -288,8 +288,8 @@ github.com/containers/ocicrypt v1.1.3/go.mod h1:xpdkbVAuaH3WzbEabUd5yDsl9SwJA5pA
 github.com/containers/ocicrypt v1.1.5 h1:UO+gBnBXvMvC7HTXLh0bPgLslfW8HlY+oxYcoSHBcZQ=
 github.com/containers/ocicrypt v1.1.5/go.mod h1:WgjxPWdTJMqYMjf3M6cuIFFA1/MpyyhIM99YInA+Rvc=
 github.com/containers/storage v1.41.0/go.mod h1:Pb0l5Sm/89kolX3o2KolKQ5cCHk5vPNpJrhNaLcdS5s=
-github.com/containers/storage v1.41.1-0.20220607143333-8951d0153bf6 h1:AWGEIiqWFIfzTIv4Q3k6vJt/EYyo8dh35ny7WhnOd0s=
-github.com/containers/storage v1.41.1-0.20220607143333-8951d0153bf6/go.mod h1:6XQ68cEG8ojfP/m3HIupFV1rZsnqeFmaE8N1ctBP94Y=
+github.com/containers/storage v1.41.1-0.20220614214904-388efef4bf7e h1:RFqlwpWxr4lJsZtyTR0XF9uJ3BukFJdjyMF0equ4YMU=
+github.com/containers/storage v1.41.1-0.20220614214904-388efef4bf7e/go.mod h1:6XQ68cEG8ojfP/m3HIupFV1rZsnqeFmaE8N1ctBP94Y=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=

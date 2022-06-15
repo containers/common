@@ -7,9 +7,9 @@ require (
 	github.com/containerd/containerd v1.6.6
 	github.com/containernetworking/cni v1.1.1
 	github.com/containernetworking/plugins v1.1.1
-	github.com/containers/image/v5 v5.21.2-0.20220607134551-a4c340b1a21f
+	github.com/containers/image/v5 v5.21.2-0.20220615100411-a78a00792916
 	github.com/containers/ocicrypt v1.1.5
-	github.com/containers/storage v1.41.1-0.20220607143333-8951d0153bf6
+	github.com/containers/storage v1.41.1-0.20220614214904-388efef4bf7e
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/disiqueira/gotree/v3 v3.0.2
@@ -25,7 +25,7 @@ require (
 	github.com/onsi/gomega v1.19.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.3-0.20211202193544-a5463b7f9c84
-	github.com/opencontainers/runc v1.1.2
+	github.com/opencontainers/runc v1.1.3
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/runtime-tools v0.9.0
 	github.com/opencontainers/selinux v1.10.1
