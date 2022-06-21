@@ -25,7 +25,7 @@ func TestCreated(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cgr, err = NewSystemd("machine.slice")
+	cgr, err = NewSystemd("machine.slice", &resources)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,5 +57,10 @@ func TestResources(t *testing.T) {
 	}
 	if cgr.config.CpuPeriod != 100000 || cgr.config.CpuQuota != 100000 {
 		t.Fatal("Got the wrong value, set cpu.cfs_period_us failed.")
+	}
+
+	_, err = NewSystemd("machine2.slice", &resources)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

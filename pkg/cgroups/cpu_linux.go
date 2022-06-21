@@ -38,6 +38,9 @@ func (c *linuxCPUHandler) Apply(ctr *CgroupControl, res *configs.Resources) erro
 
 // Create the cgroup
 func (c *linuxCPUHandler) Create(ctr *CgroupControl) (bool, error) {
+	if ctr.cgroup2 {
+		return false, nil
+	}
 	return ctr.createCgroupDirectory(CPU)
 }
 

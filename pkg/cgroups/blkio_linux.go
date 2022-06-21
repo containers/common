@@ -41,6 +41,9 @@ func (c *linuxBlkioHandler) Apply(ctr *CgroupControl, res *configs.Resources) er
 
 // Create the cgroup
 func (c *linuxBlkioHandler) Create(ctr *CgroupControl) (bool, error) {
+	if ctr.cgroup2 {
+		return false, nil
+	}
 	return ctr.createCgroupDirectory(Blkio)
 }
 

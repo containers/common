@@ -30,7 +30,7 @@ require (
 	github.com/opencontainers/runtime-tools v0.9.0
 	github.com/opencontainers/selinux v1.10.1
 	github.com/pkg/errors v0.9.1
-	github.com/seccomp/libseccomp-golang v0.9.2-0.20220502022130-f33da4d89646
+	github.com/seccomp/libseccomp-golang v0.10.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
@@ -115,4 +115,4 @@ retract (
 	v1.0.0 // We reverted to v0.… version numbers; the v1.0.0 tag was actually deleted.
 )
 
-replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.1-0.20220607072441-a7a45d7d2721
+replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.1-0.20220617142545-8b9452f75cbc
