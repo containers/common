@@ -32,7 +32,7 @@ func TestMonitorOneDirGood(t *testing.T) {
 	jsonPath := filepath.Join(dir, "a.json")
 
 	t.Run("good-addition", func(t *testing.T) {
-		err = ioutil.WriteFile(jsonPath, []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\", \"poststart\", \"poststop\"]}", path)), 0644)
+		err = ioutil.WriteFile(jsonPath, []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\", \"poststart\", \"poststop\"]}", path)), 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -82,7 +82,7 @@ func TestMonitorOneDirGood(t *testing.T) {
 	})
 
 	t.Run("bad-addition", func(t *testing.T) {
-		err = ioutil.WriteFile(jsonPath, []byte("{\"version\": \"-1\"}"), 0644)
+		err = ioutil.WriteFile(jsonPath, []byte("{\"version\": \"-1\"}"), 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -136,7 +136,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	}
 
 	t.Run("good-fallback-addition", func(t *testing.T) {
-		err = ioutil.WriteFile(fallbackPath, fallbackJSON, 0644)
+		err = ioutil.WriteFile(fallbackPath, fallbackJSON, 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -165,7 +165,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	}
 
 	t.Run("good-primary-override", func(t *testing.T) {
-		err = ioutil.WriteFile(primaryPath, primaryJSON, 0644)
+		err = ioutil.WriteFile(primaryPath, primaryJSON, 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -198,7 +198,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	})
 
 	t.Run("good-fallback-restore", func(t *testing.T) {
-		err = ioutil.WriteFile(fallbackPath, fallbackJSON, 0644)
+		err = ioutil.WriteFile(fallbackPath, fallbackJSON, 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -216,7 +216,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	primaryPath2 := filepath.Join(primaryDir, "0a.json") // 0a because it will be before a.json alphabetically
 
 	t.Run("bad-primary-new-addition", func(t *testing.T) {
-		err = ioutil.WriteFile(primaryPath2, []byte("{\"version\": \"-1\"}"), 0644)
+		err = ioutil.WriteFile(primaryPath2, []byte("{\"version\": \"-1\"}"), 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -235,7 +235,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	})
 
 	t.Run("bad-primary-same-addition", func(t *testing.T) {
-		err = ioutil.WriteFile(primaryPath, []byte("{\"version\": \"-1\"}"), 0644)
+		err = ioutil.WriteFile(primaryPath, []byte("{\"version\": \"-1\"}"), 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -268,7 +268,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	})
 
 	t.Run("good-non-json-addition", func(t *testing.T) {
-		err = ioutil.WriteFile(filepath.Join(fallbackDir, "README"), []byte("Hello"), 0644)
+		err = ioutil.WriteFile(filepath.Join(fallbackDir, "README"), []byte("Hello"), 0o644)
 		if err != nil {
 			t.Fatal(err)
 		}
