@@ -129,7 +129,15 @@ func resourcesToProps(res *configs.Resources) (map[string]uint64, map[string]str
 		uMap["CPUQuotaPeriodUSec"] = res.CpuPeriod
 	}
 	if res.CpuQuota != 0 {
-		uMap["CPUQuotaPerSecUSec"] = uint64(res.CpuQuota)
+		period := res.CpuPeriod
+		if period == 0 {
+			period = uint64(100000)
+		}
+		cpuQuotaPerSecUSec := uint64(res.CpuQuota*1000000) / period
+		if cpuQuotaPerSecUSec%10000 != 0 {
+			cpuQuotaPerSecUSec = ((cpuQuotaPerSecUSec / 10000) + 1) * 10000
+		}
+		uMap["CPUQuotaPerSecUSec"] = cpuQuotaPerSecUSec
 	}
 
 	// CPUSet

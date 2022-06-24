@@ -4,6 +4,7 @@
 package cgroups
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/containers/storage/pkg/unshare"
@@ -62,5 +63,16 @@ func TestResources(t *testing.T) {
 	_, err = NewSystemd("machine2.slice", &resources)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	// test CPU Quota adjustment.
+	u, _, _, _ := resourcesToProps(&resources)
+
+	val, ok := u["CPUQuotaPerSecUSec"]
+	if !ok {
+		t.Fatal("CPU Quota not parsed.")
+	}
+	if val != 1000000 {
+		t.Fatal("CPU Quota incorrect value expected 1000000 got " + strconv.FormatUint(val, 10))
 	}
 }
