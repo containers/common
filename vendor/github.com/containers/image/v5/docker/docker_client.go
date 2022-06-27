@@ -1,11 +1,13 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -61,8 +63,8 @@ type certPath struct {
 var (
 	homeCertDir     = filepath.FromSlash(".config/containers/certs.d")
 	perHostCertDirs = []certPath{
-		{path: etcDir + "/containers/certs.d", absolute: true},
-		{path: etcDir + "/docker/certs.d", absolute: true},
+		{path: "/etc/containers/certs.d", absolute: true},
+		{path: "/etc/docker/certs.d", absolute: true},
 	}
 
 	defaultUserAgent = "containers/" + version.Version + " (github.com/containers/image)"
@@ -163,8 +165,9 @@ func newBearerTokenFromJSONBlob(blob []byte) (*bearerToken, error) {
 func serverDefault() *tls.Config {
 	return &tls.Config{
 		// Avoid fallback to SSL protocols < TLS1.0
-		MinVersion:   tls.VersionTLS10,
-		CipherSuites: tlsconfig.DefaultServerAcceptedCiphers,
+		MinVersion:               tls.VersionTLS10,
+		PreferServerCipherSuites: true,
+		CipherSuites:             tlsconfig.DefaultServerAcceptedCiphers,
 	}
 }
 
@@ -651,7 +654,7 @@ func (c *dockerClient) getBearerTokenOAuth2(ctx context.Context, challenge chall
 	params.Add("refresh_token", c.auth.IdentityToken)
 	params.Add("client_id", "containers/image")
 
-	authReq.Body = io.NopCloser(strings.NewReader(params.Encode()))
+	authReq.Body = ioutil.NopCloser(bytes.NewBufferString(params.Encode()))
 	authReq.Header.Add("User-Agent", c.userAgent)
 	authReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	logrus.Debugf("%s %s", authReq.Method, authReq.URL.Redacted())

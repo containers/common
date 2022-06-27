@@ -2,6 +2,7 @@ package tlsclientconfig
 
 import (
 	"crypto/tls"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -18,7 +19,7 @@ import (
 // SetupCertificates opens all .crt, .cert, and .key files in dir and appends / loads certs and key pairs as appropriate to tlsc
 func SetupCertificates(dir string, tlsc *tls.Config) error {
 	logrus.Debugf("Looking for TLS certificates and private keys in %s", dir)
-	fs, err := os.ReadDir(dir)
+	fs, err := ioutil.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -34,7 +35,7 @@ func SetupCertificates(dir string, tlsc *tls.Config) error {
 		fullPath := filepath.Join(dir, f.Name())
 		if strings.HasSuffix(f.Name(), ".crt") {
 			logrus.Debugf(" crt: %s", fullPath)
-			data, err := os.ReadFile(fullPath)
+			data, err := ioutil.ReadFile(fullPath)
 			if err != nil {
 				if os.IsNotExist(err) {
 					// Dangling symbolic link?
@@ -80,7 +81,7 @@ func SetupCertificates(dir string, tlsc *tls.Config) error {
 	return nil
 }
 
-func hasFile(files []os.DirEntry, name string) bool {
+func hasFile(files []os.FileInfo, name string) bool {
 	for _, f := range files {
 		if f.Name() == name {
 			return true

@@ -3,6 +3,7 @@ package directory
 import (
 	"context"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/containers/image/v5/manifest"
@@ -36,7 +37,7 @@ func (s *dirImageSource) Close() error {
 // If instanceDigest is not nil, it contains a digest of the specific manifest instance to retrieve (when the primary manifest is a manifest list);
 // this never happens if the primary manifest is not a manifest list (e.g. if the source never returns manifest lists).
 func (s *dirImageSource) GetManifest(ctx context.Context, instanceDigest *digest.Digest) ([]byte, string, error) {
-	m, err := os.ReadFile(s.ref.manifestPath(instanceDigest))
+	m, err := ioutil.ReadFile(s.ref.manifestPath(instanceDigest))
 	if err != nil {
 		return nil, "", err
 	}
@@ -70,7 +71,7 @@ func (s *dirImageSource) GetBlob(ctx context.Context, info types.BlobInfo, cache
 func (s *dirImageSource) GetSignatures(ctx context.Context, instanceDigest *digest.Digest) ([][]byte, error) {
 	signatures := [][]byte{}
 	for i := 0; ; i++ {
-		signature, err := os.ReadFile(s.ref.signaturePath(i, instanceDigest))
+		signature, err := ioutil.ReadFile(s.ref.signaturePath(i, instanceDigest))
 		if err != nil {
 			if os.IsNotExist(err) {
 				break

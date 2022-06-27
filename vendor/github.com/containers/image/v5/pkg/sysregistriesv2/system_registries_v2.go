@@ -2,7 +2,6 @@ package sysregistriesv2
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -25,11 +24,19 @@ import (
 // -ldflags '-X github.com/containers/image/v5/sysregistries.systemRegistriesConfPath=$your_path'
 var systemRegistriesConfPath = builtinRegistriesConfPath
 
+// builtinRegistriesConfPath is the path to the registry configuration file.
+// DO NOT change this, instead see systemRegistriesConfPath above.
+const builtinRegistriesConfPath = "/etc/containers/registries.conf"
+
 // systemRegistriesConfDirPath is the path to the system-wide registry
 // configuration directory and is used to add/subtract potential registries for
 // obtaining images.  You can override this at build time with
 // -ldflags '-X github.com/containers/image/v5/sysregistries.systemRegistriesConfDirectoryPath=$your_path'
 var systemRegistriesConfDirPath = builtinRegistriesConfDirPath
+
+// builtinRegistriesConfDirPath is the path to the registry configuration directory.
+// DO NOT change this, instead see systemRegistriesConfDirectoryPath above.
+const builtinRegistriesConfDirPath = "/etc/containers/registries.conf.d"
 
 // AuthenticationFileHelper is a special key for credential helpers indicating
 // the usage of consulting containers-auth.json files instead of a credential
@@ -636,17 +643,17 @@ func dropInConfigs(wrapper configWrapper) ([]string, error) {
 		dirPaths = append(dirPaths, wrapper.userConfigDirPath)
 	}
 	for _, dirPath := range dirPaths {
-		err := filepath.WalkDir(dirPath,
+		err := filepath.Walk(dirPath,
 			// WalkFunc to read additional configs
-			func(path string, d fs.DirEntry, err error) error {
+			func(path string, info os.FileInfo, err error) error {
 				switch {
 				case err != nil:
 					// return error (could be a permission problem)
 					return err
-				case d == nil:
+				case info == nil:
 					// this should only happen when err != nil but let's be sure
 					return nil
-				case d.IsDir():
+				case info.IsDir():
 					if path != dirPath {
 						// make sure to not recurse into sub-directories
 						return filepath.SkipDir

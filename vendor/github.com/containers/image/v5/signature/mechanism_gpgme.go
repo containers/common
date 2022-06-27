@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/proglottis/gpgme"
@@ -36,7 +37,7 @@ func newGPGSigningMechanismInDirectory(optionalDir string) (signingMechanismWith
 // of these keys.
 // The caller must call .Close() on the returned SigningMechanism.
 func newEphemeralGPGSigningMechanism(blob []byte) (signingMechanismWithPassphrase, []string, error) {
-	dir, err := os.MkdirTemp("", "containers-ephemeral-gpg-")
+	dir, err := ioutil.TempDir("", "containers-ephemeral-gpg-")
 	if err != nil {
 		return nil, nil, err
 	}

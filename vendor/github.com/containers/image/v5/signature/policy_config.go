@@ -16,6 +16,7 @@ package signature
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -31,6 +32,10 @@ import (
 // You can override this at build time with
 // -ldflags '-X github.com/containers/image/v5/signature.systemDefaultPolicyPath=$your_path'
 var systemDefaultPolicyPath = builtinDefaultPolicyPath
+
+// builtinDefaultPolicyPath is the policy path used for DefaultPolicy().
+// DO NOT change this, instead see systemDefaultPolicyPath above.
+const builtinDefaultPolicyPath = "/etc/containers/policy.json"
 
 // userPolicyFile is the path to the per user policy path.
 var userPolicyFile = filepath.FromSlash(".config/containers/policy.json")
@@ -75,7 +80,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string) stri
 
 // NewPolicyFromFile returns a policy configured in the specified file.
 func NewPolicyFromFile(fileName string) (*Policy, error) {
-	contents, err := os.ReadFile(fileName)
+	contents, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}

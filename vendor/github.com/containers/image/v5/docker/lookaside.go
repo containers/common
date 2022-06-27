@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -25,7 +26,7 @@ var systemRegistriesDirPath = builtinRegistriesDirPath
 
 // builtinRegistriesDirPath is the path to registries.d.
 // DO NOT change this, instead see systemRegistriesDirPath above.
-const builtinRegistriesDirPath = etcDir + "/containers/registries.d"
+const builtinRegistriesDirPath = "/etc/containers/registries.d"
 
 // userRegistriesDirPath is the path to the per user registries.d.
 var userRegistriesDir = filepath.FromSlash(".config/containers/registries.d")
@@ -145,7 +146,7 @@ func loadAndMergeConfig(dirPath string) (*registryConfiguration, error) {
 			continue
 		}
 		configPath := filepath.Join(dirPath, configName)
-		configBytes, err := os.ReadFile(configPath)
+		configBytes, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			return nil, err
 		}

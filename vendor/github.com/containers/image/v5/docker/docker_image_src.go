@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -308,7 +308,7 @@ func splitHTTP200ResponseToPartial(streams chan io.ReadCloser, errs chan error, 
 				break
 			}
 			toSkip := c.Offset - currentOffset
-			if _, err := io.Copy(io.Discard, io.LimitReader(body, int64(toSkip))); err != nil {
+			if _, err := io.Copy(ioutil.Discard, io.LimitReader(body, int64(toSkip))); err != nil {
 				errs <- err
 				break
 			}
@@ -316,7 +316,7 @@ func splitHTTP200ResponseToPartial(streams chan io.ReadCloser, errs chan error, 
 		}
 		s := signalCloseReader{
 			closed:        make(chan interface{}),
-			stream:        io.NopCloser(io.LimitReader(body, int64(c.Length))),
+			stream:        ioutil.NopCloser(io.LimitReader(body, int64(c.Length))),
 			consumeStream: true,
 		}
 		streams <- s
@@ -344,15 +344,11 @@ func handle206Response(streams chan io.ReadCloser, errs chan error, body io.Read
 	buffered := makeBufferedNetworkReader(body, 64, 16384)
 	defer buffered.Close()
 	mr := multipart.NewReader(buffered, boundary)
-	parts := 0
 	for {
 		p, err := mr.NextPart()
 		if err != nil {
 			if err != io.EOF {
 				errs <- err
-			}
-			if parts != len(chunks) {
-				errs <- errors.Errorf("invalid number of chunks returned by the server")
 			}
 			return
 		}
@@ -364,32 +360,7 @@ func handle206Response(streams chan io.ReadCloser, errs chan error, body io.Read
 		// NextPart() cannot be called while the current part
 		// is being read, so wait until it is closed
 		<-s.closed
-		parts++
 	}
-}
-
-var multipartByteRangesRe = regexp.MustCompile("multipart/byteranges; boundary=([A-Za-z-0-9:]+)")
-
-func parseMediaType(contentType string) (string, map[string]string, error) {
-	mediaType, params, err := mime.ParseMediaType(contentType)
-	if err != nil {
-		if err == mime.ErrInvalidMediaParameter {
-			// CloudFront returns an invalid MIME type, that contains an unquoted ":" in the boundary
-			// param, let's handle it here.
-			matches := multipartByteRangesRe.FindStringSubmatch(contentType)
-			if len(matches) == 2 {
-				mediaType = "multipart/byteranges"
-				params = map[string]string{
-					"boundary": matches[1],
-				}
-				err = nil
-			}
-		}
-		if err != nil {
-			return "", nil, err
-		}
-	}
-	return mediaType, params, err
 }
 
 // GetBlobAt returns a sequential channel of readers that contain data for the requested
@@ -427,7 +398,7 @@ func (s *dockerImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, 
 		go splitHTTP200ResponseToPartial(streams, errs, res.Body, chunks)
 		return streams, errs, nil
 	case http.StatusPartialContent:
-		mediaType, params, err := parseMediaType(res.Header.Get("Content-Type"))
+		mediaType, params, err := mime.ParseMediaType(res.Header.Get("Content-Type"))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -544,7 +515,7 @@ func (s *dockerImageSource) getOneSignature(ctx context.Context, url *url.URL) (
 	switch url.Scheme {
 	case "file":
 		logrus.Debugf("Reading %s", url.Path)
-		sig, err := os.ReadFile(url.Path)
+		sig, err := ioutil.ReadFile(url.Path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				return nil, true, nil
@@ -640,11 +611,8 @@ func deleteImage(ctx context.Context, sys *types.SystemContext, ref dockerRefere
 		return errors.Errorf("Failed to delete %v: %s (%v)", ref.ref, manifestBody, get.Status)
 	}
 
-	manifestDigest, err := manifest.Digest(manifestBody)
-	if err != nil {
-		return fmt.Errorf("computing manifest digest: %w", err)
-	}
-	deletePath := fmt.Sprintf(manifestPath, reference.Path(ref.ref), manifestDigest)
+	digest := get.Header.Get("Docker-Content-Digest")
+	deletePath := fmt.Sprintf(manifestPath, reference.Path(ref.ref), digest)
 
 	// When retrieving the digest from a registry >= 2.3 use the following header:
 	//   "Accept": "application/vnd.docker.distribution.manifest.v2+json"
@@ -660,6 +628,11 @@ func deleteImage(ctx context.Context, sys *types.SystemContext, ref dockerRefere
 	}
 	if delete.StatusCode != http.StatusAccepted {
 		return errors.Errorf("Failed to delete %v: %s (%v)", deletePath, string(body), delete.Status)
+	}
+
+	manifestDigest, err := manifest.Digest(manifestBody)
+	if err != nil {
+		return err
 	}
 
 	for i := 0; ; i++ {
@@ -792,7 +765,7 @@ func (s signalCloseReader) Read(p []byte) (int, error) {
 func (s signalCloseReader) Close() error {
 	defer close(s.closed)
 	if s.consumeStream {
-		if _, err := io.Copy(io.Discard, s.stream); err != nil {
+		if _, err := io.Copy(ioutil.Discard, s.stream); err != nil {
 			s.stream.Close()
 			return err
 		}

@@ -3,6 +3,7 @@ package directory
 import (
 	"context"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -61,7 +62,7 @@ func newImageDestination(sys *types.SystemContext, ref dirReference) (types.Imag
 				return nil, errors.Wrapf(err, "checking if path exists %q", d.ref.versionPath())
 			}
 			if versionExists {
-				contents, err := os.ReadFile(d.ref.versionPath())
+				contents, err := ioutil.ReadFile(d.ref.versionPath())
 				if err != nil {
 					return nil, err
 				}
@@ -85,7 +86,7 @@ func newImageDestination(sys *types.SystemContext, ref dirReference) (types.Imag
 		}
 	}
 	// create version file
-	err = os.WriteFile(d.ref.versionPath(), []byte(version), 0644)
+	err = ioutil.WriteFile(d.ref.versionPath(), []byte(version), 0644)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating version file %q", d.ref.versionPath())
 	}
@@ -148,7 +149,7 @@ func (d *dirImageDestination) HasThreadSafePutBlob() bool {
 // to any other readers for download using the supplied digest.
 // If stream.Read() at any time, ESPECIALLY at end of input, returns an error, PutBlob MUST 1) fail, and 2) delete any data stored so far.
 func (d *dirImageDestination) PutBlob(ctx context.Context, stream io.Reader, inputInfo types.BlobInfo, cache types.BlobInfoCache, isConfig bool) (types.BlobInfo, error) {
-	blobFile, err := os.CreateTemp(d.ref.path, "dir-put-blob")
+	blobFile, err := ioutil.TempFile(d.ref.path, "dir-put-blob")
 	if err != nil {
 		return types.BlobInfo{}, err
 	}
@@ -231,7 +232,7 @@ func (d *dirImageDestination) TryReusingBlob(ctx context.Context, info types.Blo
 // If the destination is in principle available, refuses this manifest type (e.g. it does not recognize the schema),
 // but may accept a different manifest type, the returned error must be an ManifestTypeRejectedError.
 func (d *dirImageDestination) PutManifest(ctx context.Context, manifest []byte, instanceDigest *digest.Digest) error {
-	return os.WriteFile(d.ref.manifestPath(instanceDigest), manifest, 0644)
+	return ioutil.WriteFile(d.ref.manifestPath(instanceDigest), manifest, 0644)
 }
 
 // PutSignatures writes a set of signatures to the destination.
@@ -239,7 +240,7 @@ func (d *dirImageDestination) PutManifest(ctx context.Context, manifest []byte, 
 // (when the primary manifest is a manifest list); this should always be nil if the primary manifest is not a manifest list.
 func (d *dirImageDestination) PutSignatures(ctx context.Context, signatures [][]byte, instanceDigest *digest.Digest) error {
 	for i, sig := range signatures {
-		if err := os.WriteFile(d.ref.signaturePath(i, instanceDigest), sig, 0644); err != nil {
+		if err := ioutil.WriteFile(d.ref.signaturePath(i, instanceDigest), sig, 0644); err != nil {
 			return err
 		}
 	}
@@ -271,7 +272,7 @@ func pathExists(path string) (bool, error) {
 
 // returns true if directory is empty
 func isDirEmpty(path string) (bool, error) {
-	files, err := os.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return false, err
 	}
@@ -280,7 +281,7 @@ func isDirEmpty(path string) (bool, error) {
 
 // deletes the contents of a directory
 func removeDirContents(path string) error {
-	files, err := os.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return err
 	}

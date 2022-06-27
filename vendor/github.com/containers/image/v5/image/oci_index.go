@@ -8,18 +8,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func manifestSchema2FromManifestList(ctx context.Context, sys *types.SystemContext, src types.ImageSource, manblob []byte) (genericManifest, error) {
-	list, err := manifest.Schema2ListFromManifest(manblob)
+func manifestOCI1FromImageIndex(ctx context.Context, sys *types.SystemContext, src types.ImageSource, manblob []byte) (genericManifest, error) {
+	index, err := manifest.OCI1IndexFromManifest(manblob)
 	if err != nil {
-		return nil, errors.Wrapf(err, "parsing schema2 manifest list")
+		return nil, errors.Wrapf(err, "parsing OCI1 index")
 	}
-	targetManifestDigest, err := list.ChooseInstance(sys)
+	targetManifestDigest, err := index.ChooseInstance(sys)
 	if err != nil {
 		return nil, errors.Wrapf(err, "choosing image instance")
 	}
 	manblob, mt, err := src.GetManifest(ctx, &targetManifestDigest)
 	if err != nil {
-		return nil, errors.Wrapf(err, "fetching target platform image selected from manifest list")
+		return nil, errors.Wrapf(err, "loading manifest for target platform")
 	}
 
 	matches, err := manifest.MatchesDigest(manblob, targetManifestDigest)
