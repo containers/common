@@ -1,6 +1,8 @@
 package libimage
 
 import (
+	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -8,13 +10,16 @@ import (
 
 func TestToPlatformString(t *testing.T) {
 	for _, test := range []struct {
-		arch, os, variant, expected string
+		os, arch, variant, expected string
 	}{
-		{"a", "b", "", "b/a"},
-		{"a", "b", "c", "b/a/c"},
-		{"", "", "c", "//c"}, // callers are responsible for the input
+		{"a", "b", "", "a/b"},
+		{"a", "", "", fmt.Sprintf("a/%s", runtime.GOARCH)},
+		{"", "b", "", fmt.Sprintf("%s/b", runtime.GOOS)},
+		{"a", "b", "c", "a/b/c"},
+		{"", "", "", fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)},
+		{"", "", "c", fmt.Sprintf("%s/%s/c", runtime.GOOS, runtime.GOARCH)},
 	} {
-		platform := toPlatformString(test.arch, test.os, test.variant)
-		require.Equal(t, platform, test.expected)
+		platform := toPlatformString(test.os, test.arch, test.variant)
+		require.Equal(t, test.expected, platform)
 	}
 }
