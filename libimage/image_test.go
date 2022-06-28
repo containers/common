@@ -2,12 +2,12 @@ package libimage
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 
 	"github.com/containers/common/pkg/config"
 	"github.com/containers/image/v5/transports/alltransports"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -73,7 +73,7 @@ func TestImageFunctions(t *testing.T) {
 	for _, digest := range digests {
 		_, err := runtime.LookupManifestList(busybox + "@" + digest.String())
 		require.Error(t, err, "Manifest lookup should fail on an ordinary image")
-		require.Equal(t, ErrNotAManifestList, errors.Cause(err))
+		require.True(t, errors.Is(err, ErrNotAManifestList))
 	}
 
 	// Below mostly smoke tests.
@@ -250,7 +250,7 @@ func TestTag(t *testing.T) {
 
 	// Check for specific error.
 	err = image.Tag("foo@" + digest)
-	require.True(t, errors.Cause(err) == errTagDigest, "check for specific digest error")
+	require.True(t, errors.Is(err, errTagDigest), "check for specific digest error")
 }
 
 func TestUntag(t *testing.T) {
@@ -303,5 +303,5 @@ func TestUntag(t *testing.T) {
 
 	// Check for specific error.
 	err = image.Untag(digest)
-	require.True(t, errors.Cause(err) == errUntagDigest, "check for specific digest error")
+	require.True(t, errors.Is(err, errUntagDigest), "check for specific digest error")
 }

@@ -1,6 +1,7 @@
 package sysinfo
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path"
@@ -87,7 +88,7 @@ func TestNewAppArmorEnabled(t *testing.T) {
 
 func TestNewAppArmorDisabled(t *testing.T) {
 	// Check if AppArmor is supported. then it must be TRUE , else FALSE
-	if _, err := os.Stat("/sys/kernel/security/apparmor"); !os.IsNotExist(err) {
+	if _, err := os.Stat("/sys/kernel/security/apparmor"); !errors.Is(err, os.ErrNotExist) {
 		t.Skip("App Armor Must be Disabled")
 	}
 
@@ -103,7 +104,7 @@ func TestNumCPU(t *testing.T) {
 }
 
 func TestNumMems(t *testing.T) {
-	if _, err := os.Stat("/proc/self/numa_maps"); !os.IsNotExist(err) {
+	if _, err := os.Stat("/proc/self/numa_maps"); !errors.Is(err, os.ErrNotExist) {
 		t.Skip("NUMA must be supported")
 	}
 	cpuMems := NUMANodeCount()

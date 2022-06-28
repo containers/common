@@ -1,12 +1,12 @@
 package supported
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
 
 	"github.com/containers/common/pkg/apparmor/internal/supported/supportedfakes"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 

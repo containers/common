@@ -2,11 +2,11 @@ package libimage
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/containers/common/pkg/config"
 	"github.com/containers/storage"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,13 +30,13 @@ func TestCreateManifestList(t *testing.T) {
 
 	_, err = runtime.LookupManifestList("nosuchthing")
 	require.Error(t, err)
-	require.Equal(t, errors.Cause(err), storage.ErrImageUnknown)
+	require.True(t, errors.Is(err, storage.ErrImageUnknown))
 
 	_, err = runtime.Pull(ctx, "busybox", config.PullPolicyMissing, nil)
 	require.NoError(t, err)
 	_, err = runtime.LookupManifestList("busybox")
 	require.Error(t, err)
-	require.Equal(t, errors.Cause(err), ErrNotAManifestList)
+	require.True(t, errors.Is(err, ErrNotAManifestList))
 }
 
 // Following test ensure that `Tag` tags the manifest list instead of resolved image.

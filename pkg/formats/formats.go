@@ -11,7 +11,6 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
-	"github.com/pkg/errors"
 	terminal "golang.org/x/term"
 )
 
@@ -98,7 +97,7 @@ func (t StdoutTemplateArray) Out() error {
 		t.Template = strings.ReplaceAll(strings.TrimSpace(t.Template[5:]), " ", "\t")
 		headerTmpl, err := template.New("header").Funcs(headerFunctions).Parse(t.Template)
 		if err != nil {
-			return errors.Wrap(err, parsingErrorStr)
+			return fmt.Errorf("%s: %w", parsingErrorStr, err)
 		}
 		err = headerTmpl.Execute(w, t.Fields)
 		if err != nil {
@@ -109,12 +108,12 @@ func (t StdoutTemplateArray) Out() error {
 	t.Template = strings.ReplaceAll(t.Template, " ", "\t")
 	tmpl, err := template.New("image").Funcs(basicFunctions).Parse(t.Template)
 	if err != nil {
-		return errors.Wrap(err, parsingErrorStr)
+		return fmt.Errorf("%s: %w", parsingErrorStr, err)
 	}
 	for _, raw := range t.Output {
 		basicTmpl := tmpl.Funcs(basicFunctions)
 		if err := basicTmpl.Execute(w, raw); err != nil {
-			return errors.Wrap(err, parsingErrorStr)
+			return fmt.Errorf("%s: %w", parsingErrorStr, err)
 		}
 		fmt.Fprintln(w, "")
 	}
@@ -136,7 +135,7 @@ func (j JSONStruct) Out() error {
 func (t StdoutTemplate) Out() error {
 	tmpl, err := template.New("image").Parse(t.Template)
 	if err != nil {
-		return errors.Wrap(err, "template parsing error")
+		return fmt.Errorf("template parsing error: %w", err)
 	}
 	err = tmpl.Execute(os.Stdout, t.Output)
 	if err != nil {

@@ -3,6 +3,7 @@ package exec
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -63,7 +64,7 @@ func TestRunFailedStart(t *testing.T) {
 	if err == nil {
 		t.Fatal("unexpected success")
 	}
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, err, hookErr)

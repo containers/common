@@ -1,6 +1,7 @@
 package hooks
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,7 +24,7 @@ func TestUnknownPath(t *testing.T) {
 		t.Fatal("unexpected success")
 	}
 	assert.Regexp(t, "^open does/not/exist.json: no such file or directory$", err.Error())
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("opaque wrapping for not-exist errors")
 	}
 }
@@ -154,7 +155,7 @@ func TestUnknownDir(t *testing.T) {
 		t.Fatal("unexpected success")
 	}
 	assert.Regexp(t, "^open does/not/exist: no such file or directory$", err.Error())
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("opaque wrapping for not-exist errors")
 	}
 }
