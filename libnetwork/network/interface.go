@@ -84,6 +84,7 @@ func NetworkBackend(store storage.Store, conf *config.Config, syslog bool) (type
 			DefaultNetwork:     conf.Network.DefaultNetwork,
 			DefaultSubnet:      conf.Network.DefaultSubnet,
 			DefaultsubnetPools: conf.Network.DefaultSubnetPools,
+			DNSBindPort:        conf.Network.DNSBindPort,
 			Syslog:             syslog,
 		})
 		return types.Netavark, netInt, err

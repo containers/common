@@ -134,6 +134,18 @@ var _ = Describe("Config Local", func() {
 		))
 	})
 
+	It("parse dns port", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Network.DNSBindPort).To(gomega.Equal(uint16(0)))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Network.DNSBindPort).To(gomega.Equal(uint16(1153)))
+	})
+
 	It("should fail during runtime", func() {
 		validDirPath, err := ioutil.TempDir("", "config-empty")
 		if err != nil {

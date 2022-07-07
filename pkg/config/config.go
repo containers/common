@@ -532,6 +532,11 @@ type NetworkConfig struct {
 
 	// NetworkConfigDir is where network configuration files are stored.
 	NetworkConfigDir string `toml:"network_config_dir,omitempty"`
+
+	// DNSBindPort is the port that should be used by dns forwarding daemon
+	// for netavark rootful bridges with dns enabled. This can be necessary
+	// when other dns forwarders run on the machine. 53 is used if unset.
+	DNSBindPort uint16 `toml:"dns_bind_port,omitempty,omitzero"`
 }
 
 type SubnetPool struct {
