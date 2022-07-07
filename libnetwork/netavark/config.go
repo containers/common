@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	internalutil "github.com/containers/common/libnetwork/internal/util"
@@ -95,18 +96,25 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		// validate the given options, we do not need them but just check to make sure they are valid
 		for key, value := range newNetwork.Options {
 			switch key {
-			case "mtu":
+			case types.MTUOption:
 				_, err = internalutil.ParseMTU(value)
 				if err != nil {
 					return nil, err
 				}
 
-			case "vlan":
+			case types.VLANOption:
 				_, err = internalutil.ParseVlan(value)
 				if err != nil {
 					return nil, err
 				}
 
+			case types.IsolateOption:
+				val, err := strconv.ParseBool(value)
+				if err != nil {
+					return nil, err
+				}
+				// rust only support "true" or "false" while go can parse 1 and 0 as well so we need to change it
+				newNetwork.Options[types.IsolateOption] = strconv.FormatBool(val)
 			default:
 				return nil, errors.Errorf("unsupported bridge network option %s", key)
 			}
@@ -177,11 +185,11 @@ func createMacvlan(network *types.Network) error {
 	// validate the given options, we do not need them but just check to make sure they are valid
 	for key, value := range network.Options {
 		switch key {
-		case "mode":
+		case types.ModeOption:
 			if !util.StringInSlice(value, types.ValidMacVLANModes) {
 				return errors.Errorf("unknown macvlan mode %q", value)
 			}
-		case "mtu":
+		case types.MTUOption:
 			_, err := internalutil.ParseMTU(value)
 			if err != nil {
 				return err

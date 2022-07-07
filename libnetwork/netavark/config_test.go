@@ -635,7 +635,7 @@ var _ = Describe("Config", func() {
 		It("create network with mtu option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"mtu": "1500",
+					types.MTUOption: "1500",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -651,7 +651,7 @@ var _ = Describe("Config", func() {
 		It("create network with invalid mtu option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"mtu": "abc",
+					types.MTUOption: "abc",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)
@@ -660,7 +660,7 @@ var _ = Describe("Config", func() {
 
 			network = types.Network{
 				Options: map[string]string{
-					"mtu": "-1",
+					types.MTUOption: "-1",
 				},
 			}
 			_, err = libpodNet.NetworkCreate(network)
@@ -671,7 +671,7 @@ var _ = Describe("Config", func() {
 		It("create network with vlan option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"vlan": "5",
+					types.VLANOption: "5",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -895,7 +895,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 				Options: map[string]string{
-					"mode": "private",
+					types.ModeOption: "private",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -913,7 +913,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 				Options: map[string]string{
-					"mode": "abc",
+					types.ModeOption: "abc",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)
@@ -947,7 +947,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 				Options: map[string]string{
-					"mtu": "9000",
+					types.MTUOption: "9000",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -1019,6 +1019,34 @@ var _ = Describe("Config", func() {
 			network2, err := libpodNet.NetworkInspect(network1.Name)
 			Expect(err).To(BeNil())
 			EqualNetwork(network2, network1)
+		})
+
+		It("create network with isolate option", func() {
+			for _, val := range []string{"true", "1"} {
+				network := types.Network{
+					Options: map[string]string{
+						types.IsolateOption: val,
+					},
+				}
+				network1, err := libpodNet.NetworkCreate(network)
+				Expect(err).To(BeNil())
+				Expect(network1.Driver).To(Equal("bridge"))
+				Expect(network1.Options).ToNot(BeNil())
+				path := filepath.Join(networkConfDir, network1.Name+".json")
+				Expect(path).To(BeARegularFile())
+				grepInFile(path, `"isolate": "true"`)
+				Expect(network1.Options).To(HaveKeyWithValue("isolate", "true"))
+			}
+		})
+
+		It("create network with invalid isolate option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					types.IsolateOption: "123",
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
 		})
 	})
 
