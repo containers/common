@@ -389,7 +389,7 @@ var _ = Describe("Config", func() {
 				network := types.Network{
 					Driver: "macvlan",
 					Options: map[string]string{
-						"mode": mode,
+						types.ModeOption: mode,
 					},
 				}
 				network1, err := libpodNet.NetworkCreate(network)
@@ -409,7 +409,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Driver: "macvlan",
 				Options: map[string]string{
-					"mode": "test",
+					types.ModeOption: "test",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)
@@ -460,7 +460,7 @@ var _ = Describe("Config", func() {
 				network := types.Network{
 					Driver: "ipvlan",
 					Options: map[string]string{
-						"mode": mode,
+						types.ModeOption: mode,
 					},
 				}
 				network1, err := libpodNet.NetworkCreate(network)
@@ -488,7 +488,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Driver: "ipvlan",
 				Options: map[string]string{
-					"mode": "test",
+					types.ModeOption: "test",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)
@@ -969,7 +969,7 @@ var _ = Describe("Config", func() {
 		It("create network with mtu option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"mtu": "1500",
+					types.MTUOption: "1500",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -985,7 +985,7 @@ var _ = Describe("Config", func() {
 		It("create network with invalid mtu option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"mtu": "abc",
+					types.MTUOption: "abc",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)
@@ -994,7 +994,7 @@ var _ = Describe("Config", func() {
 
 			network = types.Network{
 				Options: map[string]string{
-					"mtu": "-1",
+					types.MTUOption: "-1",
 				},
 			}
 			_, err = libpodNet.NetworkCreate(network)
@@ -1006,7 +1006,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Driver: "macvlan",
 				Options: map[string]string{
-					"mtu": "1500",
+					types.MTUOption: "1500",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -1022,7 +1022,7 @@ var _ = Describe("Config", func() {
 		It("create network with vlan option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"vlan": "5",
+					types.VLANOption: "5",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -1038,7 +1038,7 @@ var _ = Describe("Config", func() {
 		It("create network with invalid vlan option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"vlan": "abc",
+					types.VLANOption: "abc",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)
@@ -1047,7 +1047,7 @@ var _ = Describe("Config", func() {
 
 			network = types.Network{
 				Options: map[string]string{
-					"vlan": "-1",
+					types.VLANOption: "-1",
 				},
 			}
 			_, err = libpodNet.NetworkCreate(network)
@@ -1166,7 +1166,7 @@ var _ = Describe("Config", func() {
 		It("create network with isolate option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"isolate": "true",
+					types.IsolateOption: "true",
 				},
 			}
 			network1, err := libpodNet.NetworkCreate(network)
@@ -1189,7 +1189,7 @@ var _ = Describe("Config", func() {
 		It("create network with invalid isolate option", func() {
 			network := types.Network{
 				Options: map[string]string{
-					"isolate": "123",
+					types.IsolateOption: "123",
 				},
 			}
 			_, err := libpodNet.NetworkCreate(network)

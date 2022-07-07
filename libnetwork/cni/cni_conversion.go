@@ -71,10 +71,10 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 
 		// set network options
 		if bridge.MTU != 0 {
-			network.Options["mtu"] = strconv.Itoa(bridge.MTU)
+			network.Options[types.MTUOption] = strconv.Itoa(bridge.MTU)
 		}
 		if bridge.Vlan != 0 {
-			network.Options["vlan"] = strconv.Itoa(bridge.Vlan)
+			network.Options[types.VLANOption] = strconv.Itoa(bridge.Vlan)
 		}
 
 		err = convertIPAMConfToNetwork(&network, &bridge.IPAM, confPath)
@@ -92,11 +92,11 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 
 		// set network options
 		if vlan.MTU != 0 {
-			network.Options["mtu"] = strconv.Itoa(vlan.MTU)
+			network.Options[types.MTUOption] = strconv.Itoa(vlan.MTU)
 		}
 
 		if vlan.Mode != "" {
-			network.Options["mode"] = vlan.Mode
+			network.Options[types.ModeOption] = vlan.Mode
 		}
 
 		err = convertIPAMConfToNetwork(&network, &vlan.IPAM, confPath)
@@ -122,7 +122,7 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 			return nil, fmt.Errorf("failed to unmarshal the firewall plugin config in %s: %w", confPath, err)
 		}
 		if firewallConf.IngressPolicy == ingressPolicySameBridge {
-			network.Options["isolate"] = "true"
+			network.Options[types.IsolateOption] = "true"
 		}
 	}
 
@@ -404,19 +404,19 @@ func parseOptions(networkOptions map[string]string, networkDriver string) (*opti
 	var err error
 	for k, v := range networkOptions {
 		switch k {
-		case "mtu":
+		case types.MTUOption:
 			opt.mtu, err = internalutil.ParseMTU(v)
 			if err != nil {
 				return nil, err
 			}
 
-		case "vlan":
+		case types.VLANOption:
 			opt.vlan, err = internalutil.ParseVlan(v)
 			if err != nil {
 				return nil, err
 			}
 
-		case "mode":
+		case types.ModeOption:
 			switch networkDriver {
 			case types.MacVLANNetworkDriver:
 				if !pkgutil.StringInSlice(v, types.ValidMacVLANModes) {
@@ -431,7 +431,7 @@ func parseOptions(networkOptions map[string]string, networkDriver string) (*opti
 			}
 			opt.vlanPluginMode = v
 
-		case "isolate":
+		case types.IsolateOption:
 			if networkDriver != types.BridgeNetworkDriver {
 				return nil, errors.New("isolate option is only supported with the bridge driver")
 			}
