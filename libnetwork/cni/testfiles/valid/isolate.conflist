@@ -1,0 +1,46 @@
+{
+   "cniVersion": "0.4.0",
+   "name": "isolate",
+   "plugins": [
+      {
+         "type": "bridge",
+         "bridge": "cni-podman123",
+         "isGateway": true,
+         "ipMasq": true,
+         "hairpinMode": true,
+         "ipam": {
+            "type": "host-local",
+            "routes": [
+               {
+                  "dst": "0.0.0.0/0"
+               }
+            ],
+            "ranges": [
+               [
+                  {
+                     "subnet": "10.0.0.0/24",
+                     "gateway": "10.0.0.1"
+                  }
+               ]
+            ]
+         },
+         "capabilities": {
+            "ips": true
+         }
+      },
+      {
+         "type": "portmap",
+         "capabilities": {
+            "portMappings": true
+         }
+      },
+      {
+         "type": "firewall",
+         "backend": "",
+         "ingressPolicy": "same-bridge"
+      },
+      {
+         "type": "tuning"
+      }
+   ]
+}

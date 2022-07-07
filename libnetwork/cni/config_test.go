@@ -1162,6 +1162,39 @@ var _ = Describe("Config", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("unsupported ipam driver \"blah\""))
 		})
+
+		It("create network with isolate option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					"isolate": "true",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Options).ToNot(BeNil())
+			path := filepath.Join(cniConfDir, network1.Name+".conflist")
+			Expect(path).To(BeARegularFile())
+			grepInFile(path, `"ingressPolicy": "same-bridge"`)
+			Expect(network1.Options).To(HaveKeyWithValue("isolate", "true"))
+			// reload configs from disk
+			libpodNet, err = getNetworkInterface(cniConfDir)
+			Expect(err).ToNot(HaveOccurred())
+
+			network1, err = libpodNet.NetworkInspect(network1.Name)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Options).To(HaveKeyWithValue("isolate", "true"))
+		})
+
+		It("create network with invalid isolate option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					"isolate": "123",
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+		})
 	})
 
 	Context("network load valid existing ones", func() {
@@ -1370,6 +1403,15 @@ var _ = Describe("Config", func() {
 			Expect(network.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
 		})
 
+		It("bridge with isolate option", func() {
+			network, err := libpodNet.NetworkInspect("isolate")
+			Expect(err).To(BeNil())
+			Expect(network.Name).To(Equal("isolate"))
+			Expect(network.ID).To(HaveLen(64))
+			Expect(network.Driver).To(Equal("bridge"))
+			Expect(network.Options).To(HaveKeyWithValue("isolate", "true"))
+		})
+
 		It("network list with filters (name)", func() {
 			filters := map[string][]string{
 				"name": {"internal", "bridge"},
@@ -1449,7 +1491,7 @@ var _ = Describe("Config", func() {
 				HaveNetworkName("mtu"), HaveNetworkName("vlan"), HaveNetworkName("podman"),
 				HaveNetworkName("label"), HaveNetworkName("macvlan"), HaveNetworkName("macvlan_mtu"),
 				HaveNetworkName("dualstack"), HaveNetworkName("ipam-none"), HaveNetworkName("ipam-empty"),
-				HaveNetworkName("ipam-static")))
+				HaveNetworkName("ipam-static"), HaveNetworkName("isolate")))
 		})
 
 		It("network list with filters (label)", func() {

@@ -5,6 +5,7 @@ package cni
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -110,18 +111,31 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 	}
 
 	// check if the dnsname plugin is configured
-	network.DNSEnabled = findPluginByName(conf.Plugins, "dnsname")
+	network.DNSEnabled = findPluginByName(conf.Plugins, "dnsname") != nil
+
+	// now get isolation mode from firewall plugin
+	firewall := findPluginByName(conf.Plugins, "firewall")
+	if firewall != nil {
+		var firewallConf firewallConfig
+		err := json.Unmarshal(firewall.Bytes, &firewallConf)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal the firewall plugin config in %s: %w", confPath, err)
+		}
+		if firewallConf.IngressPolicy == ingressPolicySameBridge {
+			network.Options["isolate"] = "true"
+		}
+	}
 
 	return &network, nil
 }
 
-func findPluginByName(plugins []*libcni.NetworkConfig, name string) bool {
-	for _, plugin := range plugins {
-		if plugin.Network.Type == name {
-			return true
+func findPluginByName(plugins []*libcni.NetworkConfig, name string) *libcni.NetworkConfig {
+	for i := range plugins {
+		if plugins[i].Network.Type == name {
+			return plugins[i]
 		}
 	}
-	return false
+	return nil
 }
 
 // convertIPAMConfToNetwork converts A cni IPAMConfig to libpod network subnets.
@@ -291,7 +305,7 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 	switch network.Driver {
 	case types.BridgeNetworkDriver:
 		bridge := newHostLocalBridge(network.NetworkInterface, isGateway, ipMasq, opts.mtu, opts.vlan, ipamConf)
-		plugins = append(plugins, bridge, newPortMapPlugin(), newFirewallPlugin(), newTuningPlugin())
+		plugins = append(plugins, bridge, newPortMapPlugin(), newFirewallPlugin(opts.isolate), newTuningPlugin())
 		// if we find the dnsname plugin we add configuration for it
 		if hasDNSNamePlugin(n.cniPluginDirs) && network.DNSEnabled {
 			// Note: in the future we might like to allow for dynamic domain names
@@ -382,6 +396,7 @@ type options struct {
 	vlan           int
 	mtu            int
 	vlanPluginMode string
+	isolate        bool
 }
 
 func parseOptions(networkOptions map[string]string, networkDriver string) (*options, error) {
@@ -415,6 +430,15 @@ func parseOptions(networkOptions map[string]string, networkDriver string) (*opti
 				return nil, errors.Errorf("cannot set option \"mode\" with driver %q", networkDriver)
 			}
 			opt.vlanPluginMode = v
+
+		case "isolate":
+			if networkDriver != types.BridgeNetworkDriver {
+				return nil, errors.New("isolate option is only supported with the bridge driver")
+			}
+			opt.isolate, err = strconv.ParseBool(v)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse isolate option: %w", err)
+			}
 
 		default:
 			return nil, errors.Errorf("unsupported network option %s", k)
