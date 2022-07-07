@@ -198,7 +198,7 @@ image_copy_tmp_dir="storage"`
 
 			pluginDirs := []string{
 				"/usr/libexec/cni",
-				"/usr/libexec/foo",
+				"/tmp",
 			}
 
 			envs := []string{
