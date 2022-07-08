@@ -187,7 +187,16 @@ func resourcesToProps(res *configs.Resources, v2 bool) (map[string]uint64, map[s
 		uMap["MemoryMax"] = uint64(res.Memory)
 	}
 	if res.MemorySwap != 0 {
-		uMap["MemorySwapMax"] = uint64(res.MemorySwap)
+		switch {
+		case res.Memory == -1 || res.MemorySwap == -1:
+			swap := -1
+			uMap["MemorySwapMax"] = uint64(swap)
+		case v2:
+			// swap max = swap (limit + swap limit) - limit
+			uMap["MemorySwapMax"] = uint64(res.MemorySwap - res.Memory)
+		default:
+			uMap["MemorySwapMax"] = uint64(res.MemorySwap)
+		}
 	}
 
 	// Blkio
@@ -204,7 +213,6 @@ func resourcesToProps(res *configs.Resources, v2 bool) (map[string]uint64, map[s
 				Device: fmt.Sprintf("/dev/block/%d:%d", entry.Major, entry.Minor),
 				Bytes:  entry.Rate,
 			}
-			fmt.Println(newThrottle.Device, newThrottle.Bytes)
 			if v2 {
 				structMap["IOReadBandwidthMax"] = append(structMap["IOReadBandwidthMax"], newThrottle)
 			} else {
