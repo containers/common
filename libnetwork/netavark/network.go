@@ -43,6 +43,9 @@ type netavarkNetwork struct {
 	// defaultsubnetPools contains the subnets which must be used to allocate a free subnet by network create
 	defaultsubnetPools []config.SubnetPool
 
+	// dnsBindPort is set the the port to pass to netavark for aardvark
+	dnsBindPort uint16
+
 	// ipamDBPath is the path to the ip allocation bolt db
 	ipamDBPath string
 
@@ -79,6 +82,9 @@ type InitConfig struct {
 
 	// DefaultsubnetPools contains the subnets which must be used to allocate a free subnet by network create
 	DefaultsubnetPools []config.SubnetPool
+
+	// DNSBindPort is set the the port to pass to netavark for aardvark
+	DNSBindPort uint16
 
 	// Syslog describes whenever the netavark debbug output should be log to the syslog as well.
 	// This will use logrus to do so, make sure logrus is set up to log to the syslog.
@@ -131,6 +137,7 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		defaultNetwork:     defaultNetworkName,
 		defaultSubnet:      defaultNet,
 		defaultsubnetPools: defaultSubnetPools,
+		dnsBindPort:        conf.DNSBindPort,
 		lock:               lock,
 		syslog:             conf.Syslog,
 	}

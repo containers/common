@@ -359,6 +359,13 @@ and "$HOME/.config/cni/net.d" as rootless.
 For the netavark backend "/etc/containers/networks" is used as root
 and "$graphroot/networks" as rootless.
 
+**dns_bind_port**=53
+
+Port to use for dns forwarding daemon with netavark in rootful bridge
+mode and dns enabled.
+Using an alternate port might be useful if other dns services should
+run on the machine.
+
 ## ENGINE TABLE
 The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
 
