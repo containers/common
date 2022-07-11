@@ -160,7 +160,6 @@ func (r *Runtime) compileImageFilters(ctx context.Context, options *ListImagesOp
 
 		case "label":
 			filter = filterLabel(ctx, value)
-
 		case "readonly":
 			readOnly, err := r.bool(duplicate, key, value)
 			if err != nil {
