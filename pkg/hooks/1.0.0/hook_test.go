@@ -1,6 +1,7 @@
 package hook
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -99,7 +100,7 @@ func TestUnknownHookPath(t *testing.T) {
 		t.Fatal("unexpected success")
 	}
 	assert.Regexp(t, "^stat does/not/exist: no such file or directory$", err.Error())
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("opaque wrapping for not-exist errors")
 	}
 }

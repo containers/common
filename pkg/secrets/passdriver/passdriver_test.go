@@ -2,11 +2,11 @@ package passdriver
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -111,7 +111,7 @@ func TestLookup(t *testing.T) {
 		{
 			name:   "lookup of a non-existing key fails",
 			key:    "invalid",
-			expErr: errors.Wrap(errNoSecretData, "invalid"),
+			expErr: fmt.Errorf("invalid: %w", errNoSecretData),
 		},
 		{
 			name:   "lookup of a sneaky key fails",
@@ -162,7 +162,7 @@ func TestDelete(t *testing.T) {
 		{
 			name:   "deleting an non-existing item fails",
 			key:    "wrong",
-			expErr: errors.Wrap(errNoSecretData, "wrong"),
+			expErr: fmt.Errorf("wrong: %w", errNoSecretData),
 		},
 		{
 			name:   "using a sneaky path fails",

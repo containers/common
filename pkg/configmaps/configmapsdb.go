@@ -2,12 +2,12 @@ package configmaps
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type db struct {
@@ -70,21 +70,21 @@ func (s *ConfigMapManager) getNameAndID(nameOrID string) (name, id string, err e
 	name, id, err = s.getExactNameAndID(nameOrID)
 	if err == nil {
 		return name, id, nil
-	} else if errors.Cause(err) != ErrNoSuchConfigMap {
+	} else if !errors.Is(err, ErrNoSuchConfigMap) {
 		return "", "", err
 	}
 
 	// ID prefix may have been given, iterate through all IDs.
 	// ID and partial ID has a max length of 25, so we return if its greater than that.
 	if len(nameOrID) > configMapIDLength {
-		return "", "", errors.Wrapf(ErrNoSuchConfigMap, "no configmap with name or id %q", nameOrID)
+		return "", "", fmt.Errorf("no configmap with name or id %q: %w", nameOrID, ErrNoSuchConfigMap)
 	}
 	exists := false
 	var foundID, foundName string
 	for id, name := range s.db.IDToName {
 		if strings.HasPrefix(id, nameOrID) {
 			if exists {
-				return "", "", errors.Wrapf(errAmbiguous, "more than one result configmap with prefix %s", nameOrID)
+				return "", "", fmt.Errorf("more than one result configmap with prefix %s: %w", nameOrID, errAmbiguous)
 			}
 			exists = true
 			foundID = id
@@ -95,7 +95,7 @@ func (s *ConfigMapManager) getNameAndID(nameOrID string) (name, id string, err e
 	if exists {
 		return foundName, foundID, nil
 	}
-	return "", "", errors.Wrapf(ErrNoSuchConfigMap, "no configmap with name or id %q", nameOrID)
+	return "", "", fmt.Errorf("no configmap with name or id %q: %w", nameOrID, ErrNoSuchConfigMap)
 }
 
 // getExactNameAndID takes a configmap's name or ID and returns both its name and full ID.
@@ -114,7 +114,7 @@ func (s *ConfigMapManager) getExactNameAndID(nameOrID string) (name, id string, 
 		return name, id, nil
 	}
 
-	return "", "", errors.Wrapf(ErrNoSuchConfigMap, "no configmap with name or id %q", nameOrID)
+	return "", "", fmt.Errorf("no configmap with name or id %q: %w", nameOrID, ErrNoSuchConfigMap)
 }
 
 // exactConfigMapExists checks if the configmap exists, given a name or ID
@@ -122,7 +122,7 @@ func (s *ConfigMapManager) getExactNameAndID(nameOrID string) (name, id string, 
 func (s *ConfigMapManager) exactConfigMapExists(nameOrID string) (bool, error) {
 	_, _, err := s.getExactNameAndID(nameOrID)
 	if err != nil {
-		if errors.Cause(err) == ErrNoSuchConfigMap {
+		if errors.Is(err, ErrNoSuchConfigMap) {
 			return false, nil
 		}
 		return false, err
@@ -157,7 +157,7 @@ func (s *ConfigMapManager) lookupConfigMap(nameOrID string) (*ConfigMap, error) 
 		return &configmap, nil
 	}
 
-	return nil, errors.Wrapf(ErrNoSuchConfigMap, "no configmap with name or id %q", nameOrID)
+	return nil, fmt.Errorf("no configmap with name or id %q: %w", nameOrID, ErrNoSuchConfigMap)
 }
 
 // Store creates a new configmap in the configmaps database.

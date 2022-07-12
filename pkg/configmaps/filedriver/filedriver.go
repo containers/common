@@ -2,13 +2,14 @@ package filedriver
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 
 	"github.com/containers/storage/pkg/lockfile"
-	"github.com/pkg/errors"
 )
 
 // configMapsDataFile is the file where configMaps data/payload will be stored
@@ -75,7 +76,7 @@ func (d *Driver) Lookup(id string) ([]byte, error) {
 	if data, ok := configMapData[id]; ok {
 		return data, nil
 	}
-	return nil, errors.Wrapf(errNoSecretData, "%s", id)
+	return nil, fmt.Errorf("%s: %w", id, errNoSecretData)
 }
 
 // Store stores the bytes associated with an ID. An error is returned if the ID arleady exists
@@ -88,7 +89,7 @@ func (d *Driver) Store(id string, data []byte) error {
 		return err
 	}
 	if _, ok := configMapData[id]; ok {
-		return errors.Wrapf(errSecretIDExists, "%s", id)
+		return fmt.Errorf("%s: %w", id, errSecretIDExists)
 	}
 	configMapData[id] = data
 	marshalled, err := json.MarshalIndent(configMapData, "", "  ")
@@ -113,7 +114,7 @@ func (d *Driver) Delete(id string) error {
 	if _, ok := configMapData[id]; ok {
 		delete(configMapData, id)
 	} else {
-		return errors.Wrap(errNoSecretData, id)
+		return fmt.Errorf("%s: %w", id, errNoSecretData)
 	}
 	marshalled, err := json.MarshalIndent(configMapData, "", "  ")
 	if err != nil {
@@ -131,7 +132,7 @@ func (d *Driver) getAllData() (map[string][]byte, error) {
 	// check if the db file exists
 	_, err := os.Stat(d.configMapsDataFilePath)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			// the file will be created later on a store()
 			return make(map[string][]byte), nil
 		}

@@ -2,6 +2,7 @@ package hooks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -318,7 +319,7 @@ func TestMonitorBadWatcher(t *testing.T) {
 	sync := make(chan error, 2)
 	go manager.Monitor(ctx, sync)
 	err = <-sync
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("opaque wrapping for not-exist errors")
 	}
 }

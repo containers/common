@@ -699,7 +699,7 @@ func addConfigs(dirPath string, configs []string) ([]string, error) {
 			}
 		},
 	)
-	if os.IsNotExist(err) {
+	if errors.Is(err, os.ErrNotExist) {
 		err = nil
 	}
 	sort.Strings(newConfigs)
@@ -1157,7 +1157,7 @@ func ReadCustomConfig() (*Config, error) {
 			return nil, err
 		}
 	} else {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
 	}

@@ -1,6 +1,8 @@
 package configmaps
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -10,7 +12,6 @@ import (
 	"github.com/containers/common/pkg/configmaps/filedriver"
 	"github.com/containers/storage/pkg/lockfile"
 	"github.com/containers/storage/pkg/stringid"
-	"github.com/pkg/errors"
 )
 
 // maxConfigMapSize is the max size for configMap data - 512kB
@@ -99,7 +100,7 @@ func NewManager(rootPath string) (*ConfigMapManager, error) {
 	manager := new(ConfigMapManager)
 
 	if !filepath.IsAbs(rootPath) {
-		return nil, errors.Wrapf(errInvalidPath, "path must be absolute: %s", rootPath)
+		return nil, fmt.Errorf("path must be absolute: %s: %w", rootPath, errInvalidPath)
 	}
 	// the lockfile functions require that the rootPath dir is executable
 	if err := os.MkdirAll(rootPath, 0o700); err != nil {
@@ -140,7 +141,7 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 		return "", err
 	}
 	if exist {
-		return "", errors.Wrapf(errConfigMapNameInUse, name)
+		return "", fmt.Errorf("%s: %w", name, errConfigMapNameInUse)
 	}
 
 	secr := new(ConfigMap)
@@ -152,7 +153,7 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 		newID = newID[0:configMapIDLength]
 		_, err := s.lookupConfigMap(newID)
 		if err != nil {
-			if errors.Cause(err) == ErrNoSuchConfigMap {
+			if errors.Is(err, ErrNoSuchConfigMap) {
 				secr.ID = newID
 				break
 			} else {
@@ -172,12 +173,12 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 	}
 	err = driver.Store(secr.ID, data)
 	if err != nil {
-		return "", errors.Wrapf(err, "error creating configMap %s", name)
+		return "", fmt.Errorf("error creating configMap %s: %w", name, err)
 	}
 
 	err = s.store(secr)
 	if err != nil {
-		return "", errors.Wrapf(err, "error creating configMap %s", name)
+		return "", fmt.Errorf("error creating configMap %s: %w", name, err)
 	}
 
 	return secr.ID, nil
@@ -207,12 +208,12 @@ func (s *ConfigMapManager) Delete(nameOrID string) (string, error) {
 
 	err = driver.Delete(configMapID)
 	if err != nil {
-		return "", errors.Wrapf(err, "error deleting configMap %s", nameOrID)
+		return "", fmt.Errorf("error deleting configMap %s: %w", nameOrID, err)
 	}
 
 	err = s.delete(configMapID)
 	if err != nil {
-		return "", errors.Wrapf(err, "error deleting configMap %s", nameOrID)
+		return "", fmt.Errorf("error deleting configMap %s: %w", nameOrID, err)
 	}
 	return configMapID, nil
 }
@@ -265,7 +266,7 @@ func (s *ConfigMapManager) LookupConfigMapData(nameOrID string) (*ConfigMap, []b
 // validateConfigMapName checks if the configMap name is valid.
 func validateConfigMapName(name string) error {
 	if !configMapNameRegexp.MatchString(name) || len(name) > 64 || strings.HasSuffix(name, "-") || strings.HasSuffix(name, ".") {
-		return errors.Wrapf(errInvalidConfigMapName, "only 64 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s", name)
+		return fmt.Errorf("only 64 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s: %w", name, errInvalidConfigMapName)
 	}
 	return nil
 }
@@ -276,7 +277,7 @@ func getDriver(name string, opts map[string]string) (ConfigMapsDriver, error) {
 		if path, ok := opts["path"]; ok {
 			return filedriver.NewDriver(path)
 		}
-		return nil, errors.Wrap(errInvalidDriverOpt, "need path for filedriver")
+		return nil, fmt.Errorf("need path for filedriver: %w", errInvalidDriverOpt)
 	}
 	return nil, errInvalidDriver
 }
