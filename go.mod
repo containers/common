@@ -7,9 +7,9 @@ require (
 	github.com/containerd/containerd v1.6.6
 	github.com/containernetworking/cni v1.1.1
 	github.com/containernetworking/plugins v1.1.1
-	github.com/containers/image/v5 v5.21.2-0.20220712113758-29aec5f7bbbf
+	github.com/containers/image/v5 v5.21.2-0.20220714132403-2bb3f3e44c5c
 	github.com/containers/ocicrypt v1.1.5
-	github.com/containers/storage v1.41.1-0.20220712184034-d26be7b27860
+	github.com/containers/storage v1.41.1-0.20220718173332-b10c469fda0a
 	github.com/coreos/go-systemd/v22 v22.3.2
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/davecgh/go-spew v1.1.1
@@ -29,7 +29,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.3-0.20220114050600-8b9d41f48198
 	github.com/opencontainers/runc v1.1.3
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
-	github.com/opencontainers/runtime-tools v0.9.0
+	github.com/opencontainers/runtime-tools v0.9.1-0.20220714195903-17b3287fafb7
 	github.com/opencontainers/selinux v1.10.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/seccomp/libseccomp-golang v0.10.0
@@ -70,7 +70,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/klauspost/compress v1.15.7 // indirect
+	github.com/klauspost/compress v1.15.8 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20220331220046-b23ab962616e // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
