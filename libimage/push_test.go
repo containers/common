@@ -67,6 +67,62 @@ func TestPush(t *testing.T) {
 	}
 }
 
+func TestPushAllTags(t *testing.T) {
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	// Prefetch alpine.
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+	_, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+
+	pushOptions := &PushOptions{}
+	pushOptions.AllTags = true
+	pushOptions.Writer = os.Stdout
+
+	workdir, err := ioutil.TempDir("", "libimagepush")
+	require.NoError(t, err)
+	defer os.RemoveAll(workdir)
+
+	// tag image with alternates
+	lookupOptions := &LookupImageOptions{}
+	img, _, err := runtime.LookupImage("alpine", lookupOptions)
+	require.NoError(t, err)
+	img.Tag("01")
+	img.Tag("02")
+
+	for _, test := range []struct {
+		source      string
+		destination string
+		expectError bool
+	}{
+		{"alpine", "dir:" + workdir + "/dir", true},
+		{"alpine", "containers-storage:localhost/another:alpine", true},
+		{"alpine", "docker://docker.io/library/alpine:latest", true},
+		{"alpine", "docker://docker.io/library/alpine", false},
+		{"alpine", "docker.io/library/alpine", false},
+	} {
+		_, err := runtime.Push(ctx, test.source, test.destination, pushOptions)
+		if test.expectError {
+			require.Error(t, err, "%v", test)
+			continue
+		}
+		require.NoError(t, err, "%v", test)
+		pullOptions.AllTags = true
+		pulledImages, err := runtime.Pull(ctx, test.destination, config.PullPolicyAlways, pullOptions)
+		require.NoError(t, err, "%v", test)
+		require.Len(t, pulledImages, 2, "%v", test)
+	}
+
+	// And now remove all of them.
+	rmReports, rmErrors := runtime.RemoveImages(ctx, nil, nil)
+	require.Len(t, rmErrors, 0)
+	require.Len(t, rmReports, 3)
+
+}
+
 func TestPushOtherPlatform(t *testing.T) {
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
