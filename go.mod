@@ -3,7 +3,7 @@ module github.com/containers/common
 go 1.17
 
 require (
-	github.com/BurntSushi/toml v1.1.0
+	github.com/BurntSushi/toml v1.2.0
 	github.com/containerd/containerd v1.6.6
 	github.com/containernetworking/cni v1.1.1
 	github.com/containernetworking/plugins v1.1.1
