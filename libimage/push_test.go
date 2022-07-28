@@ -72,37 +72,39 @@ func TestPushAllTags(t *testing.T) {
 	defer cleanup()
 	ctx := context.Background()
 
-	// Prefetch alpine.
+	// Prefetch two different alpine images and make some tags
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
-	_, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	_, err := runtime.Pull(ctx, "docker.io/library/alpine:3.15", config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	lookupOptions := &LookupImageOptions{}
+	img, _, err := runtime.LookupImage("docker.io/library/alpine:3.15", lookupOptions)
+	require.NoError(t, err)
+	img.Tag("docker.io/library/alpine") // imply latest
+	img.Tag("docker.io/library/alpine:3.15alpha")
+	_, err = runtime.Pull(ctx, "docker.io/library/alpine:3.14", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
 
 	pushOptions := &PushOptions{}
-	pushOptions.AllTags = true
+	pushOptions.AllTags = true // primary thing being tested here
 	pushOptions.Writer = os.Stdout
 
 	workdir, err := ioutil.TempDir("", "libimagepush")
 	require.NoError(t, err)
 	defer os.RemoveAll(workdir)
 
-	// tag image with alternates
-	lookupOptions := &LookupImageOptions{}
-	img, _, err := runtime.LookupImage("alpine", lookupOptions)
-	require.NoError(t, err)
-	img.Tag("01")
-	img.Tag("02")
-
 	for _, test := range []struct {
 		source      string
 		destination string
 		expectError bool
 	}{
-		{"alpine", "dir:" + workdir + "/dir", true},
-		{"alpine", "containers-storage:localhost/another:alpine", true},
-		{"alpine", "docker://docker.io/library/alpine:latest", true},
-		{"alpine", "docker://docker.io/library/alpine", false},
-		{"alpine", "docker.io/library/alpine", false},
+		{"alpine", "docker.io/library/alpine", true},    // fail for destination
+		{"docker://docker.io/library/alpine", "", true}, // fail for transport
+		{"docker.io/library/alpine:latest", "", true},   // fail for tag
+		{"alpine:latest", "", true},                     // fail for tag
+		// These two tests require authentication to a real registry to work
+		// {"myregistry/alpine", "", false},
+		// {"example.com/myregistry/alpine", "", false},
 	} {
 		_, err := runtime.Push(ctx, test.source, test.destination, pushOptions)
 		if test.expectError {
@@ -110,17 +112,12 @@ func TestPushAllTags(t *testing.T) {
 			continue
 		}
 		require.NoError(t, err, "%v", test)
-		pullOptions.AllTags = true
-		pulledImages, err := runtime.Pull(ctx, test.destination, config.PullPolicyAlways, pullOptions)
-		require.NoError(t, err, "%v", test)
-		require.Len(t, pulledImages, 2, "%v", test)
 	}
 
 	// And now remove all of them.
 	rmReports, rmErrors := runtime.RemoveImages(ctx, nil, nil)
 	require.Len(t, rmErrors, 0)
-	require.Len(t, rmReports, 3)
-
+	require.Len(t, rmReports, 2)
 }
 
 func TestPushOtherPlatform(t *testing.T) {
