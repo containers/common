@@ -478,6 +478,11 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 		report.Removed = true
 	}
 
+	// Do not delete any parents if NoPrune is true
+	if options.NoPrune {
+		return processedIDs, nil
+	}
+
 	// Check if can remove the parent image.
 	if parent == nil {
 		return processedIDs, nil
@@ -495,7 +500,6 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 	if !danglingParent {
 		return processedIDs, nil
 	}
-
 	// Recurse into removing the parent.
 	return parent.removeRecursive(ctx, rmMap, processedIDs, "", options)
 }
