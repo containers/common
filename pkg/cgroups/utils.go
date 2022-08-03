@@ -26,7 +26,14 @@ func readAcctList(ctr *CgroupControl, name string) ([]uint64, error) {
 	p := filepath.Join(ctr.getCgroupv1Path(CPUAcct), name)
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", p, err)
+		if os.IsNotExist(err) {
+			err := checkAndRecreatePath(p)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("reading %s: %w", p, err)
+		}
 	}
 	r := []uint64{}
 	for _, s := range strings.Split(string(data), " ") {
@@ -92,7 +99,14 @@ func cpusetCopyFileFromParent(dir, file string, cgroupv2 bool) ([]byte, error) {
 	}
 	data, err := ioutil.ReadFile(parentPath)
 	if err != nil {
-		return nil, fmt.Errorf("open %s: %w", path, err)
+		if os.IsNotExist(err) {
+			err = checkAndRecreatePath(dir)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("open %s: %w", path, err)
+		}
 	}
 	if strings.Trim(string(data), "\n") != "" {
 		return data, nil
@@ -132,25 +146,29 @@ func createCgroupv2Path(path string) (deferredError error) {
 	elements := strings.Split(path, "/")
 	for i, e := range elements[3:] {
 		current = filepath.Join(current, e)
-		if i > 0 {
-			if err := os.Mkdir(current, 0o755); err != nil {
-				if !os.IsExist(err) {
-					return err
-				}
-			} else {
-				// If the directory was created, be sure it is not left around on errors.
-				defer func() {
-					if deferredError != nil {
-						os.Remove(current)
-					}
-				}()
-			}
+		err = checkAndRecreatePath(current)
+		if err != nil {
+			return err
 		}
 		// We enable the controllers for all the path components except the last one.  It is not allowed to add
 		// PIDs if there are already enabled controllers.
 		if i < len(elements[3:])-1 {
 			if err := ioutil.WriteFile(filepath.Join(current, "cgroup.subtree_control"), res, 0o755); err != nil {
-				return err
+				if os.IsNotExist(err) {
+					if _, err := os.Stat(current); err != nil {
+						// one of the parent directories is not created
+						err = checkAndRecreatePath(current)
+						if err != nil {
+							return err
+						}
+						// now redo our creation
+						if err := ioutil.WriteFile(filepath.Join(current, "cgroup.subtree_control"), res, 0o755); err != nil {
+							return err
+						}
+					}
+				} else {
+					return err
+				}
 			}
 		}
 	}
@@ -172,4 +190,26 @@ func (c *CgroupControl) createCgroupDirectory(controller string) (bool, error) {
 		return false, fmt.Errorf("error creating cgroup for %s: %w", controller, err)
 	}
 	return true, nil
+}
+
+// checkAndRecreatePath is a helper function used to validate the existece of the parent cgroup dir
+func checkAndRecreatePath(root string) error {
+	current := "/sys/fs"
+	if strings.Contains(root, "/sys/fs") {
+		root = strings.Split(root, "/sys/fs")[1]
+	} else {
+		return fmt.Errorf("could not validate cgroup path, must be rooted at /sys/fs")
+	}
+	split := strings.Split(root, "/")
+	for _, dir := range split {
+		current = filepath.Join(current, dir)
+		_, err := os.Stat(current)
+		if err != nil && os.IsNotExist(err) {
+			err = os.Mkdir(current, 0o755)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
