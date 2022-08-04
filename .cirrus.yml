@@ -33,8 +33,8 @@ gcp_credentials: ENCRYPTED[dd6a042d1805167e38d8b79494f691b86637e68f072eba2422090
 gce_instance:
     image_project: libpod-218412
     zone: "us-central1-a"
-    cpu: 2
-    memory: "4Gb"
+    cpu: 8
+    memory: "16Gb"
     # Required to be 200gig, do not modify - has i/o performance impact
     # according to gcloud CLI tool warning messages.
     disk: 200
