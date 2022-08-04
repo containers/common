@@ -15,6 +15,9 @@ import (
 // PushOptions allows for custommizing image pushes.
 type PushOptions struct {
 	CopyOptions
+	// If true then all images and tags matching a given repository
+	// will be pushed. Only supported for the docker transport.
+	// Usage of this flag will cause Push() to return a nil []byte.
 	AllTags bool
 }
 
@@ -27,6 +30,9 @@ type PushOptions struct {
 //
 // Return storage.ErrImageUnknown if source could not be found in the local
 // containers storage.
+// Returns the bytes of the copied manifest when pushing a single tag,
+// which may be used for digest computation.
+// When pushing with AllTags=true then the returned []byte is always nil.
 func (r *Runtime) Push(ctx context.Context, source, destination string, options *PushOptions) ([]byte, error) {
 	if options == nil {
 		options = &PushOptions{}
@@ -57,7 +63,8 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 	// Below handles the AllTags option, for which we have to build a list of
 	// all the local images that match the provided repository and then push them.
 	//
-	// Start by making sure a destination was not specified, since we'll get that from the source
+	// For now, make sure a destination was not specified and get it from the source.
+	// This could change in the future, but that gets close to the Copy() functionality.
 	if len(destination) != 0 {
 		return nil, fmt.Errorf("`destination` should not be specified if using AllTags")
 	}
@@ -67,34 +74,39 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 	if err != nil {
 		return nil, err
 	}
-	if _, hasTag := srcNamed.(reference.NamedTagged); hasTag {
+	if !reference.IsNameOnly(srcNamed) {
 		return nil, fmt.Errorf("can't push with AllTags if source tag is specified")
 	}
 
-	// Now list every image of that source repository
+	logrus.Debugf("Finding all images for source %s", srcNamed.Name())
 	listOptions := &ListImagesOptions{}
-	listOptions.Filters = []string{fmt.Sprintf("reference=%s:*", source)}
-	logrus.Debugf("Finding all images for source %s", source)
-	srcImages, _ := r.ListImages(ctx, nil, listOptions)
+	srcImages, _ := r.ListImages(ctx, []string{srcNamed.Name()}, listOptions)
 
 	// Push each tag for every image in the list
-	var byteManifest []byte
 	for _, img := range srcImages {
 		namedTagged, err := img.NamedTaggedRepoTags()
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range namedTagged {
-			destWithTag := fmt.Sprintf("%s:%s", source, n.Tag())
-			b, err := pushImage(ctx, img, destWithTag, options, "", r)
+			// Filter on repo name again to avoid pushing an image that matches
+			// the source image ID but has a different repository than the source
+			currentNamed, err := reference.ParseNormalizedNamed(n.Name())
 			if err != nil {
-				return byteManifest, err
+				return nil, err
 			}
-			byteManifest = append(byteManifest, b...)
+			if reference.Path(currentNamed) == reference.Path(srcNamed) {
+				// Have to use Sprintf because pushImage expects a string
+				destWithTag := fmt.Sprintf("%s:%s", source, n.Tag())
+				_, err := pushImage(ctx, img, destWithTag, options, "", r)
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
-	return byteManifest, nil
+	return nil, nil
 }
 
 // pushImage sends a single image to be copied to the destination
