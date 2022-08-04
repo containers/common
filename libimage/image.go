@@ -470,6 +470,9 @@ func (i *Image) removeRecursive(ctx context.Context, rmMap map[string]*RemoveIma
 	}
 
 	if _, err := i.runtime.store.DeleteImage(i.ID(), true); handleError(err) != nil {
+		if errors.Is(err, storage.ErrImageUsedByContainer) {
+			err = fmt.Errorf("%w: consider listing external containers and force-removing image", err)
+		}
 		return processedIDs, err
 	}
 	report.Untagged = append(report.Untagged, i.Names()...)
