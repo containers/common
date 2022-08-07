@@ -49,6 +49,9 @@ const (
 )
 
 var (
+	// DefaultInitBinaryName is the default name of the container-init binary.
+	// TODO: Expose this?
+	DefaultInitBinaryName = "catatonit"
 	// DefaultInitPath is the default path to the container-init binary.
 	DefaultInitPath = "/usr/libexec/podman/catatonit"
 	// DefaultInfraImage is the default image to run as infrastructure containers in pods.
@@ -381,7 +384,8 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	}
 	c.RuntimeSupportsNoCgroups = []string{"crun", "krun"}
 	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}
-	c.InitPath = DefaultInitPath
+	c.InitPath = c.findInit()
+
 	c.NoPivotRoot = false
 
 	c.InfraImage = DefaultInfraImage

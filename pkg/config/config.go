@@ -824,6 +824,20 @@ func (c *EngineConfig) findRuntime() string {
 	return ""
 }
 
+func (c *EngineConfig) findInit() string {
+	if _, err := os.Stat(DefaultInitPath); err == nil {
+		return DefaultInitPath
+	}
+	for _, dir := range c.HelperBinariesDir {
+		path := filepath.Join(dir, DefaultInitBinaryName)
+		if _, err := os.Stat(path); err == nil {
+			logrus.Debugf("Found init binary %s in helper binary directory %s", DefaultInitBinaryName, dir)
+			return path
+		}
+	}
+	return ""
+}
+
 // Validate is the main entry point for Engine configuration validation
 // It returns an `error` on validation failure, otherwise
 // `nil`.
