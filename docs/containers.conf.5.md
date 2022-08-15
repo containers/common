@@ -441,7 +441,7 @@ and the logfile will not be rotated.
 
 **events_logger**="journald"
 
-The default method to use when logging events.  
+The default method to use when logging events.
 
 The default method is different based on the platform that
 Podman is being run upon.  To determine the current value,
@@ -711,11 +711,13 @@ The size of the disk in GB created when init-ing a podman-machine VM
 
 **image**=""
 
-Default image used when creating a new VM using `podman machine init`.
+Default image URI when creating a new VM using `podman machine init`.
 Options: On Linux/Mac, `testing`, `stable`, `next`. On Windows, the major
-version of the OS (e.g `35`). For all platforms you can alternatively specify
-a custom path or download URL to an image. The default is `testing` on
-Linux/Mac, and `35` on Windows.
+version of the OS (e.g `36`) for Fedora 36. For all platforms you can
+alternatively specify a custom download URL to an image. Container engines
+translate URIs $OS and $ARCH to the native OS and ARCH. URI "https://example.com/$OS/$ARCH/foobar.ami" would become "https://example.com/linux/amd64/foobar.ami" on a Linux AMD machine.
+The default value
+is `testing` on Linux/Mac, and on Windows.
 
 **memory**=2048
 
