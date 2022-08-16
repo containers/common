@@ -459,7 +459,7 @@ func probeConmon(conmonBinary string) error {
 
 	matches := r.FindStringSubmatch(out.String())
 	if len(matches) != 5 {
-		return errors.New(_conmonVersionFormatErr)
+		return fmt.Errorf(_conmonVersionFormatErr, errors.New("invalid version format"))
 	}
 	major, err := strconv.Atoi(matches[2])
 
