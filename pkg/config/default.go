@@ -455,16 +455,17 @@ func probeConmon(conmonBinary string) error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
-	r := regexp.MustCompile(`^conmon version (?P<Major>\d+).(?P<Minor>\d+).(?P<Patch>\d+)`)
+	r := regexp.MustCompile(`^(version:|conmon version)? (?P<Major>\d+).(?P<Minor>\d+).(?P<Patch>\d+)`)
 
 	matches := r.FindStringSubmatch(out.String())
-	if len(matches) != 4 {
+	if len(matches) != 5 {
 		return errors.New(_conmonVersionFormatErr)
 	}
-	major, err := strconv.Atoi(matches[1])
+	major, err := strconv.Atoi(matches[2])
 
 	var minMajor, minMinor, minPatch int
-	if strings.Contains(conmonBinary, "conmonrs") {
+	// conmon-rs returns "^version:"
+	if matches[1] == "version:" {
 		minMajor = _conmonrsMinMajorVersion
 		minMinor = _conmonrsMinMinorVersion
 		minPatch = _conmonrsMinPatchVersion
@@ -484,7 +485,7 @@ func probeConmon(conmonBinary string) error {
 		return nil
 	}
 
-	minor, err := strconv.Atoi(matches[2])
+	minor, err := strconv.Atoi(matches[3])
 	if err != nil {
 		return fmt.Errorf(_conmonVersionFormatErr, err)
 	}
@@ -495,7 +496,7 @@ func probeConmon(conmonBinary string) error {
 		return nil
 	}
 
-	patch, err := strconv.Atoi(matches[3])
+	patch, err := strconv.Atoi(matches[4])
 	if err != nil {
 		return fmt.Errorf(_conmonVersionFormatErr, err)
 	}
