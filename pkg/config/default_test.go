@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -57,7 +58,8 @@ func TestProbeConmon(t *testing.T) {
 			msg:    "failure invalid format",
 			output: "invalid",
 			assert: func(err error, msg string) {
-				assert.EqualError(t, err, _conmonVersionFormatErr, msg)
+				expectedErr := fmt.Errorf(_conmonVersionFormatErr, errors.New("invalid version format"))
+				assert.Equal(t, err, expectedErr, msg)
 			},
 		},
 	} {
