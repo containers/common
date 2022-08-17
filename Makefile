@@ -65,7 +65,7 @@ vendor-in-container:
 
 .PHONY: vendor
 vendor:
-	$(GO) mod tidy
+	$(GO) mod tidy -compat=1.17
 	$(GO) mod vendor
 	$(GO) mod verify
 
