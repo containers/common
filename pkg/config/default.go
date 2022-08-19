@@ -264,7 +264,7 @@ func defaultMachineConfig() MachineConfig {
 		Image:    getDefaultMachineImage(),
 		Memory:   2048,
 		User:     getDefaultMachineUser(),
-		Volumes:  []string{"$HOME:$HOME"},
+		Volumes:  getDefaultMachineVolumes(),
 	}
 }
 
