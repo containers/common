@@ -4,9 +4,11 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/containers/common/libnetwork/types"
@@ -433,7 +435,10 @@ var _ = Describe("Config Local", func() {
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config2.Machine.Image).To(gomega.Equal("stable"))
+		path := "https://example.com/$OS/$ARCH/foobar.ami"
+		gomega.Expect(config2.Machine.Image).To(gomega.Equal(path))
+		val := fmt.Sprintf("https://example.com/%s/%s/foobar.ami", runtime.GOOS, runtime.GOARCH)
+		gomega.Expect(config2.Machine.URI()).To(gomega.BeEquivalentTo(val))
 	})
 
 	It("CompatAPIEnforceDockerHub", func() {
