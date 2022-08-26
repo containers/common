@@ -588,9 +588,10 @@ image_copy_tmp_dir="storage"`
 			cfg, err = ReadCustomConfig()
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
-			u, i, err := cfg.ActiveDestination()
+			u, i, m, err := cfg.ActiveDestination()
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
+			gomega.Expect(m).To(gomega.Equal(false))
 			gomega.Expect(u).To(gomega.Equal("https://qa/run/podman/podman.sock"))
 			gomega.Expect(i).To(gomega.Equal("/.ssh/id_rsa"))
 		})
@@ -620,7 +621,7 @@ image_copy_tmp_dir="storage"`
 			oldContainerConnection, hostEnvSet := os.LookupEnv("CONTAINER_CONNECTION")
 			os.Setenv("CONTAINER_CONNECTION", "QB")
 
-			u, i, err := cfg.ActiveDestination()
+			u, i, m, err := cfg.ActiveDestination()
 			// Undo that
 			if hostEnvSet {
 				os.Setenv("CONTAINER_CONNECTION", oldContainerConnection)
@@ -628,6 +629,7 @@ image_copy_tmp_dir="storage"`
 				os.Unsetenv("CONTAINER_CONNECTION")
 			}
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			gomega.Expect(m).To(gomega.Equal(false))
 
 			gomega.Expect(u).To(gomega.Equal("https://qb/run/podman/podman.sock"))
 			gomega.Expect(i).To(gomega.Equal("/.ssh/qb_id_rsa"))
@@ -660,7 +662,8 @@ image_copy_tmp_dir="storage"`
 			os.Setenv("CONTAINER_HOST", "foo.bar")
 			os.Setenv("CONTAINER_SSHKEY", "/.ssh/newid_rsa")
 
-			u, i, err := cfg.ActiveDestination()
+			u, i, m, err := cfg.ActiveDestination()
+
 			// Undo that
 			if hostEnvSet {
 				os.Setenv("CONTAINER_HOST", oldContainerHost)
@@ -675,6 +678,7 @@ image_copy_tmp_dir="storage"`
 			}
 
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			gomega.Expect(m).To(gomega.Equal(false))
 
 			gomega.Expect(u).To(gomega.Equal("foo.bar"))
 			gomega.Expect(i).To(gomega.Equal("/.ssh/newid_rsa"))
@@ -684,7 +688,7 @@ image_copy_tmp_dir="storage"`
 			cfg, err := ReadCustomConfig()
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
-			_, _, err = cfg.ActiveDestination()
+			_, _, _, err = cfg.ActiveDestination()
 			gomega.Expect(err).Should(gomega.HaveOccurred())
 		})
 
