@@ -197,9 +197,9 @@ the container.
 
 Indicates whether the container engine uses MAC(SELinux) container separation via labeling. This option is ignored on disabled systems.
 
-**log_driver**="k8s-file"
+**log_driver**=""
 
-Logging driver for the container. Available options: `k8s-file` and `journald`.
+Logging driver for the container. Currently available options are k8s-file, journald, none and passthrough, with json-file aliased to k8s-file for scripting compatibility.  The journald driver is used by default if the systemd journal is readable and writable.  Otherwise, the k8s-file driver is used.
 
 **log_size_max**=-1
 
