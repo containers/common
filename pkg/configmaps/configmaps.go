@@ -173,12 +173,12 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 	}
 	err = driver.Store(secr.ID, data)
 	if err != nil {
-		return "", fmt.Errorf("error creating configMap %s: %w", name, err)
+		return "", fmt.Errorf("creating configMap %s: %w", name, err)
 	}
 
 	err = s.store(secr)
 	if err != nil {
-		return "", fmt.Errorf("error creating configMap %s: %w", name, err)
+		return "", fmt.Errorf("creating configMap %s: %w", name, err)
 	}
 
 	return secr.ID, nil
@@ -208,12 +208,12 @@ func (s *ConfigMapManager) Delete(nameOrID string) (string, error) {
 
 	err = driver.Delete(configMapID)
 	if err != nil {
-		return "", fmt.Errorf("error deleting configMap %s: %w", nameOrID, err)
+		return "", fmt.Errorf("deleting configMap %s: %w", nameOrID, err)
 	}
 
 	err = s.delete(configMapID)
 	if err != nil {
-		return "", fmt.Errorf("error deleting configMap %s: %w", nameOrID, err)
+		return "", fmt.Errorf("deleting configMap %s: %w", nameOrID, err)
 	}
 	return configMapID, nil
 }
