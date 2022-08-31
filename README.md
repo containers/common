@@ -9,6 +9,8 @@ this repository.
 It will be up to the individual projects to include the files from this
 repository.
 
+`Copyright {2018-2022} {containers/common owners}`
+
 ## seccomp
 
 The `seccomp` package in [`pkg/seccomp`](pkg/seccomp) is a set of Go libraries
