@@ -92,6 +92,11 @@ func cpusetCopyFileFromParent(dir, file string, cgroupv2 bool) ([]byte, error) {
 	}
 	data, err := ioutil.ReadFile(parentPath)
 	if err != nil {
+		// if the file doesn't exist, it is likely that the cpuset controller
+		// is not enabled in the kernel.
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	if strings.Trim(string(data), "\n") != "" {
