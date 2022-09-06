@@ -82,6 +82,8 @@ func TestFormatter_ParseTable(t *testing.T) {
 		},
 		{&bytes.Buffer{}, OriginUser, "{{range .}}{{.ID}}\tID\n{{end}}", "c061a0839e\tID\nf10fc2e11057\tID\n1eb6fab5aa8f4b5cbfd3e66aa35e9b2a\tID\n\n"},
 		{&bytes.Buffer{}, OriginUser, `{{range .}}{{.ID}}{{end -}}`, "c061a0839ef10fc2e110571eb6fab5aa8f4b5cbfd3e66aa35e9b2a"},
+		// regression test for https://bugzilla.redhat.com/show_bug.cgi?id=2059658 and https://github.com/containers/podman/issues/13446
+		{&bytes.Buffer{}, OriginUser, `{{range .}}{{printf "\n"}}{{end -}}`, "\n\n\n"},
 	}
 
 	for loop, tc := range testCase {

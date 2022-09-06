@@ -178,10 +178,10 @@ func TestTemplate_Newlines(t *testing.T) {
 		{Field1: "Three", Field2: 3, Field3: "Third"},
 	}
 
-	hdrs := Headers(input[0], map[string]string{"Field1": "Ein", "Field2": "Zwei", "Field3": "Drei"})
+	hdrs := Headers(input[0], map[string]string{"Field1": "Eins", "Field2": "Zwei", "Field3": "Drei"})
 
 	// Ensure no blank lines in table
-	expected := "EIN\tZWEI\tDREI\nOne\t1\tFirst\nTwo\t2\tSecond\nThree\t3\tThird\n"
+	expected := "EINS\tZWEI\tDREI\nOne\t1\tFirst\nTwo\t2\tSecond\nThree\t3\tThird\n"
 
 	format := NormalizeFormat("{{.Field1}}\t{{.Field2}}\t{{.Field3}}")
 	format = EnforceRange(format)
