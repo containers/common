@@ -72,6 +72,8 @@ type Secret struct {
 	Name string `json:"name"`
 	// ID is the unique secret ID
 	ID string `json:"id"`
+	// Labels are labels on the secret
+	Labels map[string]string `json:"labels,omitempty"`
 	// Metadata stores other metadata on the secret
 	Metadata map[string]string `json:"metadata,omitempty"`
 	// CreatedAt is when the secret was created
@@ -129,7 +131,7 @@ func NewManager(rootPath string) (*SecretsManager, error) {
 // Store takes a name, creates a secret and stores the secret metadata and the secret payload.
 // It returns a generated ID that is associated with the secret.
 // The max size for secret data is 512kB.
-func (s *SecretsManager) Store(name string, data []byte, driverType string, driverOpts map[string]string, metadata map[string]string) (string, error) {
+func (s *SecretsManager) Store(name string, data []byte, driverType string, driverOpts map[string]string, metadata map[string]string, labels map[string]string) (string, error) {
 	err := validateSecretName(name)
 	if err != nil {
 		return "", err
@@ -176,6 +178,7 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, driv
 	secr.Metadata = metadata
 	secr.CreatedAt = time.Now()
 	secr.DriverOptions = driverOpts
+	secr.Labels = labels
 
 	driver, err := getDriver(driverType, driverOpts)
 	if err != nil {
