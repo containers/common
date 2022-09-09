@@ -365,7 +365,7 @@ image_copy_tmp_dir="storage"`
 				gomega.Expect(config.Engine.EventsLogger).To(gomega.BeEquivalentTo("file"))
 				gomega.Expect(config.Containers.LogDriver).To(gomega.BeEquivalentTo("k8s-file"))
 			}
-			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(config.Engine.TmpDir + "/events/events.log"))
+			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(""))
 			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(DefaultEventsLogSizeMax))
 			gomega.Expect(config.Engine.PodExitPolicy).To(gomega.Equal(PodExitPolicyContinue))
 		})
