@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/containers/common/pkg/randid"
 	"github.com/containers/common/pkg/secrets/filedriver"
 	"github.com/containers/common/pkg/secrets/passdriver"
 	"github.com/containers/common/pkg/secrets/shelldriver"
 	"github.com/containers/storage/pkg/lockfile"
-	"github.com/containers/storage/pkg/stringid"
 )
 
 // maxSecretSize is the max size for secret data - 512kB
@@ -166,9 +166,7 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, opti
 	secr.Name = name
 
 	for {
-		newID := stringid.GenerateNonCryptoID()
-		// GenerateNonCryptoID() gives 64 characters, so we truncate to correct length
-		newID = newID[0:secretIDLength]
+		newID := randid.Get(secretIDLength)
 		_, err := s.lookupSecret(newID)
 		if err != nil {
 			if errors.Is(err, ErrNoSuchSecret) {

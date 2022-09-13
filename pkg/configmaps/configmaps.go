@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/containers/common/pkg/configmaps/filedriver"
+	"github.com/containers/common/pkg/randid"
 	"github.com/containers/storage/pkg/lockfile"
-	"github.com/containers/storage/pkg/stringid"
 )
 
 // maxConfigMapSize is the max size for configMap data - 512kB
@@ -148,9 +148,7 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 	secr.Name = name
 
 	for {
-		newID := stringid.GenerateNonCryptoID()
-		// GenerateNonCryptoID() gives 64 characters, so we truncate to correct length
-		newID = newID[0:configMapIDLength]
+		newID := randid.Get(configMapIDLength)
 		_, err := s.lookupConfigMap(newID)
 		if err != nil {
 			if errors.Is(err, ErrNoSuchConfigMap) {
