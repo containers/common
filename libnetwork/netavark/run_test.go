@@ -192,7 +192,7 @@ var _ = Describe("run netavark", func() {
 			Expect(addrs).To(ContainElements(EqualSubnet(subnet)))
 
 			wg := &sync.WaitGroup{}
-			expected := stringid.GenerateNonCryptoID()
+			expected := stringid.GenerateRandomID()
 			// now check ip connectivity
 			err = netNSContainer.Do(func(_ ns.NetNS) error {
 				wg.Add(1)
@@ -259,7 +259,7 @@ var _ = Describe("run netavark", func() {
 			intName := "eth0"
 			setupOpts1 := types.SetupOptions{
 				NetworkOptions: types.NetworkOptions{
-					ContainerID: stringid.GenerateNonCryptoID(),
+					ContainerID: stringid.GenerateRandomID(),
 					Networks: map[string]types.PerNetworkOptions{
 						defNet: {InterfaceName: intName},
 					},
@@ -277,7 +277,7 @@ var _ = Describe("run netavark", func() {
 
 			setupOpts2 := types.SetupOptions{
 				NetworkOptions: types.NetworkOptions{
-					ContainerID: stringid.GenerateNonCryptoID(),
+					ContainerID: stringid.GenerateRandomID(),
 					Networks: map[string]types.PerNetworkOptions{
 						defNet: {InterfaceName: intName},
 					},
@@ -323,7 +323,7 @@ var _ = Describe("run netavark", func() {
 
 			setupOpts := types.SetupOptions{
 				NetworkOptions: types.NetworkOptions{
-					ContainerID: stringid.GenerateNonCryptoID(),
+					ContainerID: stringid.GenerateRandomID(),
 					Networks: map[string]types.PerNetworkOptions{
 						netName: {InterfaceName: intName},
 					},
@@ -414,7 +414,7 @@ var _ = Describe("run netavark", func() {
 
 			setupOpts := types.SetupOptions{
 				NetworkOptions: types.NetworkOptions{
-					ContainerID: stringid.GenerateNonCryptoID(),
+					ContainerID: stringid.GenerateRandomID(),
 					Networks: map[string]types.PerNetworkOptions{
 						netName1: {InterfaceName: intName1},
 						netName2: {InterfaceName: intName2},
@@ -507,12 +507,12 @@ var _ = Describe("run netavark", func() {
 		protocol := proto
 		It("run with exposed ports protocol "+protocol, func() {
 			runTest(func() {
-				testdata := stringid.GenerateNonCryptoID()
+				testdata := stringid.GenerateRandomID()
 				defNet := types.DefaultNetworkName
 				intName := "eth0"
 				setupOpts := types.SetupOptions{
 					NetworkOptions: types.NetworkOptions{
-						ContainerID: stringid.GenerateNonCryptoID(),
+						ContainerID: stringid.GenerateRandomID(),
 						PortMappings: []types.PortMapping{{
 							Protocol:      protocol,
 							HostIP:        "127.0.0.1",
@@ -565,7 +565,7 @@ var _ = Describe("run netavark", func() {
 				intName := "eth0"
 				setupOpts := types.SetupOptions{
 					NetworkOptions: types.NetworkOptions{
-						ContainerID: stringid.GenerateNonCryptoID(),
+						ContainerID: stringid.GenerateRandomID(),
 						PortMappings: []types.PortMapping{{
 							Protocol:      protocol,
 							HostIP:        "127.0.0.1",
@@ -596,7 +596,7 @@ var _ = Describe("run netavark", func() {
 					port := p
 					var wg sync.WaitGroup
 					wg.Add(1)
-					testdata := stringid.GenerateNonCryptoID()
+					testdata := stringid.GenerateRandomID()
 					// start a listener in the container ns
 					err = netNSContainer.Do(func(_ ns.NetNS) error {
 						defer GinkgoRecover()
@@ -715,7 +715,7 @@ var _ = Describe("run netavark", func() {
 
 			setupOpts := types.SetupOptions{
 				NetworkOptions: types.NetworkOptions{
-					ContainerID: stringid.GenerateNonCryptoID(),
+					ContainerID: stringid.GenerateRandomID(),
 					Networks: map[string]types.PerNetworkOptions{
 						netName1: {
 							InterfaceName: intName1,

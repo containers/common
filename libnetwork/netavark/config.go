@@ -52,7 +52,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		// generate random network ID
 		var i int
 		for i = 0; i < 1000; i++ {
-			id := stringid.GenerateNonCryptoID()
+			id := stringid.GenerateRandomID()
 			if _, err := n.getNetwork(id); err != nil {
 				newNetwork.ID = id
 				break
