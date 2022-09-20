@@ -427,7 +427,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 }
 
 func defaultTmpDir() (string, error) {
-	if unshare.GetRootlessUID() != 0 {
+	if unshare.GetRootlessUID() == 0 {
 		return getLibpodTmpDir(), nil
 	}
 
