@@ -282,7 +282,6 @@ func ValidateAndConfigure(uri *url.URL, iden string, insecureIsMachineConnection
 	}
 
 	var callback ssh.HostKeyCallback
-	var keyErr *knownhosts.KeyError
 	if insecureIsMachineConnection {
 		callback = ssh.InsecureIgnoreHostKey()
 	} else {
@@ -300,6 +299,7 @@ func ValidateAndConfigure(uri *url.URL, iden string, insecureIsMachineConnection
 			// if it is a key mismatch we want to error since we know the host using another key
 			// however, if it is a general error not because of a known key, we want to add our key to the known_hosts file
 			hErr := known(host, remote, pubKey)
+			var keyErr *knownhosts.KeyError
 			// if keyErr.Want is not empty, we are receiving a different key meaning the host is known but we are using the wrong key
 			as := errors.As(hErr, &keyErr)
 			switch {
