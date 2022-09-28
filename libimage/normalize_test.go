@@ -54,6 +54,34 @@ func TestNormalizePlatform(t *testing.T) {
 			platform{"linux", "aarch64", ""},
 			platform{"linux", "arm64", ""},
 		},
+		// Verify: https://github.com/containerd/containerd/blob/main/platforms/database.go#L97
+		{
+			platform{"linux", "arm64", "8"},
+			platform{"linux", "arm64", "v8"},
+		},
+		// Verify: https://github.com/containerd/containerd/blob/main/platforms/database.go#L100
+		{
+			platform{"linux", "armhf", ""},
+			platform{"linux", "arm", "v7"},
+		},
+		{
+			platform{"linux", "armhf", "v7"},
+			platform{"linux", "arm", "v7"},
+		},
+		// Verify: https://github.com/containerd/containerd/blob/main/platforms/database.go#L103
+		{
+			platform{"linux", "armel", ""},
+			platform{"linux", "arm", "v6"},
+		},
+		// Verify: https://github.com/containerd/containerd/blob/main/platforms/database.go#L103
+		{
+			platform{"linux", "armel", "v6"},
+			platform{"linux", "arm", "v6"},
+		},
+		{
+			platform{"linux", "armel", ""},
+			platform{"linux", "arm", "v6"},
+		},
 	} {
 		os, arch, variant := NormalizePlatform(test.input.os, test.input.arch, test.input.variant)
 		assert.Equal(t, test.expected.os, os, test.input)
