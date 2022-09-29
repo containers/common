@@ -34,8 +34,7 @@ func GetRuntimeDir() (string, error) {
 	rootlessRuntimeDirOnce.Do(func() {
 		runtimeDir, err := homedir.GetRuntimeDir()
 		if err != nil {
-			rootlessRuntimeDirError = err
-			return
+			logrus.Debug(err)
 		}
 		if runtimeDir != "" {
 			st, err := os.Stat(runtimeDir)
