@@ -152,8 +152,8 @@ func getMountsMap(path string) (string, string, error) { //nolint
 // mountLabel: MAC/SELinux label for container content
 // containerRunDir: Private data for storing subscriptions on the host mounted in container.
 // mountFile: Additional mount points required for the container.
-// mountPoint: Container image mountpoint, or the directory from the hosts perspective that
-//   corresponds to `/` in the container.
+// mountPoint: Container image mountpoint, or the directory from the hosts perspective that corresponds to `/` in the container.
+//
 // uid: to assign to content created for subscriptions
 // gid: to assign to content created for subscriptions
 // rootless: indicates whether container is running in rootless mode
@@ -305,10 +305,10 @@ func addSubscriptionsFromMountsFile(filePath, mountLabel, containerRunDir string
 // (i.e: be FIPs compliant).
 // It should only be called if /etc/system-fips exists on host.
 // It primarily does two things:
-// - creates /run/secrets/system-fips in the container root filesystem, and adds it to the `mounts` slice.
-// - If `/etc/crypto-policies/back-ends` already exists inside of the container, it creates
-//   `/usr/share/crypto-policies/back-ends/FIPS` inside the container as well.
-//   It is done from within the container to ensure to avoid policy incompatibility between the container and host.
+//   - creates /run/secrets/system-fips in the container root filesystem, and adds it to the `mounts` slice.
+//   - If `/etc/crypto-policies/back-ends` already exists inside of the container, it creates
+//     `/usr/share/crypto-policies/back-ends/FIPS` inside the container as well.
+//     It is done from within the container to ensure to avoid policy incompatibility between the container and host.
 func addFIPSModeSubscription(mounts *[]rspec.Mount, containerRunDir, mountPoint, mountLabel string, uid, gid int) error {
 	subscriptionsDir := "/run/secrets"
 	ctrDirOnHost := filepath.Join(containerRunDir, subscriptionsDir)

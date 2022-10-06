@@ -49,11 +49,7 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 		// OCI-ARCHIVE
 		func() ([]string, string, error) {
 			logrus.Debugf("-> Attempting to load %q as an OCI archive", path)
-			ref, err := ociArchiveTransport.NewReference(path, "")
-			if err != nil {
-				return nil, ociArchiveTransport.Transport.Name(), err
-			}
-			images, err := r.copyFromDefault(ctx, ref, &options.CopyOptions)
+			images, err := r.loadMultiImageOCIArchive(ctx, path, &options.CopyOptions)
 			return images, ociArchiveTransport.Transport.Name(), err
 		},
 
@@ -134,6 +130,34 @@ func (r *Runtime) loadMultiImageDockerArchive(ctx context.Context, ref types.Ima
 			}
 			copiedImages = append(copiedImages, names...)
 		}
+	}
+
+	return copiedImages, nil
+}
+
+func (r *Runtime) loadMultiImageOCIArchive(ctx context.Context, path string, options *CopyOptions) ([]string, error) {
+	reader, err := ociArchiveTransport.NewReader(ctx, r.systemContextCopy(), path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := reader.Close(); err != nil {
+			logrus.Errorf("Closing reader of OCI archive: %v", err)
+		}
+	}()
+
+	entries, err := reader.List()
+	if err != nil {
+		return nil, err
+	}
+
+	copiedImages := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		name, err := r.copyFromOCIArchiveReaderReferenceAndManifestDescriptor(ctx, entry.ImageRef, entry.ManifestDescriptor, options)
+		if err != nil {
+			return nil, err
+		}
+		copiedImages = append(copiedImages, name)
 	}
 
 	return copiedImages, nil
