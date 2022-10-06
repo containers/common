@@ -151,9 +151,9 @@ func (r *Runtime) loadMultiImageOCIArchive(ctx context.Context, path string, opt
 		return nil, err
 	}
 
-	var copiedImages []string
+	copiedImages := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		name, err := r.copyFromOCIArchiveReaderReferenceAndManifestDescriptor(ctx, reader, entry.ImageRef, entry.ManifestDescriptor, options)
+		name, err := r.copyFromOCIArchiveReaderReferenceAndManifestDescriptor(ctx, entry.ImageRef, entry.ManifestDescriptor, options)
 		if err != nil {
 			return nil, err
 		}
