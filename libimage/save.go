@@ -74,7 +74,7 @@ func (r *Runtime) Save(ctx context.Context, names []string, format, path string,
 }
 
 // saveSingleImage saves the specified image name to the specified path.
-// Supported formats are "oci-archive", "oci-dir" and "docker-dir".
+// Supported formats are "oci-dir" and "docker-dir".
 func (r *Runtime) saveSingleImage(ctx context.Context, name, format, path string, options *SaveOptions) error {
 	image, imageName, err := r.LookupImage(name, nil)
 	if err != nil {
@@ -132,7 +132,7 @@ type localImage struct {
 	destNames []string
 }
 
-// saveDockerArchive saves the specified images indicated by names to the path.
+// saveArchive saves the specified images indicated by names to the path.
 // It loads all images from the local containers storage and assembles the meta
 // data needed to properly save images.  Since multiple names could refer to
 // the *same* image, we need to dance a bit and store additional "names".
