@@ -264,11 +264,9 @@ func (r *Runtime) copyFromDefault(ctx context.Context, ref types.ImageReference,
 	return []string{imageName}, err
 }
 
-// storageReferencesFromArchiveReader returns a slice of image references inside the
-// archive reader.  A docker archive may include more than one image and this
-// method allows for extracting them into containers storage references which
-// can later be used from copying.
-func (r *Runtime) storageReferencesReferencesFromArchiveReader(ctx context.Context, readerRef types.ImageReference, reader *dockerArchiveTransport.Reader) ([]types.ImageReference, []string, error) {
+// storageReferencesFromDockerArchiveReader returns a slice of storage references that should be used
+// for pulling the readerRef inside reader.
+func (r *Runtime) storageReferencesReferencesFromDockerArchiveReader(ctx context.Context, readerRef types.ImageReference, reader *dockerArchiveTransport.Reader) ([]types.ImageReference, []string, error) {
 	destNames, err := reader.ManifestTagsForReference(readerRef)
 	if err != nil {
 		return nil, nil, err
@@ -333,7 +331,7 @@ func (r *Runtime) copyFromDockerArchiveReaderReference(ctx context.Context, read
 	defer c.close()
 
 	// Get a slice of storage references we can copy.
-	references, destNames, err := r.storageReferencesReferencesFromArchiveReader(ctx, readerRef, reader)
+	references, destNames, err := r.storageReferencesReferencesFromDockerArchiveReader(ctx, readerRef, reader)
 	if err != nil {
 		return nil, err
 	}
@@ -348,63 +346,80 @@ func (r *Runtime) copyFromDockerArchiveReaderReference(ctx context.Context, read
 	return destNames, nil
 }
 
-func (r *Runtime) copyFromOCIArchive(ctx context.Context, readerRef types.ImageReference, options *CopyOptions) ([]string, error) {
-	reader, err := ociArchiveTransport.NewReader(ctx, &r.systemContext, readerRef)
+// storageReferencesFromOCIArchiveReader returns a storage reference that should be used
+// for pulling the readerRef inside reader.
+func (r *Runtime) storageReferenceFromOCIArchiveReader(ctx context.Context, readerRef types.ImageReference, reader *ociArchiveTransport.Reader) (types.ImageReference, string, error) {
+	manifestDescriptor, err := ociArchiveTransport.LoadManifestDescriptor(readerRef)
+	if err != nil {
+		return nil, "", err
+	}
+	storageName := nameFromAnnotations(manifestDescriptor.Annotations)
+	var imageName string
+	switch len(storageName) {
+	case 0:
+		// If there's no reference name in the annotations, compute an ID.
+		storageName, err = getImageID(ctx, readerRef, &r.systemContext)
+		if err != nil {
+			return nil, "", err
+		}
+		imageName = "sha256:" + storageName[1:]
+	default:
+		named, err := NormalizeName(storageName)
+		if err != nil {
+			return nil, "", err
+		}
+		imageName = named.String()
+		storageName = imageName
+	}
+
+	destRef, err := storageTransport.Transport.ParseStoreReference(r.store, imageName)
+	if err != nil {
+		return nil, "", fmt.Errorf("parsing dest reference name %#v: %w", imageName, err)
+	}
+	return destRef, imageName, nil
+}
+
+// copyFromOCIArchive copies one image from the specified reference.
+func (r *Runtime) copyFromOCIArchive(ctx context.Context, ref types.ImageReference, options *CopyOptions) ([]string, error) {
+	// There may be more than one image inside the OCI archive, so we
+	// need a quick glimpse inside.
+	reader, readerRef, err := ociArchiveTransport.NewReaderForReference(ctx, &r.systemContext, ref)
 	if err != nil {
 		return nil, err
 	}
-	return r.copyFromOCIArchiveReader(ctx, reader, options)
-}
+	defer func() {
+		if err := reader.Close(); err != nil {
+			logrus.Errorf("Closing reader of OCI archive: %v", err)
+		}
+	}()
 
-func (r *Runtime) copyFromOCIArchiveReader(ctx context.Context, reader *ociArchiveTransport.Reader, options *CopyOptions) ([]string, error) {
-	c, err := r.newCopier(options)
+	destName, err := r.copyFromOCIArchiveReaderReference(ctx, reader, readerRef, options)
 	if err != nil {
 		return nil, err
+	}
+	return []string{destName}, nil
+}
+
+// copyFromOCIArchiveReaderReference copies the specified readerRef from reader.
+func (r *Runtime) copyFromOCIArchiveReaderReference(ctx context.Context, reader *ociArchiveTransport.Reader, readerRef types.ImageReference, options *CopyOptions) (string, error) {
+	c, err := r.newCopier(options)
+	if err != nil {
+		return "", err
 	}
 	defer c.close()
 
-	list, err := reader.List()
+	// Get a storage reference we can copy.
+	destRef, destName, err := r.storageReferenceFromOCIArchiveReader(ctx, readerRef, reader)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var names []string
-
-	for _, l := range list {
-		var storageName, imageName string
-
-		storageName = nameFromAnnotations(l.ManifestDescriptor.Annotations)
-		switch len(storageName) {
-		case 0:
-			// If there's no reference name in the annotations, compute an ID.
-			storageName, err = getImageID(ctx, l.ImageRef, nil)
-			if err != nil {
-				return nil, err
-			}
-			imageName = "sha256:" + storageName[1:]
-		default:
-			named, err := NormalizeName(storageName)
-			if err != nil {
-				return nil, err
-			}
-			imageName = named.String()
-			storageName = imageName
-		}
-
-		// Create a storage reference.
-		destRef, err := storageTransport.Transport.ParseStoreReference(r.store, storageName)
-		if err != nil {
-			return nil, errors.Wrapf(err, "parsing %q", storageName)
-		}
-
-		if _, err := c.copy(ctx, l.ImageRef, destRef); err != nil {
-			return nil, err
-		}
-
-		names = append(names, imageName)
+	// Now copy the images.  Use readerRef for performance.
+	if _, err := c.copy(ctx, readerRef, destRef); err != nil {
+		return "", err
 	}
 
-	return names, nil
+	return destName, nil
 }
 
 // copyFromRegistry pulls the specified, possibly unqualified, name from a
