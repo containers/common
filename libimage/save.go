@@ -200,7 +200,7 @@ func (r *Runtime) saveArchive(ctx context.Context, names []string, format, path 
 		}
 
 	default:
-		return errors.Errorf("internal error: cannot save multiple images to format %q", format)
+		return fmt.Errorf("internal error: cannot save multiple images to format %q", format)
 	}
 
 	return nil
@@ -220,7 +220,7 @@ func (r *Runtime) saveDockerArchive(ctx context.Context, path string, orderedIDs
 			finalErr = err
 			return
 		}
-		finalErr = errors.Wrap(finalErr, err.Error())
+		finalErr = fmt.Errorf("(error closing docker archive: %v): %w", err, finalErr)
 	}()
 
 	for _, id := range orderedIDs {
@@ -268,13 +268,13 @@ func (r *Runtime) saveOCIArchive(ctx context.Context, path string, orderedIDs []
 		if finalErr == nil {
 			finalErr = err
 		}
-		finalErr = errors.Wrap(finalErr, err.Error())
+		finalErr = fmt.Errorf("(error closing OCI archive: %v): %w", err, finalErr)
 	}()
 
 	for _, id := range orderedIDs {
 		local, exists := localImages[id]
 		if !exists {
-			return errors.Errorf("internal error: saveOCIArchive: ID %s not found in local map", id)
+			return fmt.Errorf("internal error: saveOCIArchive: ID %s not found in local map", id)
 		}
 
 		copyOpts := options.CopyOptions
