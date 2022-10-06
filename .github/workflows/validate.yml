@@ -1,12 +1,14 @@
 name: validate
 on:
   push:
-    tags:
-      - v*
     branches:
       - main
-      - v*
   pull_request:
+    branches:
+      - main
+
+permissions: read-all
+
 env:
   LINT_VERSION: v1.45
 
