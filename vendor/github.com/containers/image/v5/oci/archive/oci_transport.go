@@ -2,28 +2,21 @@ package archive
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 
 	"github.com/containers/image/v5/directory/explicitfilepath"
 	"github.com/containers/image/v5/docker/reference"
-	"github.com/containers/image/v5/image"
-	"github.com/containers/image/v5/internal/tmpdir"
+	"github.com/containers/image/v5/internal/image"
 	"github.com/containers/image/v5/oci/internal"
-	ocilayout "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/types"
-	"github.com/containers/storage/pkg/archive"
-	"github.com/pkg/errors"
 )
 
 func init() {
 	transports.Register(Transport)
 }
-
-var invalidOciArchiveErr error = errors.New("Invalid oci-archive: reference")
 
 // Transport is an ImageTransport for OCI archive
 // it creates an oci-archive tar file by calling into the OCI transport
@@ -91,10 +84,10 @@ func newReference(file, image string, sourceIndex int, archiveReader *Reader, ar
 	}
 
 	if sourceIndex != -1 && sourceIndex < 0 {
-		return nil, fmt.Errorf("index @%d must not be negative: %w", sourceIndex, invalidOciArchiveErr)
+		return nil, fmt.Errorf("Invalid oci-archive: reference: index @%d must not be negative", sourceIndex)
 	}
 	if sourceIndex != -1 && image != "" {
-		return nil, fmt.Errorf("cannot set image %s and index @%d at the same time: %w", image, sourceIndex, invalidOciArchiveErr)
+		return nil, fmt.Errorf("Invalid oci-archive: reference: cannot set image %s and index @%d at the same time", image, sourceIndex)
 	}
 	return ociArchiveReference{
 		file:          file,
@@ -156,11 +149,7 @@ func (ref ociArchiveReference) PolicyConfigurationNamespaces() []string {
 // verify that UnparsedImage, and convert it into a real Image via image.FromUnparsedImage.
 // WARNING: This may not do the right thing for a manifest list, see image.FromSource for details.
 func (ref ociArchiveReference) NewImage(ctx context.Context, sys *types.SystemContext) (types.ImageCloser, error) {
-	src, err := newImageSource(ctx, sys, ref)
-	if err != nil {
-		return nil, err
-	}
-	return image.FromSource(ctx, sys, src)
+	return image.FromReference(ctx, sys, ref)
 }
 
 // NewImageSource returns a types.ImageSource for this reference.
@@ -177,61 +166,5 @@ func (ref ociArchiveReference) NewImageDestination(ctx context.Context, sys *typ
 
 // DeleteImage deletes the named image from the registry, if supported.
 func (ref ociArchiveReference) DeleteImage(ctx context.Context, sys *types.SystemContext) error {
-	return fmt.Errorf("Deleting images not implemented for oci: images")
-}
-
-// struct to store the ociReference and temporary directory returned by createOCIRef
-type tempDirOCIRef struct {
-	tempDirectory   string
-	ociRefExtracted types.ImageReference
-}
-
-// deletes the temporary directory created
-func (t *tempDirOCIRef) deleteTempDir() error {
-	return os.RemoveAll(t.tempDirectory)
-}
-
-// createOCIRef creates the oci reference of the image
-// If SystemContext.BigFilesTemporaryDir not "", overrides the temporary directory to use for storing big files
-func createOCIRef(sys *types.SystemContext, image string, sourceIndex int) (tempDirOCIRef, error) {
-	dir, err := ioutil.TempDir(tmpdir.TemporaryDirectoryForBigFiles(sys), "oci")
-	if err != nil {
-		return tempDirOCIRef{}, fmt.Errorf("creating temp directory: %w", err)
-	}
-	var ociRef types.ImageReference
-	if sourceIndex > -1 {
-		if ociRef, err = ocilayout.NewIndexReference(dir, sourceIndex); err != nil {
-			return tempDirOCIRef{}, err
-		}
-	} else {
-		if ociRef, err = ocilayout.NewReference(dir, image); err != nil {
-			return tempDirOCIRef{}, err
-		}
-	}
-
-	tempDirRef := tempDirOCIRef{tempDirectory: dir, ociRefExtracted: ociRef}
-	return tempDirRef, nil
-}
-
-// creates the temporary directory and copies the tarred content to it
-func createUntarTempDir(sys *types.SystemContext, ref ociArchiveReference) (tempDirOCIRef, error) {
-	tempDirRef, err := createOCIRef(sys, ref.image, ref.sourceIndex)
-	if err != nil {
-		return tempDirOCIRef{}, fmt.Errorf("creating oci reference: %w", err)
-	}
-	src := ref.resolvedFile
-	dst := tempDirRef.tempDirectory
-	// TODO: This can take quite some time, and should ideally be cancellable using a context.Context.
-	arch, err := os.Open(src)
-	if err != nil {
-		return tempDirOCIRef{}, err
-	}
-	defer arch.Close()
-	if err := archive.NewDefaultArchiver().Untar(arch, dst, &archive.TarOptions{NoLchown: true}); err != nil {
-		if err := tempDirRef.deleteTempDir(); err != nil {
-			return tempDirOCIRef{}, fmt.Errorf("deleting temp directory %q: %w", tempDirRef.tempDirectory, err)
-		}
-		return tempDirOCIRef{}, fmt.Errorf("untarring file %q: %w", tempDirRef.tempDirectory, err)
-	}
-	return tempDirRef, nil
+	return errors.New("Deleting images not implemented for oci: images")
 }

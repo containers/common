@@ -5,54 +5,69 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/containers/image/v5/internal/blobinfocache"
+	"github.com/containers/image/v5/internal/imagedestination"
+	"github.com/containers/image/v5/internal/imagedestination/impl"
+	"github.com/containers/image/v5/internal/private"
+	"github.com/containers/image/v5/internal/signature"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/types"
 	digest "github.com/opencontainers/go-digest"
 )
 
 type ociArchiveImageDestination struct {
+	impl.Compat
+
 	ref                   ociArchiveReference
 	individualWriterOrNil *Writer
-	unpackedDest          types.ImageDestination
+	unpackedDest          private.ImageDestination
 }
 
 // newImageDestination returns an ImageDestination for writing to an existing directory.
-func newImageDestination(ctx context.Context, sys *types.SystemContext, ref ociArchiveReference) (types.ImageDestination, error) {
+func newImageDestination(ctx context.Context, sys *types.SystemContext, ref ociArchiveReference) (private.ImageDestination, error) {
 	var (
 		archive, individualWriterOrNil *Writer
 		err                            error
 	)
 
 	if ref.sourceIndex != -1 {
-		return nil, fmt.Errorf("destination reference must not contain a manifest index @%d: %w", ref.sourceIndex, invalidOciArchiveErr)
+		return nil, fmt.Errorf("destination reference must not contain a manifest index @%d", ref.sourceIndex)
 	}
 
 	if ref.archiveWriter != nil {
 		archive = ref.archiveWriter
 		individualWriterOrNil = nil
 	} else {
-		archive, err = NewWriter(ctx, sys, ref.file)
+		archive, err = NewWriter(ctx, sys, ref.resolvedFile)
 		if err != nil {
 			return nil, err
 		}
 		individualWriterOrNil = archive
 	}
-	newref, err := layout.NewReference(archive.tempDir, ref.image)
+	succeeded := false
+	defer func() {
+		if !succeeded && individualWriterOrNil != nil {
+			individualWriterOrNil.Close()
+		}
+	}()
+
+	layoutRef, err := layout.NewReference(archive.tempDir, ref.image)
 	if err != nil {
-		archive.Close()
 		return nil, err
 	}
-	dst, err := newref.NewImageDestination(ctx, sys)
+	dst, err := layoutRef.NewImageDestination(ctx, sys)
 	if err != nil {
-		archive.Close()
 		return nil, err
 	}
 
-	return &ociArchiveImageDestination{
-		unpackedDest:          dst,
-		individualWriterOrNil: individualWriterOrNil,
+	succeeded = true
+	d := &ociArchiveImageDestination{
 		ref:                   ref,
-	}, nil
+		individualWriterOrNil: individualWriterOrNil,
+		unpackedDest:          imagedestination.FromPublic(dst),
+	}
+	d.Compat = impl.AddCompat(d)
+	return d, nil
 }
 
 // Reference returns the reference used to set up this destination.
@@ -62,8 +77,10 @@ func (d *ociArchiveImageDestination) Reference() types.ImageReference {
 
 // Close removes resources associated with an initialized ImageDestination, if any
 func (d *ociArchiveImageDestination) Close() error {
-	defer d.unpackedDest.Close()
-	if d.ref.archiveWriter != nil || d.individualWriterOrNil == nil {
+	if err := d.unpackedDest.Close(); err != nil {
+		return err
+	}
+	if d.individualWriterOrNil == nil {
 		return nil
 	}
 	return d.individualWriterOrNil.Close()
@@ -105,29 +122,40 @@ func (d *ociArchiveImageDestination) HasThreadSafePutBlob() bool {
 	return false
 }
 
-// PutBlob writes contents of stream and returns data representing the result.
+// SupportsPutBlobPartial returns true if PutBlobPartial is supported.
+func (d *ociArchiveImageDestination) SupportsPutBlobPartial() bool {
+	return d.unpackedDest.SupportsPutBlobPartial()
+}
+
+// PutBlobWithOptions writes contents of stream and returns data representing the result.
 // inputInfo.Digest can be optionally provided if known; if provided, and stream is read to the end without error, the digest MUST match the stream contents.
 // inputInfo.Size is the expected length of stream, if known.
 // inputInfo.MediaType describes the blob format, if known.
-// May update cache.
 // WARNING: The contents of stream are being verified on the fly.  Until stream.Read() returns io.EOF, the contents of the data SHOULD NOT be available
 // to any other readers for download using the supplied digest.
 // If stream.Read() at any time, ESPECIALLY at end of input, returns an error, PutBlob MUST 1) fail, and 2) delete any data stored so far.
-func (d *ociArchiveImageDestination) PutBlob(ctx context.Context, stream io.Reader, inputInfo types.BlobInfo, cache types.BlobInfoCache, isConfig bool) (types.BlobInfo, error) {
-	return d.unpackedDest.PutBlob(ctx, stream, inputInfo, cache, isConfig)
+func (d *ociArchiveImageDestination) PutBlobWithOptions(ctx context.Context, stream io.Reader, inputInfo types.BlobInfo, options private.PutBlobOptions) (types.BlobInfo, error) {
+	return d.unpackedDest.PutBlobWithOptions(ctx, stream, inputInfo, options)
 }
 
-// TryReusingBlob checks whether the transport already contains, or can efficiently reuse, a blob, and if so, applies it to the current destination
+// PutBlobPartial attempts to create a blob using the data that is already present
+// at the destination. chunkAccessor is accessed in a non-sequential way to retrieve the missing chunks.
+// It is available only if SupportsPutBlobPartial().
+// Even if SupportsPutBlobPartial() returns true, the call can fail, in which case the caller
+// should fall back to PutBlobWithOptions.
+func (d *ociArchiveImageDestination) PutBlobPartial(ctx context.Context, chunkAccessor private.BlobChunkAccessor, srcInfo types.BlobInfo, cache blobinfocache.BlobInfoCache2) (types.BlobInfo, error) {
+	return d.unpackedDest.PutBlobPartial(ctx, chunkAccessor, srcInfo, cache)
+}
+
+// TryReusingBlobWithOptions checks whether the transport already contains, or can efficiently reuse, a blob, and if so, applies it to the current destination
 // (e.g. if the blob is a filesystem layer, this signifies that the changes it describes need to be applied again when composing a filesystem tree).
 // info.Digest must not be empty.
-// If canSubstitute, TryReusingBlob can use an equivalent equivalent of the desired blob; in that case the returned info may not match the input.
 // If the blob has been successfully reused, returns (true, info, nil); info must contain at least a digest and size, and may
 // include CompressionOperation and CompressionAlgorithm fields to indicate that a change to the compression type should be
 // reflected in the manifest that will be written.
 // If the transport can not reuse the requested blob, TryReusingBlob returns (false, {}, nil); it returns a non-nil error only on an unexpected failure.
-// May use and/or update cache.
-func (d *ociArchiveImageDestination) TryReusingBlob(ctx context.Context, info types.BlobInfo, cache types.BlobInfoCache, canSubstitute bool) (bool, types.BlobInfo, error) {
-	return d.unpackedDest.TryReusingBlob(ctx, info, cache, canSubstitute)
+func (d *ociArchiveImageDestination) TryReusingBlobWithOptions(ctx context.Context, info types.BlobInfo, options private.TryReusingBlobOptions) (bool, types.BlobInfo, error) {
+	return d.unpackedDest.TryReusingBlobWithOptions(ctx, info, options)
 }
 
 // PutManifest writes the manifest to the destination.
@@ -139,11 +167,12 @@ func (d *ociArchiveImageDestination) PutManifest(ctx context.Context, m []byte, 
 	return d.unpackedDest.PutManifest(ctx, m, instanceDigest)
 }
 
-// PutSignatures writes a set of signatures to the destination.
+// PutSignaturesWithFormat writes a set of signatures to the destination.
 // If instanceDigest is not nil, it contains a digest of the specific manifest instance to write or overwrite the signatures for
 // (when the primary manifest is a manifest list); this should always be nil if the primary manifest is not a manifest list.
-func (d *ociArchiveImageDestination) PutSignatures(ctx context.Context, signatures [][]byte, instanceDigest *digest.Digest) error {
-	return d.unpackedDest.PutSignatures(ctx, signatures, instanceDigest)
+// MUST be called after PutManifest (signatures may reference manifest contents).
+func (d *ociArchiveImageDestination) PutSignaturesWithFormat(ctx context.Context, signatures []signature.Signature, instanceDigest *digest.Digest) error {
+	return d.unpackedDest.PutSignaturesWithFormat(ctx, signatures, instanceDigest)
 }
 
 // Commit marks the process of storing the image as successful and asks for the image to be persisted

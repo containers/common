@@ -3,6 +3,7 @@ package layout
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,13 +11,12 @@ import (
 
 	"github.com/containers/image/v5/directory/explicitfilepath"
 	"github.com/containers/image/v5/docker/reference"
-	"github.com/containers/image/v5/image"
+	"github.com/containers/image/v5/internal/image"
 	"github.com/containers/image/v5/oci/internal"
 	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/pkg/errors"
 )
 
 func init() {
@@ -186,11 +186,7 @@ func (ref ociReference) PolicyConfigurationNamespaces() []string {
 // verify that UnparsedImage, and convert it into a real Image via image.FromUnparsedImage.
 // WARNING: This may not do the right thing for a manifest list, see image.FromSource for details.
 func (ref ociReference) NewImage(ctx context.Context, sys *types.SystemContext) (types.ImageCloser, error) {
-	src, err := newImageSource(sys, ref)
-	if err != nil {
-		return nil, err
-	}
-	return image.FromSource(ctx, sys, src)
+	return image.FromReference(ctx, sys, ref)
 }
 
 // getIndex returns a pointer to the index references by this ociReference. If an error occurs opening an index nil is returned together
@@ -214,25 +210,19 @@ func (ref ociReference) getManifestDescriptor() (imgspecv1.Descriptor, error) {
 	if err != nil {
 		return imgspecv1.Descriptor{}, err
 	}
-	var d *imgspecv1.Descriptor
 
-	if ref.sourceIndex != -1 {
-		if ref.sourceIndex < len(index.Manifests) {
-			d = &index.Manifests[ref.sourceIndex]
-			return *d, nil
-		} else {
+	switch {
+	case ref.image != "" && ref.sourceIndex != -1:
+		return imgspecv1.Descriptor{}, fmt.Errorf("Internal error: Cannot have both ref %s and source index @%d",
+			ref.image, ref.sourceIndex)
+
+	case ref.sourceIndex != -1:
+		if ref.sourceIndex >= len(index.Manifests) {
 			return imgspecv1.Descriptor{}, fmt.Errorf("index %d is too large, only %d entries available", ref.sourceIndex, len(index.Manifests))
 		}
-	}
-	if ref.image == "" {
-		// return manifest if only one image is in the oci directory
-		if len(index.Manifests) == 1 {
-			d = &index.Manifests[0]
-		} else {
-			// ask user to choose image when more than one image in the oci directory
-			return imgspecv1.Descriptor{}, ErrMoreThanOneImage
-		}
-	} else {
+		return index.Manifests[ref.sourceIndex], nil
+
+	case ref.image != "":
 		// if image specified, look through all manifests for a match
 		for _, md := range index.Manifests {
 			if md.MediaType != imgspecv1.MediaTypeImageManifest && md.MediaType != imgspecv1.MediaTypeImageIndex {
@@ -243,15 +233,19 @@ func (ref ociReference) getManifestDescriptor() (imgspecv1.Descriptor, error) {
 				continue
 			}
 			if refName == ref.image {
-				d = &md
-				break
+				return md, nil
 			}
 		}
-	}
-	if d == nil {
 		return imgspecv1.Descriptor{}, fmt.Errorf("no descriptor found for reference %q", ref.image)
+
+	default:
+		// return manifest if only one image is in the oci directory
+		if len(index.Manifests) != 1 {
+			// ask user to choose image when more than one image in the oci directory
+			return imgspecv1.Descriptor{}, ErrMoreThanOneImage
+		}
+		return index.Manifests[0], nil
 	}
-	return *d, nil
 }
 
 // LoadManifestDescriptor loads the manifest descriptor to be used to retrieve the image name
@@ -259,7 +253,7 @@ func (ref ociReference) getManifestDescriptor() (imgspecv1.Descriptor, error) {
 func LoadManifestDescriptor(imgRef types.ImageReference) (imgspecv1.Descriptor, error) {
 	ociRef, ok := imgRef.(ociReference)
 	if !ok {
-		return imgspecv1.Descriptor{}, fmt.Errorf("error typecasting, need type ociRef")
+		return imgspecv1.Descriptor{}, errors.New("error typecasting, need type ociRef")
 	}
 	return ociRef.getManifestDescriptor()
 }
@@ -278,7 +272,7 @@ func (ref ociReference) NewImageDestination(ctx context.Context, sys *types.Syst
 
 // DeleteImage deletes the named image from the registry, if supported.
 func (ref ociReference) DeleteImage(ctx context.Context, sys *types.SystemContext) error {
-	return fmt.Errorf("Deleting images not implemented for oci: images")
+	return errors.New("Deleting images not implemented for oci: images")
 }
 
 // ociLayoutPath returns a path for the oci-layout within a directory using OCI conventions.
