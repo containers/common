@@ -346,18 +346,27 @@ func (r *Runtime) copyFromDockerArchiveReaderReference(ctx context.Context, read
 	return destNames, nil
 }
 
-// storageReferencesFromOCIArchiveReader returns a storage reference that should be used
+// storageReferenceFromOCIArchiveReader returns a storage reference that should be used
 // for pulling the readerRef inside reader.
 func (r *Runtime) storageReferenceFromOCIArchiveReader(ctx context.Context, readerRef types.ImageReference, reader *ociArchiveTransport.Reader) (types.ImageReference, string, error) {
 	manifestDescriptor, err := ociArchiveTransport.LoadManifestDescriptor(readerRef)
 	if err != nil {
 		return nil, "", err
 	}
+	return r.storageReferenceFromOCIArchiveDescriptor(ctx, readerRef, manifestDescriptor)
+}
+
+// storageReferenceFromOCIArchiveDescriptor returns a storage reference that should be used
+// for pulling readerRef, based on manifestDescriptor which must match readerRef.
+// It is strongly recommended for readerRef to be based on an ociArchiveTransport.Reader.
+func (r *Runtime) storageReferenceFromOCIArchiveDescriptor(ctx context.Context, readerRef types.ImageReference,
+	manifestDescriptor ociSpec.Descriptor) (types.ImageReference, string, error) {
 	storageName := nameFromAnnotations(manifestDescriptor.Annotations)
 	var imageName string
 	switch len(storageName) {
 	case 0:
 		// If there's no reference name in the annotations, compute an ID.
+		var err error
 		storageName, err = getImageID(ctx, readerRef, &r.systemContext)
 		if err != nil {
 			return nil, "", err
@@ -410,6 +419,29 @@ func (r *Runtime) copyFromOCIArchiveReaderReference(ctx context.Context, reader 
 
 	// Get a storage reference we can copy.
 	destRef, destName, err := r.storageReferenceFromOCIArchiveReader(ctx, readerRef, reader)
+	if err != nil {
+		return "", err
+	}
+
+	// Now copy the images.  Use readerRef for performance.
+	if _, err := c.copy(ctx, readerRef, destRef); err != nil {
+		return "", err
+	}
+
+	return destName, nil
+}
+
+// copyFromOCIArchiveReaderReference copies the specified readerRef with manifestDescriptor (which must match readerRef) from reader.
+func (r *Runtime) copyFromOCIArchiveReaderReferenceAndManifestDescriptor(ctx context.Context, reader *ociArchiveTransport.Reader, readerRef types.ImageReference,
+	manifestDescriptor ociSpec.Descriptor, options *CopyOptions) (string, error) {
+	c, err := r.newCopier(options)
+	if err != nil {
+		return "", err
+	}
+	defer c.close()
+
+	// Get a storage reference we can copy.
+	destRef, destName, err := r.storageReferenceFromOCIArchiveDescriptor(ctx, readerRef, manifestDescriptor)
 	if err != nil {
 		return "", err
 	}
