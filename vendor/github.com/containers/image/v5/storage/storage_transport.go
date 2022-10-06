@@ -4,7 +4,6 @@
 package storage
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/idtools"
 	digest "github.com/opencontainers/go-digest"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -117,13 +117,13 @@ func (s *storageTransport) DefaultGIDMap() []idtools.IDMap {
 // relative to the given store, and returns it in a reference object.
 func (s storageTransport) ParseStoreReference(store storage.Store, ref string) (*storageReference, error) {
 	if ref == "" {
-		return nil, fmt.Errorf("%q is an empty reference: %w", ref, ErrInvalidReference)
+		return nil, errors.Wrapf(ErrInvalidReference, "%q is an empty reference", ref)
 	}
 	if ref[0] == '[' {
 		// Ignore the store specifier.
 		closeIndex := strings.IndexRune(ref, ']')
 		if closeIndex < 1 {
-			return nil, fmt.Errorf("store specifier in %q did not end: %w", ref, ErrInvalidReference)
+			return nil, errors.Wrapf(ErrInvalidReference, "store specifier in %q did not end", ref)
 		}
 		ref = ref[closeIndex+1:]
 	}
@@ -135,7 +135,7 @@ func (s storageTransport) ParseStoreReference(store storage.Store, ref string) (
 	if split != -1 {
 		possibleID := ref[split+1:]
 		if possibleID == "" {
-			return nil, fmt.Errorf("empty trailing digest or ID in %q: %w", ref, ErrInvalidReference)
+			return nil, errors.Wrapf(ErrInvalidReference, "empty trailing digest or ID in %q", ref)
 		}
 		// If it looks like a digest, leave it alone for now.
 		if _, err := digest.Parse(possibleID); err != nil {
@@ -147,7 +147,7 @@ func (s storageTransport) ParseStoreReference(store storage.Store, ref string) (
 				// so we might as well use the expanded value.
 				id = img.ID
 			} else {
-				return nil, fmt.Errorf("%q does not look like an image ID or digest: %w", possibleID, ErrInvalidReference)
+				return nil, errors.Wrapf(ErrInvalidReference, "%q does not look like an image ID or digest", possibleID)
 			}
 			// We have recognized an image ID; peel it off.
 			ref = ref[:split]
@@ -173,7 +173,7 @@ func (s storageTransport) ParseStoreReference(store storage.Store, ref string) (
 		var err error
 		named, err = reference.ParseNormalizedNamed(ref)
 		if err != nil {
-			return nil, fmt.Errorf("parsing named reference %q: %w", ref, err)
+			return nil, errors.Wrapf(err, "parsing named reference %q", ref)
 		}
 		named = reference.TagNameOnly(named)
 	}

@@ -28,11 +28,20 @@ func TestSave(t *testing.T) {
 	// reload the images for each test.
 	saveOptions := &SaveOptions{}
 	saveOptions.Writer = os.Stdout
-	imageCache, err := ioutil.TempFile("", "saveimagecache")
+	dockerImageCache, err := ioutil.TempFile("", "savedockerimagecache")
 	require.NoError(t, err)
-	imageCache.Close()
-	defer os.Remove(imageCache.Name())
-	err = runtime.Save(ctx, []string{"alpine", "busybox"}, "docker-archive", imageCache.Name(), saveOptions)
+	dockerImageCache.Close()
+	defer os.Remove(dockerImageCache.Name())
+	err = runtime.Save(ctx, []string{"alpine", "busybox"}, "docker-archive", dockerImageCache.Name(), saveOptions)
+	require.NoError(t, err)
+
+	saveOptions = &SaveOptions{}
+	saveOptions.Writer = os.Stdout
+	ociImageCache, err := ioutil.TempFile("", "saveociimagecache")
+	require.NoError(t, err)
+	ociImageCache.Close()
+	defer os.Remove(ociImageCache.Name())
+	err = runtime.Save(ctx, []string{"alpine", "busybox"}, "oci-archive", ociImageCache.Name(), saveOptions)
 	require.NoError(t, err)
 
 	loadOptions := &LoadOptions{}
@@ -56,8 +65,9 @@ func TestSave(t *testing.T) {
 		// oci
 		{[]string{"busybox"}, nil, "oci-dir", true, false},
 		{[]string{"busybox"}, nil, "oci-archive", false, false},
-		// oci-archive doesn't support multi-image archives
-		{[]string{"busybox", "alpine"}, nil, "oci-archive", false, true},
+		{[]string{"busybox", "alpine"}, nil, "oci-archive", false, false},
+		// additional tags and multi-images conflict
+		{[]string{"busybox", "alpine"}, []string{"tag"}, "oci-archive", false, true},
 		// docker
 		{[]string{"busybox"}, nil, "docker-archive", false, false},
 		{[]string{"busybox"}, []string{"localhost/tag:1", "quay.io/repo/image:tag"}, "docker-archive", false, false},
@@ -69,8 +79,13 @@ func TestSave(t *testing.T) {
 		// First clean up all images and load the cache.
 		_, rmErrors := runtime.RemoveImages(ctx, nil, nil)
 		require.Nil(t, rmErrors)
-		_, err = runtime.Load(ctx, imageCache.Name(), loadOptions)
-		require.NoError(t, err)
+		if test.format == "oci-archive" {
+			_, err = runtime.Load(ctx, ociImageCache.Name(), loadOptions)
+			require.NoError(t, err)
+		} else {
+			_, err = runtime.Load(ctx, dockerImageCache.Name(), loadOptions)
+			require.NoError(t, err)
+		}
 
 		tmp, err := ioutil.TempDir("", "libimagesavetest")
 		require.NoError(t, err)

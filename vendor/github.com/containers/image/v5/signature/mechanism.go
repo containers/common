@@ -6,14 +6,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"strings"
 
 	// This code is used only to parse the data in an explicitly-untrusted
 	// code path, where cryptography is not relevant. For now, continue to
 	// use this frozen deprecated implementation. When mechanism_openpgp.go
 	// migrates to another implementation, this should migrate as well.
-	//lint:ignore SA1019 See above
 	"golang.org/x/crypto/openpgp" //nolint:staticcheck
 )
 
@@ -65,7 +64,7 @@ func NewGPGSigningMechanism() (SigningMechanism, error) {
 // of these keys.
 // The caller must call .Close() on the returned SigningMechanism.
 func NewEphemeralGPGSigningMechanism(blob []byte) (SigningMechanism, []string, error) {
-	return newEphemeralGPGSigningMechanism([][]byte{blob})
+	return newEphemeralGPGSigningMechanism(blob)
 }
 
 // gpgUntrustedSignatureContents returns UNTRUSTED contents of the signature WITHOUT ANY VERIFICATION,
@@ -82,7 +81,7 @@ func gpgUntrustedSignatureContents(untrustedSignature []byte) (untrustedContents
 	if !md.IsSigned {
 		return nil, "", errors.New("The input is not a signature")
 	}
-	content, err := io.ReadAll(md.UnverifiedBody)
+	content, err := ioutil.ReadAll(md.UnverifiedBody)
 	if err != nil {
 		// Coverage: An error during reading the body can happen only if
 		// 1) the message is encrypted, which is not our case (and we don’t give ReadMessage the key

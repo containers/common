@@ -7,11 +7,9 @@ package signature
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/containers/image/v5/internal/private"
-	"github.com/containers/image/v5/internal/unparsedimage"
 	"github.com/containers/image/v5/types"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -57,14 +55,14 @@ type PolicyRequirement interface {
 	//   a container based on this image; use IsRunningImageAllowed instead.
 	// - Just because a signature is accepted does not automatically mean the contents of the
 	//   signature are authorized to run code as root, or to affect system or cluster configuration.
-	isSignatureAuthorAccepted(ctx context.Context, image private.UnparsedImage, sig []byte) (signatureAcceptanceResult, *Signature, error)
+	isSignatureAuthorAccepted(ctx context.Context, image types.UnparsedImage, sig []byte) (signatureAcceptanceResult, *Signature, error)
 
 	// isRunningImageAllowed returns true if the requirement allows running an image.
 	// If it returns false, err must be non-nil, and should be an PolicyRequirementError if evaluation
 	// succeeded but the result was rejection.
 	// WARNING: This validates signatures and the manifest, but does not download or validate the
 	// layers. Users must validate that the layers match their expected digests.
-	isRunningImageAllowed(ctx context.Context, image private.UnparsedImage) (bool, error)
+	isRunningImageAllowed(ctx context.Context, image types.UnparsedImage) (bool, error)
 }
 
 // PolicyReferenceMatch specifies a set of image identities accepted in PolicyRequirement.
@@ -73,7 +71,7 @@ type PolicyReferenceMatch interface {
 	// matchesDockerReference decides whether a specific image identity is accepted for an image
 	// (or, usually, for the image's Reference().DockerReference()).  Note that
 	// image.Reference().DockerReference() may be nil.
-	matchesDockerReference(image private.UnparsedImage, signatureDockerReference string) bool
+	matchesDockerReference(image types.UnparsedImage, signatureDockerReference string) bool
 }
 
 // PolicyContext encapsulates a policy and possible cached state
@@ -97,7 +95,7 @@ const (
 // changeContextState changes pc.state, or fails if the state is unexpected
 func (pc *PolicyContext) changeState(expected, new policyContextState) error {
 	if pc.state != expected {
-		return fmt.Errorf(`Invalid PolicyContext state, expected "%s", found "%s"`, expected, pc.state)
+		return errors.Errorf(`"Invalid PolicyContext state, expected "%s", found "%s"`, expected, pc.state)
 	}
 	pc.state = new
 	return nil
@@ -172,11 +170,11 @@ func (pc *PolicyContext) requirementsForImageRef(ref types.ImageReference) Polic
 // but it does not necessarily mean that the contents of the signature are
 // consistent with local policy.
 // For example:
-//   - Do not use a an existence of an accepted signature to determine whether to run
-//     a container based on this image; use IsRunningImageAllowed instead.
-//   - Just because a signature is accepted does not automatically mean the contents of the
-//     signature are authorized to run code as root, or to affect system or cluster configuration.
-func (pc *PolicyContext) GetSignaturesWithAcceptedAuthor(ctx context.Context, publicImage types.UnparsedImage) (sigs []*Signature, finalErr error) {
+// - Do not use a an existence of an accepted signature to determine whether to run
+//   a container based on this image; use IsRunningImageAllowed instead.
+// - Just because a signature is accepted does not automatically mean the contents of the
+//   signature are authorized to run code as root, or to affect system or cluster configuration.
+func (pc *PolicyContext) GetSignaturesWithAcceptedAuthor(ctx context.Context, image types.UnparsedImage) (sigs []*Signature, finalErr error) {
 	if err := pc.changeState(pcReady, pcInUse); err != nil {
 		return nil, err
 	}
@@ -187,12 +185,11 @@ func (pc *PolicyContext) GetSignaturesWithAcceptedAuthor(ctx context.Context, pu
 		}
 	}()
 
-	image := unparsedimage.FromPublic(publicImage)
-
 	logrus.Debugf("GetSignaturesWithAcceptedAuthor for image %s", policyIdentityLogName(image.Reference()))
 	reqs := pc.requirementsForImageRef(image.Reference())
 
-	// FIXME: Use image.UntrustedSignatures, use that to improve error messages (needs tests!)
+	// FIXME: rename Signatures to UnverifiedSignatures
+	// FIXME: pass context.Context
 	unverifiedSignatures, err := image.Signatures(ctx)
 	if err != nil {
 		return nil, err
@@ -258,7 +255,7 @@ func (pc *PolicyContext) GetSignaturesWithAcceptedAuthor(ctx context.Context, pu
 // succeeded but the result was rejection.
 // WARNING: This validates signatures and the manifest, but does not download or validate the
 // layers. Users must validate that the layers match their expected digests.
-func (pc *PolicyContext) IsRunningImageAllowed(ctx context.Context, publicImage types.UnparsedImage) (res bool, finalErr error) {
+func (pc *PolicyContext) IsRunningImageAllowed(ctx context.Context, image types.UnparsedImage) (res bool, finalErr error) {
 	if err := pc.changeState(pcReady, pcInUse); err != nil {
 		return false, err
 	}
@@ -268,8 +265,6 @@ func (pc *PolicyContext) IsRunningImageAllowed(ctx context.Context, publicImage 
 			finalErr = err
 		}
 	}()
-
-	image := unparsedimage.FromPublic(publicImage)
 
 	logrus.Debugf("IsRunningImageAllowed for image %s", policyIdentityLogName(image.Reference()))
 	reqs := pc.requirementsForImageRef(image.Reference())

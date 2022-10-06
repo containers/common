@@ -8,6 +8,7 @@ import (
 	"github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/pkg/errors"
 )
 
 // Schema2PlatformSpec describes the platform which a particular manifest is
@@ -59,26 +60,26 @@ func (list *Schema2List) Instance(instanceDigest digest.Digest) (ListUpdate, err
 			}, nil
 		}
 	}
-	return ListUpdate{}, fmt.Errorf("unable to find instance %s passed to Schema2List.Instances", instanceDigest)
+	return ListUpdate{}, errors.Errorf("unable to find instance %s passed to Schema2List.Instances", instanceDigest)
 }
 
 // UpdateInstances updates the sizes, digests, and media types of the manifests
 // which the list catalogs.
 func (list *Schema2List) UpdateInstances(updates []ListUpdate) error {
 	if len(updates) != len(list.Manifests) {
-		return fmt.Errorf("incorrect number of update entries passed to Schema2List.UpdateInstances: expected %d, got %d", len(list.Manifests), len(updates))
+		return errors.Errorf("incorrect number of update entries passed to Schema2List.UpdateInstances: expected %d, got %d", len(list.Manifests), len(updates))
 	}
 	for i := range updates {
 		if err := updates[i].Digest.Validate(); err != nil {
-			return fmt.Errorf("update %d of %d passed to Schema2List.UpdateInstances contained an invalid digest: %w", i+1, len(updates), err)
+			return errors.Wrapf(err, "update %d of %d passed to Schema2List.UpdateInstances contained an invalid digest", i+1, len(updates))
 		}
 		list.Manifests[i].Digest = updates[i].Digest
 		if updates[i].Size < 0 {
-			return fmt.Errorf("update %d of %d passed to Schema2List.UpdateInstances had an invalid size (%d)", i+1, len(updates), updates[i].Size)
+			return errors.Errorf("update %d of %d passed to Schema2List.UpdateInstances had an invalid size (%d)", i+1, len(updates), updates[i].Size)
 		}
 		list.Manifests[i].Size = updates[i].Size
 		if updates[i].MediaType == "" {
-			return fmt.Errorf("update %d of %d passed to Schema2List.UpdateInstances had no media type (was %q)", i+1, len(updates), list.Manifests[i].MediaType)
+			return errors.Errorf("update %d of %d passed to Schema2List.UpdateInstances had no media type (was %q)", i+1, len(updates), list.Manifests[i].MediaType)
 		}
 		list.Manifests[i].MediaType = updates[i].MediaType
 	}
@@ -90,7 +91,7 @@ func (list *Schema2List) UpdateInstances(updates []ListUpdate) error {
 func (list *Schema2List) ChooseInstance(ctx *types.SystemContext) (digest.Digest, error) {
 	wantedPlatforms, err := platform.WantedPlatforms(ctx)
 	if err != nil {
-		return "", fmt.Errorf("getting platform information %#v: %w", ctx, err)
+		return "", errors.Wrapf(err, "getting platform information %#v", ctx)
 	}
 	for _, wantedPlatform := range wantedPlatforms {
 		for _, d := range list.Manifests {
@@ -114,7 +115,7 @@ func (list *Schema2List) ChooseInstance(ctx *types.SystemContext) (digest.Digest
 func (list *Schema2List) Serialize() ([]byte, error) {
 	buf, err := json.Marshal(list)
 	if err != nil {
-		return nil, fmt.Errorf("marshaling Schema2List %#v: %w", list, err)
+		return nil, errors.Wrapf(err, "marshaling Schema2List %#v", list)
 	}
 	return buf, nil
 }
@@ -189,7 +190,7 @@ func Schema2ListFromManifest(manifest []byte) (*Schema2List, error) {
 		Manifests: []Schema2ManifestDescriptor{},
 	}
 	if err := json.Unmarshal(manifest, &list); err != nil {
-		return nil, fmt.Errorf("unmarshaling Schema2List %q: %w", string(manifest), err)
+		return nil, errors.Wrapf(err, "unmarshaling Schema2List %q", string(manifest))
 	}
 	if err := validateUnambiguousManifestFormat(manifest, DockerV2ListMediaType,
 		allowedFieldManifests); err != nil {

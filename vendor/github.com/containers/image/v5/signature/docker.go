@@ -9,7 +9,6 @@ import (
 
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/manifest"
-	"github.com/containers/image/v5/signature/internal"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -57,18 +56,18 @@ func VerifyDockerManifestSignature(unverifiedSignature, unverifiedManifest []byt
 	sig, err := verifyAndExtractSignature(mech, unverifiedSignature, signatureAcceptanceRules{
 		validateKeyIdentity: func(keyIdentity string) error {
 			if keyIdentity != expectedKeyIdentity {
-				return internal.NewInvalidSignatureError(fmt.Sprintf("Signature by %s does not match expected fingerprint %s", keyIdentity, expectedKeyIdentity))
+				return InvalidSignatureError{msg: fmt.Sprintf("Signature by %s does not match expected fingerprint %s", keyIdentity, expectedKeyIdentity)}
 			}
 			return nil
 		},
 		validateSignedDockerReference: func(signedDockerReference string) error {
 			signedRef, err := reference.ParseNormalizedNamed(signedDockerReference)
 			if err != nil {
-				return internal.NewInvalidSignatureError(fmt.Sprintf("Invalid docker reference %s in signature", signedDockerReference))
+				return InvalidSignatureError{msg: fmt.Sprintf("Invalid docker reference %s in signature", signedDockerReference)}
 			}
 			if signedRef.String() != expectedRef.String() {
-				return internal.NewInvalidSignatureError(fmt.Sprintf("Docker reference %s does not match %s",
-					signedDockerReference, expectedDockerReference))
+				return InvalidSignatureError{msg: fmt.Sprintf("Docker reference %s does not match %s",
+					signedDockerReference, expectedDockerReference)}
 			}
 			return nil
 		},
@@ -78,7 +77,7 @@ func VerifyDockerManifestSignature(unverifiedSignature, unverifiedManifest []byt
 				return err
 			}
 			if !matches {
-				return internal.NewInvalidSignatureError(fmt.Sprintf("Signature for docker digest %q does not match", signedDockerManifestDigest))
+				return InvalidSignatureError{msg: fmt.Sprintf("Signature for docker digest %q does not match", signedDockerManifestDigest)}
 			}
 			return nil
 		},

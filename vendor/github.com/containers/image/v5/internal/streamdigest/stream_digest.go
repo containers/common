@@ -3,6 +3,7 @@ package streamdigest
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/containers/image/v5/internal/putblobdigest"
@@ -15,7 +16,7 @@ import (
 // It is the caller's responsibility to call the cleanup function, which closes and removes the temporary file.
 // If an error occurs, inputInfo is not modified.
 func ComputeBlobInfo(sys *types.SystemContext, stream io.Reader, inputInfo *types.BlobInfo) (io.Reader, func(), error) {
-	diskBlob, err := os.CreateTemp(tmpdir.TemporaryDirectoryForBigFiles(sys), "stream-blob")
+	diskBlob, err := ioutil.TempFile(tmpdir.TemporaryDirectoryForBigFiles(sys), "stream-blob")
 	if err != nil {
 		return nil, nil, fmt.Errorf("creating temporary on-disk layer: %w", err)
 	}

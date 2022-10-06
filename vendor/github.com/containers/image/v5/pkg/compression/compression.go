@@ -5,11 +5,13 @@ import (
 	"compress/bzip2"
 	"fmt"
 	"io"
+	"io/ioutil"
 
 	"github.com/containers/image/v5/pkg/compression/internal"
 	"github.com/containers/image/v5/pkg/compression/types"
 	"github.com/containers/storage/pkg/chunked/compressor"
 	"github.com/klauspost/pgzip"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/ulikunitz/xz"
 )
@@ -63,7 +65,7 @@ func GzipDecompressor(r io.Reader) (io.ReadCloser, error) {
 
 // Bzip2Decompressor is a DecompressorFunc for the bzip2 compression algorithm.
 func Bzip2Decompressor(r io.Reader) (io.ReadCloser, error) {
-	return io.NopCloser(bzip2.NewReader(r)), nil
+	return ioutil.NopCloser(bzip2.NewReader(r)), nil
 }
 
 // XzDecompressor is a DecompressorFunc for the xz compression algorithm.
@@ -72,7 +74,7 @@ func XzDecompressor(r io.Reader) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return io.NopCloser(r), nil
+	return ioutil.NopCloser(r), nil
 }
 
 // gzipCompressor is a CompressorFunc for the gzip compression algorithm.
@@ -150,16 +152,16 @@ func DetectCompression(input io.Reader) (DecompressorFunc, io.Reader, error) {
 func AutoDecompress(stream io.Reader) (io.ReadCloser, bool, error) {
 	decompressor, stream, err := DetectCompression(stream)
 	if err != nil {
-		return nil, false, fmt.Errorf("detecting compression: %w", err)
+		return nil, false, errors.Wrapf(err, "detecting compression")
 	}
 	var res io.ReadCloser
 	if decompressor != nil {
 		res, err = decompressor(stream)
 		if err != nil {
-			return nil, false, fmt.Errorf("initializing decompression: %w", err)
+			return nil, false, errors.Wrapf(err, "initializing decompression")
 		}
 	} else {
-		res = io.NopCloser(stream)
+		res = ioutil.NopCloser(stream)
 	}
 	return res, decompressor != nil, nil
 }

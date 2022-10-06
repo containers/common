@@ -39,9 +39,15 @@ github.com/VividCortex/ewma
 # github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 ## explicit
 github.com/acarl005/stripansi
+# github.com/beorn7/perks v1.0.1
+## explicit; go 1.11
+github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
 ## explicit
 github.com/blang/semver
+# github.com/cespare/xxhash/v2 v2.1.2
+## explicit; go 1.11
+github.com/cespare/xxhash/v2
 # github.com/chzyer/readline v1.5.1
 ## explicit; go 1.15
 github.com/chzyer/readline
@@ -72,8 +78,8 @@ github.com/containernetworking/cni/pkg/version
 # github.com/containernetworking/plugins v1.1.1
 ## explicit; go 1.17
 github.com/containernetworking/plugins/pkg/ns
-# github.com/containers/image/v5 v5.23.0
-## explicit; go 1.17
+# github.com/containers/image/v5 v5.23.0 => github.com/umohnani8/image/v5 v5.0.0-20220309153911-e6ece2b1724f
+## explicit; go 1.13
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory
 github.com/containers/image/v5/directory/explicitfilepath
@@ -85,23 +91,15 @@ github.com/containers/image/v5/docker/policyconfiguration
 github.com/containers/image/v5/docker/reference
 github.com/containers/image/v5/image
 github.com/containers/image/v5/internal/blobinfocache
-github.com/containers/image/v5/internal/image
 github.com/containers/image/v5/internal/imagedestination
-github.com/containers/image/v5/internal/imagedestination/impl
-github.com/containers/image/v5/internal/imagedestination/stubs
 github.com/containers/image/v5/internal/imagesource
-github.com/containers/image/v5/internal/imagesource/impl
-github.com/containers/image/v5/internal/imagesource/stubs
 github.com/containers/image/v5/internal/iolimits
-github.com/containers/image/v5/internal/manifest
 github.com/containers/image/v5/internal/pkg/platform
 github.com/containers/image/v5/internal/private
 github.com/containers/image/v5/internal/putblobdigest
 github.com/containers/image/v5/internal/rootless
-github.com/containers/image/v5/internal/signature
 github.com/containers/image/v5/internal/streamdigest
 github.com/containers/image/v5/internal/tmpdir
-github.com/containers/image/v5/internal/unparsedimage
 github.com/containers/image/v5/internal/uploadreader
 github.com/containers/image/v5/manifest
 github.com/containers/image/v5/oci/archive
@@ -124,8 +122,6 @@ github.com/containers/image/v5/pkg/sysregistriesv2
 github.com/containers/image/v5/pkg/tlsclientconfig
 github.com/containers/image/v5/sif
 github.com/containers/image/v5/signature
-github.com/containers/image/v5/signature/internal
-github.com/containers/image/v5/signature/sigstore
 github.com/containers/image/v5/storage
 github.com/containers/image/v5/tarball
 github.com/containers/image/v5/transports
@@ -211,11 +207,17 @@ github.com/davecgh/go-spew/spew
 github.com/disiqueira/gotree/v3
 # github.com/docker/distribution v2.8.1+incompatible
 ## explicit
+github.com/docker/distribution
 github.com/docker/distribution/digestset
+github.com/docker/distribution/metrics
 github.com/docker/distribution/reference
 github.com/docker/distribution/registry/api/errcode
 github.com/docker/distribution/registry/api/v2
+github.com/docker/distribution/registry/client
 github.com/docker/distribution/registry/client/auth/challenge
+github.com/docker/distribution/registry/client/transport
+github.com/docker/distribution/registry/storage/cache
+github.com/docker/distribution/registry/storage/cache/memory
 # github.com/docker/docker v20.10.18+incompatible
 ## explicit
 github.com/docker/docker/api
@@ -246,6 +248,9 @@ github.com/docker/docker-credential-helpers/credentials
 github.com/docker/go-connections/nat
 github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
+# github.com/docker/go-metrics v0.0.1
+## explicit; go 1.11
+github.com/docker/go-metrics
 # github.com/docker/go-units v0.5.0
 ## explicit
 github.com/docker/go-units
@@ -281,9 +286,6 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.11.0
-## explicit; go 1.17
-github.com/google/go-containerregistry/pkg/name
 # github.com/google/go-intervals v0.0.2
 ## explicit; go 1.12
 github.com/google/go-intervals/intervalset
@@ -327,17 +329,6 @@ github.com/klauspost/pgzip
 # github.com/kr/fs v0.1.0
 ## explicit
 github.com/kr/fs
-# github.com/letsencrypt/boulder v0.0.0-20220723181115-27de4befb95e
-## explicit; go 1.18
-github.com/letsencrypt/boulder/core
-github.com/letsencrypt/boulder/core/proto
-github.com/letsencrypt/boulder/errors
-github.com/letsencrypt/boulder/features
-github.com/letsencrypt/boulder/goodkey
-github.com/letsencrypt/boulder/identifier
-github.com/letsencrypt/boulder/probs
-github.com/letsencrypt/boulder/revocation
-github.com/letsencrypt/boulder/sa/proto
 # github.com/manifoldco/promptui v0.9.0
 ## explicit; go 1.12
 github.com/manifoldco/promptui
@@ -349,6 +340,9 @@ github.com/mattn/go-runewidth
 # github.com/mattn/go-shellwords v1.0.12
 ## explicit; go 1.13
 github.com/mattn/go-shellwords
+# github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
+## explicit; go 1.9
+github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/miekg/pkcs11 v1.1.1
 ## explicit; go 1.12
 github.com/miekg/pkcs11
@@ -364,6 +358,8 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
+# github.com/onsi/ginkgo v1.16.5
+## explicit; go 1.16
 # github.com/onsi/ginkgo/v2 v2.2.0
 ## explicit; go 1.18
 github.com/onsi/ginkgo/v2
@@ -441,18 +437,30 @@ github.com/pmezard/go-difflib/difflib
 # github.com/proglottis/gpgme v0.1.3
 ## explicit; go 1.11
 github.com/proglottis/gpgme
+# github.com/prometheus/client_golang v1.12.2
+## explicit; go 1.13
+github.com/prometheus/client_golang/prometheus
+github.com/prometheus/client_golang/prometheus/internal
+github.com/prometheus/client_golang/prometheus/promhttp
+# github.com/prometheus/client_model v0.2.0
+## explicit; go 1.9
+github.com/prometheus/client_model/go
+# github.com/prometheus/common v0.32.1
+## explicit; go 1.13
+github.com/prometheus/common/expfmt
+github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
+github.com/prometheus/common/model
+# github.com/prometheus/procfs v0.7.3
+## explicit; go 1.13
+github.com/prometheus/procfs
+github.com/prometheus/procfs/internal/fs
+github.com/prometheus/procfs/internal/util
 # github.com/rivo/uniseg v0.2.0
 ## explicit; go 1.12
 github.com/rivo/uniseg
 # github.com/seccomp/libseccomp-golang v0.10.0
 ## explicit; go 1.14
 github.com/seccomp/libseccomp-golang
-# github.com/sigstore/sigstore v1.4.2
-## explicit; go 1.18
-github.com/sigstore/sigstore/pkg/cryptoutils
-github.com/sigstore/sigstore/pkg/signature
-github.com/sigstore/sigstore/pkg/signature/options
-github.com/sigstore/sigstore/pkg/signature/payload
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
@@ -478,12 +486,6 @@ github.com/syndtr/gocapability/capability
 # github.com/tchap/go-patricia v2.3.0+incompatible
 ## explicit
 github.com/tchap/go-patricia/patricia
-# github.com/theupdateframework/go-tuf v0.5.1
-## explicit; go 1.18
-github.com/theupdateframework/go-tuf/encrypted
-# github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399
-## explicit
-github.com/titanous/rocacheck
 # github.com/ulikunitz/xz v0.5.10
 ## explicit; go 1.12
 github.com/ulikunitz/xz
@@ -540,8 +542,6 @@ golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
-golang.org/x/crypto/nacl/secretbox
-golang.org/x/crypto/ocsp
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/openpgp/armor
 golang.org/x/crypto/openpgp/elgamal
@@ -549,9 +549,6 @@ golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
-golang.org/x/crypto/salsa20/salsa
-golang.org/x/crypto/scrypt
-golang.org/x/crypto/sha3
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
@@ -607,6 +604,8 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+# golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
+## explicit
 # google.golang.org/genproto v0.0.0-20220720214146-176da50484ac
 ## explicit; go 1.17
 google.golang.org/genproto/googleapis/rpc/status
@@ -693,7 +692,6 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
-google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/square/go-jose.v2 v2.6.0
 ## explicit
@@ -707,3 +705,4 @@ gopkg.in/yaml.v2
 ## explicit
 gopkg.in/yaml.v3
 # github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.1-0.20220617142545-8b9452f75cbc
+# github.com/containers/image/v5 => github.com/umohnani8/image/v5 v5.0.0-20220309153911-e6ece2b1724f

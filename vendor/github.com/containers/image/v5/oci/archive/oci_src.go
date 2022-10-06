@@ -2,14 +2,10 @@ package archive
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 
-	"github.com/containers/image/v5/internal/imagesource"
-	"github.com/containers/image/v5/internal/imagesource/impl"
-	"github.com/containers/image/v5/internal/private"
-	"github.com/containers/image/v5/internal/signature"
+	"github.com/containers/image/v5/oci/layout"
 	ocilayout "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/types"
 	digest "github.com/opencontainers/go-digest"
@@ -18,35 +14,55 @@ import (
 )
 
 type ociArchiveImageSource struct {
-	impl.Compat
-
-	ref         ociArchiveReference
-	unpackedSrc private.ImageSource
-	tempDirRef  tempDirOCIRef
+	ref                   ociArchiveReference
+	unpackedSrc           types.ImageSource
+	individualReaderOrNil *Reader
 }
 
 // newImageSource returns an ImageSource for reading from an existing directory.
-// newImageSource untars the file and saves it in a temp directory
-func newImageSource(ctx context.Context, sys *types.SystemContext, ref ociArchiveReference) (private.ImageSource, error) {
-	tempDirRef, err := createUntarTempDir(sys, ref)
-	if err != nil {
-		return nil, fmt.Errorf("creating temp directory: %w", err)
+func newImageSource(ctx context.Context, sys *types.SystemContext, ref ociArchiveReference) (types.ImageSource, error) {
+	var (
+		archive, individualReaderOrNil *Reader
+		newref                         types.ImageReference
+		err                            error
+	)
+
+	if ref.archiveReader != nil {
+		archive = ref.archiveReader
+		individualReaderOrNil = nil
+	} else {
+		archive, err = NewReader(ctx, sys, ref)
+		if err != nil {
+			return nil, err
+		}
+		individualReaderOrNil = archive
 	}
 
-	unpackedSrc, err := tempDirRef.ociRefExtracted.NewImageSource(ctx, sys)
-	if err != nil {
-		if err := tempDirRef.deleteTempDir(); err != nil {
-			return nil, fmt.Errorf("deleting temp directory %q: %w", tempDirRef.tempDirectory, err)
+	if ref.sourceIndex != -1 {
+		newref, err = layout.NewIndexReference(archive.tempDirectory, ref.sourceIndex)
+		if err != nil {
+			archive.Close()
+			return nil, err
 		}
+	} else {
+		newref, err = layout.NewReference(archive.tempDirectory, ref.image)
+		if err != nil {
+			archive.Close()
+			return nil, err
+		}
+	}
+
+	src, err := newref.NewImageSource(ctx, sys)
+	if err != nil {
+		archive.Close()
 		return nil, err
 	}
-	s := &ociArchiveImageSource{
-		ref:         ref,
-		unpackedSrc: imagesource.FromPublic(unpackedSrc),
-		tempDirRef:  tempDirRef,
-	}
-	s.Compat = impl.AddCompat(s)
-	return s, nil
+
+	return &ociArchiveImageSource{
+		unpackedSrc:           src,
+		ref:                   ref,
+		individualReaderOrNil: individualReaderOrNil,
+	}, nil
 }
 
 // LoadManifestDescriptor loads the manifest
@@ -59,7 +75,7 @@ func LoadManifestDescriptor(imgRef types.ImageReference) (imgspecv1.Descriptor, 
 func LoadManifestDescriptorWithContext(sys *types.SystemContext, imgRef types.ImageReference) (imgspecv1.Descriptor, error) {
 	ociArchRef, ok := imgRef.(ociArchiveReference)
 	if !ok {
-		return imgspecv1.Descriptor{}, errors.New("error typecasting, need type ociArchiveReference")
+		return imgspecv1.Descriptor{}, fmt.Errorf("error typecasting, need type ociArchiveReference")
 	}
 	tempDirRef, err := createUntarTempDir(sys, ociArchRef)
 	if err != nil {
@@ -83,13 +99,12 @@ func (s *ociArchiveImageSource) Reference() types.ImageReference {
 }
 
 // Close removes resources associated with an initialized ImageSource, if any.
-// Close deletes the temporary directory at dst
 func (s *ociArchiveImageSource) Close() error {
-	defer func() {
-		err := s.tempDirRef.deleteTempDir()
-		logrus.Debugf("error deleting tmp dir: %v", err)
-	}()
-	return s.unpackedSrc.Close()
+	defer s.unpackedSrc.Close()
+	if s.ref.archiveReader != nil || s.individualReaderOrNil == nil {
+		return nil
+	}
+	return s.individualReaderOrNil.Close()
 }
 
 // GetManifest returns the image's manifest along with its MIME type (which may be empty when it can't be determined but the manifest is available).
@@ -112,26 +127,12 @@ func (s *ociArchiveImageSource) GetBlob(ctx context.Context, info types.BlobInfo
 	return s.unpackedSrc.GetBlob(ctx, info, cache)
 }
 
-// SupportsGetBlobAt() returns true if GetBlobAt (BlobChunkAccessor) is supported.
-func (s *ociArchiveImageSource) SupportsGetBlobAt() bool {
-	return s.unpackedSrc.SupportsGetBlobAt()
-}
-
-// GetBlobAt returns a sequential channel of readers that contain data for the requested
-// blob chunks, and a channel that might get a single error value.
-// The specified chunks must be not overlapping and sorted by their offset.
-// The readers must be fully consumed, in the order they are returned, before blocking
-// to read the next chunk.
-func (s *ociArchiveImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, chunks []private.ImageSourceChunk) (chan io.ReadCloser, chan error, error) {
-	return s.unpackedSrc.GetBlobAt(ctx, info, chunks)
-}
-
-// GetSignaturesWithFormat returns the image's signatures.  It may use a remote (= slow) service.
+// GetSignatures returns the image's signatures.  It may use a remote (= slow) service.
 // If instanceDigest is not nil, it contains a digest of the specific manifest instance to retrieve signatures for
 // (when the primary manifest is a manifest list); this never happens if the primary manifest is not a manifest list
 // (e.g. if the source never returns manifest lists).
-func (s *ociArchiveImageSource) GetSignaturesWithFormat(ctx context.Context, instanceDigest *digest.Digest) ([]signature.Signature, error) {
-	return s.unpackedSrc.GetSignaturesWithFormat(ctx, instanceDigest)
+func (s *ociArchiveImageSource) GetSignatures(ctx context.Context, instanceDigest *digest.Digest) ([][]byte, error) {
+	return s.unpackedSrc.GetSignatures(ctx, instanceDigest)
 }
 
 // LayerInfosForCopy returns either nil (meaning the values in the manifest are fine), or updated values for the layer

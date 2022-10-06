@@ -2,7 +2,7 @@ package tlsclientconfig
 
 import (
 	"crypto/tls"
-	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -12,13 +12,14 @@ import (
 
 	"github.com/docker/go-connections/sockets"
 	"github.com/docker/go-connections/tlsconfig"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 // SetupCertificates opens all .crt, .cert, and .key files in dir and appends / loads certs and key pairs as appropriate to tlsc
 func SetupCertificates(dir string, tlsc *tls.Config) error {
 	logrus.Debugf("Looking for TLS certificates and private keys in %s", dir)
-	fs, err := os.ReadDir(dir)
+	fs, err := ioutil.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -34,7 +35,7 @@ func SetupCertificates(dir string, tlsc *tls.Config) error {
 		fullPath := filepath.Join(dir, f.Name())
 		if strings.HasSuffix(f.Name(), ".crt") {
 			logrus.Debugf(" crt: %s", fullPath)
-			data, err := os.ReadFile(fullPath)
+			data, err := ioutil.ReadFile(fullPath)
 			if err != nil {
 				if os.IsNotExist(err) {
 					// Dangling symbolic link?
@@ -49,7 +50,7 @@ func SetupCertificates(dir string, tlsc *tls.Config) error {
 			if tlsc.RootCAs == nil {
 				systemPool, err := tlsconfig.SystemCertPool()
 				if err != nil {
-					return fmt.Errorf("unable to get system cert pool: %w", err)
+					return errors.Wrap(err, "unable to get system cert pool")
 				}
 				tlsc.RootCAs = systemPool
 			}
@@ -60,7 +61,7 @@ func SetupCertificates(dir string, tlsc *tls.Config) error {
 			keyName := certName[:len(certName)-5] + ".key"
 			logrus.Debugf(" cert: %s", fullPath)
 			if !hasFile(fs, keyName) {
-				return fmt.Errorf("missing key %s for client certificate %s. Note that CA certificates should use the extension .crt", keyName, certName)
+				return errors.Errorf("missing key %s for client certificate %s. Note that CA certificates should use the extension .crt", keyName, certName)
 			}
 			cert, err := tls.LoadX509KeyPair(filepath.Join(dir, certName), filepath.Join(dir, keyName))
 			if err != nil {
@@ -73,14 +74,14 @@ func SetupCertificates(dir string, tlsc *tls.Config) error {
 			certName := keyName[:len(keyName)-4] + ".cert"
 			logrus.Debugf(" key: %s", fullPath)
 			if !hasFile(fs, certName) {
-				return fmt.Errorf("missing client certificate %s for key %s", certName, keyName)
+				return errors.Errorf("missing client certificate %s for key %s", certName, keyName)
 			}
 		}
 	}
 	return nil
 }
 
-func hasFile(files []os.DirEntry, name string) bool {
+func hasFile(files []os.FileInfo, name string) bool {
 	for _, f := range files {
 		if f.Name() == name {
 			return true
