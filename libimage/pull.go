@@ -360,8 +360,7 @@ func (r *Runtime) storageReferenceFromOCIArchiveReaderReference(ctx context.Cont
 // storageReferenceFromOCIArchiveReaderDescriptor returns a storage reference that should be used
 // for pulling readerRef, based on manifestDescriptor which must match readerRef.
 // It is strongly recommended for readerRef to be based on an ociArchiveTransport.Reader.
-func (r *Runtime) storageReferenceFromOCIArchiveReaderDescriptor(ctx context.Context, readerRef types.ImageReference,
-	manifestDescriptor ociSpec.Descriptor) (types.ImageReference, string, error) {
+func (r *Runtime) storageReferenceFromOCIArchiveReaderDescriptor(ctx context.Context, readerRef types.ImageReference, manifestDescriptor ociSpec.Descriptor) (types.ImageReference, string, error) {
 	storageName := nameFromAnnotations(manifestDescriptor.Annotations)
 	var imageName string
 	switch len(storageName) {
@@ -435,8 +434,7 @@ func (r *Runtime) copyFromOCIArchiveReaderReference(ctx context.Context, readerR
 
 // copyFromOCIArchiveReaderReference copies the specified readerRef with manifestDescriptor (which must match readerRef) from reader.
 // It is strongly recommended for readerRef to be based on an ociArchiveTransport.Reader.
-func (r *Runtime) copyFromOCIArchiveReaderReferenceAndManifestDescriptor(ctx context.Context, readerRef types.ImageReference,
-	manifestDescriptor ociSpec.Descriptor, options *CopyOptions) (string, error) {
+func (r *Runtime) copyFromOCIArchiveReaderReferenceAndManifestDescriptor(ctx context.Context, readerRef types.ImageReference, manifestDescriptor ociSpec.Descriptor, options *CopyOptions) (string, error) {
 	c, err := r.newCopier(options)
 	if err != nil {
 		return "", err
