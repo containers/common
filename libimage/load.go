@@ -49,11 +49,7 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 		// OCI-ARCHIVE
 		func() ([]string, string, error) {
 			logrus.Debugf("-> Attempting to load %q as an OCI archive", path)
-			ref, err := ociArchiveTransport.NewReference(path, "")
-			if err != nil {
-				return nil, ociArchiveTransport.Transport.Name(), err
-			}
-			images, err := r.loadMultiImageOCIArchive(ctx, ref, &options.CopyOptions)
+			images, err := r.loadMultiImageOCIArchive(ctx, path, &options.CopyOptions)
 			return images, ociArchiveTransport.Transport.Name(), err
 		},
 
@@ -139,14 +135,14 @@ func (r *Runtime) loadMultiImageDockerArchive(ctx context.Context, ref types.Ima
 	return copiedImages, nil
 }
 
-func (r *Runtime) loadMultiImageOCIArchive(ctx context.Context, ref types.ImageReference, options *CopyOptions) ([]string, error) {
-	reader, err := ociArchiveTransport.NewReader(ctx, r.systemContextCopy(), ref)
+func (r *Runtime) loadMultiImageOCIArchive(ctx context.Context, path string, options *CopyOptions) ([]string, error) {
+	reader, err := ociArchiveTransport.NewReader(ctx, r.systemContextCopy(), path)
 	if err != nil {
 		return nil, err
 	}
 	defer func() {
 		if err := reader.Close(); err != nil {
-			logrus.Errorf(err.Error())
+			logrus.Errorf("Closing reader of OCI archive: %v", err)
 		}
 	}()
 
