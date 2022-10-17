@@ -7,9 +7,9 @@ require (
 	github.com/containerd/containerd v1.6.8
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.1.1
-	github.com/containers/image/v5 v5.23.1-0.20221013202101-87afcefe9766
+	github.com/containers/image/v5 v5.23.1-0.20221015133641-1921a1993c67
 	github.com/containers/ocicrypt v1.1.6
-	github.com/containers/storage v1.43.1-0.20221014072257-a144fee6f51c
+	github.com/containers/storage v1.43.1-0.20221017123904-a4d4fe98e37d
 	github.com/coreos/go-systemd/v22 v22.4.0
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/davecgh/go-spew v1.1.1
@@ -55,7 +55,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
-	github.com/containerd/stargz-snapshotter/estargz v0.12.0 // indirect
+	github.com/containerd/stargz-snapshotter/estargz v0.12.1 // indirect
 	github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
