@@ -1,7 +1,6 @@
 package ssh
 
 import (
-	"io/ioutil"
 	"net/url"
 	"os"
 	"testing"
@@ -65,7 +64,7 @@ func TestDial(t *testing.T) {
 }
 
 func TestScp(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	require.Nil(t, err)
 
 	defer os.Remove(f.Name())

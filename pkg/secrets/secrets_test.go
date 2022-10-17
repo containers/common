@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -14,7 +13,7 @@ var drivertype = "file"
 var opts map[string]string
 
 func setup() (*SecretsManager, string, error) {
-	testpath, err := ioutil.TempDir("", "secretsdata")
+	testpath, err := os.MkdirTemp("", "secretsdata")
 	if err != nil {
 		return nil, "", err
 	}

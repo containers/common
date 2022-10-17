@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -12,7 +11,7 @@ import (
 )
 
 func prepareProbeBinary(t *testing.T, expectedOutput string) (path string) {
-	f, err := ioutil.TempFile("", "conmon-")
+	f, err := os.CreateTemp("", "conmon-")
 	require.Nil(t, err)
 	defer func() { require.Nil(t, f.Close()) }()
 

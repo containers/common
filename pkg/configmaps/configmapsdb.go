@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -51,7 +51,7 @@ func (s *ConfigMapManager) loadDB() error {
 		return err
 	}
 
-	byteValue, err := ioutil.ReadAll(file)
+	byteValue, err := io.ReadAll(file)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (s *ConfigMapManager) store(entry *ConfigMap) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(s.configMapDBPath, marshalled, 0o600)
+	err = os.WriteFile(s.configMapDBPath, marshalled, 0o600)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (s *ConfigMapManager) delete(nameOrID string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(s.configMapDBPath, marshalled, 0o600)
+	err = os.WriteFile(s.configMapDBPath, marshalled, 0o600)
 	if err != nil {
 		return err
 	}

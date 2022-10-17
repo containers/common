@@ -1,7 +1,6 @@
 package libimage
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -27,7 +26,7 @@ type testNewRuntimeOptions struct {
 // is a clean-up function that should be called by users to make sure all
 // temporary test data gets removed.
 func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Runtime, cleanup func()) {
-	workdir, err := ioutil.TempDir("", "testStorageRuntime")
+	workdir, err := os.MkdirTemp("", "testStorageRuntime")
 	require.NoError(t, err)
 	storeOptions := &storage.StoreOptions{
 		RunRoot:         workdir,

@@ -72,7 +72,7 @@ vendor:
 .PHONY: install.tools
 install.tools: build/golangci-lint .install.md2man
 
-build/golangci-lint: VERSION=v1.45.2
+build/golangci-lint: VERSION=v1.50.0
 build/golangci-lint:
 	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/$(VERSION)/install.sh | sh -s -- -b ./build $(VERSION)
 

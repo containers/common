@@ -2,7 +2,6 @@ package supported
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -51,7 +50,7 @@ func TestApparmorVerifier(t *testing.T) {
 				mock.UnshareIsRootlessReturns(false)
 				mock.RuncIsEnabledReturns(true)
 
-				file, err := ioutil.TempFile("", "")
+				file, err := os.CreateTemp("", "")
 				require.Nil(t, err)
 				fileInfo, err := file.Stat()
 				require.Nil(t, err)

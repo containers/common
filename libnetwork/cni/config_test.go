@@ -5,7 +5,6 @@ package cni_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -28,7 +27,7 @@ var _ = Describe("Config", func() {
 
 	BeforeEach(func() {
 		var err error
-		cniConfDir, err = ioutil.TempDir("", "podman_cni_test")
+		cniConfDir, err = os.MkdirTemp("", "podman_cni_test")
 		if err != nil {
 			Fail("Failed to create tmpdir")
 		}
@@ -1202,17 +1201,17 @@ var _ = Describe("Config", func() {
 
 		BeforeEach(func() {
 			dir := "testfiles/valid"
-			files, err := ioutil.ReadDir(dir)
+			files, err := os.ReadDir(dir)
 			if err != nil {
 				Fail("Failed to read test directory")
 			}
 			for _, file := range files {
 				filename := file.Name()
-				data, err := ioutil.ReadFile(filepath.Join(dir, filename))
+				data, err := os.ReadFile(filepath.Join(dir, filename))
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
-				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
+				err = os.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
@@ -1557,17 +1556,17 @@ var _ = Describe("Config", func() {
 	Context("network load invalid existing ones", func() {
 		BeforeEach(func() {
 			dir := "testfiles/invalid"
-			files, err := ioutil.ReadDir(dir)
+			files, err := os.ReadDir(dir)
 			if err != nil {
 				Fail("Failed to read test directory")
 			}
 			for _, file := range files {
 				filename := file.Name()
-				data, err := ioutil.ReadFile(filepath.Join(dir, filename))
+				data, err := os.ReadFile(filepath.Join(dir, filename))
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
-				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
+				err = os.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
@@ -1598,7 +1597,7 @@ func grepNotFile(path, match string) {
 }
 
 func grepFile(not bool, path, match string) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	ExpectWithOffset(1, err).To(BeNil())
 	matcher := ContainSubstring(match)
 	if not {

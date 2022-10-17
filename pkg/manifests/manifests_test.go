@@ -1,7 +1,6 @@
 package manifests
 
 import (
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -39,7 +38,7 @@ func TestFromBlob(t *testing.T) {
 		ociFixture,
 		dockerFixture,
 	} {
-		bytes, err := ioutil.ReadFile(version)
+		bytes, err := os.ReadFile(version)
 		if err != nil {
 			t.Fatalf("error loading %s: %v", version, err)
 		}
@@ -64,7 +63,7 @@ func TestFromBlob(t *testing.T) {
 }
 
 func TestAddInstance(t *testing.T) {
-	manifestBytes, err := ioutil.ReadFile("testdata/fedora-minimal.schema2.json")
+	manifestBytes, err := os.ReadFile("testdata/fedora-minimal.schema2.json")
 	if err != nil {
 		t.Fatalf("error loading testdata/fedora-minimal.schema2.json: %v", err)
 	}
@@ -77,7 +76,7 @@ func TestAddInstance(t *testing.T) {
 		ociFixture,
 		dockerFixture,
 	} {
-		bytes, err := ioutil.ReadFile(version)
+		bytes, err := os.ReadFile(version)
 		if err != nil {
 			t.Fatalf("error loading %s: %v", version, err)
 		}
@@ -98,7 +97,7 @@ func TestAddInstance(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	bytes, err := ioutil.ReadFile(ociFixture)
+	bytes, err := os.ReadFile(ociFixture)
 	if err != nil {
 		t.Fatalf("error loading blob: %v", err)
 	}
@@ -131,7 +130,7 @@ func TestRemove(t *testing.T) {
 }
 
 func testString(t *testing.T, values []string, set func(List, digest.Digest, string) error, get func(List, digest.Digest) (string, error)) {
-	bytes, err := ioutil.ReadFile(ociFixture)
+	bytes, err := os.ReadFile(ociFixture)
 	if err != nil {
 		t.Fatalf("error loading blob: %v", err)
 	}
@@ -162,7 +161,7 @@ func testString(t *testing.T, values []string, set func(List, digest.Digest, str
 }
 
 func testStringSlice(t *testing.T, values [][]string, set func(List, digest.Digest, []string) error, get func(List, digest.Digest) ([]string, error)) {
-	bytes, err := ioutil.ReadFile(ociFixture)
+	bytes, err := os.ReadFile(ociFixture)
 	if err != nil {
 		t.Fatalf("error loading blob: %v", err)
 	}
@@ -193,7 +192,7 @@ func testStringSlice(t *testing.T, values [][]string, set func(List, digest.Dige
 }
 
 func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Digest, map[string]string) error, get func(List, *digest.Digest) (map[string]string, error)) {
-	bytes, err := ioutil.ReadFile(ociFixture)
+	bytes, err := os.ReadFile(ociFixture)
 	if err != nil {
 		t.Fatalf("error loading blob: %v", err)
 	}
@@ -332,7 +331,7 @@ func TestSerialize(t *testing.T) {
 		ociFixture,
 		dockerFixture,
 	} {
-		bytes, err := ioutil.ReadFile(version)
+		bytes, err := os.ReadFile(version)
 		if err != nil {
 			t.Fatalf("error loading %s: %v", version, err)
 		}

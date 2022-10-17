@@ -15,7 +15,7 @@ package netavark_test
 // })
 
 import (
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"strconv"
@@ -75,7 +75,7 @@ var _ = Describe("run netavark", func() {
 		}
 
 		var err error
-		confDir, err = ioutil.TempDir("", "podman_netavark_test")
+		confDir, err = os.MkdirTemp("", "podman_netavark_test")
 		if err != nil {
 			Fail("Failed to create tmpdir")
 		}
@@ -799,7 +799,7 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			defer conn.Close()
 			err = conn.SetDeadline(time.Now().Add(1 * time.Second))
 			Expect(err).To(BeNil())
-			data, err := ioutil.ReadAll(conn)
+			data, err := io.ReadAll(conn)
 			Expect(err).To(BeNil())
 			Expect(string(data)).To(Equal(expectedData))
 		}()
