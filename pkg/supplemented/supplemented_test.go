@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"testing"
@@ -102,14 +101,14 @@ func makeManifest(layer, config []byte) v1.Manifest {
 	}
 }
 
-func makeImage(t *testing.T, arch, os string) (ref types.ImageReference, dir string, layer, config, manifest []byte) {
+func makeImage(t *testing.T, arch, osStr string) (ref types.ImageReference, dir string, layer, config, manifest []byte) {
 	ctx := context.TODO()
 
-	dir, err := ioutil.TempDir("", "supplemented")
+	dir, err := os.MkdirTemp("", "supplemented")
 	assert.Nilf(t, err, "error creating temporary directory")
 
 	layerBytes := makeLayer(t)
-	cb := makeConfig(arch, os, layer)
+	cb := makeConfig(arch, osStr, layer)
 	configBytes, err := json.Marshal(&cb)
 	assert.Nilf(t, err, "error encoding image configuration")
 	m := makeManifest(layerBytes, configBytes)
@@ -171,11 +170,11 @@ func TestSupplemented(t *testing.T) {
 	digest3, err := manifest.Digest(manifest3)
 	assert.Nilf(t, err, "error digesting manifest")
 
-	multidir, err := ioutil.TempDir("", "supplemented")
+	multidir, err := os.MkdirTemp("", "supplemented")
 	assert.Nilf(t, err, "error creating temporary directory")
 	defer os.RemoveAll(multidir)
 
-	destDir, err := ioutil.TempDir("", "supplemented")
+	destDir, err := os.MkdirTemp("", "supplemented")
 	assert.Nilf(t, err, "error creating temporary directory")
 	defer os.RemoveAll(destDir)
 
@@ -351,7 +350,7 @@ func TestSupplemented(t *testing.T) {
 			}
 			rc, _, err := src.GetBlob(ctx, bi, none.NoCache)
 			assert.Nilf(t, err, "error reading blob 'dir:%s'[%s][%d]", multidir, test.label, i)
-			_, err = io.Copy(ioutil.Discard, rc)
+			_, err = io.Copy(io.Discard, rc)
 			assert.Nilf(t, err, "error discarding blob 'dir:%s'[%s][%d]", multidir, test.label, i)
 			rc.Close()
 		}

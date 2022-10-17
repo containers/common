@@ -2,7 +2,6 @@ package shelldriver
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,7 +9,7 @@ import (
 )
 
 func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
-	base, err := ioutil.TempDir(os.TempDir(), "external-driver-test")
+	base, err := os.MkdirTemp(os.TempDir(), "external-driver-test")
 	require.NoError(t, err)
 	driver, err = NewDriver(map[string]string{
 		"delete": fmt.Sprintf("rm %s/${SECRET_ID}", base),

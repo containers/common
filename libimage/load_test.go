@@ -2,7 +2,6 @@ package libimage
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -15,7 +14,7 @@ func TestLoad(t *testing.T) {
 	tmpdir := t.TempDir()
 	os.Setenv("TMPDIR", tmpdir)
 	defer func() {
-		dir, err := ioutil.ReadDir(tmpdir)
+		dir, err := os.ReadDir(tmpdir)
 		require.NoError(t, err)
 		require.Len(t, dir, 0)
 		os.Unsetenv("TMPDIR")

@@ -5,7 +5,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
@@ -37,7 +36,7 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("should fail on invalid CNIPluginDirs", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
@@ -54,7 +53,7 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("should fail in validating invalid PluginDir", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
@@ -71,7 +70,7 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("should fail on invalid CNIPluginDirs", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
@@ -88,7 +87,7 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("should fail on invalid subnet pool", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
@@ -149,7 +148,7 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("should fail during runtime", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}

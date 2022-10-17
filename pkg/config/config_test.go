@@ -2,7 +2,7 @@ package config
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -122,7 +122,7 @@ var _ = Describe("Config", func() {
 			testFile := "testdata/temp.conf"
 			content := `[engine]
 image_copy_tmp_dir="storage"`
-			err := ioutil.WriteFile(testFile, []byte(content), os.ModePerm)
+			err := os.WriteFile(testFile, []byte(content), os.ModePerm)
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 			defer os.Remove(testFile)
@@ -519,7 +519,7 @@ image_copy_tmp_dir="storage"`
 
 		BeforeEach(func() {
 			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
-			conf, _ := ioutil.TempFile("", "containersconf")
+			conf, _ := os.CreateTemp("", "containersconf")
 			os.Setenv("CONTAINERS_CONF", conf.Name())
 		})
 
@@ -551,7 +551,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			f, err := os.Open(path)
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			data, err := ioutil.ReadAll(f)
+			data, err := io.ReadAll(f)
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("cpus"))
 			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("disk_size"))
@@ -694,7 +694,7 @@ image_copy_tmp_dir="storage"`
 
 		It("test addConfigs", func() {
 			tmpFilePath := func(dir, prefix string) string {
-				file, err := ioutil.TempFile(dir, prefix)
+				file, err := os.CreateTemp(dir, prefix)
 				gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 				conf := file.Name() + ".conf"
 
@@ -710,7 +710,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			gomega.Expect(newConfigs).To(gomega.Equal(configs))
 
-			dir, err := ioutil.TempDir("", "configTest")
+			dir, err := os.MkdirTemp("", "configTest")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			defer os.RemoveAll(dir)
 			file1 := tmpFilePath(dir, "b")
@@ -719,13 +719,13 @@ image_copy_tmp_dir="storage"`
 			file4 := tmpFilePath(dir, "1")
 			// create a file in dir that is not a .conf to make sure
 			// it does not show up in configs
-			_, err = ioutil.TempFile(dir, "notconf")
+			_, err = os.CreateTemp(dir, "notconf")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			subdir, err := ioutil.TempDir(dir, "")
+			subdir, err := os.MkdirTemp(dir, "")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			// create a file in subdir, to make sure it does not
 			// show up in configs
-			_, err = ioutil.TempFile(subdir, "")
+			_, err = os.CreateTemp(subdir, "")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 			newConfigs, err = addConfigs(dir, configs)
@@ -776,7 +776,7 @@ image_copy_tmp_dir="storage"`
 			testFile := "testdata/temp.conf"
 			content := `[containers]
 env=["foo=bar"]`
-			err = ioutil.WriteFile(testFile, []byte(content), os.ModePerm)
+			err = os.WriteFile(testFile, []byte(content), os.ModePerm)
 			defer os.Remove(testFile)
 			gomega.Expect(err).To(gomega.BeNil())
 			oldEnv, set = os.LookupEnv("CONTAINERS_CONF")
@@ -807,14 +807,14 @@ env=["foo=bar"]`
 		conf, err := ReadCustomConfig()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
-		f, err := ioutil.TempFile("", "container-common-test")
+		f, err := os.CreateTemp("", "container-common-test")
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		defer f.Close()
 		defer os.Remove(f.Name())
 		os.Setenv("CONTAINERS_CONF", f.Name())
 		err = conf.Write()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		b, err := ioutil.ReadFile(f.Name())
+		b, err := os.ReadFile(f.Name())
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		// config should only contain empty stanzas
 		gomega.Expect(string(b)).To(gomega.

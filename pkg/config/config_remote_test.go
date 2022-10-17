@@ -4,7 +4,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -15,7 +14,7 @@ var _ = Describe("Config Remote", func() {
 	BeforeEach(beforeEach)
 
 	It("should succeed on invalid CNIPluginDirs", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
@@ -107,7 +106,7 @@ var _ = Describe("Config Remote", func() {
 	})
 
 	It("should succeed on invalid CNIPluginDirs", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
@@ -124,7 +123,7 @@ var _ = Describe("Config Remote", func() {
 	})
 
 	It("should succeed in validating invalid PluginDir", func() {
-		validDirPath, err := ioutil.TempDir("", "config-empty")
+		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}

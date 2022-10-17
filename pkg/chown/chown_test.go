@@ -1,7 +1,6 @@
 package chown
 
 import (
-	"io/ioutil"
 	"os"
 	"runtime"
 	"syscall"
@@ -16,7 +15,7 @@ func TestDangerousHostPath(t *testing.T) {
 	}
 
 	// Create a temp dir that is not dangerous
-	td, err := ioutil.TempDir("/tmp", "validDir")
+	td, err := os.MkdirTemp("/tmp", "validDir")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +65,7 @@ func TestChangeHostPathOwnership(t *testing.T) {
 	}
 
 	// Create a temp dir that is not dangerous
-	td, err := ioutil.TempDir("/tmp", "validDir")
+	td, err := os.MkdirTemp("/tmp", "validDir")
 	if err != nil {
 		t.Fatal(err)
 	}

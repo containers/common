@@ -2,7 +2,6 @@ package libimage
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -28,7 +27,7 @@ func TestSave(t *testing.T) {
 	// reload the images for each test.
 	saveOptions := &SaveOptions{}
 	saveOptions.Writer = os.Stdout
-	imageCache, err := ioutil.TempFile("", "saveimagecache")
+	imageCache, err := os.CreateTemp("", "saveimagecache")
 	require.NoError(t, err)
 	imageCache.Close()
 	defer os.Remove(imageCache.Name())
@@ -72,7 +71,7 @@ func TestSave(t *testing.T) {
 		_, err = runtime.Load(ctx, imageCache.Name(), loadOptions)
 		require.NoError(t, err)
 
-		tmp, err := ioutil.TempDir("", "libimagesavetest")
+		tmp, err := os.MkdirTemp("", "libimagesavetest")
 		require.NoError(t, err)
 		defer os.RemoveAll(tmp)
 		if !test.isDir {

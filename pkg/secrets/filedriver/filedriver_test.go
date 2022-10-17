@@ -1,7 +1,6 @@
 package filedriver
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -9,7 +8,7 @@ import (
 )
 
 func setup() (*Driver, error) {
-	tmppath, err := ioutil.TempDir("", "secretsdata")
+	tmppath, err := os.MkdirTemp("", "secretsdata")
 	if err != nil {
 		return nil, err
 	}

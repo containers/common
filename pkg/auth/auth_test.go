@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -52,7 +51,7 @@ var _ = Describe("Config", func() {
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 
-		conf, _ := ioutil.TempFile("", "authfile")
+		conf, _ := os.CreateTemp("", "authfile")
 		defer os.Remove(conf.Name())
 		// When			// When
 		err = CheckAuthFile(conf.Name())

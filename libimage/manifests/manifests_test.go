@@ -3,7 +3,6 @@ package manifests
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,7 +46,7 @@ func TestSaveLoad(t *testing.T) {
 		t.Skip("Test can only run as root")
 	}
 
-	dir, err := ioutil.TempDir("", "manifests")
+	dir, err := os.MkdirTemp("", "manifests")
 	assert.Nilf(t, err, "error creating temporary directory")
 	defer os.RemoveAll(dir)
 
@@ -165,7 +164,7 @@ func TestReference(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	dir, err := ioutil.TempDir("", "manifests")
+	dir, err := os.MkdirTemp("", "manifests")
 	assert.Nilf(t, err, "error creating temporary directory")
 	defer os.RemoveAll(dir)
 
@@ -265,7 +264,7 @@ func TestPush(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	dir, err := ioutil.TempDir("", "manifests")
+	dir, err := os.MkdirTemp("", "manifests")
 	assert.Nilf(t, err, "error creating temporary directory")
 	defer os.RemoveAll(dir)
 
@@ -285,7 +284,7 @@ func TestPush(t *testing.T) {
 		}
 	}()
 
-	dest, err := ioutil.TempDir("", "manifests")
+	dest, err := os.MkdirTemp("", "manifests")
 	assert.Nilf(t, err, "error creating temporary directory")
 	defer os.RemoveAll(dest)
 

@@ -2,7 +2,6 @@ package configmaps
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -14,7 +13,7 @@ var drivertype = "file"
 var opts map[string]string
 
 func setup() (*ConfigMapManager, string, error) {
-	testpath, err := ioutil.TempDir("", "cmdata")
+	testpath, err := os.MkdirTemp("", "cmdata")
 	if err != nil {
 		return nil, "", err
 	}

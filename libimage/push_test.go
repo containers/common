@@ -2,7 +2,6 @@ package libimage
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -24,7 +23,7 @@ func TestPush(t *testing.T) {
 	pushOptions := &PushOptions{}
 	pushOptions.Writer = os.Stdout
 
-	workdir, err := ioutil.TempDir("", "libimagepush")
+	workdir, err := os.MkdirTemp("", "libimagepush")
 	require.NoError(t, err)
 	defer os.RemoveAll(workdir)
 
@@ -86,7 +85,7 @@ func TestPushOtherPlatform(t *testing.T) {
 
 	pushOptions := &PushOptions{}
 	pushOptions.Writer = os.Stdout
-	tmp, err := ioutil.TempFile("", "")
+	tmp, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	tmp.Close()
 	defer os.Remove(tmp.Name())

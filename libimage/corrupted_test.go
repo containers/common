@@ -2,7 +2,6 @@ package libimage
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -50,7 +49,7 @@ func TestCorruptedLayers(t *testing.T) {
 	// image will still be listed in the container storage but attempting
 	// to use it will yield "layer not known" errors.
 	indexPath := filepath.Join(runtime.store.GraphRoot(), "vfs-layers/layers.json")
-	data, err := ioutil.ReadFile(indexPath)
+	data, err := os.ReadFile(indexPath)
 	require.NoError(t, err, "loading layers.json")
 	layers := []*storage.Layer{}
 	err = json.Unmarshal(data, &layers)

@@ -3,7 +3,6 @@ package hooks
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,7 +32,7 @@ func TestGoodFile(t *testing.T) {
 	dir := t.TempDir()
 
 	jsonPath := filepath.Join(dir, "hook.json")
-	err := ioutil.WriteFile(jsonPath, []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}", path)), 0o644)
+	err := os.WriteFile(jsonPath, []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}", path)), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +58,7 @@ func TestBadFile(t *testing.T) {
 	dir := t.TempDir()
 
 	path := filepath.Join(dir, "hook.json")
-	err := ioutil.WriteFile(path, []byte("{\"version\": \"1.0.0\", \"hook\": \"not-a-string\"}"), 0o644)
+	err := os.WriteFile(path, []byte("{\"version\": \"1.0.0\", \"hook\": \"not-a-string\"}"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,13 +115,13 @@ func TestInvalidCurrentJSON(t *testing.T) {
 func TestGoodDir(t *testing.T) {
 	dir := t.TempDir()
 
-	err := ioutil.WriteFile(filepath.Join(dir, "README"), []byte("not a hook"), 0o644)
+	err := os.WriteFile(filepath.Join(dir, "README"), []byte("not a hook"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	jsonPath := filepath.Join(dir, "a.json")
-	err = ioutil.WriteFile(jsonPath, []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}", path)), 0o644)
+	err = os.WriteFile(jsonPath, []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}", path)), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +163,7 @@ func TestBadDir(t *testing.T) {
 	dir := t.TempDir()
 
 	jsonPath := filepath.Join(dir, "a.json")
-	err := ioutil.WriteFile(jsonPath, []byte("{\"version\": \"-1\"}"), 0o644)
+	err := os.WriteFile(jsonPath, []byte("{\"version\": \"-1\"}"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +180,7 @@ func TestHookExecutableDoesNotExit(t *testing.T) {
 	dir := t.TempDir()
 
 	jsonPath := filepath.Join(dir, "hook.json")
-	err := ioutil.WriteFile(jsonPath, []byte("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"/does/not/exist\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}"), 0o644)
+	err := os.WriteFile(jsonPath, []byte("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"/does/not/exist\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}

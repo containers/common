@@ -6,7 +6,6 @@ package netavark
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 
@@ -25,7 +24,7 @@ var _ = Describe("IPAM", func() {
 
 	BeforeEach(func() {
 		var err error
-		networkConfDir, err = ioutil.TempDir("", "podman_netavark_test")
+		networkConfDir, err = os.MkdirTemp("", "podman_netavark_test")
 		if err != nil {
 			Fail("Failed to create tmpdir")
 		}

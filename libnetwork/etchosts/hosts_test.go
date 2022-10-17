@@ -1,7 +1,7 @@
 package etchosts
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -274,7 +274,7 @@ func TestNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			baseHostFile := tt.baseFileName
 			if !tt.noWriteBaseFile {
-				f, err := ioutil.TempFile(t.TempDir(), "basehosts")
+				f, err := os.CreateTemp(t.TempDir(), "basehosts")
 				assert.NoErrorf(t, err, "failed to create base host file: %v", err)
 				defer f.Close()
 				baseHostFile = f.Name()
@@ -299,7 +299,7 @@ func TestNew(t *testing.T) {
 			}
 			assert.NoError(t, err, "New() failed")
 
-			content, err := ioutil.ReadFile(targetFile)
+			content, err := os.ReadFile(targetFile)
 			assert.NoErrorf(t, err, "failed to read target host file: %v", err)
 			assert.Equal(t, tt.expectedTargetFileContent, string(content), "check hosts content")
 		})
@@ -346,7 +346,7 @@ func TestAdd(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			f, err := ioutil.TempFile(t.TempDir(), "hosts")
+			f, err := os.CreateTemp(t.TempDir(), "hosts")
 			assert.NoErrorf(t, err, "failed to create base host file: %v", err)
 			defer f.Close()
 			hostFile := f.Name()
@@ -364,7 +364,7 @@ func TestAdd(t *testing.T) {
 			}
 			assert.NoError(t, err, "Add() failed")
 
-			content, err := ioutil.ReadFile(hostFile)
+			content, err := os.ReadFile(hostFile)
 			assert.NoErrorf(t, err, "failed to read host file: %v", err)
 			assert.Equal(t, tt.expectedTargetFileContent, string(content), "check hosts content")
 
@@ -442,7 +442,7 @@ func TestAddIfExists(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			f, err := ioutil.TempFile(t.TempDir(), "hosts")
+			f, err := os.CreateTemp(t.TempDir(), "hosts")
 			assert.NoErrorf(t, err, "failed to create base host file: %v", err)
 			defer f.Close()
 			hostFile := f.Name()
@@ -460,7 +460,7 @@ func TestAddIfExists(t *testing.T) {
 			}
 			assert.NoError(t, err, "AddIfExists() failed")
 
-			content, err := ioutil.ReadFile(hostFile)
+			content, err := os.ReadFile(hostFile)
 			assert.NoErrorf(t, err, "failed to read host file: %v", err)
 			assert.Equal(t, tt.expectedTargetFileContent, string(content), "check hosts content")
 
@@ -505,7 +505,7 @@ func TestRemove(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			f, err := ioutil.TempFile(t.TempDir(), "hosts")
+			f, err := os.CreateTemp(t.TempDir(), "hosts")
 			assert.NoErrorf(t, err, "failed to create base host file: %v", err)
 			defer f.Close()
 			hostFile := f.Name()
@@ -519,7 +519,7 @@ func TestRemove(t *testing.T) {
 			err = Remove(hostFile, tt.entries)
 			assert.NoError(t, err, "Remove() failed")
 
-			content, err := ioutil.ReadFile(hostFile)
+			content, err := os.ReadFile(hostFile)
 			assert.NoErrorf(t, err, "failed to read host file: %v", err)
 			assert.Equal(t, tt.expectedTargetFileContent, string(content), "check hosts content")
 

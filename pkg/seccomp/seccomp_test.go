@@ -8,14 +8,14 @@
 package seccomp
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/opencontainers/runtime-tools/generate"
 )
 
 func TestLoadProfile(t *testing.T) {
-	f, err := ioutil.ReadFile("fixtures/example.json")
+	f, err := os.ReadFile("fixtures/example.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestLoadProfile(t *testing.T) {
 }
 
 func TestLoadDefaultProfile(t *testing.T) {
-	f, err := ioutil.ReadFile("seccomp.json")
+	f, err := os.ReadFile("seccomp.json")
 	if err != nil {
 		t.Fatal(err)
 	}

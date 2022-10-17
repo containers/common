@@ -16,7 +16,7 @@ package cni_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
@@ -78,7 +78,7 @@ var _ = Describe("run CNI", func() {
 		}
 
 		var err error
-		cniConfDir, err = ioutil.TempDir("", "podman_cni_test")
+		cniConfDir, err = os.MkdirTemp("", "podman_cni_test")
 		if err != nil {
 			Fail("Failed to create tmpdir")
 		}
@@ -919,17 +919,17 @@ var _ = Describe("run CNI", func() {
 	Context("network setup test with networks from disk", func() {
 		BeforeEach(func() {
 			dir := "testfiles/valid"
-			files, err := ioutil.ReadDir(dir)
+			files, err := os.ReadDir(dir)
 			if err != nil {
 				Fail("Failed to read test directory")
 			}
 			for _, file := range files {
 				filename := file.Name()
-				data, err := ioutil.ReadFile(filepath.Join(dir, filename))
+				data, err := os.ReadFile(filepath.Join(dir, filename))
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
-				err = ioutil.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
+				err = os.WriteFile(filepath.Join(cniConfDir, filename), data, 0o700)
 				if err != nil {
 					Fail("Failed to copy test files")
 				}
@@ -1384,7 +1384,7 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			Expect(err).To(BeNil())
 			err = conn.SetDeadline(time.Now().Add(1 * time.Second))
 			Expect(err).To(BeNil())
-			data, err := ioutil.ReadAll(conn)
+			data, err := io.ReadAll(conn)
 			Expect(err).To(BeNil())
 			Expect(string(data)).To(Equal(expectedData))
 			conn.Close()

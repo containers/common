@@ -3,7 +3,6 @@ package passdriver
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -13,9 +12,9 @@ import (
 const gpgTestID = "testing@passdriver"
 
 func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
-	base, err := ioutil.TempDir(os.TempDir(), "pass-test")
+	base, err := os.MkdirTemp(os.TempDir(), "pass-test")
 	require.NoError(t, err)
-	gpghomedir, err := ioutil.TempDir(os.TempDir(), "gpg-dir")
+	gpghomedir, err := os.MkdirTemp(os.TempDir(), "gpg-dir")
 	require.NoError(t, err)
 
 	driver, err = NewDriver(map[string]string{
