@@ -43,6 +43,8 @@ func TestCorruptedLayers(t *testing.T) {
 	// Disk usage works.
 	_, err = runtime.DiskUsage(ctx)
 	require.NoError(t, err, "disk usage works on healthy image")
+	_, err = runtime.LayersDiskUsage(ctx)
+	require.NoError(t, err, "layers disk usage works on healthy image")
 
 	// Now remove one layer from the layers.json index in the storage.  The
 	// image will still be listed in the container storage but attempting
