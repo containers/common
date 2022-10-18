@@ -54,6 +54,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
+	github.com/cilium/ebpf v0.7.0 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.12.1 // indirect
 	github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a // indirect
@@ -115,5 +116,3 @@ retract (
 	v1.0.1 // This version is used only to publish retraction of v1.0.1.
 	v1.0.0 // We reverted to v0.… version numbers; the v1.0.0 tag was actually deleted.
 )
-
-replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.1-0.20220617142545-8b9452f75cbc
