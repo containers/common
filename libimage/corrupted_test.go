@@ -40,10 +40,8 @@ func TestCorruptedLayers(t *testing.T) {
 	require.True(t, exists, "healthy image exists")
 
 	// Disk usage works.
-	_, err = runtime.DiskUsage(ctx)
+	_, _, err = runtime.DiskUsage(ctx)
 	require.NoError(t, err, "disk usage works on healthy image")
-	_, err = runtime.LayersDiskUsage(ctx)
-	require.NoError(t, err, "layers disk usage works on healthy image")
 
 	// Now remove one layer from the layers.json index in the storage.  The
 	// image will still be listed in the container storage but attempting
@@ -77,7 +75,7 @@ func TestCorruptedLayers(t *testing.T) {
 	require.False(t, exists, "corrupted image should not be marked to exist")
 
 	// Disk usage does not work.
-	_, err = runtime.DiskUsage(ctx)
+	_, _, err = runtime.DiskUsage(ctx)
 	require.Error(t, err, "disk usage does not work on corrupted image")
 	require.Contains(t, err.Error(), "exists in local storage but may be corrupted", "disk usage reports corrupted image")
 
