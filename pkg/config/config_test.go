@@ -195,6 +195,9 @@ image_copy_tmp_dir="storage"`
 					"/usr/bin/krun",
 					"/usr/local/bin/krun",
 				},
+				"ocijail": {
+					"/usr/local/bin/ocijail",
+				},
 			}
 
 			pluginDirs := []string{
