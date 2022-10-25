@@ -9,6 +9,7 @@ const (
 	MacVLANNetworkDriver = "macvlan"
 	// MacVLANNetworkDriver defines the macvlan driver
 	IPVLANNetworkDriver = "ipvlan"
+	WireGuardNetworkDriver = "wireguard"
 
 	// IPAM drivers
 	Driver = "driver"

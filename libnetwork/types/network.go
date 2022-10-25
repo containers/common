@@ -213,6 +213,9 @@ type PerNetworkOptions struct {
 	// InterfaceName for this container. Required in the backend.
 	// Optional in the frontend. Will be filled with ethX (where X is a integer) when empty.
 	InterfaceName string `json:"interface_name"`
+	// Additional options that should be applied to a network
+	// Optional
+	Options map[string]string `json:"options,omitempty"`
 }
 
 // NetworkOptions for a given container.

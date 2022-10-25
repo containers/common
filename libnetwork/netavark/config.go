@@ -125,6 +125,17 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		if err != nil {
 			return nil, err
 		}
+	case types.WireGuardNetworkDriver:
+		// The network is purely created so that containers can join it
+		// with the actual interface being created via a config
+		// passed when running the container
+
+		// As no functionality is added via this network, subnets should not
+		// be created.
+		if len(newNetwork.Subnets) != 0 {
+			return nil, fmt.Errorf("subnets are not supported with wireguard driver")
+		}
+
 	default:
 		return nil, fmt.Errorf("unsupported driver %s: %w", newNetwork.Driver, types.ErrInvalidArg)
 	}
