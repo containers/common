@@ -191,6 +191,12 @@ image_copy_tmp_dir="storage"`
 					"/sbin/runsc",
 					"/run/current-system/sw/bin/runsc",
 				},
+				"youki": {
+					"/usr/local/bin/youki",
+					"/usr/bin/youki",
+					"/bin/youki",
+					"/run/current-system/sw/bin/youki",
+				},
 				"krun": {
 					"/usr/bin/krun",
 					"/usr/local/bin/krun",
