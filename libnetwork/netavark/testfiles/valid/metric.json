@@ -1,0 +1,22 @@
+{
+    "name": "metric",
+    "id": "83f6a2b55958cacd9b319c302114a3b633586cab241866c87397e9ea6e7004ac",
+    "driver": "bridge",
+    "network_interface": "podman100",
+    "created": "2021-10-06T18:50:54.25770461+02:00",
+    "subnets": [
+        {
+            "subnet": "10.89.99.0/24",
+            "gateway": "10.89.99.1"
+        }
+    ],
+    "ipv6_enabled": false,
+    "internal": false,
+    "dns_enabled": true,
+    "options": {
+	"metric": "255"
+    },
+    "ipam_options": {
+        "driver": "host-local"
+    }
+}
