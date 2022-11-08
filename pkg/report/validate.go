@@ -1,8 +1,6 @@
 package report
 
-import "regexp"
-
-var jsonRegex = regexp.MustCompile(`^\s*(json|{{\s*json\s*(\.)?\s*}})\s*$`)
+import "strings"
 
 // JSONFormat test CLI --format string to be a JSON request
 //
@@ -10,5 +8,5 @@ var jsonRegex = regexp.MustCompile(`^\s*(json|{{\s*json\s*(\.)?\s*}})\s*$`)
 //	  ... process JSON and output
 //	}
 func IsJSON(s string) bool {
-	return jsonRegex.MatchString(s)
+	return strings.TrimSpace(s) == "json"
 }
