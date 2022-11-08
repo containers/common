@@ -17,9 +17,12 @@ func TestIsJSON(t *testing.T) {
 		{" json", true},
 		{" json ", true},
 		{"  json   ", true},
-		{"{{json}}", false},
-		{"{{json }}", false},
-		{"{{json .}}", false},
+		// special case, previous regex allowed this template string but it is not actually a valid template
+		{"{{json}}", true},
+		{"{{json }}", true},
+		{"{{json.}}", true},
+		{"{{ json. }}", true},
+
 		{"{{ json .}}", false},
 		{"{{ json . }}", false},
 		{"  {{   json   .  }}  ", false},
