@@ -149,9 +149,6 @@ const (
 	DefaultPidsLimit = 2048
 	// DefaultPullPolicy pulls the image if it does not exist locally.
 	DefaultPullPolicy = "missing"
-	// DefaultSignaturePolicyPath is the default value for the
-	// policy.json file.
-	DefaultSignaturePolicyPath = "/etc/containers/policy.json"
 	// DefaultSubnet is the subnet that will be used for the default
 	// network.
 	DefaultSubnet = "10.88.0.0/16"
