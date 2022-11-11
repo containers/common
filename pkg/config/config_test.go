@@ -155,6 +155,13 @@ image_copy_tmp_dir="storage"`
 
 			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig)
 
+			crunWasm := "crun-wasm"
+			PlatformToOCIRuntimeMap := map[string]string{
+				"wasi/wasm":   crunWasm,
+				"wasi/wasm32": crunWasm,
+				"wasi/wasm64": crunWasm,
+			}
+
 			OCIRuntimeMap := map[string][]string{
 				"kata": {
 					"/usr/bin/kata-runtime",
@@ -181,6 +188,15 @@ image_copy_tmp_dir="storage"`
 				"crun": {
 					"/usr/bin/crun",
 					"/usr/local/bin/crun",
+				},
+				"crun-wasm": {
+					"/usr/bin/crun-wasm",
+					"/usr/sbin/crun-wasm",
+					"/usr/local/bin/crun-wasm",
+					"/usr/local/sbin/crun-wasm",
+					"/sbin/crun-wasm",
+					"/bin/crun-wasm",
+					"/run/current-system/sw/bin/crun-wasm",
 				},
 				"runsc": {
 					"/usr/bin/runsc",
@@ -236,6 +252,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(defaultConfig.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
+			gomega.Expect(defaultConfig.Engine.PlatformToOCIRuntime).To(gomega.Equal(PlatformToOCIRuntimeMap))
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(false))
 			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir).To(gomega.Equal(helperDirs))
@@ -405,6 +422,19 @@ image_copy_tmp_dir="storage"`
 			} else {
 				os.Unsetenv("CONTAINERS_CONF")
 			}
+
+			crunWasm := "crun-wasm"
+			PlatformToOCIRuntimeMap := map[string]string{
+				"hello":       "world",
+				"wasi/wasm":   crunWasm,
+				"wasi/wasm32": crunWasm,
+				"wasi/wasm64": crunWasm,
+			}
+
+			// Also test `ImagePlatformToRuntimes
+			runtimes := config.Engine.ImagePlatformToRuntime("wasi", "wasm")
+			gomega.Expect(runtimes).To(gomega.Equal(crunWasm))
+
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config).ToNot(gomega.BeNil())
@@ -413,6 +443,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Containers.LogTag).To(gomega.Equal("{{.Name}}|{{.ID}}"))
 			gomega.Expect(config.Containers.LogSizeMax).To(gomega.Equal(int64(100000)))
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
+			gomega.Expect(config.Engine.PlatformToOCIRuntime).To(gomega.Equal(PlatformToOCIRuntimeMap))
 			gomega.Expect(config.Engine.ImageDefaultFormat).To(gomega.Equal("v2s2"))
 			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo("/tmp/events.log"))
 			path, err := config.ImageCopyTmpDir()

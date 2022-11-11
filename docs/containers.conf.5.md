@@ -684,6 +684,10 @@ used as the backend for Podman named volumes. Individual plugins are specified
 below, as a map of the plugin name (what the plugin will be called) to its path
 (filepath of the plugin's unix socket).
 
+**[engine.platform_to_oci_runtime]**
+
+Allows end users to switch the OCI runtime on the bases of container image's platform string.
+Following config field contains a map of `platform/string = oci_runtime`.
 
 ## SECRET TABLE
 The `secret` table contains settings for the configuration of the secret subsystem.
