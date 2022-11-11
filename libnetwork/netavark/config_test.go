@@ -1072,7 +1072,7 @@ var _ = Describe("Config", func() {
 		It("load networks from disk", func() {
 			nets, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(7))
+			Expect(nets).To(HaveLen(8))
 			// test the we do not show logrus warnings/errors
 			logString := logBuffer.String()
 			Expect(logString).To(BeEmpty())
@@ -1081,12 +1081,12 @@ var _ = Describe("Config", func() {
 		It("change network struct fields should not affect network struct in the backend", func() {
 			nets, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(7))
+			Expect(nets).To(HaveLen(8))
 
 			nets[0].Name = "myname"
 			nets, err = libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(7))
+			Expect(nets).To(HaveLen(8))
 			Expect(nets).ToNot(ContainElement(HaveNetworkName("myname")))
 
 			network, err := libpodNet.NetworkInspect("bridge")
@@ -1164,6 +1164,18 @@ var _ = Describe("Config", func() {
 			Expect(network.Subnets).To(HaveLen(1))
 			Expect(network.Labels).To(HaveLen(1))
 			Expect(network.Labels).To(HaveKeyWithValue("mykey", "value"))
+		})
+
+		It("bridge network with route metric", func() {
+			network, err := libpodNet.NetworkInspect("metric")
+			Expect(err).To(BeNil())
+			Expect(network.Name).To(Equal("metric"))
+			Expect(network.ID).To(HaveLen(64))
+			Expect(network.NetworkInterface).To(Equal("podman100"))
+			Expect(network.Driver).To(Equal("bridge"))
+			Expect(network.Subnets).To(HaveLen(1))
+			Expect(network.Options).To(HaveLen(1))
+			Expect(network.Options).To(HaveKeyWithValue("metric", "255"))
 		})
 
 		It("dual stack network", func() {
@@ -1257,10 +1269,10 @@ var _ = Describe("Config", func() {
 
 			networks, err := libpodNet.NetworkList(filterFuncs...)
 			Expect(err).To(BeNil())
-			Expect(networks).To(HaveLen(7))
+			Expect(networks).To(HaveLen(8))
 			Expect(networks).To(ConsistOf(HaveNetworkName("internal"), HaveNetworkName("bridge"),
 				HaveNetworkName("mtu"), HaveNetworkName("vlan"), HaveNetworkName("podman"),
-				HaveNetworkName("label"), HaveNetworkName("dualstack")))
+				HaveNetworkName("label"), HaveNetworkName("dualstack"), HaveNetworkName("metric")))
 		})
 
 		It("network list with filters (label)", func() {
