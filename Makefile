@@ -61,7 +61,7 @@ validate: build/golangci-lint
 	./tools/validate_seccomp.sh ./pkg/seccomp
 
 vendor-in-container:
-	podman run --privileged --rm --env HOME=/root -v `pwd`:/src -w /src golang make vendor
+	podman run --privileged --rm --env HOME=/root -v `pwd`:/src -w /src golang:1.17 make vendor
 
 .PHONY: vendor
 vendor:
