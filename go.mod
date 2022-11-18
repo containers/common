@@ -41,7 +41,7 @@ require (
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	go.etcd.io/bbolt v1.3.6
-	golang.org/x/crypto v0.2.0
+	golang.org/x/crypto v0.3.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.2.0
 	golang.org/x/term v0.2.0
