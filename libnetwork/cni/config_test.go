@@ -143,6 +143,16 @@ var _ = Describe("Config", func() {
 			Expect(network2.Subnets[0].Subnet.Contains(network1.Subnets[0].Subnet.IP)).To(BeFalse())
 		})
 
+		It("create network with NetworDNSServers with DNSEnabled=false", func() {
+			network := types.Network{
+				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
+				DNSEnabled:        false,
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`NetworkDNSServers cannot be configured for backend CNI`))
+		})
+
 		It("create bridge config", func() {
 			network := types.Network{Driver: "bridge"}
 			network1, err := libpodNet.NetworkCreate(network)

@@ -618,6 +618,36 @@ var _ = Describe("Config", func() {
 			Expect(network1.Internal).To(BeTrue())
 		})
 
+		It("create network with NetworDNSServers", func() {
+			network := types.Network{
+				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
+				DNSEnabled:        true,
+			}
+			network1, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(BeNil())
+			Expect(network1.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3"}))
+		})
+
+		It("create network with NetworDNSServers with invalid IP", func() {
+			network := types.Network{
+				NetworkDNSServers: []string{"a.b.c.d", "3.3.3.3"},
+				DNSEnabled:        true,
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`Unable to parse ip a.b.c.d`))
+		})
+
+		It("create network with NetworDNSServers with DNSEnabled=false", func() {
+			network := types.Network{
+				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
+				DNSEnabled:        false,
+			}
+			_, err := libpodNet.NetworkCreate(network)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`Cannot set NetworkDNSServers if DNS is not enabled for the network`))
+		})
+
 		It("create network with labels", func() {
 			network := types.Network{
 				Labels: map[string]string{
