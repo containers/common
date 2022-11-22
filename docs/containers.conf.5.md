@@ -275,11 +275,6 @@ Options are:
   `private` Create private USER Namespace for the container.
   `host`    Share host USER Namespace with the container.
 
-**userns_size**=65536
-
-Number of UIDs to allocate for the automatic container creation. UIDs are
-allocated from the “container” UIDs listed in /etc/subuid & /etc/subgid.
-
 **utsns**="private"
 
 Default way to to create a UTS namespace for the container.
