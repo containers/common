@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/containers/common/pkg/parse"
 	units "github.com/docker/go-units"
 )
 
@@ -57,6 +58,9 @@ func (c *EngineConfig) validatePaths() error {
 
 func (c *ContainersConfig) validateDevices() error {
 	for _, d := range c.Devices {
+		if parse.IsQualifiedName(d) {
+			continue
+		}
 		_, _, _, err := Device(d)
 		if err != nil {
 			return err
