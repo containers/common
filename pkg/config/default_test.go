@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -22,51 +21,6 @@ func prepareProbeBinary(t *testing.T, expectedOutput string) (path string) {
 	require.Nil(t, err)
 
 	return f.Name()
-}
-
-func TestProbeConmon(t *testing.T) {
-	t.Parallel()
-
-	for _, tc := range []struct {
-		msg    string
-		output string
-		assert func(error, string)
-	}{
-		{
-			msg:    "success conmon 2",
-			output: "conmon version 2.1.0",
-			assert: func(err error, msg string) {
-				assert.Nil(t, err, msg)
-			},
-		},
-		{
-			msg:    "success conmon 3",
-			output: "conmon version 3.0.0-dev",
-			assert: func(x error, msg string) {
-				assert.Nil(t, x, msg)
-			},
-		},
-		{
-			msg:    "failure outdated version",
-			output: "conmon version 1.0.0",
-			assert: func(err error, msg string) {
-				assert.Equal(t, err, ErrConmonOutdated, msg)
-			},
-		},
-		{
-			msg:    "failure invalid format",
-			output: "invalid",
-			assert: func(err error, msg string) {
-				expectedErr := fmt.Errorf(_conmonVersionFormatErr, errors.New("invalid version format"))
-				assert.Equal(t, err, expectedErr, msg)
-			},
-		},
-	} {
-		filePath := prepareProbeBinary(t, tc.output)
-		defer os.RemoveAll(filePath)
-		err := probeConmon(filePath)
-		tc.assert(err, tc.msg)
-	}
 }
 
 func TestMachineVolumes(t *testing.T) {
