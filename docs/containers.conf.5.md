@@ -446,6 +446,11 @@ use this command:
 
 Valid values are: `file`, `journald`, and `none`.
 
+**events_container_create_inspect_data**=true|false
+
+Creates a more verbose container-create event which includes a JSON payload
+with detailed information about the container.  Set to false by default.
+
 **helper_binaries_dir**=["/usr/libexec/podman", ...]
 
 A is a list of directories which are used to search for helper binaries.
