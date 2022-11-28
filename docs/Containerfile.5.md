@@ -118,7 +118,7 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
 
               · dst, destination, target: mount destination spec.
 
-              · ro, read-only: true or false (default).
+              · ro, read-only: true (default) or false.
 
        Options specific to bind:
 
@@ -127,6 +127,8 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
               . bind-nonrecursive: do not setup a recursive bind mount.  By default it is recursive.
 
               · from: stage or image name for the root of the source. Defaults to the build context.
+
+              · rw, read-write: allows writes on the mount.
 
        Options specific to tmpfs:
 
@@ -149,6 +151,8 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
               · gid: gid for cache directory.
 
               · from: stage name for the root of the source. Defaults to host cache directory.
+
+              · rw, read-write: allows writes on the mount.
 
 
 **RUN Secrets**
