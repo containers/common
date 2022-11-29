@@ -499,7 +499,7 @@ var _ = Describe("Config", func() {
 						"driver": "none",
 					},
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 				Expect(network1.Driver).To(Equal(driver))
 				Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
