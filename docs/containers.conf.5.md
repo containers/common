@@ -241,6 +241,10 @@ is imposed.
 
 Copy the content from the underlying image into the newly created volume when the container is created instead of when it is started. If `false`, the container engine will not copy the content until the container is started. Setting it to `true` may have negative performance implications.
 
+**read_only**=true|false
+
+Run all containers with root file system mounted read-only. Set to false by default.
+
 **seccomp_profile**="/usr/share/containers/seccomp.json"
 
 Path to the seccomp.json profile which is used as the default seccomp profile
