@@ -108,7 +108,7 @@ func NewManager(rootPath string) (*ConfigMapManager, error) {
 		return nil, err
 	}
 
-	lock, err := lockfile.GetLockfile(filepath.Join(rootPath, "configMaps.lock"))
+	lock, err := lockfile.GetLockFile(filepath.Join(rootPath, "configMaps.lock"))
 	if err != nil {
 		return nil, err
 	}
