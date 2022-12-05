@@ -39,7 +39,7 @@ func NewDriver(rootPath string) (*Driver, error) {
 		return nil, err
 	}
 
-	lock, err := lockfile.GetLockfile(filepath.Join(rootPath, "configMapsdata.lock"))
+	lock, err := lockfile.GetLockFile(filepath.Join(rootPath, "configMapsdata.lock"))
 	if err != nil {
 		return nil, err
 	}
