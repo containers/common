@@ -5,6 +5,7 @@ package cni_test
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -463,6 +464,31 @@ var _ = Describe("Config", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("internal is not supported with macvlan"))
 		})
+
+		for _, driver := range []string{"macvlan", "ipvlan"} {
+			driver := driver
+			It(fmt.Sprintf("create %s config with none ipam driver", driver), func() {
+				network := types.Network{
+					Driver: driver,
+					IPAMOptions: map[string]string{
+						"driver": "none",
+					},
+				}
+				network1, err := libpodNet.NetworkCreate(network)
+				Expect(err).To(BeNil())
+				Expect(network1.Driver).To(Equal(driver))
+				Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "none"))
+				Expect(network1.Subnets).To(HaveLen(0))
+
+				// reload configs from disk
+				libpodNet, err = getNetworkInterface(cniConfDir)
+				Expect(err).To(BeNil())
+
+				network2, err := libpodNet.NetworkInspect(network1.Name)
+				Expect(err).To(BeNil())
+				Expect(network2).To(Equal(network1))
+			})
+		}
 
 		It("create ipvlan config with mode", func() {
 			for _, mode := range []string{"l2", "l3", "l3s"} {
