@@ -311,11 +311,14 @@ var _ = Describe("run netavark", func() {
 		runTest(func() {
 			s1, _ := types.ParseCIDR("10.0.0.1/24")
 			s2, _ := types.ParseCIDR("fd10:88:a::/64")
-			network, err := libpodNet.NetworkCreate(types.Network{
-				Subnets: []types.Subnet{
-					{Subnet: s1}, {Subnet: s2},
+			network, err := libpodNet.NetworkCreate(
+				types.Network{
+					Subnets: []types.Subnet{
+						{Subnet: s1}, {Subnet: s2},
+					},
 				},
-			})
+				nil,
+			)
 			Expect(err).ToNot(HaveOccurred())
 
 			netName := network.Name
@@ -391,22 +394,28 @@ var _ = Describe("run netavark", func() {
 	It("setup two networks", func() {
 		runTest(func() {
 			s1, _ := types.ParseCIDR("10.0.0.1/24")
-			network1, err := libpodNet.NetworkCreate(types.Network{
-				Subnets: []types.Subnet{
-					{Subnet: s1},
+			network1, err := libpodNet.NetworkCreate(
+				types.Network{
+					Subnets: []types.Subnet{
+						{Subnet: s1},
+					},
 				},
-			})
+				nil,
+			)
 			Expect(err).ToNot(HaveOccurred())
 
 			netName1 := network1.Name
 			intName1 := "eth0"
 
 			s2, _ := types.ParseCIDR("10.1.0.0/24")
-			network2, err := libpodNet.NetworkCreate(types.Network{
-				Subnets: []types.Subnet{
-					{Subnet: s2},
+			network2, err := libpodNet.NetworkCreate(
+				types.Network{
+					Subnets: []types.Subnet{
+						{Subnet: s2},
+					},
 				},
-			})
+				nil,
+			)
 			Expect(err).ToNot(HaveOccurred())
 
 			netName2 := network2.Name
@@ -707,7 +716,7 @@ var _ = Describe("run netavark", func() {
 				},
 				DNSEnabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 
 			intName1 := "eth0"

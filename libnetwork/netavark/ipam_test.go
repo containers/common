@@ -97,17 +97,20 @@ var _ = Describe("IPAM", func() {
 
 	It("ipam try to alloc more ips as in range", func() {
 		s, _ := types.ParseCIDR("10.0.0.1/24")
-		network, err := networkInterface.NetworkCreate(types.Network{
-			Subnets: []types.Subnet{
-				{
-					Subnet: s,
-					LeaseRange: &types.LeaseRange{
-						StartIP: net.ParseIP("10.0.0.10"),
-						EndIP:   net.ParseIP("10.0.0.20"),
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+						LeaseRange: &types.LeaseRange{
+							StartIP: net.ParseIP("10.0.0.10"),
+							EndIP:   net.ParseIP("10.0.0.20"),
+						},
 					},
 				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName := network.Name
@@ -186,16 +189,19 @@ var _ = Describe("IPAM", func() {
 	It("ipam dual stack", func() {
 		s1, _ := types.ParseCIDR("10.0.0.0/26")
 		s2, _ := types.ParseCIDR("fd80::/24")
-		network, err := networkInterface.NetworkCreate(types.Network{
-			Subnets: []types.Subnet{
-				{
-					Subnet: s1,
-				},
-				{
-					Subnet: s2,
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s1,
+					},
+					{
+						Subnet: s2,
+					},
 				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName := network.Name
@@ -240,25 +246,31 @@ var _ = Describe("IPAM", func() {
 
 	It("ipam with two networks", func() {
 		s, _ := types.ParseCIDR("10.0.0.0/24")
-		network, err := networkInterface.NetworkCreate(types.Network{
-			Subnets: []types.Subnet{
-				{
-					Subnet: s,
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+					},
 				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName1 := network.Name
 
 		s, _ = types.ParseCIDR("10.0.1.0/24")
-		network, err = networkInterface.NetworkCreate(types.Network{
-			Subnets: []types.Subnet{
-				{
-					Subnet: s,
+		network, err = networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+					},
 				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName2 := network.Name
@@ -313,13 +325,16 @@ var _ = Describe("IPAM", func() {
 
 	It("ipam alloc more ips as in subnet", func() {
 		s, _ := types.ParseCIDR("10.0.0.0/26")
-		network, err := networkInterface.NetworkCreate(types.Network{
-			Subnets: []types.Subnet{
-				{
-					Subnet: s,
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+					},
 				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName := network.Name
@@ -346,13 +361,16 @@ var _ = Describe("IPAM", func() {
 
 	It("ipam alloc -> dealloc -> alloc", func() {
 		s, _ := types.ParseCIDR("10.0.0.0/27")
-		network, err := networkInterface.NetworkCreate(types.Network{
-			Subnets: []types.Subnet{
-				{
-					Subnet: s,
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+					},
 				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName := network.Name
@@ -399,11 +417,14 @@ var _ = Describe("IPAM", func() {
 	})
 
 	It("ipam with none driver should not set ips", func() {
-		network, err := networkInterface.NetworkCreate(types.Network{
-			IPAMOptions: map[string]string{
-				"driver": types.NoneIPAMDriver,
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				IPAMOptions: map[string]string{
+					"driver": types.NoneIPAMDriver,
+				},
 			},
-		})
+			nil,
+		)
 		Expect(err).ToNot(HaveOccurred())
 
 		netName := network.Name

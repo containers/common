@@ -73,7 +73,7 @@ var _ = Describe("Config", func() {
 			// loss so lets remove 500 milliseconds to make sure this test does not flake.
 			now := time.Now().Add(-500 * time.Millisecond)
 			network := types.Network{}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			path := filepath.Join(networkConfDir, network1.Name+".json")
@@ -127,13 +127,13 @@ var _ = Describe("Config", func() {
 
 		It("create two networks", func() {
 			network := types.Network{}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.Subnets).To(HaveLen(1))
 
 			network = types.Network{}
-			network2, err := libpodNet.NetworkCreate(network)
+			network2, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network2.Name).ToNot(Equal(network1.Name))
 			Expect(network2.ID).ToNot(Equal(network1.ID))
@@ -142,9 +142,34 @@ var _ = Describe("Config", func() {
 			Expect(network2.Subnets[0].Subnet.Contains(network1.Subnets[0].Subnet.IP)).To(BeFalse())
 		})
 
+		It("fail when creating two networks with the same name", func() {
+			network := types.Network{}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.Name).ToNot(BeEmpty())
+			Expect(network1.Subnets).To(HaveLen(1))
+
+			network = types.Network{Name: network1.Name}
+			_, err = libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(MatchError(types.ErrNetworkExists))
+		})
+
+		It("return the same network when creating two networks with the same name and ignore", func() {
+			network := types.Network{}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.Name).ToNot(BeEmpty())
+			Expect(network1.Subnets).To(HaveLen(1))
+
+			network = types.Network{Name: network1.Name}
+			network2, err := libpodNet.NetworkCreate(network, &types.NetworkCreateOptions{IgnoreIfExists: true})
+			Expect(err).To(BeNil())
+			Expect(network2).To(Equal(network1))
+		})
+
 		It("create bridge config", func() {
 			network := types.Network{Driver: "bridge"}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(filepath.Join(networkConfDir, network1.Name+".json")).To(BeARegularFile())
@@ -168,14 +193,14 @@ var _ = Describe("Config", func() {
 				Driver:           "bridge",
 				NetworkInterface: "podman2",
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
 			Expect(network1.NetworkInterface).To(Equal("podman2"))
 			Expect(network1.Driver).To(Equal("bridge"))
 
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("bridge name podman2 already in use"))
 		})
@@ -190,7 +215,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -212,7 +237,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -238,7 +263,7 @@ var _ = Describe("Config", func() {
 				Driver:      "bridge",
 				IPv6Enabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -264,7 +289,7 @@ var _ = Describe("Config", func() {
 				},
 				IPv6Enabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -290,7 +315,7 @@ var _ = Describe("Config", func() {
 				},
 				IPv6Enabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -318,7 +343,7 @@ var _ = Describe("Config", func() {
 				},
 				IPv6Enabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -346,7 +371,7 @@ var _ = Describe("Config", func() {
 				},
 				IPv6Enabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -375,7 +400,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n, Gateway: g},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -398,7 +423,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n, Gateway: g},
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("not in subnet"))
 		})
@@ -415,7 +440,7 @@ var _ = Describe("Config", func() {
 					}},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -438,7 +463,7 @@ var _ = Describe("Config", func() {
 					}},
 				},
 			}
-			network1, err = libpodNet.NetworkCreate(network)
+			network1, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(filepath.Join(networkConfDir, network1.Name+".json")).To(BeARegularFile())
@@ -462,7 +487,7 @@ var _ = Describe("Config", func() {
 					}},
 				},
 			}
-			network1, err = libpodNet.NetworkCreate(network)
+			network1, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -487,7 +512,7 @@ var _ = Describe("Config", func() {
 					}},
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("not in subnet"))
 
@@ -500,7 +525,7 @@ var _ = Describe("Config", func() {
 					}},
 				},
 			}
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("not in subnet"))
 		})
@@ -512,7 +537,7 @@ var _ = Describe("Config", func() {
 					{Subnet: types.IPNet{}},
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("subnet ip is nil"))
 		})
@@ -522,7 +547,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Name: name,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).To(Equal(name))
 			Expect(network1.NetworkInterface).ToNot(Equal(name))
@@ -534,7 +559,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Name: name,
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 		})
 
@@ -543,7 +568,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Name: name,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).To(Equal(name))
 			Expect(network1.NetworkInterface).ToNot(Equal(name))
@@ -555,7 +580,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Name: name,
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 		})
 
@@ -564,7 +589,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				NetworkInterface: name,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(Equal(name))
 			Expect(network1.NetworkInterface).To(Equal(name))
@@ -576,7 +601,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				NetworkInterface: name,
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 		})
 
@@ -585,7 +610,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				ID: id,
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("ID can not be set for network create"))
 		})
@@ -595,7 +620,7 @@ var _ = Describe("Config", func() {
 				Driver:     "bridge",
 				DNSEnabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.DNSEnabled).To(BeTrue())
@@ -609,7 +634,7 @@ var _ = Describe("Config", func() {
 				Driver:   "bridge",
 				Internal: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.Subnets).To(HaveLen(1))
@@ -623,7 +648,7 @@ var _ = Describe("Config", func() {
 				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
 				DNSEnabled:        true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3"}))
 		})
@@ -633,7 +658,7 @@ var _ = Describe("Config", func() {
 				NetworkDNSServers: []string{"a.b.c.d", "3.3.3.3"},
 				DNSEnabled:        true,
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`Unable to parse ip a.b.c.d`))
 		})
@@ -643,7 +668,7 @@ var _ = Describe("Config", func() {
 				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
 				DNSEnabled:        false,
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`Cannot set NetworkDNSServers if DNS is not enabled for the network`))
 		})
@@ -654,7 +679,7 @@ var _ = Describe("Config", func() {
 					"key": "value",
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.Labels).ToNot(BeNil())
@@ -667,7 +692,7 @@ var _ = Describe("Config", func() {
 					types.MTUOption: "1500",
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.Options).ToNot(BeNil())
@@ -683,7 +708,7 @@ var _ = Describe("Config", func() {
 					types.MTUOption: "abc",
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`parsing "abc": invalid syntax`))
 
@@ -692,7 +717,7 @@ var _ = Describe("Config", func() {
 					types.MTUOption: "-1",
 				},
 			}
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`mtu -1 is less than zero`))
 		})
@@ -703,7 +728,7 @@ var _ = Describe("Config", func() {
 					types.VLANOption: "5",
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.Options).ToNot(BeNil())
@@ -719,7 +744,7 @@ var _ = Describe("Config", func() {
 					"vlan": "abc",
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`parsing "abc": invalid syntax`))
 
@@ -728,7 +753,7 @@ var _ = Describe("Config", func() {
 					"vlan": "-1",
 				},
 			}
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`vlan ID -1 must be between 0 and 4094`))
 		})
@@ -737,7 +762,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{Options: map[string]string{
 				"someopt": "",
 			}}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unsupported bridge network option someopt"))
 		})
@@ -746,7 +771,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				Driver: "someDriver",
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unsupported driver someDriver"))
 		})
@@ -757,7 +782,7 @@ var _ = Describe("Config", func() {
 				Internal:   true,
 				DNSEnabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.Internal).To(Equal(true))
@@ -766,7 +791,7 @@ var _ = Describe("Config", func() {
 
 		It("network inspect partial ID", func() {
 			network := types.Network{Name: "net4"}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.ID).To(HaveLen(64))
 
@@ -777,11 +802,11 @@ var _ = Describe("Config", func() {
 
 		It("network create two with same name", func() {
 			network := types.Network{Name: "net"}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).To(Equal("net"))
 			network = types.Network{Name: "net"}
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("network name net already used"))
 		})
@@ -804,22 +829,22 @@ var _ = Describe("Config", func() {
 			subnet2 := "10.10.0.0/24"
 			n2, _ := types.ParseCIDR(subnet2)
 			network := types.Network{Subnets: []types.Subnet{{Subnet: n}, {Subnet: n2}}}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Subnets).To(HaveLen(2))
 			network = types.Network{Subnets: []types.Subnet{{Subnet: n}}}
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("subnet 10.0.0.0/24 is already used on the host or by another config"))
 			network = types.Network{Subnets: []types.Subnet{{Subnet: n2}}}
-			_, err = libpodNet.NetworkCreate(network)
+			_, err = libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("subnet 10.10.0.0/24 is already used on the host or by another config"))
 		})
 
 		It("create macvlan config without subnet", func() {
 			network := types.Network{Driver: "macvlan"}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("macvlan driver needs at least one subnet specified, DHCP is not yet supported with netavark"))
 		})
@@ -832,7 +857,7 @@ var _ = Describe("Config", func() {
 				Internal: true,
 				Subnets:  []types.Subnet{{Subnet: n}},
 			}
-			net1, err := libpodNet.NetworkCreate(network)
+			net1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(net1.Internal).To(Equal(true))
 		})
@@ -846,7 +871,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			path := filepath.Join(networkConfDir, network1.Name+".json")
@@ -875,7 +900,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.ID).ToNot(BeEmpty())
@@ -896,7 +921,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			path := filepath.Join(networkConfDir, network1.Name+".json")
@@ -927,7 +952,7 @@ var _ = Describe("Config", func() {
 					types.ModeOption: "private",
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.Options).To(HaveKeyWithValue("mode", "private"))
@@ -945,7 +970,7 @@ var _ = Describe("Config", func() {
 					types.ModeOption: "abc",
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("unknown macvlan mode \"abc\""))
 		})
@@ -962,7 +987,7 @@ var _ = Describe("Config", func() {
 					"abc": "123",
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("unsupported macvlan network option abc"))
 		})
@@ -979,7 +1004,7 @@ var _ = Describe("Config", func() {
 					types.MTUOption: "9000",
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Name).ToNot(BeEmpty())
 			Expect(network1.Options).To(HaveKeyWithValue("mtu", "9000"))
@@ -992,7 +1017,7 @@ var _ = Describe("Config", func() {
 					"driver": "none",
 				},
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("bridge"))
 			Expect(network1.IPAMOptions).ToNot(BeEmpty())
@@ -1020,7 +1045,7 @@ var _ = Describe("Config", func() {
 					{Subnet: n},
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("none ipam driver is set but subnets are given"))
 		})
@@ -1033,7 +1058,7 @@ var _ = Describe("Config", func() {
 				},
 				DNSEnabled: true,
 			}
-			network1, err := libpodNet.NetworkCreate(network)
+			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
 			Expect(network1.Driver).To(Equal("macvlan"))
 			Expect(network1.DNSEnabled).To(BeFalse())
@@ -1057,7 +1082,7 @@ var _ = Describe("Config", func() {
 						types.IsolateOption: val,
 					},
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 				Expect(network1.Driver).To(Equal("bridge"))
 				Expect(network1.Options).ToNot(BeNil())
@@ -1074,7 +1099,7 @@ var _ = Describe("Config", func() {
 					types.IsolateOption: "123",
 				},
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -1359,7 +1384,7 @@ var _ = Describe("Config", func() {
 			network := types.Network{
 				NetworkInterface: "podman9",
 			}
-			_, err := libpodNet.NetworkCreate(network)
+			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("bridge name podman9 already in use"))
 		})
