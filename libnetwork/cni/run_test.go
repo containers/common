@@ -362,7 +362,7 @@ var _ = Describe("run CNI", func() {
 		It("call setup twice", func() {
 			runTest(func() {
 				network := types.Network{}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				intName1 := "eth0"
@@ -419,7 +419,7 @@ var _ = Describe("run CNI", func() {
 				Expect(err).To(BeNil())
 
 				network = types.Network{}
-				network2, err := libpodNet.NetworkCreate(network)
+				network2, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				intName2 := "eth1"
@@ -541,7 +541,7 @@ var _ = Describe("run CNI", func() {
 						{Subnet: subnet1},
 					},
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				network = types.Network{
@@ -549,7 +549,7 @@ var _ = Describe("run CNI", func() {
 						{Subnet: subnet2},
 					},
 				}
-				network2, err := libpodNet.NetworkCreate(network)
+				network2, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				intName1 := "eth0"
@@ -672,7 +672,7 @@ var _ = Describe("run CNI", func() {
 						{Subnet: subnet1}, {Subnet: subnet2},
 					},
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				mac, _ := net.ParseMAC("40:15:2f:d8:42:36")
@@ -776,7 +776,7 @@ var _ = Describe("run CNI", func() {
 						{Subnet: subnet1},
 					},
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 				netName := network1.Name
 				intName := "eth0"
@@ -837,7 +837,7 @@ var _ = Describe("run CNI", func() {
 					},
 					DNSEnabled: true,
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				intName1 := "eth0"
@@ -1195,7 +1195,7 @@ var _ = Describe("run CNI", func() {
 						{Subnet: subnet1},
 					},
 				}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				subnet2, _ := types.ParseCIDR("192.168.1.0/31")
@@ -1204,7 +1204,7 @@ var _ = Describe("run CNI", func() {
 						{Subnet: subnet2},
 					},
 				}
-				network2, err := libpodNet.NetworkCreate(network)
+				network2, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				intName1 := "eth0"
@@ -1345,7 +1345,7 @@ var _ = Describe("run CNI", func() {
 		It("teardown on not connected network", func() {
 			runTest(func() {
 				network := types.Network{}
-				network1, err := libpodNet.NetworkCreate(network)
+				network1, err := libpodNet.NetworkCreate(network, nil)
 				Expect(err).To(BeNil())
 
 				interfaceName := "eth0"
