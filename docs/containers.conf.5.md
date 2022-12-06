@@ -88,21 +88,23 @@ List of default capabilities for containers.
 The default list is:
 ```
 default_capabilities = [
-"AUDIT_WRITE",
       "CHOWN",
       "DAC_OVERRIDE",
       "FOWNER",
       "FSETID",
       "KILL",
-      "MKNOD",
       "NET_BIND_SERVICE",
-      "NET_RAW",
+      "SETFCAP",
       "SETGID",
       "SETPCAP",
       "SETUID",
-      "SYS_CHROOT",
 ]
 ```
+
+Note, by default container engines using containers.conf, run with less
+capabilities than Docker. Docker runs additionally with "AUDIT_WRITE", "MKNOD",
+"NET_RAW", "CHROOT". If you need to add one of these capabilities for a
+particular container, you can use the --cap-add option or edit your system's containers.conf.
 
 **default_sysctls**=[]
 
