@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/containers/common/libnetwork/netavark"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/libnetwork/util"
 	. "github.com/onsi/ginkgo/v2"
@@ -641,6 +642,78 @@ var _ = Describe("Config", func() {
 			Expect(network1.Subnets[0].Subnet.String()).ToNot(BeEmpty())
 			Expect(network1.Subnets[0].Gateway.String()).ToNot(BeEmpty())
 			Expect(network1.Internal).To(BeTrue())
+		})
+
+		It("update NetworkDNSServers AddDNSServers", func() {
+			libpodNet, err := netavark.NewNetworkInterface(&netavark.InitConfig{
+				NetworkConfigDir: networkConfDir,
+				NetworkRunDir:    networkConfDir,
+				NetavarkBinary:   "true",
+			})
+			if err != nil {
+				Fail("Failed to create NewNetavarkNetworkInterface")
+			}
+			network := types.Network{
+				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
+				DNSEnabled:        true,
+				Name:              "test-network",
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3"}))
+			err = libpodNet.NetworkUpdate("test-network", types.NetworkUpdateOptions{AddDNSServers: []string{"8.8.8.8", "3.3.3.3", "7.7.7.7"}})
+			Expect(err).To(BeNil())
+			testNetwork, err := libpodNet.NetworkInspect("test-network")
+			Expect(err).To(BeNil())
+			Expect(testNetwork.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3", "7.7.7.7"}))
+		})
+
+		It("update NetworkDNSServers RemoveDNSServers", func() {
+			libpodNet, err := netavark.NewNetworkInterface(&netavark.InitConfig{
+				NetworkConfigDir: networkConfDir,
+				NetworkRunDir:    networkConfDir,
+				NetavarkBinary:   "true",
+			})
+			if err != nil {
+				Fail("Failed to create NewNetavarkNetworkInterface")
+			}
+			network := types.Network{
+				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
+				DNSEnabled:        true,
+				Name:              "test-network",
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3"}))
+			err = libpodNet.NetworkUpdate("test-network", types.NetworkUpdateOptions{RemoveDNSServers: []string{"3.3.3.3"}})
+			Expect(err).To(BeNil())
+			testNetwork, err := libpodNet.NetworkInspect("test-network")
+			Expect(err).To(BeNil())
+			Expect(testNetwork.NetworkDNSServers).To(Equal([]string{"8.8.8.8"}))
+		})
+
+		It("update NetworkDNSServers Add and Remove DNSServers", func() {
+			libpodNet, err := netavark.NewNetworkInterface(&netavark.InitConfig{
+				NetworkConfigDir: networkConfDir,
+				NetworkRunDir:    networkConfDir,
+				NetavarkBinary:   "true",
+			})
+			if err != nil {
+				Fail("Failed to create NewNetavarkNetworkInterface")
+			}
+			network := types.Network{
+				NetworkDNSServers: []string{"8.8.8.8", "3.3.3.3"},
+				DNSEnabled:        true,
+				Name:              "test-network",
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3"}))
+			err = libpodNet.NetworkUpdate("test-network", types.NetworkUpdateOptions{RemoveDNSServers: []string{"3.3.3.3"}, AddDNSServers: []string{"7.7.7.7"}})
+			Expect(err).To(BeNil())
+			testNetwork, err := libpodNet.NetworkInspect("test-network")
+			Expect(err).To(BeNil())
+			Expect(testNetwork.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "7.7.7.7"}))
 		})
 
 		It("create network with NetworDNSServers", func() {
