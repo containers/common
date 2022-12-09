@@ -745,6 +745,8 @@ Environment variables like $HOME as well as complete paths are supported for
 the source and destination. An optional third field `:ro` can be used to
 tell the container engines to mount the volume readonly.
 
+On Mac, the default volumes are: `"/Users:/Users", "/private:/private", "/var/folders:/var/folders"`
+
 # FILES
 
 **containers.conf**
