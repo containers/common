@@ -8,9 +8,9 @@ require (
 	github.com/containerd/containerd v1.6.12
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.1.1
-	github.com/containers/image/v5 v5.23.1-0.20221130170538-333c50e3eac8
+	github.com/containers/image/v5 v5.23.1-0.20221209092225-431fd251c4c5
 	github.com/containers/ocicrypt v1.1.6
-	github.com/containers/storage v1.44.1-0.20221201083122-c5a80ad65f42
+	github.com/containers/storage v1.44.1-0.20221209084436-73d739442168
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/davecgh/go-spew v1.1.1
@@ -104,7 +104,7 @@ require (
 	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/tools v0.2.0 // indirect
 	google.golang.org/genproto v0.0.0-20221111202108-142d8a6fa32e // indirect
