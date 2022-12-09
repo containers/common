@@ -109,10 +109,10 @@ var _ = Describe("run CNI", func() {
 		logrus.SetLevel(logrus.InfoLevel)
 		_ = os.RemoveAll(cniConfDir)
 
-		_ = netns.UnmountNS(netNSTest)
+		_ = netns.UnmountNS(netNSTest.Path())
 		_ = netNSTest.Close()
 
-		_ = netns.UnmountNS(netNSContainer)
+		_ = netns.UnmountNS(netNSContainer.Path())
 		_ = netNSContainer.Close()
 	})
 

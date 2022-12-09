@@ -108,10 +108,10 @@ var _ = Describe("run netavark", func() {
 		logrus.SetLevel(logrus.InfoLevel)
 		_ = os.RemoveAll(confDir)
 
-		_ = netns.UnmountNS(netNSTest)
+		_ = netns.UnmountNS(netNSTest.Path())
 		_ = netNSTest.Close()
 
-		_ = netns.UnmountNS(netNSContainer)
+		_ = netns.UnmountNS(netNSContainer.Path())
 		_ = netNSContainer.Close()
 
 		_ = os.Unsetenv("NETAVARK_FW")
@@ -286,8 +286,8 @@ var _ = Describe("run netavark", func() {
 
 			netNSContainer2, err := netns.NewNS()
 			Expect(err).ToNot(HaveOccurred())
-			defer netns.UnmountNS(netNSContainer2) //nolint:errcheck
-			defer netNSContainer2.Close()          //nolint:errcheck
+			defer netns.UnmountNS(netNSContainer2.Path()) //nolint:errcheck
+			defer netNSContainer2.Close()                 //nolint:errcheck
 
 			res, err = libpodNet.Setup(netNSContainer2.Path(), setupOpts2)
 			Expect(err).ToNot(HaveOccurred())
