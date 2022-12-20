@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/container-orchestrated-devices/container-device-interface v0.5.3
-	github.com/containerd/containerd v1.6.13
+	github.com/containerd/containerd v1.6.14
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.1.1
 	github.com/containers/image/v5 v5.23.1-0.20221209092225-431fd251c4c5
