@@ -22,10 +22,6 @@ func TestIsJSON(t *testing.T) {
 		{"{{json }}", true},
 		{"{{json.}}", true},
 		{"{{ json. }}", true},
-
-		{"{{ json .}}", false},
-		{"{{ json . }}", false},
-		{"  {{   json   .  }}  ", false},
 		{"{{ json .", false},
 		{"json . }}", false},
 		{"{{.ID }} json .", false},
