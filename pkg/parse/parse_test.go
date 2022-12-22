@@ -80,6 +80,10 @@ func TestIsValidVolumeOption(t *testing.T) {
 
 	_, err = ValidateVolumeOpts([]string{"upperdir=test2", "upperdir=test3"})
 	assert.Error(t, err)
+
+	options, err = ValidateVolumeOpts([]string{"subpath=/testing/123"})
+	assert.NoError(t, err)
+	assert.True(t, reflect.DeepEqual([]string{"subpath=/testing/123"}, options))
 }
 
 func TestDeviceFromPath(t *testing.T) {

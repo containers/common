@@ -14,7 +14,7 @@ import (
 
 // ValidateVolumeOpts validates a volume's options
 func ValidateVolumeOpts(options []string) ([]string, error) {
-	var foundRootPropagation, foundRWRO, foundLabelChange, bindType, foundExec, foundDev, foundSuid, foundChown, foundUpperDir, foundWorkDir, foundCopy int
+	var foundRootPropagation, foundRWRO, foundLabelChange, bindType, foundExec, foundDev, foundSuid, foundChown, foundUpperDir, foundWorkDir, foundCopy, foundSubpath int
 	finalOpts := make([]string, 0, len(options))
 	for _, opt := range options {
 		// support advanced options like upperdir=/path, workdir=/path
@@ -36,6 +36,19 @@ func ValidateVolumeOpts(options []string) ([]string, error) {
 		}
 		if strings.HasPrefix(opt, "idmap") {
 			finalOpts = append(finalOpts, opt)
+			continue
+		}
+
+		if strings.HasPrefix(opt, "subpath") {
+			foundSubpath++
+			fullOpt := strings.Split(opt, "=")
+			realPath, err := filepath.EvalSymlinks(fullOpt[1])
+			if err != nil {
+				return nil, err
+			}
+			if realPath != fullOpt[1] {
+				return nil, fmt.Errorf("invalid subpath, cannot be a symlink, %s: %s", fullOpt[1], realPath)
+			}
 			continue
 		}
 
