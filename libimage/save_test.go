@@ -61,6 +61,7 @@ func TestSave(t *testing.T) {
 		{[]string{"busybox"}, nil, "docker-archive", false, false},
 		{[]string{"busybox"}, []string{"localhost/tag:1", "quay.io/repo/image:tag"}, "docker-archive", false, false},
 		{[]string{"busybox"}, nil, "docker-dir", true, false},
+		{[]string{"busybox"}, nil, "dir", true, false},
 		{[]string{"busybox", "alpine"}, nil, "docker-archive", false, false},
 		// additional tags and multi-images conflict
 		{[]string{"busybox", "alpine"}, []string{"tag"}, "docker-archive", false, true},
