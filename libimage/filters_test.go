@@ -72,6 +72,45 @@ func TestFilterReference(t *testing.T) {
 	}
 }
 
+func TestFilterDigest(t *testing.T) {
+	busyboxLatest := "quay.io/libpod/busybox:latest"
+	alpineLatest := "quay.io/libpod/alpine:latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	pulledImages, err := runtime.Pull(ctx, busyboxLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+	busybox := pulledImages[0]
+
+	pulledImages, err = runtime.Pull(ctx, alpineLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+	alpine := pulledImages[0]
+
+	for _, test := range []struct {
+		filter  string
+		matches int
+		id      string
+	}{
+		{string(busybox.Digest()), 1, busybox.ID()},
+		{string(alpine.Digest()), 1, alpine.ID()},
+	} {
+		listOptions := &ListImagesOptions{
+			Filters: []string{"digest=" + test.filter},
+		}
+		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		require.NoError(t, err, "%v", test)
+		require.Len(t, listedImages, test.matches, "%s -> %v", test.filter, listedImages)
+		require.Equal(t, listedImages[0].ID(), test.id)
+	}
+}
+
 func TestFilterManifest(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
