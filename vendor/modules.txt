@@ -157,7 +157,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.44.1-0.20221209084436-73d739442168
+# github.com/containers/storage v1.44.1-0.20230105105526-fc91849352e5
 ## explicit; go 1.17
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -321,7 +321,7 @@ github.com/jinzhu/copier
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/klauspost/compress v1.15.12
+# github.com/klauspost/compress v1.15.14
 ## explicit; go 1.17
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
@@ -494,7 +494,7 @@ github.com/theupdateframework/go-tuf/encrypted
 # github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399
 ## explicit
 github.com/titanous/rocacheck
-# github.com/ulikunitz/xz v0.5.10
+# github.com/ulikunitz/xz v0.5.11
 ## explicit; go 1.12
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
