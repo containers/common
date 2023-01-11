@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/containers/common/pkg/configmaps/filedriver"
 	"github.com/containers/storage/pkg/lockfile"
+	"github.com/containers/storage/pkg/regexp"
 	"github.com/containers/storage/pkg/stringid"
 )
 
@@ -49,7 +49,7 @@ var configMapsFile = "configmaps.json"
 
 // configMapNameRegexp matches valid configMap names
 // Allowed: 64 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
-var configMapNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
+var configMapNameRegexp = regexp.Delayed(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 
 // ConfigMapManager holds information on handling configmaps
 type ConfigMapManager struct {
