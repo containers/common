@@ -1332,9 +1332,13 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 				path = filepath.Join(bindirPath, strings.TrimPrefix(path, bindirPrefix+string(filepath.Separator)))
 			}
 		}
-		fullpath := filepath.Join(path, name)
-		if fi, err := os.Stat(fullpath); err == nil && fi.Mode().IsRegular() {
-			return fullpath, nil
+		// Absolute path will force exec.LookPath to check for binary existence instead of lookup everywhere in PATH
+		if abspath, err := filepath.Abs(filepath.Join(path, name)); err == nil {
+			// exec.LookPath from absolute path on Unix is equal to os.Stat + IsNotDir + check for executable bits in FileMode
+			// exec.LookPath from absolute path on Windows is equal to os.Stat + IsNotDir for `file.ext` or loops through extensions from PATHEXT for `file`
+			if lp, err := exec.LookPath(abspath); err == nil {
+				return lp, nil
+			}
 		}
 	}
 	if searchPATH {
