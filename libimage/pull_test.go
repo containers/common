@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"os"
 	goruntime "runtime"
+	"strings"
 	"testing"
 
 	"github.com/containers/common/pkg/config"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -93,6 +95,27 @@ func TestPullPlatforms(t *testing.T) {
 	pulledImages, err := runtime.Pull(ctx, withTag, config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err, "pull busybox")
 	require.Len(t, pulledImages, 1)
+
+	// Now re-pull with the platform explicitly set in the pull options. It
+	// should not repull an image (or perform a "newer" check) though but
+	// resolve to the local image.
+	//
+	// See containers/podman/issues/17063.
+	func() { // Anonymous function to make sure logrus is reset even on failure.
+		builder := strings.Builder{}
+		logrus.SetOutput(&builder)
+		logrus.SetLevel(logrus.DebugLevel)
+		defer builder.Reset()
+		defer logrus.SetOutput(os.Stderr)
+		defer logrus.SetLevel(logrus.InfoLevel)
+
+		pullOptions.Architecture = localArch
+		pullOptions.OS = localOS
+		pulledImages, err := runtime.Pull(ctx, withTag, config.PullPolicyMissing, pullOptions)
+		require.NoError(t, err, "pull busybox with same platform as before")
+		require.Len(t, pulledImages, 1)
+		require.NotContains(t, builder.String(), "local image may mistakenly specify wrong platform")
+	}()
 
 	// Repulling with a bogus architecture should yield an error and not
 	// choose the local image.
