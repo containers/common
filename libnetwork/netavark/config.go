@@ -251,9 +251,6 @@ func createMacvlan(network *types.Network) error {
 	// we already validated the drivers before so we just have to set the default here
 	switch network.IPAMOptions[types.Driver] {
 	case "":
-		if len(network.Subnets) == 0 {
-			return fmt.Errorf("macvlan driver needs at least one subnet specified, DHCP is not yet supported with netavark")
-		}
 		network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
 	case types.HostLocalIPAMDriver:
 		if len(network.Subnets) == 0 {
@@ -353,13 +350,11 @@ func (n *netavarkNetwork) NetworkInspect(nameOrID string) (types.Network, error)
 func validateIPAMDriver(n *types.Network) error {
 	ipamDriver := n.IPAMOptions[types.Driver]
 	switch ipamDriver {
-	case "", types.HostLocalIPAMDriver:
+	case "", types.HostLocalIPAMDriver, types.DHCPIPAMDriver:
 	case types.NoneIPAMDriver:
 		if len(n.Subnets) > 0 {
 			return errors.New("none ipam driver is set but subnets are given")
 		}
-	case types.DHCPIPAMDriver:
-		return errors.New("dhcp ipam driver is not yet supported with netavark")
 	default:
 		return fmt.Errorf("unsupported ipam driver %q", ipamDriver)
 	}
