@@ -128,6 +128,10 @@ var _ = Describe("Config", func() {
 		})
 
 		It("create two networks", func() {
+			// remove the dir here since we do not expect it to exists in the real context as well
+			// the backend will create it for us
+			os.RemoveAll(cniConfDir)
+
 			network := types.Network{}
 			network1, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(BeNil())
