@@ -7,7 +7,7 @@ require (
 	github.com/container-orchestrated-devices/container-device-interface v0.5.3
 	github.com/containerd/containerd v1.6.15
 	github.com/containernetworking/cni v1.1.2
-	github.com/containernetworking/plugins v1.1.1
+	github.com/containernetworking/plugins v1.2.0
 	github.com/containers/image/v5 v5.23.1-0.20230116122250-3d22f4e96c53
 	github.com/containers/ocicrypt v1.1.7-0.20230115130455-e0cec6f7be0d
 	github.com/containers/storage v1.45.0
@@ -40,7 +40,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.1
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
-	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
+	github.com/vishvananda/netlink v1.2.1-beta.2
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.5.0
 	golang.org/x/sync v0.1.0
