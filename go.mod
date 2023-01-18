@@ -10,7 +10,7 @@ require (
 	github.com/containernetworking/plugins v1.2.0
 	github.com/containers/image/v5 v5.23.1-0.20230116122250-3d22f4e96c53
 	github.com/containers/ocicrypt v1.1.7-0.20230115130455-e0cec6f7be0d
-	github.com/containers/storage v1.45.0
+	github.com/containers/storage v1.45.1
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/davecgh/go-spew v1.1.1
