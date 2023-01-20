@@ -81,7 +81,7 @@ github.com/containernetworking/cni/pkg/version
 # github.com/containernetworking/plugins v1.2.0
 ## explicit; go 1.17
 github.com/containernetworking/plugins/pkg/ns
-# github.com/containers/image/v5 v5.23.1-0.20230118091101-8b407632a1cf
+# github.com/containers/image/v5 v5.23.1-0.20230120122208-5ecb0997cef5
 ## explicit; go 1.17
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory
@@ -149,7 +149,7 @@ github.com/containers/image/v5/version
 # github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a
 ## explicit
 github.com/containers/libtrust
-# github.com/containers/ocicrypt v1.1.7-0.20230115130455-e0cec6f7be0d
+# github.com/containers/ocicrypt v1.1.7
 ## explicit; go 1.16
 github.com/containers/ocicrypt
 github.com/containers/ocicrypt/blockcipher
@@ -165,7 +165,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.45.2-0.20230117181605-d5792d2dbc18
+# github.com/containers/storage v1.45.2
 ## explicit; go 1.17
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -234,7 +234,7 @@ github.com/docker/distribution/reference
 github.com/docker/distribution/registry/api/errcode
 github.com/docker/distribution/registry/api/v2
 github.com/docker/distribution/registry/client/auth/challenge
-# github.com/docker/docker v20.10.22+incompatible
+# github.com/docker/docker v20.10.23+incompatible
 ## explicit
 github.com/docker/docker/api
 github.com/docker/docker/api/types
@@ -520,10 +520,13 @@ github.com/rivo/uniseg
 # github.com/seccomp/libseccomp-golang v0.10.0
 ## explicit; go 1.14
 github.com/seccomp/libseccomp-golang
+# github.com/sigstore/fulcio v1.0.0
+## explicit; go 1.18
+github.com/sigstore/fulcio/pkg/certificate
 # github.com/sigstore/rekor v1.0.1
 ## explicit; go 1.18
 github.com/sigstore/rekor/pkg/generated/models
-# github.com/sigstore/sigstore v1.5.0
+# github.com/sigstore/sigstore v1.5.1
 ## explicit; go 1.18
 github.com/sigstore/sigstore/pkg/cryptoutils
 github.com/sigstore/sigstore/pkg/signature
@@ -711,7 +714,7 @@ golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/pkgbits
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
+# google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.51.0
