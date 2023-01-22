@@ -1306,6 +1306,14 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 	bindirPath := ""
 	bindirSearched := false
 
+	tryResolveSymlink := func(path string) string {
+		symlinkedPath, err := filepath.EvalSymlinks(path)
+		if err != nil {
+			return path
+		}
+		return symlinkedPath
+	}
+
 	// If set, search this directory first. This is used in testing.
 	if dir, found := os.LookupEnv("CONTAINERS_HELPER_BINARY_DIR"); found {
 		dirList = append([]string{dir}, dirList...)
@@ -1332,11 +1340,15 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 		}
 		fullpath := filepath.Join(path, name)
 		if fi, err := os.Stat(fullpath); err == nil && fi.Mode().IsRegular() {
-			return fullpath, nil
+			return tryResolveSymlink(fullpath), nil
 		}
 	}
 	if searchPATH {
-		return exec.LookPath(name)
+		path, err := exec.LookPath(name)
+		if err != nil {
+			return path, err
+		}
+		return tryResolveSymlink(path), nil
 	}
 	configHint := "To resolve this error, set the helper_binaries_dir key in the `[engine]` section of containers.conf to the directory containing your helper binaries."
 	if len(c.Engine.HelperBinariesDir) == 0 {
