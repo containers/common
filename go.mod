@@ -8,7 +8,7 @@ require (
 	github.com/containerd/containerd v1.6.15
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.2.0
-	github.com/containers/image/v5 v5.23.1-0.20230120122208-5ecb0997cef5
+	github.com/containers/image/v5 v5.24.0
 	github.com/containers/ocicrypt v1.1.7
 	github.com/containers/storage v1.45.3
 	github.com/coreos/go-systemd/v22 v22.5.0
@@ -58,7 +58,7 @@ require (
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.13.0 // indirect
-	github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a // indirect
+	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20220623050100-57a0ce2678a7 // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -85,7 +85,7 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.15.14 // indirect
+	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/klauspost/pgzip v1.2.6-0.20220930104621-17e8dac29df8 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20221109233200-85aa52084eaf // indirect
