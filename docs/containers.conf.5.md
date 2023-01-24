@@ -747,6 +747,12 @@ tell the container engines to mount the volume readonly.
 
 On Mac, the default volumes are: `"/Users:/Users", "/private:/private", "/var/folders:/var/folders"`
 
+**provider**=""
+
+Virtualization provider to be used for running a podman-machine VM. Empty value
+is interpreted as the default provider for the current host OS. On Linux/Mac
+default is `QEMU` and on Windows it is `WSL`.
+
 # FILES
 
 **containers.conf**
