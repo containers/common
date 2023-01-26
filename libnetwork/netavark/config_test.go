@@ -918,8 +918,7 @@ var _ = Describe("Config", func() {
 		It("create macvlan config without subnet", func() {
 			network := types.Network{Driver: "macvlan"}
 			_, err := libpodNet.NetworkCreate(network, nil)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("macvlan driver needs at least one subnet specified, DHCP is not yet supported with netavark"))
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("create macvlan config with internal", func() {
