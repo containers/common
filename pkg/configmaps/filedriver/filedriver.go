@@ -26,7 +26,7 @@ type Driver struct {
 	// configMapsDataFilePath is the path to the configMapsfile
 	configMapsDataFilePath string
 	// lockfile is the filedriver lockfile
-	lockfile lockfile.Locker
+	lockfile *lockfile.LockFile
 }
 
 // NewDriver creates a new file driver.

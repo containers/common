@@ -56,7 +56,7 @@ type ConfigMapManager struct {
 	// configMapDBPath is the path to the db file where configmaps are stored
 	configMapDBPath string
 	// lockfile is the locker for the configmap file
-	lockfile lockfile.Locker
+	lockfile *lockfile.LockFile
 	// db is an in-memory cache of the database of configMaps
 	db *db
 }
