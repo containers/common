@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/container-orchestrated-devices/container-device-interface v0.5.3
+	github.com/container-orchestrated-devices/container-device-interface v0.5.4
 	github.com/containerd/containerd v1.6.16
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.2.0
@@ -30,7 +30,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.0-rc2
 	github.com/opencontainers/runc v1.1.4
 	github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
-	github.com/opencontainers/runtime-tools v0.9.1-0.20221014010322-58c91d646d86
+	github.com/opencontainers/runtime-tools v0.9.1-0.20221107090550-2e043c6bd626
 	github.com/opencontainers/selinux v1.10.2
 	github.com/pkg/sftp v1.13.5
 	github.com/pmezard/go-difflib v1.0.0
@@ -54,7 +54,6 @@ require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.13.0 // indirect
@@ -116,9 +115,6 @@ require (
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/vbauerster/mpb/v7 v7.5.3 // indirect
 	github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f // indirect
-	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
-	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.1 // indirect
 	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
 	go.opencensus.io v0.24.0 // indirect
