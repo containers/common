@@ -2,6 +2,7 @@ package libimage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -54,6 +55,16 @@ type SearchOptions struct {
 	NoTrunc bool
 	// Authfile is the path to the authentication file.
 	Authfile string
+	// Path to the certificates directory.
+	CertDirPath string
+	// Username to use when authenticating at a container registry.
+	Username string
+	// Password to use when authenticating at a container registry.
+	Password string
+	// Credentials is an alternative way to specify credentials in format
+	// "username[:password]".  Cannot be used in combination with
+	// Username/Password.
+	Credentials string
 	// InsecureSkipTLSVerify allows to skip TLS verification.
 	InsecureSkipTLSVerify types.OptionalBool
 	// ListTags returns the search result with available tags
@@ -200,6 +211,31 @@ func (r *Runtime) searchImageInRegistry(ctx context.Context, term, registry stri
 	if options.Authfile != "" {
 		sys.AuthFilePath = options.Authfile
 	}
+
+	if options.CertDirPath != "" {
+		sys.DockerCertPath = options.CertDirPath
+	}
+
+	authConf := &types.DockerAuthConfig{}
+	if options.Username != "" {
+		if options.Credentials != "" {
+			return nil, errors.New("username/password cannot be used with credentials")
+		}
+		authConf.Username = options.Username
+		authConf.Password = options.Password
+	}
+
+	if options.Credentials != "" {
+		split := strings.SplitN(options.Credentials, ":", 2)
+		switch len(split) {
+		case 1:
+			authConf.Username = split[0]
+		default:
+			authConf.Username = split[0]
+			authConf.Password = split[1]
+		}
+	}
+	sys.DockerAuthConfig = authConf
 
 	if options.ListTags {
 		results, err := searchRepositoryTags(ctx, sys, registry, term, options)
