@@ -24,10 +24,6 @@ type LoadOptions struct {
 func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) ([]string, error) {
 	logrus.Debugf("Loading image from %q", path)
 
-	if r.eventChannel != nil {
-		defer r.writeEvent(&Event{ID: "", Name: path, Time: time.Now(), Type: EventTypeImageLoad})
-	}
-
 	if options == nil {
 		options = &LoadOptions{}
 	}
@@ -85,6 +81,16 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 		}
 		logrus.Debugf("Error loading %s (%s): %v", path, transportName, err)
 		loadErrors = append(loadErrors, fmt.Errorf("%s: %v", transportName, err))
+
+		if r.eventChannel != nil {
+			for _, name := range loadedImages {
+				image, _, err := r.LookupImage(name, nil)
+				if err != nil {
+					return nil, fmt.Errorf("locating pulled image %q name in containers storage: %w", name, err)
+				}
+				r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageLoad})
+			}
+		}
 	}
 
 	// Give a decent error message if nothing above worked.
