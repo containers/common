@@ -189,6 +189,32 @@ var _ = Describe("Config", func() {
 			Expect(network1.Internal).To(BeFalse())
 		})
 
+		It("create bridge config with com.docker.network.bridge.name", func() {
+			network := types.Network{
+				Driver: "bridge",
+				Options: map[string]string{
+					"com.docker.network.bridge.name": "foo",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.Name).ToNot(BeEmpty())
+			Expect(filepath.Join(networkConfDir, network1.Name+".json")).To(BeARegularFile())
+			Expect(network1.ID).ToNot(BeEmpty())
+			Expect(network1.NetworkInterface).To(Equal("foo"))
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Labels).To(BeEmpty())
+			Expect(network1.Options).To(BeEmpty())
+			Expect(network1.IPAMOptions).ToNot(BeEmpty())
+			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "host-local"))
+			Expect(network1.Subnets).To(HaveLen(1))
+			Expect(network1.Subnets[0].Subnet.String()).To(Equal("10.89.0.0/24"))
+			Expect(network1.Subnets[0].Gateway.String()).To(Equal("10.89.0.1"))
+			Expect(network1.Subnets[0].LeaseRange).To(BeNil())
+			Expect(network1.DNSEnabled).To(BeFalse())
+			Expect(network1.Internal).To(BeFalse())
+		})
+
 		It("create bridge with same name should fail", func() {
 			network := types.Network{
 				Driver:           "bridge",
@@ -564,6 +590,18 @@ var _ = Describe("Config", func() {
 			Expect(err).To(HaveOccurred())
 		})
 
+		It("create bridge config with invalid com.docker.network.bridge.name", func() {
+			network := types.Network{
+				Driver: "bridge",
+				Options: map[string]string{
+					"com.docker.network.bridge.name": "myname@some",
+				},
+			}
+
+			_, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(HaveOccurred())
+		})
+
 		It("create network with name", func() {
 			name := "myname"
 			network := types.Network{
@@ -788,6 +826,43 @@ var _ = Describe("Config", func() {
 			network = types.Network{
 				Options: map[string]string{
 					types.MTUOption: "-1",
+				},
+			}
+			_, err = libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`mtu -1 is less than zero`))
+		})
+
+		It("create network with com.docker.network.driver.mtu option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					"com.docker.network.driver.mtu": "1500",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Options).ToNot(BeNil())
+			path := filepath.Join(networkConfDir, network1.Name+".json")
+			Expect(path).To(BeARegularFile())
+			grepInFile(path, `"mtu": "1500"`)
+			Expect(network1.Options).To(HaveKeyWithValue("mtu", "1500"))
+			Expect(network1.Options).ToNot(HaveKeyWithValue("com.docker.network.driver.mtu", "1500"))
+		})
+
+		It("create network with invalid com.docker.network.driver.mtu option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					"com.docker.network.driver.mtu": "abc",
+				},
+			}
+			_, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`parsing "abc": invalid syntax`))
+
+			network = types.Network{
+				Options: map[string]string{
+					"com.docker.network.driver.mtu": "-1",
 				},
 			}
 			_, err = libpodNet.NetworkCreate(network, nil)

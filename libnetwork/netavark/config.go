@@ -155,6 +155,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 
 	switch newNetwork.Driver {
 	case types.BridgeNetworkDriver:
+		internalutil.MapDockerBridgeDriverOptions(newNetwork)
 		err = internalutil.CreateBridge(n, newNetwork, usedNetworks, n.defaultsubnetPools)
 		if err != nil {
 			return nil, err
@@ -186,6 +187,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 				if err != nil {
 					return nil, err
 				}
+
 			default:
 				return nil, fmt.Errorf("unsupported bridge network option %s", key)
 			}
