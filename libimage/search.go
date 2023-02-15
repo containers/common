@@ -65,6 +65,9 @@ type SearchOptions struct {
 	// "username[:password]".  Cannot be used in combination with
 	// Username/Password.
 	Credentials string
+	// IdentityToken is used to authenticate the user and get
+	// an access token for the registry.
+	IdentityToken string `json:"identitytoken,omitempty"`
 	// InsecureSkipTLSVerify allows to skip TLS verification.
 	InsecureSkipTLSVerify types.OptionalBool
 	// ListTags returns the search result with available tags
@@ -216,7 +219,7 @@ func (r *Runtime) searchImageInRegistry(ctx context.Context, term, registry stri
 		sys.DockerCertPath = options.CertDirPath
 	}
 
-	authConf := &types.DockerAuthConfig{}
+	authConf := &types.DockerAuthConfig{IdentityToken: options.IdentityToken}
 	if options.Username != "" {
 		if options.Credentials != "" {
 			return nil, errors.New("username/password cannot be used with credentials")
@@ -235,7 +238,11 @@ func (r *Runtime) searchImageInRegistry(ctx context.Context, term, registry stri
 			authConf.Password = split[1]
 		}
 	}
-	sys.DockerAuthConfig = authConf
+	// We should set the authConf unless a token was set.  That's especially
+	// useful for Podman's remote API.
+	if options.IdentityToken != "" {
+		sys.DockerAuthConfig = authConf
+	}
 
 	if options.ListTags {
 		results, err := searchRepositoryTags(ctx, sys, registry, term, options)
