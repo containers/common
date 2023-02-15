@@ -77,20 +77,13 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 	} {
 		loadedImages, transportName, err := f()
 		if err == nil {
-			return loadedImages, nil
+			if r.eventChannel != nil {
+				err = r.writeLoadEvents(path, loadedImages)
+			}
+			return loadedImages, err
 		}
 		logrus.Debugf("Error loading %s (%s): %v", path, transportName, err)
 		loadErrors = append(loadErrors, fmt.Errorf("%s: %v", transportName, err))
-
-		if r.eventChannel != nil {
-			for _, name := range loadedImages {
-				image, _, err := r.LookupImage(name, nil)
-				if err != nil {
-					return nil, fmt.Errorf("locating pulled image %q name in containers storage: %w", name, err)
-				}
-				r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageLoad})
-			}
-		}
 	}
 
 	// Give a decent error message if nothing above worked.
@@ -102,6 +95,18 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 	}
 
 	return nil, loadError
+}
+
+// writeLoadEvents writes the events of the loaded image.
+func (r *Runtime) writeLoadEvents(path string, loadedImages []string) error {
+	for _, name := range loadedImages {
+		image, _, err := r.LookupImage(name, nil)
+		if err != nil {
+			return fmt.Errorf("locating pulled image %q name in containers storage: %w", name, err)
+		}
+		r.writeEvent(&Event{ID: image.ID(), Name: path, Time: time.Now(), Type: EventTypeImageLoad})
+	}
+	return nil
 }
 
 // loadMultiImageDockerArchive loads the docker archive specified by ref.  In
