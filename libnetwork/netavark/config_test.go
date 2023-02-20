@@ -165,7 +165,7 @@ var _ = Describe("Config", func() {
 			network = types.Network{Name: network1.Name}
 			network2, err := libpodNet.NetworkCreate(network, &types.NetworkCreateOptions{IgnoreIfExists: true})
 			Expect(err).To(BeNil())
-			Expect(network2).To(Equal(network1))
+			EqualNetwork(network2, network1)
 		})
 
 		It("create bridge config", func() {
