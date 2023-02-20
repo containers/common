@@ -37,6 +37,11 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("bind"))
 			gomega.Expect(defaultConfig.Engine.SSHConfig).To(gomega.ContainSubstring("/.ssh/config"))
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
+			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.BeEquivalentTo(stringBoltDB))
+
+			dbBackend, err := defaultConfig.DBBackend()
+			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendBoltDB))
+			gomega.Expect(err).To(gomega.BeNil())
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
@@ -410,6 +415,11 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Containers.HostContainersInternalIP).To(gomega.BeEquivalentTo("1.2.3.4"))
 			gomega.Expect(config.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("tmpfs"))
 			gomega.Expect(config.Engine.SSHConfig).To(gomega.Equal("/foo/bar/.ssh/config"))
+
+			gomega.Expect(config.Engine.DBBackend).To(gomega.Equal(stringSQLite))
+			dbBackend, err := config.DBBackend()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendSQLite))
 		})
 
 		It("contents of passed-in file should override others", func() {
@@ -550,6 +560,12 @@ image_copy_tmp_dir="storage"`
 
 		It("should fail with invalid pull_policy", func() {
 			sut.Engine.PullPolicy = "invalidPullPolicy"
+			err := sut.Engine.Validate()
+			gomega.Expect(err).ToNot(gomega.BeNil())
+		})
+
+		It("should fail with invalid database_backend", func() {
+			sut.Engine.DBBackend = ""
 			err := sut.Engine.Validate()
 			gomega.Expect(err).ToNot(gomega.BeNil())
 		})
