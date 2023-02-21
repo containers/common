@@ -156,10 +156,10 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	}
 
 	localImages := []*Image{}
-	for _, name := range pulledImages {
-		image, _, err := r.LookupImage(name, nil)
+	for _, iName := range pulledImages {
+		image, _, err := r.LookupImage(iName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("locating pulled image %q name in containers storage: %w", name, err)
+			return nil, fmt.Errorf("locating pulled image %q name in containers storage: %w", iName, err)
 		}
 
 		// Note that we can ignore the 2nd return value here. Some
@@ -181,6 +181,7 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 		}
 
 		if r.eventChannel != nil {
+			// Note that we use the input name here to preserve the transport data.
 			r.writeEvent(&Event{ID: image.ID(), Name: name, Time: time.Now(), Type: EventTypeImagePull})
 		}
 
