@@ -78,8 +78,8 @@ github.com/containernetworking/cni/pkg/version
 # github.com/containernetworking/plugins v1.2.0
 ## explicit; go 1.17
 github.com/containernetworking/plugins/pkg/ns
-# github.com/containers/image/v5 v5.24.2
-## explicit; go 1.17
+# github.com/containers/image/v5 v5.24.3-0.20230228100948-357cacd18f3d
+## explicit; go 1.18
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory
 github.com/containers/image/v5/directory/explicitfilepath
@@ -104,6 +104,7 @@ github.com/containers/image/v5/internal/pkg/platform
 github.com/containers/image/v5/internal/private
 github.com/containers/image/v5/internal/putblobdigest
 github.com/containers/image/v5/internal/rootless
+github.com/containers/image/v5/internal/set
 github.com/containers/image/v5/internal/signature
 github.com/containers/image/v5/internal/signer
 github.com/containers/image/v5/internal/streamdigest
@@ -162,7 +163,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.45.4
+# github.com/containers/storage v1.45.5-0.20230228091016-4f0adb63ba4a
 ## explicit; go 1.17
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -341,8 +342,8 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.12.1
-## explicit; go 1.17
+# github.com/google/go-containerregistry v0.13.0
+## explicit; go 1.18
 github.com/google/go-containerregistry/pkg/name
 # github.com/google/go-intervals v0.0.2
 ## explicit; go 1.12
@@ -377,8 +378,8 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/klauspost/compress v1.15.15
-## explicit; go 1.17
+# github.com/klauspost/compress v1.16.0
+## explicit; go 1.18
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
@@ -522,7 +523,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/proglottis/gpgme v0.1.3
 ## explicit; go 1.11
 github.com/proglottis/gpgme
-# github.com/rivo/uniseg v0.4.3
+# github.com/rivo/uniseg v0.4.4
 ## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/seccomp/libseccomp-golang v0.10.0
@@ -534,7 +535,7 @@ github.com/sigstore/fulcio/pkg/certificate
 # github.com/sigstore/rekor v1.0.1
 ## explicit; go 1.18
 github.com/sigstore/rekor/pkg/generated/models
-# github.com/sigstore/sigstore v1.5.1
+# github.com/sigstore/sigstore v1.5.2
 ## explicit; go 1.18
 github.com/sigstore/sigstore/pkg/cryptoutils
 github.com/sigstore/sigstore/pkg/signature
@@ -556,7 +557,7 @@ github.com/stefanberger/go-pkcs11uri
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# github.com/sylabs/sif/v2 v2.9.2
+# github.com/sylabs/sif/v2 v2.10.0
 ## explicit; go 1.19
 github.com/sylabs/sif/v2/pkg/sif
 # github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
@@ -582,12 +583,12 @@ github.com/ulikunitz/xz/lzma
 github.com/vbatts/tar-split/archive/tar
 github.com/vbatts/tar-split/tar/asm
 github.com/vbatts/tar-split/tar/storage
-# github.com/vbauerster/mpb/v7 v7.5.3
-## explicit; go 1.14
-github.com/vbauerster/mpb/v7
-github.com/vbauerster/mpb/v7/cwriter
-github.com/vbauerster/mpb/v7/decor
-github.com/vbauerster/mpb/v7/internal
+# github.com/vbauerster/mpb/v8 v8.2.1
+## explicit; go 1.17
+github.com/vbauerster/mpb/v8
+github.com/vbauerster/mpb/v8/cwriter
+github.com/vbauerster/mpb/v8/decor
+github.com/vbauerster/mpb/v8/internal
 # github.com/vishvananda/netlink v1.2.1-beta.2
 ## explicit; go 1.12
 github.com/vishvananda/netlink
@@ -643,6 +644,11 @@ golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
+# golang.org/x/exp v0.0.0-20230206171751-46f607a40771
+## explicit; go 1.18
+golang.org/x/exp/constraints
+golang.org/x/exp/maps
+golang.org/x/exp/slices
 # golang.org/x/mod v0.8.0
 ## explicit; go 1.17
 golang.org/x/mod/semver
