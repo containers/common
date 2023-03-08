@@ -42,7 +42,7 @@ require (
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	github.com/vishvananda/netlink v1.2.1-beta.2
 	go.etcd.io/bbolt v1.3.7
-	golang.org/x/crypto v0.6.0
+	golang.org/x/crypto v0.7.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.6.0
 	golang.org/x/term v0.6.0
@@ -121,8 +121,8 @@ require (
 	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc // indirect
 	google.golang.org/grpc v1.53.0 // indirect
