@@ -184,6 +184,10 @@ type ContainersConfig struct {
 	// NoHosts tells container engine whether to create its own /etc/hosts
 	NoHosts bool `toml:"no_hosts,omitempty"`
 
+	// OOMScoreAdj tunes the host's OOM preferences for containers
+	// (accepts values from -1000 to 1000).
+	OOMScoreAdj *int `toml:"oom_score_adj,omitempty"`
+
 	// PidsLimit is the number of processes each container is restricted to
 	// by the cgroup process number controller.
 	PidsLimit int64 `toml:"pids_limit,omitempty,omitzero"`
