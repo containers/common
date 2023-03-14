@@ -66,6 +66,12 @@ file. This must be either an absolute path or as special values "image" which
 uses the hosts file from the container image or "none" which means
 no base hosts file is used. The default is "" which will use /etc/hosts.
 
+**cgroup_conf**=[]
+
+List of cgroup_conf entries specifying a list of cgroup files to write to and
+their values. For example `memory.high=1073741824` sets the
+memory.high limit to 1GB.
+
 **cgroups**="enabled"
 
 Determines  whether  the  container will create CGroups.

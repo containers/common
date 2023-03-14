@@ -386,6 +386,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Network.CNIPluginDirs).To(gomega.Equal(DefaultCNIPluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
+			gomega.Expect(config.Containers.CgroupConf).To(gomega.BeNil())
 			if useSystemd() {
 				gomega.Expect(config.Engine.CgroupManager).To(gomega.BeEquivalentTo("systemd"))
 			} else {
@@ -408,6 +409,9 @@ image_copy_tmp_dir="storage"`
 			// When
 			config, err := NewConfig("testdata/containers_default.conf")
 			// Then
+			cgroupConf := []string{
+				"memory.high=1073741824",
+			}
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("container-default"))
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
@@ -420,6 +424,7 @@ image_copy_tmp_dir="storage"`
 			dbBackend, err := config.DBBackend()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendSQLite))
+			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
 		})
 
 		It("contents of passed-in file should override others", func() {
