@@ -302,7 +302,7 @@ var _ = Describe("run netavark", func() {
 
 			err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts1))
 			Expect(err).ToNot(HaveOccurred())
-			err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts2))
+			err = libpodNet.Teardown(netNSContainer2.Path(), types.TeardownOptions(setupOpts2))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
