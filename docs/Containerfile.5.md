@@ -154,6 +154,47 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
 
               · rw, read-write: allows writes on the mount.
 
+**RUN --network**
+
+`RUN --network` allows control over which networking environment the command
+is run in.
+
+Syntax: `--network=<TYPE>`
+
+**Network types**
+
+| Type                                         | Description                            |
+|----------------------------------------------|----------------------------------------|
+| [`default`](#run---networkdefault) (default) | Run in the default network.            |
+| [`none`](#run---networknone)                 | Run with no network access.            |
+| [`host`](#run---networkhost)                 | Run in the host's network environment. |
+
+##### RUN --network=default
+
+Equivalent to not supplying a flag at all, the command is run in the default
+network for the build.
+
+##### RUN --network=none
+
+The command is run with no network access (`lo` is still available, but is
+isolated to this process).
+
+##### Example: isolating external effects
+
+```dockerfile
+FROM python:3.6
+ADD mypackage.tgz wheels/
+RUN --network=none pip install --find-links wheels mypackage
+```
+
+`pip` will only be able to install the packages provided in the tarfile, which
+can be controlled by an earlier build stage.
+
+##### RUN --network=host
+
+The command is run in the host's network environment (similar to
+`buildah build --network=host`, but on a per-instruction basis)
+
 
 **RUN Secrets**
 
