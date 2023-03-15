@@ -425,6 +425,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendSQLite))
 			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
+			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
 		})
 
 		It("contents of passed-in file should override others", func() {

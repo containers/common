@@ -233,6 +233,10 @@ Options are:
 Create /etc/hosts for the container. By default, container engines manage
 /etc/hosts, automatically adding  the container's  own  IP  address.
 
+**oom_score_adj**=0
+
+Tune the host's OOM preferences for containers (accepts values from -1000 to 1000).
+
 **pidns**="private"
 
 Default way to to create a PID namespace for the container.
