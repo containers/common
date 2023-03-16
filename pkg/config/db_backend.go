@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // DBBackend determines which supported database backend Podman should use.
 type DBBackend int
@@ -55,6 +58,12 @@ func ParseDBBackend(raw string) (DBBackend, error) {
 }
 
 // DBBackend returns the configured database backend.
+// The values from the configuration files may be overridden by the
+// CONTAINERS_DATABASE_BACKEND environment variable.
 func (c *Config) DBBackend() (DBBackend, error) {
-	return ParseDBBackend(c.Engine.DBBackend)
+	value := c.Engine.DBBackend
+	if fromEnv := os.Getenv("CONTAINERS_DATABASE_BACKEND"); fromEnv != "" {
+		value = fromEnv
+	}
+	return ParseDBBackend(value)
 }

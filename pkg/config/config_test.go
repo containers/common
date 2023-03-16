@@ -420,12 +420,21 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("tmpfs"))
 			gomega.Expect(config.Engine.SSHConfig).To(gomega.Equal("/foo/bar/.ssh/config"))
 
+			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
+			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
+
 			gomega.Expect(config.Engine.DBBackend).To(gomega.Equal(stringSQLite))
 			dbBackend, err := config.DBBackend()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendSQLite))
-			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
-			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
+			// But the DB can still be overridden via an env variable.
+			func() {
+				os.Setenv("CONTAINERS_DATABASE_BACKEND", stringBoltDB)
+				defer os.Unsetenv("CONTAINERS_DATABASE_BACKEND")
+				dbBackend, err := config.DBBackend()
+				gomega.Expect(err).To(gomega.BeNil())
+				gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendBoltDB))
+			}()
 		})
 
 		It("contents of passed-in file should override others", func() {
