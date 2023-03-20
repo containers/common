@@ -537,6 +537,18 @@ type ListImagesOptions struct {
 	// used).  The definition of an external container can be set by
 	// callers.
 	IsExternalContainerFunc IsExternalContainerFunc
+	// Dangling instructs to pre-compute the ListData.IsDangling field for
+	// each image.
+	//
+	// Setting this field has significant performance benefits over calling
+	// `IsDangling()` for each image immediately after listing.
+	IsDangling bool
+	// Parent instructs to pre-compute the ListData.Parent field for each
+	// image.
+	//
+	// Setting this field has significant performance benefits over calling
+	// `Parent()` for each image immediately after listing.
+	Parent bool
 }
 
 // ListImages lists images in the local container storage.  If names are
@@ -565,7 +577,44 @@ func (r *Runtime) ListImages(ctx context.Context, names []string, options *ListI
 		}
 	}
 
-	return r.filterImages(ctx, images, options)
+	filtered, err := r.filterImages(ctx, images, options)
+	if err != nil {
+		return nil, err
+	}
+
+	if !(options.IsDangling || options.Parent) {
+		return filtered, nil
+	}
+
+	// If explicitly requested by the user, pre-compute and cache the
+	// dangling and parent information of all filtered images.  That will
+	// considerably speed things up for callers who need this information
+	// as the layer tree will computed once for all instead of once for
+	// each individual image (see containers/podman/issues/17828).
+
+	tree, err := r.layerTree()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range filtered {
+		if options.IsDangling {
+			isDangling, err := filtered[i].isDangling(ctx, tree)
+			if err != nil {
+				return nil, err
+			}
+			filtered[i].ListData.IsDangling = &isDangling
+		}
+		if options.Parent {
+			parent, err := filtered[i].parent(ctx, tree)
+			if err != nil {
+				return nil, err
+			}
+			filtered[i].ListData.Parent = parent
+		}
+	}
+
+	return filtered, nil
 }
 
 // RemoveImagesOptions allow for customizing image removal.
