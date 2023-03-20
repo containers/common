@@ -35,7 +35,7 @@ Each JSON file should contain an object with one of the following schemas.
   Sets the hook-definition version.  For this schema version, the value be `1.0.0`.
 
 `hook` (required object)
-  The hook to inject, with the hook-entry schema defined by the 1.0.1 OCI Runtime Specification.
+  The hook to inject, with the hook-entry schema defined by the 1.0.2 OCI Runtime Specification.
 
 `when` (required object)
   Conditions under which the hook is injected.  The following properties can be specified, and at least one must be specified:
@@ -52,7 +52,7 @@ Each JSON file should contain an object with one of the following schemas.
       If `hasBindMounts` is true and the caller requested host-to-container bind mounts, this condition matches.
 
 `stages` (required array of strings)
-  Stages when the hook must be injected.  Entries must be chosen from the 1.0.1 OCI Runtime Specification hook stages or from extension stages supported by the package consumer.
+  Stages when the hook must be injected.  Entries must be chosen from the 1.0.2 OCI Runtime Specification hook stages or from extension stages supported by the package consumer.
 
 If *all* of the conditions set in `when` match, then the `hook` must be injected for the stages set in `stages`.
 
@@ -65,7 +65,7 @@ If *all* of the conditions set in `when` match, then the `hook` must be injected
   Additional arguments to pass to the hook.  The injected hook's `args` is `hook` with `arguments` appended.
 
 `stages` (required array of strings)
-  Stages when the hook must be injected.  `stage` is an allowed synonym for this property, but you must not set both `stages` and `stage`.  Entries must be chosen from the 1.0.1 OCI Runtime Specification hook stages or from extension stages supported by the package consumer.
+  Stages when the hook must be injected.  `stage` is an allowed synonym for this property, but you must not set both `stages` and `stage`.  Entries must be chosen from the 1.0.2 OCI Runtime Specification hook stages or from extension stages supported by the package consumer.
 
 `cmds` (optional array of strings)
   The hook must be injected if the configured `process.args[0]` matches an entry.  `cmd` is an allowed synonym for this property, but you must not set both `cmds` and `cmd`.  Entries must be POSIX extended regular expressions.
@@ -177,6 +177,6 @@ $ cat /etc/containers/oci/hooks.d/osystemd-hook.json
 
 `oci-systemd-hook(1)`, `oci-umount(1)`, `locale(7)`
 
-* [OCI Runtime Specification, 1.0.1, POSIX-platform hooks](https://github.com/opencontainers/runtime-spec/blob/v1.0.1/config.md#posix-platform-hooks)
-* [OCI Runtime Specification, 1.0.1, process](https://github.com/opencontainers/runtime-spec/blob/v1.0.1/config.md#process)
+* [OCI Runtime Specification, 1.0.2, POSIX-platform hooks](https://github.com/opencontainers/runtime-spec/blob/v1.0.2/config.md#posix-platform-hooks)
+* [OCI Runtime Specification, 1.0.2, process](https://github.com/opencontainers/runtime-spec/blob/v1.0.2/config.md#process)
 * [POSIX extended regular expressions (EREs)](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_04)
