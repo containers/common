@@ -98,6 +98,7 @@ default_capabilities = [
       "SETGID",
       "SETPCAP",
       "SETUID",
+      "SYS_CHROOT",
 ]
 ```
 
