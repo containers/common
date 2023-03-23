@@ -913,4 +913,20 @@ env=["foo=bar"]`
 		err := ValidateImageVolumeMode("bogus")
 		gomega.Expect(err).To(gomega.HaveOccurred())
 	})
+
+	It("CONTAINERS_CONF_OVERRIDE", func() {
+		os.Setenv("CONTAINERS_CONF_OVERRIDE", "testdata/containers_override.conf")
+		defer os.Unsetenv("CONTAINERS_CONF_OVERRIDE")
+		config, err := NewConfig("")
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
+
+		// Make sure that _OVERRIDE is loaded even when CONTAINERS_CONF is set.
+		os.Setenv("CONTAINERS_CONF", "testdata/containers_default.conf")
+		defer os.Unsetenv("CONTAINERS_CONF")
+		config, err = NewConfig("")
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
+		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))
+	})
 })

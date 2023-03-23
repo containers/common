@@ -769,16 +769,25 @@ default is `QEMU` and on Windows it is `WSL`.
 **containers.conf**
 
 Distributions often provide a `/usr/share/containers/containers.conf` file to
-define default container configuration. Administrators can override fields in
-this file by creating `/etc/containers/containers.conf` to specify their own
-configuration. Rootless users can further override fields in the config by
-creating a config file stored in the `$HOME/.config/containers/containers.conf` file.
+provide a default configuration. Administrators can override fields in this
+file by creating `/etc/containers/containers.conf` to specify their own
+configuration. They may also drop `.conf` files in
+`/etc/containers/containers.conf.d` which will be loaded in alphanumeric order.
+Rootless users can further override fields in the config by creating a config
+file stored in the `$HOME/.config/containers/containers.conf` file or `.conf`
+files in `$HOME/.config/containers/containers.conf.d`.
 
-If the `CONTAINERS_CONF` path environment variable is set, just
-this path will be used. This is primarily used for testing.
+If the `CONTAINERS_CONF` environment variable is set, all system and user
+config files are ignored and only the specified config file will be loaded.
 
-Fields specified in the containers.conf file override the default options, as
-well as options in previously read containers.conf files.
+If the `CONTAINERS_CONF_OVERRIDE` path environment variable is set, the config
+file will be loaded last even when `CONTAINERS_CONF` is set.
+
+The values of both environment variables may be absolute or relative paths, for
+instance, `CONTAINERS_CONF=/tmp/my_containers.conf`.
+
+Fields specified in a containers.conf file override the default options, as
+well as options in previously loaded containers.conf files.
 
 **storage.conf**
 
