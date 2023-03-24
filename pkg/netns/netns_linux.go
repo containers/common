@@ -161,18 +161,6 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 			return
 		}
 
-		// Put this thread back to the orig ns, since it might get reused (pre go1.10)
-		defer func() {
-			if err := origNS.Set(); err != nil {
-				if unshare.IsRootless() && strings.Contains(err.Error(), "operation not permitted") {
-					// When running in rootless mode it will fail to re-join
-					// the network namespace owned by root on the host.
-					return
-				}
-				logrus.Warnf("Unable to reset namespace: %q", err)
-			}
-		}()
-
 		// bind mount the netns from the current thread (from /proc) onto the
 		// mount point. This causes the namespace to persist, even when there
 		// are no threads in the ns. Make this a shared mount; it needs to be
