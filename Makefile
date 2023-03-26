@@ -98,7 +98,7 @@ test-unit:
 
 .PHONY: codespell
 codespell:
-	codespell -w
+	codespell -L ro,hastable,shouldnot -w
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean
