@@ -51,9 +51,13 @@ func TestPush(t *testing.T) {
 
 	// Now there should only be two images: alpine in Docker format and
 	// alpine in OCI format.
-	listedImages, err := runtime.ListImages(ctx, nil, nil)
+	listOptions := ListImagesOptions{SetListData: true}
+	listedImages, err := runtime.ListImages(ctx, nil, &listOptions)
 	require.NoError(t, err, "error listing images")
 	require.Len(t, listedImages, 2, "there should only be two images (alpine in Docke/OCI)")
+	for _, image := range listedImages {
+		require.NotNil(t, image.ListData.IsDangling, "IsDangling should be set")
+	}
 
 	// And now remove all of them.
 	rmReports, rmErrors := runtime.RemoveImages(ctx, nil, nil)
