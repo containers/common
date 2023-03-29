@@ -153,7 +153,6 @@ func newImageSourceAttempt(ctx context.Context, sys *types.SystemContext, logica
 	s.Compat = impl.AddCompat(s)
 
 	if err := s.ensureManifestIsLoaded(ctx); err != nil {
-		client.Close()
 		return nil, err
 	}
 	return s, nil
@@ -167,7 +166,7 @@ func (s *dockerImageSource) Reference() types.ImageReference {
 
 // Close removes resources associated with an initialized ImageSource, if any.
 func (s *dockerImageSource) Close() error {
-	return s.c.Close()
+	return nil
 }
 
 // simplifyContentType drops parameters from a HTTP media type (see https://tools.ietf.org/html/rfc7231#section-3.1.1.1)
@@ -251,7 +250,7 @@ func splitHTTP200ResponseToPartial(streams chan io.ReadCloser, errs chan error, 
 			currentOffset += toSkip
 		}
 		s := signalCloseReader{
-			closed:        make(chan struct{}),
+			closed:        make(chan interface{}),
 			stream:        io.NopCloser(io.LimitReader(body, int64(c.Length))),
 			consumeStream: true,
 		}
@@ -293,7 +292,7 @@ func handle206Response(streams chan io.ReadCloser, errs chan error, body io.Read
 			return
 		}
 		s := signalCloseReader{
-			closed: make(chan struct{}),
+			closed: make(chan interface{}),
 			stream: p,
 		}
 		streams <- s
@@ -336,7 +335,7 @@ func parseMediaType(contentType string) (string, map[string]string, error) {
 func (s *dockerImageSource) GetBlobAt(ctx context.Context, info types.BlobInfo, chunks []private.ImageSourceChunk) (chan io.ReadCloser, chan error, error) {
 	headers := make(map[string][]string)
 
-	rangeVals := make([]string, 0, len(chunks))
+	var rangeVals []string
 	for _, c := range chunks {
 		rangeVals = append(rangeVals, fmt.Sprintf("%d-%d", c.Offset, c.Offset+c.Length-1))
 	}
@@ -606,7 +605,6 @@ func deleteImage(ctx context.Context, sys *types.SystemContext, ref dockerRefere
 	if err != nil {
 		return err
 	}
-	defer c.Close()
 
 	headers := map[string][]string{
 		"Accept": manifest.DefaultRequestedManifestMIMETypes,
@@ -768,7 +766,7 @@ func makeBufferedNetworkReader(stream io.ReadCloser, nBuffers, bufferSize uint) 
 }
 
 type signalCloseReader struct {
-	closed        chan struct{}
+	closed        chan interface{}
 	stream        io.ReadCloser
 	consumeStream bool
 }
