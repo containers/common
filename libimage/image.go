@@ -227,7 +227,7 @@ func (i *Image) TopLayer() string {
 
 // Parent returns the parent image or nil if there is none
 func (i *Image) Parent(ctx context.Context) (*Image, error) {
-	tree, err := i.runtime.layerTree(nil)
+	tree, err := i.runtime.layerTree()
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +261,7 @@ func (i *Image) Children(ctx context.Context) ([]*Image, error) {
 // created for this invocation only.
 func (i *Image) getChildren(ctx context.Context, all bool, tree *layerTree) ([]*Image, error) {
 	if tree == nil {
-		t, err := i.runtime.layerTree(nil)
+		t, err := i.runtime.layerTree()
 		if err != nil {
 			return nil, err
 		}
