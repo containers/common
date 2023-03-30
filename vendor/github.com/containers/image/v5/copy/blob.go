@@ -104,11 +104,12 @@ func (ic *imageCopier) copyBlobFromStream(ctx context.Context, srcReader io.Read
 	if !isConfig {
 		options.LayerIndex = &layerIndex
 	}
-	destBlob, err := ic.c.dest.PutBlobWithOptions(ctx, &errorAnnotationReader{stream.reader}, stream.info, options)
+	uploadedInfo, err := ic.c.dest.PutBlobWithOptions(ctx, &errorAnnotationReader{stream.reader}, stream.info, options)
 	if err != nil {
 		return types.BlobInfo{}, fmt.Errorf("writing blob: %w", err)
 	}
-	uploadedInfo := updatedBlobInfoFromUpload(stream.info, destBlob)
+
+	uploadedInfo.Annotations = stream.info.Annotations
 
 	compressionStep.updateCompressionEdits(&uploadedInfo.CompressionOperation, &uploadedInfo.CompressionAlgorithm, &uploadedInfo.Annotations)
 	decryptionStep.updateCryptoOperation(&uploadedInfo.CryptoOperation)
@@ -167,21 +168,4 @@ func (r errorAnnotationReader) Read(b []byte) (n int, err error) {
 		return n, fmt.Errorf("happened during read: %w", err)
 	}
 	return n, err
-}
-
-// updatedBlobInfoFromUpload returns inputInfo updated with uploadedBlob which was created based on inputInfo.
-func updatedBlobInfoFromUpload(inputInfo types.BlobInfo, uploadedBlob private.UploadedBlob) types.BlobInfo {
-	// The transport is only tasked with dealing with the raw blob, and possibly computing Digest/Size.
-	// Handling of compression, encryption, and the related MIME types and the like are all the responsibility
-	// of the generic code in this package.
-	return types.BlobInfo{
-		Digest:               uploadedBlob.Digest,
-		Size:                 uploadedBlob.Size,
-		URLs:                 nil, // This _must_ be cleared if Digest changes; clear it in other cases as well, to preserve previous behavior.
-		Annotations:          inputInfo.Annotations,
-		MediaType:            inputInfo.MediaType,            // Mostly irrelevant, MediaType is updated based on Compression/Crypto.
-		CompressionOperation: inputInfo.CompressionOperation, // Expected to be unset, and only updated by copyBlobFromStream.
-		CompressionAlgorithm: inputInfo.CompressionAlgorithm, // Expected to be unset, and only updated by copyBlobFromStream.
-		CryptoOperation:      inputInfo.CryptoOperation,      // Expected to be unset, and only updated by copyBlobFromStream.
-	}
 }
