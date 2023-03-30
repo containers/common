@@ -97,7 +97,7 @@ install:
 test: test-unit
 
 .PHONY: test-unit
-test-unit:
+test-unit: netavark-testplugin
 	go test --tags $(BUILDTAGS) -v ./libimage
 	go test --tags $(BUILDTAGS) -v ./libnetwork/...
 	go test --tags $(BUILDTAGS) -v ./pkg/...

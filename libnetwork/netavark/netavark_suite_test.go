@@ -40,6 +40,15 @@ func getNetworkInterface(confDir string) (types.ContainerNetwork, error) {
 	})
 }
 
+func getNetworkInterfaceWithPlugins(confDir string, pluginDirs []string) (types.ContainerNetwork, error) {
+	return netavark.NewNetworkInterface(&netavark.InitConfig{
+		NetworkConfigDir: confDir,
+		NetavarkBinary:   netavarkBinary,
+		NetworkRunDir:    confDir,
+		PluginDirs:       pluginDirs,
+	})
+}
+
 // EqualSubnet is a custom GomegaMatcher to match a subnet
 // This makes sure to not use the 16 bytes ip representation.
 func EqualSubnet(subnet *net.IPNet) gomegaTypes.GomegaMatcher {
