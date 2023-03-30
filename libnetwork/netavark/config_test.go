@@ -666,6 +666,8 @@ var _ = Describe("Config", func() {
 			testNetwork, err := libpodNet.NetworkInspect("test-network")
 			Expect(err).To(BeNil())
 			Expect(testNetwork.NetworkDNSServers).To(Equal([]string{"8.8.8.8", "3.3.3.3", "7.7.7.7"}))
+			err = libpodNet.NetworkUpdate("test-network", types.NetworkUpdateOptions{AddDNSServers: []string{"fake"}})
+			Expect(err).To(HaveOccurred())
 		})
 
 		It("update NetworkDNSServers RemoveDNSServers", func() {
@@ -690,6 +692,8 @@ var _ = Describe("Config", func() {
 			testNetwork, err := libpodNet.NetworkInspect("test-network")
 			Expect(err).To(BeNil())
 			Expect(testNetwork.NetworkDNSServers).To(Equal([]string{"8.8.8.8"}))
+			err = libpodNet.NetworkUpdate("test-network", types.NetworkUpdateOptions{RemoveDNSServers: []string{"fake"}})
+			Expect(err).To(HaveOccurred())
 		})
 
 		It("update NetworkDNSServers Add and Remove DNSServers", func() {
