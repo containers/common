@@ -15,3 +15,4 @@ contrib/spec/podman.spec
 build
 ./generate
 *.coverprofile
+/bin
