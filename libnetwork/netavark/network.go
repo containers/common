@@ -157,11 +157,13 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 	return n, nil
 }
 
+var builtinDrivers = []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver}
+
 // Drivers will return the list of supported network drivers
 // for this interface.
 func (n *netavarkNetwork) Drivers() []string {
 	paths := getAllPlugins(n.pluginDirs)
-	return append([]string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver}, paths...)
+	return append(builtinDrivers, paths...)
 }
 
 // DefaultNetworkName will return the default netavark network name.

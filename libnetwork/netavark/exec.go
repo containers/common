@@ -76,7 +76,7 @@ func getRustLogEnv() string {
 // used to marshal the netavark output into it. This can be nil.
 // All errors return by this function should be of the type netavarkError
 // to provide a helpful error message.
-func (n *netavarkNetwork) execNetavark(args []string, stdin, result interface{}) error {
+func (n *netavarkNetwork) execNetavark(args []string, needPlugin bool, stdin, result interface{}) error {
 	// set the netavark log level to the same as the podman
 	env := append(os.Environ(), getRustLogEnv())
 	// if we run with debug log level lets also set RUST_BACKTRACE=1 so we can get the full stack trace in case of panics
@@ -86,7 +86,7 @@ func (n *netavarkNetwork) execNetavark(args []string, stdin, result interface{})
 	if n.dnsBindPort != 0 {
 		env = append(env, "NETAVARK_DNS_PORT="+strconv.Itoa(int(n.dnsBindPort)))
 	}
-	return n.execBinary(n.netavarkBinary, append(n.getCommonNetavarkOptions(), args...), stdin, result, env)
+	return n.execBinary(n.netavarkBinary, append(n.getCommonNetavarkOptions(needPlugin), args...), stdin, result, env)
 }
 
 func (n *netavarkNetwork) execPlugin(path string, args []string, stdin, result interface{}) error {
