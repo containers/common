@@ -203,13 +203,8 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 				return nil, fmt.Errorf("unsupported bridge network option %s", key)
 			}
 		}
-	case types.IPVLANNetworkDriver:
-		err = createIpvlan(newNetwork)
-		if err != nil {
-			return nil, err
-		}
-	case types.MacVLANNetworkDriver:
-		err = createMacvlan(newNetwork)
+	case types.MacVLANNetworkDriver, types.IPVLANNetworkDriver:
+		err = createIpvlanOrMacvlan(newNetwork)
 		if err != nil {
 			return nil, err
 		}
@@ -250,7 +245,10 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 	return newNetwork, nil
 }
 
-func createIpvlan(network *types.Network) error {
+// ipvlan shares the same mac address so supporting DHCP is not really possible
+var errIpvlanNoDHCP = errors.New("ipam driver dhcp is not supported with ipvlan")
+
+func createIpvlanOrMacvlan(network *types.Network) error {
 	if network.NetworkInterface != "" {
 		interfaceNames, err := internalutil.GetLiveNetworkNames()
 		if err != nil {
@@ -259,6 +257,12 @@ func createIpvlan(network *types.Network) error {
 		if !util.StringInSlice(network.NetworkInterface, interfaceNames) {
 			return fmt.Errorf("parent interface %s does not exist", network.NetworkInterface)
 		}
+	}
+
+	driver := network.Driver
+	isMacVlan := true
+	if driver == types.IPVLANNetworkDriver {
+		isMacVlan = false
 	}
 
 	// always turn dns off with macvlan, it is not implemented in netavark
@@ -270,12 +274,24 @@ func createIpvlan(network *types.Network) error {
 	switch network.IPAMOptions[types.Driver] {
 	case "":
 		if len(network.Subnets) == 0 {
-			return fmt.Errorf("ipvlan driver needs at least one subnet specified, DHCP is not yet supported with netavark")
+			// if no subnets and no driver choose dhcp
+			network.IPAMOptions[types.Driver] = types.DHCPIPAMDriver
+			if !isMacVlan {
+				return errIpvlanNoDHCP
+			}
+		} else {
+			network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
 		}
-		network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
 	case types.HostLocalIPAMDriver:
 		if len(network.Subnets) == 0 {
-			return fmt.Errorf("ipvlan driver needs at least one subnet specified, when the host-local ipam driver is set")
+			return fmt.Errorf("%s driver needs at least one subnet specified when the host-local ipam driver is set", driver)
+		}
+	case types.DHCPIPAMDriver:
+		if !isMacVlan {
+			return errIpvlanNoDHCP
+		}
+		if len(network.Subnets) > 0 {
+			return fmt.Errorf("ipam driver dhcp set but subnets are set")
 		}
 	}
 
@@ -283,8 +299,14 @@ func createIpvlan(network *types.Network) error {
 	for key, value := range network.Options {
 		switch key {
 		case types.ModeOption:
-			if !util.StringInSlice(value, types.ValidIPVLANModes) {
-				return fmt.Errorf("unknown ipvlan mode %q", value)
+			if isMacVlan {
+				if !util.StringInSlice(value, types.ValidMacVLANModes) {
+					return fmt.Errorf("unknown macvlan mode %q", value)
+				}
+			} else {
+				if !util.StringInSlice(value, types.ValidIPVLANModes) {
+					return fmt.Errorf("unknown ipvlan mode %q", value)
+				}
 			}
 		case types.MTUOption:
 			_, err := internalutil.ParseMTU(value)
@@ -292,52 +314,7 @@ func createIpvlan(network *types.Network) error {
 				return err
 			}
 		default:
-			return fmt.Errorf("unsupported ipvlan network option %s", key)
-		}
-	}
-	return nil
-}
-
-func createMacvlan(network *types.Network) error {
-	if network.NetworkInterface != "" {
-		interfaceNames, err := internalutil.GetLiveNetworkNames()
-		if err != nil {
-			return err
-		}
-		if !util.StringInSlice(network.NetworkInterface, interfaceNames) {
-			return fmt.Errorf("parent interface %s does not exist", network.NetworkInterface)
-		}
-	}
-
-	// always turn dns off with macvlan, it is not implemented in netavark
-	// and makes little sense to support with macvlan
-	// see https://github.com/containers/netavark/pull/467
-	network.DNSEnabled = false
-
-	// we already validated the drivers before so we just have to set the default here
-	switch network.IPAMOptions[types.Driver] {
-	case "":
-		network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
-	case types.HostLocalIPAMDriver:
-		if len(network.Subnets) == 0 {
-			return fmt.Errorf("macvlan driver needs at least one subnet specified, when the host-local ipam driver is set")
-		}
-	}
-
-	// validate the given options, we do not need them but just check to make sure they are valid
-	for key, value := range network.Options {
-		switch key {
-		case types.ModeOption:
-			if !util.StringInSlice(value, types.ValidMacVLANModes) {
-				return fmt.Errorf("unknown macvlan mode %q", value)
-			}
-		case types.MTUOption:
-			_, err := internalutil.ParseMTU(value)
-			if err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("unsupported macvlan network option %s", key)
+			return fmt.Errorf("unsupported %s network option %s", driver, key)
 		}
 	}
 	return nil
