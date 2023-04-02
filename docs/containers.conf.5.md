@@ -22,10 +22,10 @@ Config files in the `.d` directories, are added in alpha numeric sorted order an
 
 Not all options are supported in all container engines.
 
-Note container engines also use other configuration files for configuring the environment.
+Note, container engines also use other configuration files for configuring the environment.
 
 * `storage.conf` for configuration of container and images storage.
-* `registries.conf` for definition of container registires to search while pulling.
+* `registries.conf` for definition of container registries to search while pulling.
 container images.
 * `policy.conf` for controlling which images can be pulled to the system.
 
@@ -513,7 +513,7 @@ Not setting this field will fall back to containers/image defaults. (6)
 
 **image_volume_mode**="bind"
 
-Tells container engines how to handle the builtin image volumes.
+Tells container engines how to handle the built-in image volumes.
 
 * bind: An anonymous named volume will be  created  and  mounted into the container.
 * tmpfs: The volume is mounted onto the container as a tmpfs, which allows the users to create content that disappears when the container is stopped.
@@ -523,16 +523,16 @@ Tells container engines how to handle the builtin image volumes.
 
 Infra (pause) container image command for pod infra containers. When running a
 pod, we start a `/pause` process in a container to hold open the namespaces
-associated with the pod. This container does nothing other then sleep,
-reserving the pods resources for the lifetime of the pod.
+associated with the pod. This container does nothing other than sleep,
+reserving the pod's resources for the lifetime of the pod.
 
 **infra_image**=""
 
 Infra (pause) container image for pod infra containers. When running a
 pod, we start a `pause` process in a container to hold open the namespaces
-associated with the pod. This container does nothing other then sleep,
-reserving the pods resources for the lifetime of the pod. By default container
-engines run a builtin container using the pause executable. If you want override
+associated with the pod. This container does nothing other than sleep,
+reserving the pod's resources for the lifetime of the pod. By default container
+engines run a built-in container using the pause executable. If you want override
 specify an image to pull.
 
 **lock_type**="shm"
