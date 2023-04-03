@@ -540,6 +540,10 @@ reserving the pod's resources for the lifetime of the pod. By default container
 engines run a built-in container using the pause executable. If you want override
 specify an image to pull.
 
+**kube_generate_type**="pod"
+
+Default Kubernetes kind/specification of the kubernetes yaml generated with the `podman kube generate` command. The possible options are `pod` and `deployment`.
+
 **lock_type**="shm"
 
 Specify the locking mechanism to use; valid values are "shm" and "file".

@@ -444,6 +444,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendSQLite))
 			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
 			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
+			gomega.Expect(config.Engine.KubeGenerateType).To(gomega.Equal("pod"))
 		})
 
 		It("contents of passed-in file should override others", func() {

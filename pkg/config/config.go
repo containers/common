@@ -337,6 +337,10 @@ type EngineConfig struct {
 	// InitPath is the path to the container-init binary.
 	InitPath string `toml:"init_path,omitempty"`
 
+	// KubeGenerateType sets the Kubernetes kind/specification to generate by default
+	// with the podman kube generate command
+	KubeGenerateType string `toml:"kube_generate_type,omitempty"`
+
 	// LockType is the type of locking to use.
 	LockType string `toml:"lock_type,omitempty"`
 
