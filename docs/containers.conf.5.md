@@ -9,11 +9,12 @@ Container engines like Podman & Buildah read containers.conf file, if it exists
 and modify the defaults for running containers on the host. containers.conf uses
 a TOML format that can be easily modified and versioned.
 
-Container engines read the /usr/share/containers/containers.conf and
-/etc/containers/containers.conf, and /etc/containers/containers.conf.d/*.conf files
-if they exist. When running in rootless mode, they also read
-$HOME/.config/containers/containers.conf and
-$HOME/.config/containers/containers.conf.d/*.conf files.
+Container engines read the __/usr/share/containers/containers.conf__,
+__/etc/containers/containers.conf__, and __/etc/containers/containers.conf.d/\*.conf__
+files if they exist.
+When running in rootless mode, they also read
+__$HOME/.config/containers/containers.conf__ and
+__$HOME/.config/containers/containers.conf.d/\*.conf__ files.
 
 Fields specified in containers conf override the default options, as well as
 options in previously read containers.conf files.
@@ -50,6 +51,7 @@ TOML can be simplified to:
 The containers table contains settings to configure and manage the OCI runtime.
 
 **annotations** = []
+
 List of annotations. Specified as "key=value" pairs to be added to all containers.
 
 Example: "run.oci.keep_original_groups=1"
@@ -366,8 +368,8 @@ default_subnet_pools = [
 **network_config_dir**="/etc/cni/net.d/"
 
 Path to the directory where network configuration files are located.
-For the CNI backend the default is "/etc/cni/net.d" as root
-and "$HOME/.config/cni/net.d" as rootless.
+For the CNI backend the default is __/etc/cni/net.d__ as root
+and __$HOME/.config/cni/net.d__ as rootless.
 For the netavark backend "/etc/containers/networks" is used as root
 and "$graphroot/networks" as rootless.
 
@@ -473,12 +475,14 @@ with detailed information about the container.  Set to false by default.
 A is a list of directories which are used to search for helper binaries.
 
 The default paths on Linux are:
+
 - `/usr/local/libexec/podman`
 - `/usr/local/lib/podman`
 - `/usr/libexec/podman`
 - `/usr/lib/podman`
 
 The default paths on macOS are:
+
 - `/usr/local/opt/podman/libexec`
 -	`/opt/homebrew/bin`
 -	`/opt/homebrew/opt/podman/libexec`
@@ -489,6 +493,7 @@ The default paths on macOS are:
 -	`/usr/lib/podman`
 
 The default path on Windows is:
+
 - `C:\Program Files\RedHat\Podman`
 
 **hooks_dir**=["/etc/containers/oci/hooks.d", ...]
@@ -606,6 +611,7 @@ Pull image before running or creating a container. The default is **missing**.
 - **never**: do not pull the image from the registry, use only the local version. Raise an error if the image is not present locally.
 
 **remote** = false
+
 Indicates whether the application should be running in remote mode. This flag modifies the
 --remote option on container engines. Setting the flag to true will default `podman --remote=true` for access to the remote Podman service.
 
@@ -756,7 +762,9 @@ Environment variables like $HOME as well as complete paths are supported for
 the source and destination. An optional third field `:ro` can be used to
 tell the container engines to mount the volume readonly.
 
-On Mac, the default volumes are: `"/Users:/Users", "/private:/private", "/var/folders:/var/folders"`
+On Mac, the default volumes are:
+
+   [ "/Users:/Users", "/private:/private", "/var/folders:/var/folders" ]
 
 **provider**=""
 
@@ -768,14 +776,13 @@ default is `QEMU` and on Windows it is `WSL`.
 
 **containers.conf**
 
-Distributions often provide a `/usr/share/containers/containers.conf` file to
+Distributions often provide a __/usr/share/containers/containers.conf__ file to
 provide a default configuration. Administrators can override fields in this
-file by creating `/etc/containers/containers.conf` to specify their own
+file by creating __/etc/containers/containers.conf__ to specify their own
 configuration. They may also drop `.conf` files in
-`/etc/containers/containers.conf.d` which will be loaded in alphanumeric order.
+__/etc/containers/containers.conf.d__ which will be loaded in alphanumeric order.
 Rootless users can further override fields in the config by creating a config
-file stored in the `$HOME/.config/containers/containers.conf` file or `.conf`
-files in `$HOME/.config/containers/containers.conf.d`.
+file stored in the __$HOME/.config/containers/containers.conf__ file or __.conf__ files in __$HOME/.config/containers/containers.conf.d__.
 
 If the `CONTAINERS_CONF` environment variable is set, all system and user
 config files are ignored and only the specified config file will be loaded.
@@ -793,7 +800,7 @@ well as options in previously loaded containers.conf files.
 
 The `/etc/containers/storage.conf` file is the default storage configuration file.
 Rootless users can override fields in the storage config by creating
-`$HOME/.config/containers/storage.conf`.
+__$HOME/.config/containers/storage.conf__.
 
 If the `CONTAINERS_STORAGE_CONF` path environment variable is set, this path
 is used for the storage.conf file rather than the default.
