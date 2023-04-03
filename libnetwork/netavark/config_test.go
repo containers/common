@@ -775,7 +775,7 @@ var _ = Describe("Config", func() {
 			}
 			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`Unable to parse ip a.b.c.d`))
+			Expect(err.Error()).To(ContainSubstring(`unable to parse ip a.b.c.d`))
 		})
 
 		It("create network with NetworDNSServers with DNSEnabled=false", func() {
@@ -785,7 +785,7 @@ var _ = Describe("Config", func() {
 			}
 			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`Cannot set NetworkDNSServers if DNS is not enabled for the network`))
+			Expect(err.Error()).To(ContainSubstring(`cannot set NetworkDNSServers if DNS is not enabled for the network`))
 		})
 
 		It("create network with labels", func() {
