@@ -418,6 +418,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 
 	c.PodExitPolicy = defaultPodExitPolicy
 	c.SSHConfig = getDefaultSSHConfig()
+	c.KubeGenerateType = "pod"
 
 	return c, nil
 }

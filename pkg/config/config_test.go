@@ -420,6 +420,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo(""))
 			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(DefaultEventsLogSizeMax))
 			gomega.Expect(config.Engine.PodExitPolicy).To(gomega.Equal(PodExitPolicyContinue))
+			gomega.Expect(config.Engine.KubeGenerateType).To(gomega.Equal("pod"))
 		})
 
 		It("should success with valid user file path", func() {
