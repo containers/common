@@ -51,6 +51,13 @@ ifneq ($(shell uname -s), Darwin)
 	GOARCH=386 $(GO_BUILD) -tags $(BUILDTAGS) ./...
 endif
 
+.PHONY: bin/netavark-testplugin
+bin/netavark-testplugin:
+	$(GO_BUILD) -o $@ ./libnetwork/netavark/testplugin/
+
+.PHONY: netavark-testplugin
+netavark-testplugin: bin/netavark-testplugin
+
 .PHONY: docs
 docs:
 	$(MAKE) -C docs
@@ -90,7 +97,7 @@ install:
 test: test-unit
 
 .PHONY: test-unit
-test-unit:
+test-unit: netavark-testplugin
 	go test --tags $(BUILDTAGS) -v ./libimage
 	go test --tags $(BUILDTAGS) -v ./libnetwork/...
 	go test --tags $(BUILDTAGS) -v ./pkg/...

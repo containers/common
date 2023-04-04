@@ -557,6 +557,9 @@ type NetworkConfig struct {
 	// CNIPluginDirs is where CNI plugin binaries are stored.
 	CNIPluginDirs []string `toml:"cni_plugin_dirs,omitempty"`
 
+	// NetavarkPluginDirs is a list of directories which contain netavark plugins.
+	NetavarkPluginDirs []string `toml:"netavark_plugin_dirs,omitempty"`
+
 	// DefaultNetwork is the network name of the default network
 	// to attach pods to.
 	DefaultNetwork string `toml:"default_network,omitempty"`

@@ -925,7 +925,7 @@ var _ = Describe("Config", func() {
 			}
 			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unsupported driver someDriver"))
+			Expect(err.Error()).To(ContainSubstring(`failed to find driver or plugin "someDriver"`))
 		})
 
 		It("network create internal and dns", func() {

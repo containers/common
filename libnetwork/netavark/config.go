@@ -209,7 +209,11 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 			return nil, err
 		}
 	default:
-		return nil, fmt.Errorf("unsupported driver %s: %w", newNetwork.Driver, types.ErrInvalidArg)
+		net, err := n.createPlugin(newNetwork)
+		if err != nil {
+			return nil, err
+		}
+		newNetwork = net
 	}
 
 	// when we do not have ipam we must disable dns
@@ -402,4 +406,56 @@ func validateIPAMDriver(n *types.Network) error {
 		return fmt.Errorf("unsupported ipam driver %q", ipamDriver)
 	}
 	return nil
+}
+
+var errInvalidPluginResult = errors.New("invalid plugin result")
+
+func (n *netavarkNetwork) createPlugin(net *types.Network) (*types.Network, error) {
+	path, err := getPlugin(net.Driver, n.pluginDirs)
+	if err != nil {
+		return nil, err
+	}
+	result := new(types.Network)
+	err = n.execPlugin(path, []string{"create"}, net, result)
+	if err != nil {
+		return nil, fmt.Errorf("plugin %s failed: %w", path, err)
+	}
+	// now make sure that neither the name, ID, driver were changed by the plugin
+	if net.Name != result.Name {
+		return nil, fmt.Errorf("%w: changed network name", errInvalidPluginResult)
+	}
+	if net.ID != result.ID {
+		return nil, fmt.Errorf("%w: changed network ID", errInvalidPluginResult)
+	}
+	if net.Driver != result.Driver {
+		return nil, fmt.Errorf("%w: changed network driver", errInvalidPluginResult)
+	}
+	return result, nil
+}
+
+func getAllPlugins(dirs []string) []string {
+	var plugins []string
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err == nil {
+			for _, entry := range entries {
+				name := entry.Name()
+				if !util.StringInSlice(name, plugins) {
+					plugins = append(plugins, name)
+				}
+			}
+		}
+	}
+	return plugins
+}
+
+func getPlugin(name string, dirs []string) (string, error) {
+	for _, dir := range dirs {
+		fullpath := filepath.Join(dir, name)
+		st, err := os.Stat(fullpath)
+		if err == nil && st.Mode().IsRegular() {
+			return fullpath, nil
+		}
+	}
+	return "", fmt.Errorf("failed to find driver or plugin %q", name)
 }

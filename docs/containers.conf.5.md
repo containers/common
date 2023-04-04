@@ -337,6 +337,20 @@ cni_plugin_dirs = [
 ]
 ```
 
+**netavark_plugin_dirs**=[]
+
+List of directories that will be searched for netavark plugins.
+
+The default list is:
+```
+netavark_plugin_dirs = [
+  "/usr/local/libexec/netavark",
+  "/usr/libexec/netavark",
+  "/usr/local/lib/netavark",
+  "/usr/lib/netavark",
+]
+```
+
 **default_network**="podman"
 
 The network name of the default network to attach pods to.
