@@ -37,7 +37,7 @@ jobs:
         sudo apt-get -qq update
         sudo apt-get -qq install libseccomp-dev libdevmapper-dev
     - name: lint
-      uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # v3
+      uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # v3
       with:
         version: "${{ env.LINT_VERSION }}"
         only-new-issues: true
@@ -46,7 +46,7 @@ jobs:
     - name: Extra golangci-lint config. switcharoo
       run: mv .golangci-extra.yml golangci.yml
     - name: lint-extra
-      uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # v3
+      uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # v3
       with:
         version: "${{ env.LINT_VERSION }}"
         only-new-issues: true
