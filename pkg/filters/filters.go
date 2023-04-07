@@ -74,11 +74,9 @@ func FiltersFromRequest(r *http.Request) ([]string, error) {
 
 	libpodFilters := make([]string, 0, len(filters))
 	for filterKey, filterSlice := range filters {
-		f := filterKey
 		for _, filterValue := range filterSlice {
-			f += "=" + filterValue
+			libpodFilters = append(libpodFilters, filterKey+"="+filterValue)
 		}
-		libpodFilters = append(libpodFilters, f)
 	}
 
 	return libpodFilters, nil
