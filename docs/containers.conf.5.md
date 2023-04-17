@@ -430,6 +430,12 @@ conmon_path=[
 ]
 ```
 
+**database_backend**="boltdb"
+
+The database backend of Podman.  Supported values are "boltdb" (default) and
+"sqlite". Please run `podman-system-reset` prior to changing the database
+backend of an existing deployment, to make sure Podman can operate correctly.
+
 **detach_keys**="ctrl-p,ctrl-q"
 
 Keys sequence used for detaching a container.
