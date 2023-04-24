@@ -47,8 +47,7 @@ testing_task:
   env:
     NETAVARK_BINARY: "/usr/libexec/podman/netavark"
   test_script:
-    # TODO: Remove '|| dnf install' part once package is included in VM image
-    - dnf install -y /var/cache/download/podman-plugins*.rpm || dnf install -y podman-plugins
+    - dnf install -y /var/cache/download/podman-plugins*.rpm
     - mkdir "$GOLANGCI_LINT_CACHE"
     - export PATH="$PATH:$GOPATH/bin"
     - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
