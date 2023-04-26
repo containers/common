@@ -37,10 +37,11 @@ type subscriptionData struct {
 
 // saveTo saves subscription data to given directory
 func (s subscriptionData) saveTo(dir string) error {
-	if err := umask.MkdirAllIgnoreUmask(dir, s.dirMode); err != nil {
+	path := filepath.Join(dir, s.name)
+	if err := umask.MkdirAllIgnoreUmask(filepath.Dir(path), s.dirMode); err != nil {
 		return fmt.Errorf("create subscription directory: %w", err)
 	}
-	if err := umask.WriteFileIgnoreUmask(filepath.Join(dir, s.name), s.data, s.mode); err != nil {
+	if err := umask.WriteFileIgnoreUmask(path, s.data, s.mode); err != nil {
 		return fmt.Errorf("write subscription data: %w", err)
 	}
 	return nil
