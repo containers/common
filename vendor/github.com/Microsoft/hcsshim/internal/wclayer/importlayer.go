@@ -4,6 +4,7 @@ package wclayer
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -149,7 +150,7 @@ func NewLayerWriter(ctx context.Context, path string, parentLayerPaths []string)
 		}, nil
 	}
 
-	importPath, err := os.MkdirTemp("", "hcs")
+	importPath, err := ioutil.TempDir("", "hcs")
 	if err != nil {
 		return nil, err
 	}

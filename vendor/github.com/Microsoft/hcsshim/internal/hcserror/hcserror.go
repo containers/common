@@ -3,11 +3,11 @@
 package hcserror
 
 import (
-	"errors"
 	"fmt"
-
-	"golang.org/x/sys/windows"
+	"syscall"
 )
+
+const ERROR_GEN_FAILURE = syscall.Errno(31)
 
 type HcsError struct {
 	title string
@@ -32,21 +32,18 @@ func (e *HcsError) Error() string {
 
 func New(err error, title, rest string) error {
 	// Pass through DLL errors directly since they do not originate from HCS.
-	var e *windows.DLLError
-	if errors.As(err, &e) {
+	if _, ok := err.(*syscall.DLLError); ok {
 		return err
 	}
 	return &HcsError{title, rest, err}
 }
 
 func Win32FromError(err error) uint32 {
-	var herr *HcsError
-	if errors.As(err, &herr) {
+	if herr, ok := err.(*HcsError); ok {
 		return Win32FromError(herr.Err)
 	}
-	var code windows.Errno
-	if errors.As(err, &code) {
+	if code, ok := err.(syscall.Errno); ok {
 		return uint32(code)
 	}
-	return uint32(windows.ERROR_GEN_FAILURE)
+	return uint32(ERROR_GEN_FAILURE)
 }
