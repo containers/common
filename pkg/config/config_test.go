@@ -109,6 +109,7 @@ var _ = Describe("Config", func() {
 			defaultConfig, _ := NewConfig("")
 			// EnableLabeling should match whether or not SELinux is enabled on the host
 			gomega.Expect(defaultConfig.Containers.EnableLabeling).To(gomega.Equal(selinux.GetEnabled()))
+			gomega.Expect(defaultConfig.Containers.EnableLabeledUsers).To(gomega.BeFalse())
 		})
 	})
 
@@ -932,5 +933,6 @@ env=["foo=bar"]`
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))
+		gomega.Expect(config.Containers.EnableLabeledUsers).To(gomega.BeTrue())
 	})
 })
