@@ -208,7 +208,7 @@ the container.
 
 Indicates whether the container engine uses MAC(SELinux) container separation via labeling. This option is ignored on disabled systems.
 
-label_users=false
+**label_users**=false
 
 label_users indicates whether to enforce confined users in containers on
 SELinux systems. This option causes containers to maintain the current user
