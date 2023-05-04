@@ -208,6 +208,13 @@ the container.
 
 Indicates whether the container engine uses MAC(SELinux) container separation via labeling. This option is ignored on disabled systems.
 
+**label_users**=false
+
+label_users indicates whether to enforce confined users in containers on
+SELinux systems. This option causes containers to maintain the current user
+and role field of the calling process. By default SELinux containers run with
+the user system_u, and the role system_r.
+
 **log_driver**=""
 
 Logging driver for the container. Currently available options are k8s-file, journald, none and passthrough, with json-file aliased to k8s-file for scripting compatibility.  The journald driver is used by default if the systemd journal is readable and writable.  Otherwise, the k8s-file driver is used.
