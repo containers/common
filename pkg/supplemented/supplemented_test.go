@@ -63,9 +63,11 @@ func makeLayer(t *testing.T) []byte {
 func makeConfig(arch, os string, layer []byte) v1.Image {
 	diffID := digest.Canonical.FromBytes(layer)
 	return v1.Image{
-		Created:      &now,
-		Architecture: arch,
-		OS:           os,
+		Created: &now,
+		Platform: v1.Platform{
+			Architecture: arch,
+			OS:           os,
+		},
 		Config: v1.ImageConfig{
 			User:       "root",
 			Entrypoint: []string{"/tmpfile"},
