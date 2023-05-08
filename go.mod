@@ -10,7 +10,7 @@ require (
 	github.com/containernetworking/plugins v1.2.0
 	github.com/containers/image/v5 v5.25.1-0.20230505072505-dc4a4be9cc1e
 	github.com/containers/ocicrypt v1.1.7
-	github.com/containers/storage v1.46.1
+	github.com/containers/storage v1.46.2-0.20230508110141-51c23d59f8f3
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/davecgh/go-spew v1.1.1
@@ -28,7 +28,7 @@ require (
 	github.com/onsi/gomega v1.27.6
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0-rc3
-	github.com/opencontainers/runc v1.1.5
+	github.com/opencontainers/runc v1.1.7
 	github.com/opencontainers/runtime-spec v1.1.0-rc.2
 	github.com/opencontainers/runtime-tools v0.9.1-0.20230317050512-e931285f4b69
 	github.com/opencontainers/selinux v1.11.0
@@ -49,7 +49,7 @@ require (
 )
 
 require (
-	github.com/Microsoft/go-winio v0.6.0 // indirect
+	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.10.0-rc.7 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
