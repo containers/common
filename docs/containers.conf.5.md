@@ -111,8 +111,7 @@ default_capabilities = [
 ```
 
 Note, by default container engines using containers.conf, run with less
-capabilities than Docker. Docker runs additionally with "AUDIT_WRITE", "MKNOD",
-"NET_RAW", "CHROOT". If you need to add one of these capabilities for a
+capabilities than Docker. Docker runs additionally with "AUDIT_WRITE", "MKNOD" and "NET_RAW". If you need to add one of these capabilities for a
 particular container, you can use the --cap-add option or edit your system's containers.conf.
 
 **default_sysctls**=[]
