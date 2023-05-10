@@ -385,6 +385,11 @@ default_subnet_pools = [
 ]
 ```
 
+**default_rootless_network_cmd**="slirp4netns"
+
+Configure which rootless network program to use by default. Valid options are
+`slirp4netns` (default) and `pasta`.
+
 **network_config_dir**="/etc/cni/net.d/"
 
 Path to the directory where network configuration files are located.
