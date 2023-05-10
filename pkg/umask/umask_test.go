@@ -6,10 +6,9 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/containers/common/pkg/umask"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/containers/common/pkg/umask"
 )
 
 func TestMkdirAllIgnoreUmask(t *testing.T) {
@@ -53,17 +52,17 @@ func TestMkdirAllIgnoreUmask(t *testing.T) {
 		},
 	} {
 		prepare := tc.prepare
-		assert := tc.assert
+		testAssert := tc.assert
 
 		t.Run(tc.name, func(t *testing.T) {
-			old := syscall.Umask(0o077)
+			old := syscall.Umask(0o077) //nolint:gocritic
 			defer syscall.Umask(old)
 
 			t.Parallel()
 			dir := prepare()
 
 			err := umask.MkdirAllIgnoreUmask(dir, testMode)
-			assert(dir, err)
+			testAssert(dir, err)
 		})
 	}
 }
@@ -106,17 +105,17 @@ func TestWriteFileIgnoreUmask(t *testing.T) {
 		},
 	} {
 		prepare := tc.prepare
-		assert := tc.assert
+		testAssert := tc.assert
 
 		t.Run(tc.name, func(t *testing.T) {
-			old := syscall.Umask(0o077)
+			old := syscall.Umask(0o077) //nolint:gocritic
 			defer syscall.Umask(old)
 
 			t.Parallel()
 			path := prepare()
 
 			err := umask.WriteFileIgnoreUmask(path, []byte("test"), testMode)
-			assert(path, err)
+			testAssert(path, err)
 		})
 	}
 }
