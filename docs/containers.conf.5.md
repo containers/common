@@ -400,6 +400,11 @@ mode and dns enabled.
 Using an alternate port might be useful if other dns services should
 run on the machine.
 
+**pasta_options** = []
+
+A list of default pasta options that should be used running pasta.
+It accepts the pasta cli options, see pasta(1) for the full list of options.
+
 ## ENGINE TABLE
 The `engine` table contains configuration options used to set up container engines such as Podman and Buildah.
 

@@ -591,6 +591,10 @@ type NetworkConfig struct {
 	// for netavark rootful bridges with dns enabled. This can be necessary
 	// when other dns forwarders run on the machine. 53 is used if unset.
 	DNSBindPort uint16 `toml:"dns_bind_port,omitempty,omitzero"`
+
+	// PastaOptions contains a default list of pasta(1) options that should
+	// be used when running pasta.
+	PastaOptions []string `toml:"pasta_options,omitempty"`
 }
 
 type SubnetPool struct {
