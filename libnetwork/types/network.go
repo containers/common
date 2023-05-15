@@ -34,6 +34,10 @@ type ContainerNetwork interface {
 	// DefaultNetworkName will return the default network name
 	// for this interface.
 	DefaultNetworkName() string
+
+	// NetworkInfo return the network information about backend type,
+	// binary path, package version and so on.
+	NetworkInfo() NetworkInfo
 }
 
 // Network describes the Network attributes.
@@ -78,6 +82,22 @@ type NetworkUpdateOptions struct {
 	// Priority order will be kept as defined by user in the configuration.
 	AddDNSServers    []string `json:"add_dns_servers,omitempty"`
 	RemoveDNSServers []string `json:"remove_dns_servers,omitempty"`
+}
+
+// NetworkInfo contains the network information.
+type NetworkInfo struct {
+	Backend NetworkBackend `json:"backend"`
+	Version string         `json:"version,omitempty"`
+	Package string         `json:"package,omitempty"`
+	Path    string         `json:"path,omitempty"`
+	DNS     DNSNetworkInfo `json:"dns,omitempty"`
+}
+
+// NetworkInfo contains the DNS information.
+type DNSNetworkInfo struct {
+	Version string `json:"version,omitempty"`
+	Package string `json:"package,omitempty"`
+	Path    string `json:"path,omitempty"`
 }
 
 // IPNet is used as custom net.IPNet type to add Marshal/Unmarshal methods.
