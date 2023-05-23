@@ -147,6 +147,30 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config2.Network.DNSBindPort).To(gomega.Equal(uint16(1153)))
 	})
 
+	It("parse pasta_options", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Network.PastaOptions).To(gomega.BeNil())
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Network.PastaOptions).To(gomega.Equal([]string{"-t", "auto"}))
+	})
+
+	It("parse default_rootless_network_cmd", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("slirp4netns"))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("pasta"))
+	})
+
 	It("should fail during runtime", func() {
 		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
