@@ -337,6 +337,17 @@ func createIpvlanOrMacvlan(network *types.Network) error {
 			}
 			// rust only support "true" or "false" while go can parse 1 and 0 as well so we need to change it
 			network.Options[types.NoDefaultRoute] = strconv.FormatBool(val)
+		case types.BclimOption:
+			if isMacVlan {
+				_, err := strconv.ParseInt(value, 10, 32)
+				if err != nil {
+					return fmt.Errorf("failed to parse %q option: %w", key, err)
+				}
+				// do not fallthrough for macvlan
+				break
+			}
+			// bclim is only valid for macvlan not ipvlan so fallthrough to error case
+			fallthrough
 		default:
 			return fmt.Errorf("unsupported %s network option %s", driver, key)
 		}
