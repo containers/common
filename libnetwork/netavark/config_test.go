@@ -1017,6 +1017,51 @@ var _ = Describe("Config", func() {
 			Expect(network1.IPAMOptions).To(HaveKeyWithValue("driver", "host-local"))
 		})
 
+		It("create macvlan config with bclim", func() {
+			subnet := "10.1.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Driver: "macvlan",
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+				Options: map[string]string{
+					types.BclimOption: "-1",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Name).ToNot(BeEmpty())
+			Expect(network1.Options).To(HaveKeyWithValue("bclim", "-1"))
+
+			network = types.Network{
+				Driver: "macvlan",
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+				Options: map[string]string{
+					types.BclimOption: "1000",
+				},
+			}
+			network1, err = libpodNet.NetworkCreate(network, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Name).ToNot(BeEmpty())
+			Expect(network1.Options).To(HaveKeyWithValue("bclim", "1000"))
+
+			network = types.Network{
+				Driver: "macvlan",
+				Subnets: []types.Subnet{
+					{Subnet: n},
+				},
+				Options: map[string]string{
+					types.BclimOption: "abc",
+				},
+			}
+			_, err = libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("failed to parse \"bclim\" option: strconv.ParseInt: parsing \"abc\": invalid syntax"))
+		})
+
 		It("create macvlan config with mode", func() {
 			subnet := "10.1.0.0/24"
 			n, _ := types.ParseCIDR(subnet)
