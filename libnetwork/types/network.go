@@ -54,6 +54,8 @@ type Network struct {
 	Created time.Time `json:"created,omitempty"`
 	// Subnets to use for this network.
 	Subnets []Subnet `json:"subnets,omitempty"`
+	// Routes to use for this network.
+	Routes []Route `json:"routes,omitempty"`
 	// IPv6Enabled if set to true an ipv6 subnet should be created for this net.
 	IPv6Enabled bool `json:"ipv6_enabled"`
 	// Internal is whether the Network should not have external routes
@@ -187,6 +189,17 @@ type Subnet struct {
 	Gateway net.IP `json:"gateway,omitempty"`
 	// LeaseRange contains the range where IP are leased. Optional.
 	LeaseRange *LeaseRange `json:"lease_range,omitempty"`
+}
+
+type Route struct {
+	// Destination for this route in CIDR form.
+	// swagger:strfmt string
+	Destination IPNet `json:"destination"`
+	// Gateway IP for this route.
+	// swagger:strfmt string
+	Gateway net.IP `json:"gateway"`
+	// Metric for this route. Optional.
+	Metric *uint32 `json:"metric,omitempty"`
 }
 
 // LeaseRange contains the range where IP are leased.
