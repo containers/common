@@ -459,6 +459,7 @@ Specify the keys sequence used to detach a container.
 Format is a single character `[a-Z]` or a comma separated sequence of
 `ctrl-<value>`, where `<value>` is one of:
 `a-z`, `@`, `^`, `[`, `\`, `]`, `^` or `_`
+Specifying "" disables this feature.
 
 **enable_port_reservation**=true
 
