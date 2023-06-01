@@ -284,6 +284,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 	c.VolumePath = filepath.Join(storeOpts.GraphRoot, "volumes")
 
 	c.VolumePluginTimeout = DefaultVolumePluginTimeout
+	c.CompressionFormat = "gzip"
 
 	c.HelperBinariesDir = defaultHelperBinariesDir
 	if additionalHelperBinariesDir != "" {

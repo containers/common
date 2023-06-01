@@ -718,7 +718,7 @@ not be by other drivers.
 Determines whether file copied into a container will have changed ownership to
 the primary uid/gid of the container.
 
-**compression_format**=""
+**compression_format**="gzip"
 
 Specifies the compression format to use when pushing an image. Supported values are: `gzip`, `zstd` and `zstd:chunked`.
 
