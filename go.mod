@@ -10,7 +10,7 @@ require (
 	github.com/containernetworking/plugins v1.3.0
 	github.com/containers/image/v5 v5.25.1-0.20230605120906-abe51339f34d
 	github.com/containers/ocicrypt v1.1.7
-	github.com/containers/storage v1.46.2-0.20230508110141-51c23d59f8f3
+	github.com/containers/storage v1.46.2-0.20230530174214-1dc289a244ce
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.3
 	github.com/davecgh/go-spew v1.1.1
@@ -96,7 +96,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
-	github.com/mistifyio/go-zfs/v3 v3.0.0 // indirect
+	github.com/mistifyio/go-zfs/v3 v3.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/sys/mountinfo v0.6.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
