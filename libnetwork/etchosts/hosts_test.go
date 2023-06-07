@@ -90,6 +90,7 @@ func TestNew(t *testing.T) {
 		extraHosts                []string
 		containerIPs              HostEntries
 		hostContainersInternal    string
+		hostName                  string
 		expectedTargetFileContent string
 		wantErrString             string
 	}{
@@ -219,6 +220,13 @@ func TestNew(t *testing.T) {
 			expectedTargetFileContent: targetFileContent1 + "10.0.0.1\thost.containers.internal\n",
 		},
 		{
+			name:                      "with host.containers.internal ip and hostname of the container",
+			baseFileContent:           baseFileContent1Spaces,
+			hostContainersInternal:    "1.2.3.4",
+			hostName:                  "4040283c83cd",
+			expectedTargetFileContent: targetFileContent1 + "1.2.3.4\thost.containers.internal\n" + "1.2.3.4\t4040283c83cd\n",
+		},
+		{
 			name:                      "host.containers.internal not added when already present in extra hosts",
 			baseFileContent:           baseFileContent1Spaces,
 			extraHosts:                []string{"host.containers.internal:1.1.1.1"},
@@ -290,6 +298,7 @@ func TestNew(t *testing.T) {
 				ContainerIPs:             tt.containerIPs,
 				HostContainersInternalIP: tt.hostContainersInternal,
 				TargetFile:               targetFile,
+				Hostname:                 tt.hostName,
 			}
 
 			err := New(params)
