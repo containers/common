@@ -48,7 +48,7 @@ var errDataSize = errors.New("configmap data must be larger than 0 and less than
 var configMapsFile = "configmaps.json"
 
 // configMapNameRegexp matches valid configMap names
-// Allowed: 64 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
+// Allowed: 253 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
 var configMapNameRegexp = regexp.Delayed(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 
 // ConfigMapManager holds information on handling configmaps
@@ -265,8 +265,13 @@ func (s *ConfigMapManager) LookupConfigMapData(nameOrID string) (*ConfigMap, []b
 
 // validateConfigMapName checks if the configMap name is valid.
 func validateConfigMapName(name string) error {
-	if !configMapNameRegexp.MatchString(name) || len(name) > 64 || strings.HasSuffix(name, "-") || strings.HasSuffix(name, ".") {
-		return fmt.Errorf("only 64 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s: %w", name, errInvalidConfigMapName)
+	if !configMapNameRegexp.MatchString(name) ||
+		len(name) > 253 ||
+		strings.HasSuffix(name, "-") ||
+		strings.HasSuffix(name, ".") ||
+		strings.HasSuffix(name, "_") {
+
+		return fmt.Errorf("only 253 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s: %w", name, errInvalidConfigMapName)
 	}
 	return nil
 }

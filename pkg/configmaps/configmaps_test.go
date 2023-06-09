@@ -60,7 +60,13 @@ func TestAddConfigMapName(t *testing.T) {
 	_, err = manager.Store("", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
 	// name too long
-	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaiz", []byte("mydata"), drivertype, opts)
+	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrabd", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+	_, err = manager.Store("u-tqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptr-b", []byte("mydata"), drivertype, opts)
+	require.NoError(t, err)
+	_, err = manager.Store("-uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptr-b", []byte("mydata"), drivertype, opts)
+	require.Error(t, err)
+	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrb.", []byte("mydata"), drivertype, opts)
 	require.Error(t, err)
 	// invalid chars
 	_, err = manager.Store("??", []byte("mydata"), drivertype, opts)

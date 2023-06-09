@@ -105,7 +105,7 @@ func TestAddSecretName(t *testing.T) {
 	_, err = manager.Store("", []byte("mydata"), drivertype, storeOpts)
 	require.Error(t, err)
 	// name too long
-	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaiz", []byte("mydata"), drivertype, storeOpts)
+	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrabd", []byte("mydata"), drivertype, storeOpts)
 	require.Error(t, err)
 	// invalid chars
 	_, err = manager.Store("??", []byte("mydata"), drivertype, storeOpts)
