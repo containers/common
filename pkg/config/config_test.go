@@ -2,8 +2,10 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -509,6 +511,9 @@ image_copy_tmp_dir="storage"`
 
 		It("Test Capabilities call", func() {
 			// Given
+			if runtime.GOOS != "linux" {
+				Skip(fmt.Sprintf("capabilities not supported on %s", runtime.GOOS))
+			}
 			// When
 			config, err := NewConfig("")
 			// Then
