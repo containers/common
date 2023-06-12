@@ -511,12 +511,12 @@ image_copy_tmp_dir="storage"`
 
 		It("Test Capabilities call", func() {
 			// Given
-			// When
-			config, err := NewConfig("")
-			// Then
 			if runtime.GOOS != "linux" {
 				Skip(fmt.Sprintf("capabilities not supported on %s", runtime.GOOS))
 			}
+			// When
+			config, err := NewConfig("")
+			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 			var addcaps, dropcaps []string
 			caps, err := config.Capabilities("0", addcaps, dropcaps)
