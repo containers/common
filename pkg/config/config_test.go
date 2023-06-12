@@ -2,8 +2,10 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -512,6 +514,9 @@ image_copy_tmp_dir="storage"`
 			// When
 			config, err := NewConfig("")
 			// Then
+			if runtime.GOOS != "linux" {
+				Skip(fmt.Sprintf("capabilities not supported on %s", runtime.GOOS))
+			}
 			gomega.Expect(err).To(gomega.BeNil())
 			var addcaps, dropcaps []string
 			caps, err := config.Capabilities("0", addcaps, dropcaps)
