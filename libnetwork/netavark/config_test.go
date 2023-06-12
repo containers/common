@@ -1972,9 +1972,9 @@ var _ = Describe("Config", func() {
 			Expect(networks).To(ConsistOf(HaveNetworkName("internal"), HaveNetworkName("bridge")))
 		})
 
-		It("network list with filters (id)", func() {
+		It("network list with filters (id with regex)", func() {
 			filters := map[string][]string{
-				"id": {"3bed2cb3a3acf7b6a8ef408420cc682d5520e26976d354254f528c965612054f", "17f29b073143d8cd97b5bbe492bdeffec1c5fee55cc1fe2112c8b9335f8b6121"},
+				"id": {"3bed2cb3a3acf7b6a8ef40.*", "17f29b073143d8cd97b5bbe492bdeffec1c5fee55cc1fe2112c8b9335f8b6121"},
 			}
 			filterFuncs, err := util.GenerateNetworkFilters(filters)
 			Expect(err).To(BeNil())
