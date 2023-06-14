@@ -11,6 +11,7 @@
 package pasta
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -124,8 +125,12 @@ func Setup(opts *SetupOptions) error {
 	// pasta forks once ready, and quits once we delete the target namespace
 	_, err = exec.Command(path, cmdArgs...).Output()
 	if err != nil {
-		return fmt.Errorf("failed to start pasta:\n%s",
-			err.(*exec.ExitError).Stderr)
+		exitErr := &exec.ExitError{}
+		if errors.As(err, &exitErr) {
+			return fmt.Errorf("pasta failed with exit code %d:\n%s",
+				exitErr.ExitCode(), exitErr.Stderr)
+		}
+		return fmt.Errorf("failed to start pasta: %w", err)
 	}
 
 	return nil
