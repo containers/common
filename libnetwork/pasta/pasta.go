@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	BinaryName = "passt"
+	BinaryName = "pasta"
 )
 
 type SetupOptions struct {
@@ -48,7 +48,7 @@ func Setup(opts *SetupOptions) error {
 	NoUDPNamespacePorts := true
 	NoMapGW := true
 
-	path, err := opts.Config.FindHelperBinary("pasta", true)
+	path, err := opts.Config.FindHelperBinary(BinaryName, true)
 	if err != nil {
 		return fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
 	}
