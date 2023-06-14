@@ -62,6 +62,7 @@ func TestFilterReference(t *testing.T) {
 		{"quay.io/libpod/*", 2},
 		{"busybox", 1},
 		{"alpine", 1},
+		{"alpine@" + alpine.Digest().String(), 1},
 	} {
 		listOptions := &ListImagesOptions{
 			Filters: []string{"reference=" + test.filter},
