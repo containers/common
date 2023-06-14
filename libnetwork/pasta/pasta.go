@@ -83,6 +83,9 @@ func Setup(opts *SetupOptions) error {
 		}
 	}
 
+	// first append options set in the config
+	cmdArgs = append(cmdArgs, opts.Config.Network.PastaOptions...)
+	// then append the ones that were set on the cli
 	cmdArgs = append(cmdArgs, opts.ExtraOptions...)
 
 	for i, opt := range cmdArgs {
