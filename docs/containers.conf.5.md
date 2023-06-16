@@ -724,9 +724,9 @@ the primary uid/gid of the container.
 Specifies the compression format to use when pushing an image. Supported values are: `gzip`, `zstd` and `zstd:chunked`.
 
 ## SERVICE DESTINATION TABLE
-The `service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
+The `engine.service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
 
-**[service_destinations.{name}]**
+**[engine.service_destinations.{name}]**
 URI to access the Podman service
 **uri="ssh://user@production.example.com/run/user/1001/podman/podman.sock"**
 
