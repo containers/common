@@ -182,6 +182,64 @@ func TestImageFunctions(t *testing.T) {
 	require.Equal(t, image.NamesHistory(), imageData.NamesHistory, "inspect data should match")
 }
 
+func TestLookupImage(t *testing.T) {
+	alpineNoTag := "quay.io/libpod/alpine"
+	alpineLatest := alpineNoTag + ":latest"
+
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	pulledImages, err := runtime.Pull(ctx, alpineLatest, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, pulledImages, 1)
+	alpine := pulledImages[0]
+
+	digestStr := alpine.Digest().String()
+	alpineDigest := alpineNoTag + "@" + digestStr
+
+	for _, test := range []struct {
+		input        string
+		expectedName string
+		mustFail     bool
+	}{
+		// Name only
+		{"alpine", alpineLatest, false},
+		{"alpine:latest", alpineLatest, false},
+		{"alpine:wrongtag", "", true},
+		{"alpine@" + digestStr, alpineDigest, false},
+		{"alpine:latest@" + digestStr, alpineDigest, false},   // Tag will be trimmed
+		{"alpine:wrongtag@" + digestStr, alpineDigest, false}, // Tag will be ignored and trimmed
+		// Repo + name
+		{"libpod/alpine", alpineLatest, false},
+		{"libpod/alpine:latest", alpineLatest, false},
+		{"libpod/alpine:wrongtag", "", true},
+		{"libpod/alpine@" + digestStr, alpineDigest, false},
+		{"libpod/alpine:latest@" + digestStr, alpineDigest, false},   // Tag will be trimmed
+		{"libpod/alpine:wrongtag@" + digestStr, alpineDigest, false}, // Tag will be ignored and trimmed
+		// Domain + repo + name
+		{alpineNoTag, alpineLatest, false},
+		{alpineLatest, alpineLatest, false},
+		{alpineNoTag + ":wrongtag", "", true},
+		{alpineDigest, alpineDigest, false},
+		{alpineNoTag + ":latest@" + digestStr, alpineDigest, false},   // Tag will be trimmed
+		{alpineNoTag + ":wrongtag@" + digestStr, alpineDigest, false}, // Tag will be ignored and trimmed
+	} {
+		resolvedImage, resolvedName, err := runtime.LookupImage(test.input, nil)
+		if test.mustFail {
+			require.Error(t, err)
+			continue
+		}
+		require.NoError(t, err)
+		require.NotNil(t, resolvedImage)
+		require.Equal(t, alpine.ID(), resolvedImage.ID())
+		require.Equal(t, test.expectedName, resolvedName, "input resolved to the expected name")
+	}
+}
+
 func TestInspectHealthcheck(t *testing.T) {
 	runtime, cleanup := testNewRuntime(t)
 	defer cleanup()
