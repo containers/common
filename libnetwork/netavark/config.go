@@ -244,7 +244,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		return nil, err
 	}
 
-	//validate routes
+	// validate routes
 	err = internalutil.ValidateRoutes(newNetwork.Routes)
 	if err != nil {
 		return nil, err
