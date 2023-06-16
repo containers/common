@@ -737,7 +737,7 @@ func (i *Image) RepoDigests() ([]string, error) {
 // Mount the image with the specified mount options and label, both of which
 // are directly passed down to the containers storage.  Returns the fully
 // evaluated path to the mount point.
-func (i *Image) Mount(ctx context.Context, mountOptions []string, mountLabel string) (string, error) {
+func (i *Image) Mount(_ context.Context, mountOptions []string, mountLabel string) (string, error) {
 	if i.runtime.eventChannel != nil {
 		defer i.runtime.writeEvent(&Event{ID: i.ID(), Name: "", Time: time.Now(), Type: EventTypeImageMount})
 	}
