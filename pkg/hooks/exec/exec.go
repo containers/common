@@ -16,16 +16,33 @@ import (
 // DefaultPostKillTimeout is the recommended default post-kill timeout.
 const DefaultPostKillTimeout = time.Duration(10) * time.Second
 
+type RunOptions struct {
+	// The hook to run
+	Hook *rspec.Hook
+	// The workdir to change when invoking the hook
+	Dir string
+	// The container state data to pass into the hook process
+	State []byte
+	// Stdout from the hook process
+	Stdout io.Writer
+	// Stderr from the hook process
+	Stderr io.Writer
+	// Timeout for waiting process killed
+	PostKillTimeout time.Duration
+}
+
 // Run executes the hook and waits for it to complete or for the
 // context or hook-specified timeout to expire.
-func Run(ctx context.Context, hook *rspec.Hook, state []byte, stdout io.Writer, stderr io.Writer, postKillTimeout time.Duration) (hookErr, err error) {
+func Run(ctx context.Context, options RunOptions) (hookErr, err error) {
+	hook := options.Hook
 	cmd := osexec.Cmd{
 		Path:   hook.Path,
 		Args:   hook.Args,
 		Env:    hook.Env,
-		Stdin:  bytes.NewReader(state),
-		Stdout: stdout,
-		Stderr: stderr,
+		Dir:    options.Dir,
+		Stdin:  bytes.NewReader(options.State),
+		Stdout: options.Stdout,
+		Stderr: options.Stderr,
 	}
 	if cmd.Env == nil {
 		cmd.Env = []string{}
@@ -57,11 +74,11 @@ func Run(ctx context.Context, hook *rspec.Hook, state []byte, stdout io.Writer, 
 		if err := cmd.Process.Kill(); err != nil {
 			logrus.Errorf("Failed to kill pid %v", cmd.Process)
 		}
-		timer := time.NewTimer(postKillTimeout)
+		timer := time.NewTimer(options.PostKillTimeout)
 		defer timer.Stop()
 		select {
 		case <-timer.C:
-			err = fmt.Errorf("failed to reap process within %s of the kill signal", postKillTimeout)
+			err = fmt.Errorf("failed to reap process within %s of the kill signal", options.PostKillTimeout)
 		case err = <-exit:
 		}
 		return err, ctx.Err()
