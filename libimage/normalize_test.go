@@ -132,12 +132,14 @@ func TestNormalizeTaggedDigestedString(t *testing.T) {
 		{"localhost/fedora:anothertag" + digestSuffix, "localhost/fedora" + digestSuffix},
 		{"localhost:5000/fedora:v1.2.3.4.5" + digestSuffix, "localhost:5000/fedora" + digestSuffix},
 	} {
-		res, err := normalizeTaggedDigestedString(test.input)
+		res, named, err := normalizeTaggedDigestedString(test.input)
 		if test.expected == "" {
 			assert.Error(t, err, "%v", test)
 		} else {
 			assert.NoError(t, err, "%v", test)
 			assert.Equal(t, test.expected, res, "%v", test)
+			assert.NotNil(t, named, "%v", test)
+			assert.Equal(t, res, named.String(), "%v", test)
 		}
 	}
 }

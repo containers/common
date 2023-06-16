@@ -63,6 +63,19 @@ func TestFilterReference(t *testing.T) {
 		{"busybox", 1},
 		{"alpine", 1},
 		{"alpine@" + alpine.Digest().String(), 1},
+		{"alpine:latest@" + alpine.Digest().String(), 1},
+		{"quay.io/libpod/alpine@" + alpine.Digest().String(), 1},
+		{"quay.io/libpod/alpine:latest@" + alpine.Digest().String(), 1},
+		// Make sure that tags are ignored
+		{"alpine:ignoreme@" + alpine.Digest().String(), 1},
+		{"alpine:123@" + alpine.Digest().String(), 1},
+		{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String(), 1},
+		{"quay.io/libpod/alpine:456@" + alpine.Digest().String(), 1},
+		// Make sure that repo and digest must match
+		{"alpine:busyboxdigest@" + busybox.Digest().String(), 0},
+		{"alpine:busyboxdigest@" + busybox.Digest().String(), 0},
+		{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String(), 0},
+		{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String(), 0},
 	} {
 		listOptions := &ListImagesOptions{
 			Filters: []string{"reference=" + test.filter},
