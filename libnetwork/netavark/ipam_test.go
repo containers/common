@@ -450,4 +450,51 @@ var _ = Describe("IPAM", func() {
 		err = networkInterface.deallocIPs(opts)
 		Expect(err).ToNot(HaveOccurred())
 	})
+
+	for _, leaseRange := range []types.LeaseRange{{
+		StartIP: net.ParseIP("10.0.0.0"),
+		EndIP:   net.ParseIP("10.0.0.63"),
+	}, {
+		EndIP: net.ParseIP("10.0.0.63"),
+	}, {
+		StartIP: net.ParseIP("10.0.0.0"),
+	}} {
+		lease := leaseRange
+		It(fmt.Sprintf("ipam alloc with lease range as big as subnet: %v", lease), func() {
+			s, _ := types.ParseCIDR("10.0.0.0/26")
+			network, err := networkInterface.NetworkCreate(
+				types.Network{
+					Subnets: []types.Subnet{
+						{
+							Subnet:     s,
+							LeaseRange: &lease,
+						},
+					},
+				},
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+
+			netName := network.Name
+
+			for i := 2; i < 64; i++ {
+				opts := &types.NetworkOptions{
+					ContainerID: fmt.Sprintf("id-%d", i),
+					Networks: map[string]types.PerNetworkOptions{
+						netName: {},
+					},
+				}
+				err = networkInterface.allocIPs(opts)
+				if i < 63 {
+					Expect(err).ToNot(HaveOccurred())
+					Expect(opts.Networks).To(HaveKey(netName))
+					Expect(opts.Networks[netName].StaticIPs).To(HaveLen(1))
+					Expect(opts.Networks[netName].StaticIPs[0]).To(Equal(net.ParseIP(fmt.Sprintf("10.0.0.%d", i)).To4()))
+				} else {
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("IPAM error: failed to find free IP in range: 10.0.0.1 - 10.0.0.62"))
+				}
+			}
+		})
+	}
 })
