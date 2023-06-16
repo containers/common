@@ -157,9 +157,8 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 			if errors.Is(err, ErrNoSuchConfigMap) {
 				secr.ID = newID
 				break
-			} else {
-				return "", err
 			}
+			return "", err
 		}
 	}
 

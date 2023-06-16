@@ -123,10 +123,7 @@ func new(params *Params) error {
 	}
 	containerIPs = append(containerIPs, params.ContainerIPs...)
 
-	if err := writeHostFile(params.TargetFile, entries, containerIPs); err != nil {
-		return err
-	}
-	return nil
+	return writeHostFile(params.TargetFile, entries, containerIPs)
 }
 
 // add see comment on Add()
