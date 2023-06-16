@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 		Args: []string{"sh", "-c", "cat"},
 	}
 	var stderr, stdout bytes.Buffer
-	hookErr, err := Run(ctx, hook, []byte("{}"), &stdout, &stderr, DefaultPostKillTimeout)
+	hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, State: []byte("{}"), Stdout: &stdout, Stderr: &stderr, PostKillTimeout: DefaultPostKillTimeout})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func TestRunIgnoreOutput(t *testing.T) {
 		Path: path,
 		Args: []string{"sh", "-c", "cat"},
 	}
-	hookErr, err := Run(ctx, hook, []byte("{}"), nil, nil, DefaultPostKillTimeout)
+	hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, State: []byte("{}"), PostKillTimeout: DefaultPostKillTimeout})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestRunFailedStart(t *testing.T) {
 	hook := &rspec.Hook{
 		Path: "/does/not/exist",
 	}
-	hookErr, err := Run(ctx, hook, []byte("{}"), nil, nil, DefaultPostKillTimeout)
+	hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, State: []byte("{}"), PostKillTimeout: DefaultPostKillTimeout})
 	if err == nil {
 		t.Fatal("unexpected success")
 	}
@@ -125,7 +125,7 @@ func TestRunEnvironment(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var stderr, stdout bytes.Buffer
 			hook.Env = test.env
-			hookErr, err := Run(ctx, hook, []byte("{}"), &stdout, &stderr, DefaultPostKillTimeout)
+			hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, State: []byte("{}"), Stdout: &stdout, Stderr: &stderr, PostKillTimeout: DefaultPostKillTimeout})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -141,6 +141,28 @@ func TestRunEnvironment(t *testing.T) {
 			assert.Equal(t, test.expected, env)
 		})
 	}
+}
+
+func TestRunCwd(t *testing.T) {
+	ctx := context.Background()
+	hook := &rspec.Hook{
+		Path: path,
+		Args: []string{"sh", "-c", "pwd"},
+	}
+	cwd, err := os.MkdirTemp("", "userdata")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stderr, stdout bytes.Buffer
+	hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, Dir: cwd, State: []byte("{}"), Stdout: &stdout, Stderr: &stderr, PostKillTimeout: DefaultPostKillTimeout})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hookErr != nil {
+		t.Fatal(hookErr)
+	}
+	assert.Equal(t, "", stderr.String())
+	assert.Equal(t, strings.TrimSuffix(stdout.String(), "\n"), cwd)
 }
 
 func TestRunCancel(t *testing.T) {
@@ -186,7 +208,7 @@ func TestRunCancel(t *testing.T) {
 				defer cancel()
 			}
 			hook.Timeout = test.hookTimeout
-			hookErr, err := Run(ctx, hook, []byte("{}"), &stdout, &stderr, DefaultPostKillTimeout)
+			hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, State: []byte("{}"), Stdout: &stdout, Stderr: &stderr, PostKillTimeout: DefaultPostKillTimeout})
 			assert.Equal(t, test.expectedRunError, err)
 			if test.expectedHookError == "" {
 				if hookErr != nil {
@@ -208,7 +230,7 @@ func TestRunKillTimeout(t *testing.T) {
 		Path: path,
 		Args: []string{"sh", "-c", "sleep 1"},
 	}
-	hookErr, err := Run(ctx, hook, []byte("{}"), nil, nil, time.Duration(0))
+	hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, State: []byte("{}"), PostKillTimeout: time.Duration(0)})
 	assert.Equal(t, context.DeadlineExceeded, err)
 	assert.Regexp(t, "^(failed to reap process within 0s of the kill signal|executing \\[sh -c sleep 1]: signal: killed)$", hookErr)
 }
