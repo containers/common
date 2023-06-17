@@ -1,27 +1,11 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-func prepareProbeBinary(t *testing.T, expectedOutput string) (path string) {
-	f, err := os.CreateTemp("", "conmon-")
-	require.Nil(t, err)
-	defer func() { require.Nil(t, f.Close()) }()
-
-	err = f.Chmod(os.FileMode(0o755))
-	require.Nil(t, err)
-
-	_, err = f.WriteString(fmt.Sprintf("#!/usr/bin/env sh\necho %q", expectedOutput))
-	require.Nil(t, err)
-
-	return f.Name()
-}
 
 func TestMachineVolumes(t *testing.T) {
 	t.Parallel()

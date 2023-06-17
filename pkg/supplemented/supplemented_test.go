@@ -34,28 +34,28 @@ var (
 
 func makeLayer(t *testing.T) []byte {
 	var b bytes.Buffer
-	len := 512
+	length := 512
 	randomLen := 8
 	tw := tar.NewWriter(&b)
 	assert.Nilf(t, tw.WriteHeader(&tar.Header{
 		Typeflag: tar.TypeReg,
 		Name:     "tmpfile",
-		Size:     int64(len),
+		Size:     int64(length),
 		Mode:     0o644,
 		Uname:    "root",
 		Gname:    "root",
 		ModTime:  time.Now(),
 	}), "error writing in-memory layer")
-	buf := make([]byte, len)
+	buf := make([]byte, length)
 	n, err := rand.Read(buf[0:randomLen])
 	assert.Nilf(t, err, "error reading a random byte")
 	assert.Equalf(t, randomLen, n, "error reading random content: wrong length")
-	for i := randomLen; i < len; i++ {
+	for i := randomLen; i < length; i++ {
 		buf[i] = (buf[i-1] + 1) & 0xff
 	}
 	n, err = tw.Write(buf)
 	assert.Nilf(t, err, "error writing file content")
-	assert.Equalf(t, n, len, "error writing file content: wrong length")
+	assert.Equalf(t, n, length, "error writing file content: wrong length")
 	assert.Nilf(t, tw.Close(), "error flushing file content")
 	return b.Bytes()
 }
