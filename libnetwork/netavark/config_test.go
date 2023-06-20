@@ -1389,7 +1389,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(Equal("unknown ipvlan mode \"abc\""))
 		})
 
-		It("create network with isolate option", func() {
+		It("create network with isolate option 'true'", func() {
 			for _, val := range []string{"true", "1"} {
 				network := types.Network{
 					Options: map[string]string{
@@ -1405,6 +1405,22 @@ var _ = Describe("Config", func() {
 				grepInFile(path, `"isolate": "true"`)
 				Expect(network1.Options).To(HaveKeyWithValue("isolate", "true"))
 			}
+		})
+
+		It("create network with isolate option 'strict'", func() {
+			network := types.Network{
+				Options: map[string]string{
+					types.IsolateOption: "strict",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Options).ToNot(BeNil())
+			path := filepath.Join(networkConfDir, network1.Name+".json")
+			Expect(path).To(BeARegularFile())
+			grepInFile(path, `"isolate": "strict"`)
+			Expect(network1.Options).To(HaveKeyWithValue("isolate", "strict"))
 		})
 
 		It("create network with invalid isolate option", func() {
