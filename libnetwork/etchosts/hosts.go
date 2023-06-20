@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	hostContainersInternal = "host.containers.internal"
+	HostContainersInternal = "host.containers.internal"
 	localhost              = "localhost"
 )
 
@@ -118,7 +118,7 @@ func newHost(params *Params) error {
 	l2 := HostEntry{IP: "::1", Names: lh}
 	containerIPs = append(containerIPs, l1, l2)
 	if params.HostContainersInternalIP != "" {
-		e := HostEntry{IP: params.HostContainersInternalIP, Names: []string{hostContainersInternal}}
+		e := HostEntry{IP: params.HostContainersInternalIP, Names: []string{HostContainersInternal}}
 		containerIPs = append(containerIPs, e)
 	}
 	containerIPs = append(containerIPs, params.ContainerIPs...)
