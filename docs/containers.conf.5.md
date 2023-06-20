@@ -723,6 +723,13 @@ the primary uid/gid of the container.
 
 Specifies the compression format to use when pushing an image. Supported values are: `gzip`, `zstd` and `zstd:chunked`.
 
+**compression_level**="5"
+
+The compression level to use when pushing an image. Valid options
+depend on the compression format used. For gzip, valid options are
+1-9, with a default of 5. For zstd, valid options are 1-20, with a
+default of 3.
+
 ## SERVICE DESTINATION TABLE
 The `engine.service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
 

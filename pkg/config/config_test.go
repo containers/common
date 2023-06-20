@@ -34,6 +34,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Containers.ReadOnly).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(5))
 			gomega.Expect(defaultConfig.Engine.CompressionFormat).To(gomega.BeEquivalentTo("gzip"))
+			gomega.Expect(defaultConfig.Engine.CompressionLevel).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.NetNS()).To(gomega.BeEquivalentTo("private"))
 			gomega.Expect(defaultConfig.IPCNS()).To(gomega.BeEquivalentTo("shareable"))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo(""))
