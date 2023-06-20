@@ -75,6 +75,8 @@ type SetupOptions struct {
 	// Slirp4netnsExitPipeR pipe used to exit the slirp4netns process.
 	// This is must be the reading end, the writer must be kept open until you want the
 	// process to exit. For podman, conmon will hold the pipe open.
+	// It can be set to nil in which case we do not use the pipe exit and the caller
+	// must use the returned pid to kill the process after it is done.
 	Slirp4netnsExitPipeR *os.File
 	// RootlessPortSyncPipe pipe used to exit the rootlessport process.
 	// Same as Slirp4netnsExitPipeR, except this is only used when ports are given.
@@ -249,20 +251,21 @@ func createBasicSlirp4netnsCmdArgs(options *slirp4netnsNetworkOptions, features 
 	return cmdArgs, nil
 }
 
-// SetupSlirp4netns can be called in rootful as well as in rootless
-func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
+// SetupSlirp4netns can be called in rootful as well as in rootless.
+// returns the subnet used for slirp4netns and the pid of the process.
+func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, int, error) {
 	path := opts.Config.Engine.NetworkCmdPath
 	if path == "" {
 		var err error
 		path, err = opts.Config.FindHelperBinary(slirp4netnsBinaryName, true)
 		if err != nil {
-			return nil, fmt.Errorf("could not find slirp4netns, the network namespace can't be configured: %w", err)
+			return nil, 0, fmt.Errorf("could not find slirp4netns, the network namespace can't be configured: %w", err)
 		}
 	}
 
 	syncR, syncW, err := os.Pipe()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open pipe: %w", err)
+		return nil, 0, fmt.Errorf("failed to open pipe: %w", err)
 	}
 	defer closeQuiet(syncR)
 	defer closeQuiet(syncW)
@@ -272,15 +275,15 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
 
 	netOptions, err := parseSlirp4netnsNetworkOptions(opts.Config, opts.ExtraOptions)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	slirpFeatures, err := checkSlirpFlags(path)
 	if err != nil {
-		return nil, fmt.Errorf("checking slirp4netns binary %s: %q: %w", path, err, err)
+		return nil, 0, fmt.Errorf("checking slirp4netns binary %s: %q: %w", path, err, err)
 	}
 	cmdArgs, err := createBasicSlirp4netnsCmdArgs(netOptions, slirpFeatures)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// the slirp4netns arguments being passed are described as follows:
@@ -288,7 +291,10 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
 	// -c, --configure Brings up the tap interface
 	// -e, --exit-fd=FD specify the FD for terminating slirp4netns
 	// -r, --ready-fd=FD specify the FD to write to when the initialization steps are finished
-	cmdArgs = append(cmdArgs, "-c", "-e", "3", "-r", "4")
+	cmdArgs = append(cmdArgs, "-c", "-r", "3")
+	if opts.Slirp4netnsExitPipeR != nil {
+		cmdArgs = append(cmdArgs, "-e", "4")
+	}
 
 	var apiSocket string
 	if havePortMapping && netOptions.isSlirpHostForward {
@@ -311,17 +317,20 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
 	}
 
 	// Leak one end of the pipe in slirp4netns, the other will be sent to conmon
-	cmd.ExtraFiles = append(cmd.ExtraFiles, opts.Slirp4netnsExitPipeR, syncW)
+	cmd.ExtraFiles = append(cmd.ExtraFiles, syncW)
+	if opts.Slirp4netnsExitPipeR != nil {
+		cmd.ExtraFiles = append(cmd.ExtraFiles, opts.Slirp4netnsExitPipeR)
+	}
 
 	logFile, err := os.Create(logPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open slirp4netns log file %s: %w", logPath, err)
+		return nil, 0, fmt.Errorf("failed to open slirp4netns log file %s: %w", logPath, err)
 	}
 	defer logFile.Close()
 	// Unlink immediately the file so we won't need to worry about cleaning it up later.
 	// It is still accessible through the open fd logFile.
 	if err := os.Remove(logPath); err != nil {
-		return nil, fmt.Errorf("delete file %s: %w", logPath, err)
+		return nil, 0, fmt.Errorf("delete file %s: %w", logPath, err)
 	}
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
@@ -377,7 +386,7 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
 		if netOptions.enableIPv6 {
 			slirpReadyWg.Done()
 		}
-		return nil, fmt.Errorf("failed to start slirp4netns process: %w", err)
+		return nil, 0, fmt.Errorf("failed to start slirp4netns process: %w", err)
 	}
 	defer func() {
 		servicereaper.AddPID(cmd.Process.Pid)
@@ -391,7 +400,7 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
 		slirpReadyWg.Done()
 	}
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Set a default slirp subnet. Parsing a string with the net helper is easier than building the struct myself
@@ -401,19 +410,23 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, error) {
 	if netOptions.cidr != "" {
 		ipv4, ipv4network, err := net.ParseCIDR(netOptions.cidr)
 		if err != nil || ipv4.To4() == nil {
-			return nil, fmt.Errorf("invalid cidr %q", netOptions.cidr)
+			return nil, 0, fmt.Errorf("invalid cidr %q", netOptions.cidr)
 		}
 		slirpSubnet = ipv4network
 	}
 
 	if havePortMapping {
 		if netOptions.isSlirpHostForward {
-			return slirpSubnet, setupRootlessPortMappingViaSlirp(opts.Ports, cmd, apiSocket)
+			err = setupRootlessPortMappingViaSlirp(opts.Ports, cmd, apiSocket)
+		} else {
+			err = SetupRootlessPortMappingViaRLK(opts, slirpSubnet, nil)
 		}
-		return slirpSubnet, SetupRootlessPortMappingViaRLK(opts, slirpSubnet, nil)
+		if err != nil {
+			return nil, 0, err
+		}
 	}
 
-	return slirpSubnet, nil
+	return slirpSubnet, cmd.Process.Pid, nil
 }
 
 // Get expected slirp ipv4 address based on subnet. If subnet is null use default subnet
