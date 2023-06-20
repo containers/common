@@ -187,12 +187,11 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 				}
 
 			case types.IsolateOption:
-				val, err := strconv.ParseBool(value)
+				val, err := internalutil.ParseIsolate(value)
 				if err != nil {
 					return nil, err
 				}
-				// rust only support "true" or "false" while go can parse 1 and 0 as well so we need to change it
-				newNetwork.Options[types.IsolateOption] = strconv.FormatBool(val)
+				newNetwork.Options[types.IsolateOption] = val
 			case types.MetricOption:
 				_, err := strconv.ParseUint(value, 10, 32)
 				if err != nil {
