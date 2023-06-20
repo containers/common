@@ -48,7 +48,7 @@ type slirp4netnsCmd struct {
 	Args    slirp4netnsCmdArg `json:"arguments"`
 }
 
-type slirp4netnsNetworkOptions struct {
+type networkOptions struct {
 	cidr                string
 	disableHostLoopback bool
 	enableIPv6          bool
@@ -94,13 +94,13 @@ func (w *logrusDebugWriter) Write(p []byte) (int, error) {
 
 const (
 	ipv6ConfDefaultAcceptDadSysctl = "/proc/sys/net/ipv6/conf/default/accept_dad"
-	slirp4netnsBinaryName          = "slirp4netns"
+	BinaryName                     = "slirp4netns"
 
-	// slirp4netnsMTU the default MTU override
-	slirp4netnsMTU = 65520
+	// defaultMTU the default MTU override
+	defaultMTU = 65520
 
 	// default slirp4ns subnet
-	defaultSlirp4netnsSubnet = "10.0.2.0/24"
+	defaultSubnet = "10.0.2.0/24"
 )
 
 func checkSlirpFlags(path string) (*slirpFeatures, error) {
@@ -120,18 +120,18 @@ func checkSlirpFlags(path string) (*slirpFeatures, error) {
 	}, nil
 }
 
-func parseSlirp4netnsNetworkOptions(config *config.Config, extraOptions []string) (*slirp4netnsNetworkOptions, error) {
-	slirpOptions := make([]string, 0, len(config.Engine.NetworkCmdOptions)+len(extraOptions))
-	slirpOptions = append(slirpOptions, config.Engine.NetworkCmdOptions...)
-	slirpOptions = append(slirpOptions, extraOptions...)
-	slirp4netnsOpts := &slirp4netnsNetworkOptions{
+func parseNetworkOptions(config *config.Config, extraOptions []string) (*networkOptions, error) {
+	options := make([]string, 0, len(config.Engine.NetworkCmdOptions)+len(extraOptions))
+	options = append(options, config.Engine.NetworkCmdOptions...)
+	options = append(options, extraOptions...)
+	opts := &networkOptions{
 		// overwrite defaults
 		disableHostLoopback: true,
-		mtu:                 slirp4netnsMTU,
+		mtu:                 defaultMTU,
 		noPivotRoot:         config.Engine.NoPivotRoot,
 		enableIPv6:          true,
 	}
-	for _, o := range slirpOptions {
+	for _, o := range options {
 		parts := strings.SplitN(o, "=", 2)
 		if len(parts) < 2 {
 			return nil, fmt.Errorf("unknown option for slirp4netns: %q", o)
@@ -143,31 +143,31 @@ func parseSlirp4netnsNetworkOptions(config *config.Config, extraOptions []string
 			if err != nil || ipv4.To4() == nil {
 				return nil, fmt.Errorf("invalid cidr %q", value)
 			}
-			slirp4netnsOpts.cidr = value
+			opts.cidr = value
 		case "port_handler":
 			switch value {
 			case "slirp4netns":
-				slirp4netnsOpts.isSlirpHostForward = true
+				opts.isSlirpHostForward = true
 			case "rootlesskit":
-				slirp4netnsOpts.isSlirpHostForward = false
+				opts.isSlirpHostForward = false
 			default:
 				return nil, fmt.Errorf("unknown port_handler for slirp4netns: %q", value)
 			}
 		case "allow_host_loopback":
 			switch value {
 			case "true":
-				slirp4netnsOpts.disableHostLoopback = false
+				opts.disableHostLoopback = false
 			case "false":
-				slirp4netnsOpts.disableHostLoopback = true
+				opts.disableHostLoopback = true
 			default:
 				return nil, fmt.Errorf("invalid value of allow_host_loopback for slirp4netns: %q", value)
 			}
 		case "enable_ipv6":
 			switch value {
 			case "true":
-				slirp4netnsOpts.enableIPv6 = true
+				opts.enableIPv6 = true
 			case "false":
-				slirp4netnsOpts.enableIPv6 = false
+				opts.enableIPv6 = false
 			default:
 				return nil, fmt.Errorf("invalid value of enable_ipv6 for slirp4netns: %q", value)
 			}
@@ -179,7 +179,7 @@ func parseSlirp4netnsNetworkOptions(config *config.Config, extraOptions []string
 					return nil, fmt.Errorf("invalid outbound_addr %q", value)
 				}
 			}
-			slirp4netnsOpts.outboundAddr = value
+			opts.outboundAddr = value
 		case "outbound_addr6":
 			ipv6 := net.ParseIP(value)
 			if ipv6 == nil || ipv6.To4() != nil {
@@ -188,21 +188,21 @@ func parseSlirp4netnsNetworkOptions(config *config.Config, extraOptions []string
 					return nil, fmt.Errorf("invalid outbound_addr6: %q", value)
 				}
 			}
-			slirp4netnsOpts.outboundAddr6 = value
+			opts.outboundAddr6 = value
 		case "mtu":
 			var err error
-			slirp4netnsOpts.mtu, err = strconv.Atoi(value)
-			if slirp4netnsOpts.mtu < 68 || err != nil {
+			opts.mtu, err = strconv.Atoi(value)
+			if opts.mtu < 68 || err != nil {
 				return nil, fmt.Errorf("invalid mtu %q", value)
 			}
 		default:
 			return nil, fmt.Errorf("unknown option for slirp4netns: %q", o)
 		}
 	}
-	return slirp4netnsOpts, nil
+	return opts, nil
 }
 
-func createBasicSlirp4netnsCmdArgs(options *slirp4netnsNetworkOptions, features *slirpFeatures) ([]string, error) {
+func createBasicSlirpCmdArgs(options *networkOptions, features *slirpFeatures) ([]string, error) {
 	cmdArgs := []string{}
 	if options.disableHostLoopback && features.HasDisableHostLoopback {
 		cmdArgs = append(cmdArgs, "--disable-host-loopback")
@@ -251,13 +251,13 @@ func createBasicSlirp4netnsCmdArgs(options *slirp4netnsNetworkOptions, features 
 	return cmdArgs, nil
 }
 
-// SetupSlirp4netns can be called in rootful as well as in rootless.
+// Setup can be called in rootful as well as in rootless.
 // returns the subnet used for slirp4netns and the pid of the process.
-func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, int, error) {
+func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 	path := opts.Config.Engine.NetworkCmdPath
 	if path == "" {
 		var err error
-		path, err = opts.Config.FindHelperBinary(slirp4netnsBinaryName, true)
+		path, err = opts.Config.FindHelperBinary(BinaryName, true)
 		if err != nil {
 			return nil, 0, fmt.Errorf("could not find slirp4netns, the network namespace can't be configured: %w", err)
 		}
@@ -273,7 +273,7 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, int, error) {
 	havePortMapping := len(opts.Ports) > 0
 	logPath := filepath.Join(opts.Config.Engine.TmpDir, fmt.Sprintf("slirp4netns-%s.log", opts.ContainerID))
 
-	netOptions, err := parseSlirp4netnsNetworkOptions(opts.Config, opts.ExtraOptions)
+	netOptions, err := parseNetworkOptions(opts.Config, opts.ExtraOptions)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -281,7 +281,7 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, int, error) {
 	if err != nil {
 		return nil, 0, fmt.Errorf("checking slirp4netns binary %s: %q: %w", path, err, err)
 	}
-	cmdArgs, err := createBasicSlirp4netnsCmdArgs(netOptions, slirpFeatures)
+	cmdArgs, err := createBasicSlirpCmdArgs(netOptions, slirpFeatures)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -404,7 +404,7 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, int, error) {
 	}
 
 	// Set a default slirp subnet. Parsing a string with the net helper is easier than building the struct myself
-	_, slirpSubnet, _ := net.ParseCIDR(defaultSlirp4netnsSubnet)
+	_, slirpSubnet, _ := net.ParseCIDR(defaultSubnet)
 
 	// Set slirp4netnsSubnet addresses now that we are pretty sure the command executed
 	if netOptions.cidr != "" {
@@ -431,8 +431,8 @@ func SetupSlirp4netns(opts *SetupOptions) (*net.IPNet, int, error) {
 
 // Get expected slirp ipv4 address based on subnet. If subnet is null use default subnet
 // Reference: https://github.com/rootless-containers/slirp4netns/blob/master/slirp4netns.1.md#description
-func GetSlirp4netnsIP(subnet *net.IPNet) (*net.IP, error) {
-	_, slirpSubnet, _ := net.ParseCIDR(defaultSlirp4netnsSubnet)
+func GetIP(subnet *net.IPNet) (*net.IP, error) {
+	_, slirpSubnet, _ := net.ParseCIDR(defaultSubnet)
 	if subnet != nil {
 		slirpSubnet = subnet
 	}
@@ -445,8 +445,8 @@ func GetSlirp4netnsIP(subnet *net.IPNet) (*net.IP, error) {
 
 // Get expected slirp Gateway ipv4 address based on subnet
 // Reference: https://github.com/rootless-containers/slirp4netns/blob/master/slirp4netns.1.md#description
-func GetSlirp4netnsGateway(subnet *net.IPNet) (*net.IP, error) {
-	_, slirpSubnet, _ := net.ParseCIDR(defaultSlirp4netnsSubnet)
+func GetGateway(subnet *net.IPNet) (*net.IP, error) {
+	_, slirpSubnet, _ := net.ParseCIDR(defaultSubnet)
 	if subnet != nil {
 		slirpSubnet = subnet
 	}
@@ -459,8 +459,8 @@ func GetSlirp4netnsGateway(subnet *net.IPNet) (*net.IP, error) {
 
 // Get expected slirp DNS ipv4 address based on subnet
 // Reference: https://github.com/rootless-containers/slirp4netns/blob/master/slirp4netns.1.md#description
-func GetSlirp4netnsDNS(subnet *net.IPNet) (*net.IP, error) {
-	_, slirpSubnet, _ := net.ParseCIDR(defaultSlirp4netnsSubnet)
+func GetDNS(subnet *net.IPNet) (*net.IP, error) {
+	_, slirpSubnet, _ := net.ParseCIDR(defaultSubnet)
 	if subnet != nil {
 		slirpSubnet = subnet
 	}
@@ -710,7 +710,7 @@ func openSlirp4netnsPort(apiSocket, proto, hostip string, hostport, guestport ui
 
 func GetRootlessPortChildIP(slirpSubnet *net.IPNet, netStatus map[string]types.StatusBlock) string {
 	if slirpSubnet != nil {
-		slirp4netnsIP, err := GetSlirp4netnsIP(slirpSubnet)
+		slirp4netnsIP, err := GetIP(slirpSubnet)
 		if err != nil {
 			return ""
 		}
