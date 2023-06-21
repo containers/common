@@ -86,6 +86,16 @@ type SetupOptions struct {
 	RootlessPortExitPipeR *os.File
 }
 
+// SetupResult return type from Setup()
+type SetupResult struct {
+	// Pid of the created slirp4netns process
+	Pid int
+	// Subnet which is used by slirp4netns
+	Subnet *net.IPNet
+	// IPv6 whenever Ipv6 is enabled in slirp4netns
+	IPv6 bool
+}
+
 type logrusDebugWriter struct {
 	prefix string
 }
@@ -244,20 +254,20 @@ func createBasicSlirpCmdArgs(options *networkOptions, features *slirpFeatures) (
 }
 
 // Setup can be called in rootful as well as in rootless.
-// returns the subnet used for slirp4netns and the pid of the process.
-func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
+// Spawns the slirp4netns process and setup port forwarding if ports are given.
+func Setup(opts *SetupOptions) (*SetupResult, error) {
 	path := opts.Config.Engine.NetworkCmdPath
 	if path == "" {
 		var err error
 		path, err = opts.Config.FindHelperBinary(BinaryName, true)
 		if err != nil {
-			return nil, 0, fmt.Errorf("could not find slirp4netns, the network namespace can't be configured: %w", err)
+			return nil, fmt.Errorf("could not find slirp4netns, the network namespace can't be configured: %w", err)
 		}
 	}
 
 	syncR, syncW, err := os.Pipe()
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to open pipe: %w", err)
+		return nil, fmt.Errorf("failed to open pipe: %w", err)
 	}
 	defer closeQuiet(syncR)
 	defer closeQuiet(syncW)
@@ -267,15 +277,15 @@ func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 
 	netOptions, err := parseNetworkOptions(opts.Config, opts.ExtraOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	slirpFeatures, err := checkSlirpFlags(path)
 	if err != nil {
-		return nil, 0, fmt.Errorf("checking slirp4netns binary %s: %q: %w", path, err, err)
+		return nil, fmt.Errorf("checking slirp4netns binary %s: %q: %w", path, err, err)
 	}
 	cmdArgs, err := createBasicSlirpCmdArgs(netOptions, slirpFeatures)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	// the slirp4netns arguments being passed are described as follows:
@@ -316,13 +326,13 @@ func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 
 	logFile, err := os.Create(logPath)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to open slirp4netns log file %s: %w", logPath, err)
+		return nil, fmt.Errorf("failed to open slirp4netns log file %s: %w", logPath, err)
 	}
 	defer logFile.Close()
 	// Unlink immediately the file so we won't need to worry about cleaning it up later.
 	// It is still accessible through the open fd logFile.
 	if err := os.Remove(logPath); err != nil {
-		return nil, 0, fmt.Errorf("delete file %s: %w", logPath, err)
+		return nil, fmt.Errorf("delete file %s: %w", logPath, err)
 	}
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
@@ -378,7 +388,7 @@ func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 		if netOptions.enableIPv6 {
 			slirpReadyWg.Done()
 		}
-		return nil, 0, fmt.Errorf("failed to start slirp4netns process: %w", err)
+		return nil, fmt.Errorf("failed to start slirp4netns process: %w", err)
 	}
 	defer func() {
 		servicereaper.AddPID(cmd.Process.Pid)
@@ -392,7 +402,7 @@ func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 		slirpReadyWg.Done()
 	}
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	// Set a default slirp subnet. Parsing a string with the net helper is easier than building the struct myself
@@ -402,7 +412,7 @@ func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 	if netOptions.cidr != "" {
 		ipv4, ipv4network, err := net.ParseCIDR(netOptions.cidr)
 		if err != nil || ipv4.To4() == nil {
-			return nil, 0, fmt.Errorf("invalid cidr %q", netOptions.cidr)
+			return nil, fmt.Errorf("invalid cidr %q", netOptions.cidr)
 		}
 		slirpSubnet = ipv4network
 	}
@@ -414,11 +424,15 @@ func Setup(opts *SetupOptions) (*net.IPNet, int, error) {
 			err = SetupRootlessPortMappingViaRLK(opts, slirpSubnet, nil)
 		}
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 	}
 
-	return slirpSubnet, cmd.Process.Pid, nil
+	return &SetupResult{
+		Pid:    cmd.Process.Pid,
+		Subnet: slirpSubnet,
+		IPv6:   netOptions.enableIPv6,
+	}, nil
 }
 
 // Get expected slirp ipv4 address based on subnet. If subnet is null use default subnet
