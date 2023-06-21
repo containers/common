@@ -1,3 +1,6 @@
+//go:build linux
+// +build linux
+
 package slirp4netns
 
 import (
@@ -91,17 +94,6 @@ func (w *logrusDebugWriter) Write(p []byte) (int, error) {
 	logrus.Debugf("%s%s", w.prefix, string(p))
 	return len(p), nil
 }
-
-const (
-	ipv6ConfDefaultAcceptDadSysctl = "/proc/sys/net/ipv6/conf/default/accept_dad"
-	BinaryName                     = "slirp4netns"
-
-	// defaultMTU the default MTU override
-	defaultMTU = 65520
-
-	// default slirp4ns subnet
-	defaultSubnet = "10.0.2.0/24"
-)
 
 func checkSlirpFlags(path string) (*slirpFeatures, error) {
 	cmd := exec.Command(path, "--help")
