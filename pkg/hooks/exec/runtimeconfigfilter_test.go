@@ -243,7 +243,7 @@ func TestRuntimeConfigFilter(t *testing.T) {
 				ctx, cancel = context.WithTimeout(ctx, test.contextTimeout)
 				defer cancel()
 			}
-			hookErr, err := RuntimeConfigFilter(ctx, test.hooks, test.input, DefaultPostKillTimeout)
+			hookErr, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: test.hooks, Config: test.input, PostKillTimeout: DefaultPostKillTimeout})
 			if test.expectedRunErrorString != "" {
 				// We have to compare the error strings in that case because
 				// errors.Is works differently.
