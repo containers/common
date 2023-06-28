@@ -8,7 +8,7 @@ require (
 	github.com/containerd/containerd v1.7.2
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.3.0
-	github.com/containers/image/v5 v5.25.1-0.20230613183705-07ced6137083
+	github.com/containers/image/v5 v5.26.0
 	github.com/containers/ocicrypt v1.1.7
 	github.com/containers/storage v1.47.0
 	github.com/coreos/go-systemd/v22 v22.5.0
@@ -49,6 +49,7 @@ require (
 )
 
 require (
+	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.10.0-rc.8 // indirect
@@ -84,7 +85,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.16.6 // indirect
@@ -109,7 +109,7 @@ require (
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sigstore/fulcio v1.3.1 // indirect
 	github.com/sigstore/rekor v1.2.2-0.20230601122533-4c81ff246d12 // indirect
-	github.com/sigstore/sigstore v1.6.5 // indirect
+	github.com/sigstore/sigstore v1.7.1 // indirect
 	github.com/stefanberger/go-pkcs11uri v0.0.0-20201008174630-78d3cae3a980 // indirect
 	github.com/sylabs/sif/v2 v2.11.5 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
