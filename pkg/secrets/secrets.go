@@ -144,12 +144,7 @@ func NewManager(rootPath string) (*SecretsManager, error) {
 	return manager, nil
 }
 
-func (s *SecretsManager) newSecret(name string) (*Secret, error) {
-	secr := new(Secret)
-	secr.Name = name
-	secr.CreatedAt = time.Now()
-	secr.UpdatedAt = secr.CreatedAt
-
+func (s *SecretsManager) newID() (string, error) {
 	for {
 		newID := stringid.GenerateNonCryptoID()
 		// GenerateNonCryptoID() gives 64 characters, so we truncate to correct length
@@ -157,13 +152,11 @@ func (s *SecretsManager) newSecret(name string) (*Secret, error) {
 		_, err := s.lookupSecret(newID)
 		if err != nil {
 			if errors.Is(err, ErrNoSuchSecret) {
-				secr.ID = newID
-				break
+				return newID, nil
 			}
-			return nil, err
+			return "", err
 		}
 	}
-	return secr, nil
 }
 
 // Store takes a name, creates a secret and stores the secret metadata and the secret payload.
@@ -197,13 +190,10 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, opti
 		}
 		secr.UpdatedAt = time.Now()
 	} else {
-		if options.Replace {
-			return "", fmt.Errorf("%s: %w", name, ErrNoSuchSecret)
-		}
-		secr, err = s.newSecret(name)
-		if err != nil {
-			return "", err
-		}
+		secr = new(Secret)
+		secr.Name = name
+		secr.CreatedAt = time.Now()
+		secr.UpdatedAt = secr.CreatedAt
 	}
 
 	if options.Metadata == nil {
@@ -225,11 +215,17 @@ func (s *SecretsManager) Store(name string, data []byte, driverType string, opti
 	if err != nil {
 		return "", err
 	}
+
 	if options.Replace {
 		err = driver.Delete(secr.ID)
 		if err != nil {
 			return "", fmt.Errorf("replacing secret %s: %w", name, err)
 		}
+	}
+
+	secr.ID, err = s.newID()
+	if err != nil {
+		return "", err
 	}
 
 	err = driver.Store(secr.ID, data)

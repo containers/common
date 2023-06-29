@@ -74,8 +74,8 @@ func TestAddSecretAndLookupData(t *testing.T) {
 	storeOpts.Replace = true
 	id2, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
 	require.NoError(t, err)
-	if id1 != id2 {
-		t.Errorf("error: secret id after Replace should be same")
+	if id1 == id2 {
+		t.Errorf("error: secret id after Replace should be different")
 	}
 
 	s, _, err = manager.LookupSecretData("mysecret")
