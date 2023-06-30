@@ -219,6 +219,13 @@ func TestNew(t *testing.T) {
 			expectedTargetFileContent: targetFileContent1 + "10.0.0.1\thost.containers.internal\n",
 		},
 		{
+			name:                      "with host.containers.internal ip and host-gateway",
+			baseFileContent:           baseFileContent1Spaces,
+			extraHosts:                []string{"gatewayname:host-gateway"},
+			hostContainersInternal:    "10.0.0.1",
+			expectedTargetFileContent: "10.0.0.1\tgatewayname\n" + targetFileContent1 + "10.0.0.1\thost.containers.internal\n",
+		},
+		{
 			name:                      "host.containers.internal not added when already present in extra hosts",
 			baseFileContent:           baseFileContent1Spaces,
 			extraHosts:                []string{"host.containers.internal:1.1.1.1"},
