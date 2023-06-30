@@ -83,6 +83,12 @@ func TestAddSecretAndLookupData(t *testing.T) {
 	if s.CreatedAt == s.UpdatedAt {
 		t.Errorf("error: secret CreatedAt should not equal UpdatedAt after a Replace")
 	}
+
+	_, _, err = manager.LookupSecretData(id2)
+	require.NoError(t, err)
+
+	_, _, err = manager.LookupSecretData(id1)
+	require.Error(t, err)
 }
 
 func TestAddSecretName(t *testing.T) {
