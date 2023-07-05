@@ -100,30 +100,21 @@ func TestAddSecretName(t *testing.T) {
 		DriverOpts: opts,
 	}
 
-	// test one char secret name
-	_, err = manager.Store("a", []byte("mydata"), drivertype, storeOpts)
-	require.NoError(t, err)
+	longstring := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-	_, err = manager.lookupSecret("a")
-	require.NoError(t, err)
+	for _, value := range []string{"a", "user@mail.com", longstring[:253]} {
+		// test one char secret name
+		_, err = manager.Store(value, []byte("mydata"), drivertype, storeOpts)
+		require.NoError(t, err)
 
-	// name too short
-	_, err = manager.Store("", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
-	// name too long
-	_, err = manager.Store("uatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrmngrivaizuatqsbssrapurkuqoapubpifvsrissslzjehalxcesbhpxcvhsozlptrabd", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
-	// invalid chars
-	_, err = manager.Store("??", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
-	_, err = manager.Store("-a", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
-	_, err = manager.Store("a-", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
-	_, err = manager.Store(".a", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
-	_, err = manager.Store("a.", []byte("mydata"), drivertype, storeOpts)
-	require.Error(t, err)
+		_, err = manager.lookupSecret(value)
+		require.NoError(t, err)
+	}
+
+	for _, value := range []string{"", "file/path", "foo=bar", "bad\000Null", longstring[:254]} {
+		_, err = manager.Store(value, []byte("mydata"), drivertype, storeOpts)
+		require.Error(t, err)
+	}
 }
 
 func TestAddMultipleSecrets(t *testing.T) {
