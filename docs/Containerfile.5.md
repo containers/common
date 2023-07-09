@@ -54,11 +54,11 @@ A Containerfile is similar to a Makefile.
 
 # FORMAT
 
-  `FROM image`
+  `FROM image [AS <name>]`
 
-  `FROM image:tag`
+  `FROM image:tag [AS <name>]`
 
-  `FROM image@digest`
+  `FROM image@digest [AS <name>]`
 
   -- The **FROM** instruction sets the base image for subsequent instructions. A
   valid Containerfile must have either **ARG** or *FROM** as its first instruction.
@@ -81,6 +81,9 @@ A Containerfile is similar to a Makefile.
 
   -- If no digest is given to the **FROM** instruction, container engines apply the
   `latest` tag. If the used tag does not exist, an error is returned.
+
+  -- A name can be assigned to a build stage by adding **AS name** to the instruction. 
+  The name can be referenced later in the Containerfile using the **FROM** or **COPY --from=<name>** instructions.
 
 **MAINTAINER**
   -- **MAINTAINER** sets the Author field for the generated images.
@@ -362,10 +365,10 @@ The secret needs to be passed to the build using the --secret flag. The final im
   -- **COPY** has two forms:
 
   ```
-  COPY <src> <dest>
+  COPY [--chown=<user>:<group>] [--chmod=<mode>] <src> <dest>
 
   # Required for paths with whitespace
-  COPY ["<src>",... "<dest>"]
+  COPY [--chown=<user>:<group>] [--chmod=<mode>] ["<src>",... "<dest>"]
   ```
 
   The **COPY** instruction copies new files from `<src>` and
@@ -377,6 +380,16 @@ The secret needs to be passed to the build using the --secret flag. The final im
   land in the container exactly as it appears in the build context without any
   attempt to unpack it.  All new files and directories are created with mode **0755**
   and with the uid and gid of **0**.
+
+  `--chown=<user>:<group>` changes the ownership of new files and directories.
+  Supports names, if defined in the containers `/etc/passwd` and `/etc/groups` files, or using
+  uid and gid integers. The build will fail if a user or group name can't be mapped in the container.
+  Numeric id's are set without looking them up in the container.
+
+  `--chmod=<mode>` changes the mode of new files and directories.
+
+  The optional flag `--from=name` can be used to copy files from a named previous build stage. It
+  changes the context of `<src>` from the build context to the named build stage.
 
 **ENTRYPOINT**
   -- **ENTRYPOINT** has two forms:
