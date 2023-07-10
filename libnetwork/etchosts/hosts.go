@@ -14,6 +14,7 @@ import (
 
 const (
 	HostContainersInternal = "host.containers.internal"
+	HostGateway            = "host-gateway"
 	localhost              = "localhost"
 )
 
@@ -244,7 +245,7 @@ func parseExtraHosts(extraHosts []string, hostContainersInternalIP string) (Host
 			return nil, fmt.Errorf("IP address in host entry %q is empty", entry)
 		}
 		ip := values[1]
-		if values[1] == "host-gateway" {
+		if values[1] == HostGateway {
 			ip = hostContainersInternalIP
 		}
 		e := HostEntry{IP: ip, Names: []string{values[0]}}
