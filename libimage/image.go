@@ -701,12 +701,8 @@ func (i *Image) referenceFuzzilyMatchingRepoAndTag(namedTagged reference.NamedTa
 	tag := namedTagged.Tag()
 	for _, r := range repoTags {
 		if !ignoreTag {
-			var repoTag string
 			tagged, isTagged := r.(reference.NamedTagged)
-			if isTagged {
-				repoTag = tagged.Tag()
-			}
-			if !isTagged || tag != repoTag {
+			if !isTagged || tag != tagged.Tag() {
 				continue
 			}
 		}
