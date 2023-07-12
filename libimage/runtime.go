@@ -458,9 +458,10 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		return nil, "", fmt.Errorf("%s: %w", originalName, storage.ErrImageUnknown)
 	}
 
+	var requiredDigest digest.Digest
+	var requiredTag string // or ""
 	// In case of a digested reference, we strip off the digest and require
 	// any image matching the repo/tag to also match the specified digest.
-	var requiredDigest digest.Digest
 	digested, isDigested := possiblyUnqualifiedNamedReference.(reference.Digested)
 	if isDigested {
 		requiredDigest = digested.Digest()
@@ -477,6 +478,9 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		// the digest.
 		return nil, "", fmt.Errorf("%s: %w (could not cast to tagged)", originalName, storage.ErrImageUnknown)
 	}
+	if !isDigested {
+		requiredTag = namedTagged.Tag()
+	}
 
 	allImages, err := r.ListImages(context.Background(), nil, nil)
 	if err != nil {
@@ -484,7 +488,7 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 	}
 
 	for _, image := range allImages {
-		named, err := image.referenceFuzzilyMatchingRepoAndTag(namedTagged, isDigested)
+		named, err := image.referenceFuzzilyMatchingRepoAndTag(namedTagged, requiredTag)
 		if err != nil {
 			return nil, "", err
 		}

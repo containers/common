@@ -685,24 +685,22 @@ func (i *Image) NamedRepoTags() ([]reference.Named, error) {
 	return repoTags, nil
 }
 
-// referenceFuzzilyMatchingRepoAndTag checks if the image’s repo (and optionally tag) matches a fuzzy short input,
+// referenceFuzzilyMatchingRepoAndTag checks if the image’s repo (and tag if requiredTag != "") matches a fuzzy short input,
 // and if so, returns the matching reference.
-// If `ignoreTag` is set, only the repo must match and the tag is ignored.
 //
 // DO NOT ADD ANY NEW USERS OF THIS SEMANTICS. Rely on existing libimage calls like LookupImage instead,
 // and handle unqualified the way it does (c/image/pkg/shortnames).
-func (i *Image) referenceFuzzilyMatchingRepoAndTag(namedTagged reference.NamedTagged, ignoreTag bool) (reference.Named, error) {
+func (i *Image) referenceFuzzilyMatchingRepoAndTag(namedTagged reference.NamedTagged, requiredTag string) (reference.Named, error) {
 	repoTags, err := i.NamedRepoTags()
 	if err != nil {
 		return nil, err
 	}
 
 	name := namedTagged.Name()
-	tag := namedTagged.Tag()
 	for _, r := range repoTags {
-		if !ignoreTag {
+		if requiredTag != "" {
 			tagged, isTagged := r.(reference.NamedTagged)
-			if !isTagged || tag != tagged.Tag() {
+			if !isTagged || tagged.Tag() != requiredTag {
 				continue
 			}
 		}
