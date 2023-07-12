@@ -485,7 +485,7 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 	}
 
 	for _, image := range allImages {
-		named, err := image.inRepoTags(namedTagged, isDigested)
+		named, err := image.referenceFuzzilyMatchingRepoAndTag(namedTagged, isDigested)
 		if err != nil {
 			return nil, "", err
 		}
