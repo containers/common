@@ -690,13 +690,13 @@ func (i *Image) NamedRepoTags() ([]reference.Named, error) {
 //
 // DO NOT ADD ANY NEW USERS OF THIS SEMANTICS. Rely on existing libimage calls like LookupImage instead,
 // and handle unqualified the way it does (c/image/pkg/shortnames).
-func (i *Image) referenceFuzzilyMatchingRepoAndTag(namedTagged reference.NamedTagged, requiredTag string) (reference.Named, error) {
+func (i *Image) referenceFuzzilyMatchingRepoAndTag(requiredRepo reference.Named, requiredTag string) (reference.Named, error) {
 	repoTags, err := i.NamedRepoTags()
 	if err != nil {
 		return nil, err
 	}
 
-	name := namedTagged.Name()
+	name := requiredRepo.Name()
 	for _, r := range repoTags {
 		if requiredTag != "" {
 			tagged, isTagged := r.(reference.NamedTagged)
