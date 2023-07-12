@@ -406,7 +406,7 @@ func filterDigest(value string) (filterFunc, error) {
 		return nil, fmt.Errorf("invalid value %q for digest filter: %w", value, err)
 	}
 	return func(img *Image) (bool, error) {
-		return img.hasDigest(d.String()), nil
+		return img.hasDigest(d), nil
 	}, nil
 }
 

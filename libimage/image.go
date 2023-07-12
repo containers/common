@@ -159,10 +159,9 @@ func (i *Image) Digests() []digest.Digest {
 
 // hasDigest returns whether the specified value matches any digest of the
 // image.
-func (i *Image) hasDigest(value string) bool {
-	// TODO: change the argument to a typed digest.Digest
+func (i *Image) hasDigest(wantedDigest digest.Digest) bool {
 	for _, d := range i.Digests() {
-		if string(d) == value {
+		if d == wantedDigest {
 			return true
 		}
 	}

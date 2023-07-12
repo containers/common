@@ -498,7 +498,7 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		}
 		if img != nil {
 			if isDigested {
-				if !img.hasDigest(requiredDigest.String()) {
+				if !img.hasDigest(requiredDigest) {
 					continue
 				}
 				named = reference.TrimNamed(named)
