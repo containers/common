@@ -52,6 +52,7 @@ testing_task:
     - export PATH="$PATH:$GOPATH/bin"
     - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
     - make vendor
+    - hack/tree_status.sh
     - make build
     - make build-cross
     - make test
