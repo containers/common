@@ -458,12 +458,11 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		return nil, "", fmt.Errorf("%s: %w", originalName, storage.ErrImageUnknown)
 	}
 
-	var requiredDigest digest.Digest
-	var requiredTag string // or ""
+	var requiredDigest digest.Digest // or ""
+	var requiredTag string           // or ""
 	// In case of a digested reference, we strip off the digest and require
 	// any image matching the repo/tag to also match the specified digest.
-	digested, isDigested := possiblyUnqualifiedNamedReference.(reference.Digested)
-	if isDigested {
+	if digested, ok := possiblyUnqualifiedNamedReference.(reference.Digested); ok {
 		requiredDigest = digested.Digest()
 		possiblyUnqualifiedNamedReference = reference.TrimNamed(possiblyUnqualifiedNamedReference)
 		name = possiblyUnqualifiedNamedReference.String()
@@ -478,7 +477,7 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		// the digest.
 		return nil, "", fmt.Errorf("%s: %w (could not cast to tagged)", originalName, storage.ErrImageUnknown)
 	}
-	if !isDigested {
+	if requiredDigest == "" {
 		requiredTag = namedTagged.Tag()
 	}
 
@@ -500,7 +499,7 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 			return nil, "", err
 		}
 		if img != nil {
-			if isDigested {
+			if requiredDigest != "" {
 				if !img.hasDigest(requiredDigest) {
 					continue
 				}
