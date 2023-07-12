@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/containers/common/pkg/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -123,6 +124,10 @@ func TestFilterDigest(t *testing.T) {
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filter, listedImages)
 		require.Equal(t, listedImages[0].ID(), test.id)
 	}
+	_, err = runtime.ListImages(ctx, nil, &ListImagesOptions{
+		Filters: []string{"digest=this-is-not-a-digest"},
+	})
+	assert.Error(t, err)
 }
 
 func TestFilterManifest(t *testing.T) {
