@@ -454,6 +454,9 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 	if possiblyUnqualifiedNamedReference == nil {
 		return nil, "", fmt.Errorf("%s: %w", originalName, storage.ErrImageUnknown)
 	}
+	if !shortnames.IsShortName(name) {
+		return nil, "", fmt.Errorf("%s: %w", originalName, storage.ErrImageUnknown)
+	}
 
 	// In case of a digested reference, we strip off the digest and require
 	// any image matching the repo/tag to also match the specified digest.
@@ -463,10 +466,6 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		requiredDigest = digested.Digest()
 		possiblyUnqualifiedNamedReference = reference.TrimNamed(possiblyUnqualifiedNamedReference)
 		name = possiblyUnqualifiedNamedReference.String()
-	}
-
-	if !shortnames.IsShortName(name) {
-		return nil, "", fmt.Errorf("%s: %w", originalName, storage.ErrImageUnknown)
 	}
 
 	// Docker compat: make sure to add the "latest" tag if needed.  The tag
