@@ -111,7 +111,7 @@ func TestAddSecretName(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	for _, value := range []string{"", "file/path", "foo=bar", "bad\000Null", longstring[:254]} {
+	for _, value := range []string{"", "chocolate,vanilla", "file/path", "foo=bar", "bad\000Null", longstring[:254]} {
 		_, err = manager.Store(value, []byte("mydata"), drivertype, storeOpts)
 		require.Error(t, err)
 	}
