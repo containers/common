@@ -1001,6 +1001,19 @@ var _ = Describe("Config", func() {
 			Expect(network1.IPAMOptions[types.Driver]).To(Equal(types.DHCPIPAMDriver))
 		})
 
+		It("create two macvlan networks without name", func() {
+			network := types.Network{Driver: "macvlan"}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.IPAMOptions[types.Driver]).To(Equal(types.DHCPIPAMDriver))
+			Expect(network1.Name).To(Equal("podman1"))
+
+			network2, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network2.IPAMOptions[types.Driver]).To(Equal(types.DHCPIPAMDriver))
+			Expect(network2.Name).To(Equal("podman2"), "second name should be different then first")
+		})
+
 		It("create macvlan config without subnet and host-local", func() {
 			network := types.Network{
 				Driver:      "macvlan",
