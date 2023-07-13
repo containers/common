@@ -49,8 +49,8 @@ var errDataSize = errors.New("secret data must be larger than 0 and less than 51
 var secretsFile = "secrets.json"
 
 // secretNameRegexp matches valid secret names
-// Allowed: 253 [a-zA-Z0-9-_.] characters, and the start and end character must be [a-zA-Z0-9]
-var secretNameRegexp = regexp.Delayed("^[^/=\000]+$")
+// Allowed: 253 characters, excluding ,/=\0
+var secretNameRegexp = regexp.Delayed("^[^,/=\000]+$")
 
 // SecretsManager holds information on handling secrets
 //
@@ -322,7 +322,7 @@ func validateSecretName(name string) error {
 	if len(name) == 0 ||
 		len(name) > 253 ||
 		!secretNameRegexp.MatchString(name) {
-		return fmt.Errorf("secret name %q can not include '=', '/', or the '\\0' (NULL) and be between 1 and 253 characters: %w", name, errInvalidSecretName)
+		return fmt.Errorf("secret name %q can not include '=', '/', ',', or the '\\0' (NULL) and be between 1 and 253 characters: %w", name, errInvalidSecretName)
 	}
 	return nil
 }
