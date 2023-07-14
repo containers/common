@@ -42,6 +42,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.SSHConfig).To(gomega.ContainSubstring("/.ssh/config"))
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.BeEquivalentTo(stringBoltDB))
+			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
 
 			dbBackend, err := defaultConfig.DBBackend()
 			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendBoltDB))
@@ -272,6 +273,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
 			gomega.Expect(defaultConfig.Machine.Volumes).To(gomega.BeEquivalentTo(volumes))
+			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(300))
 			newV, err := defaultConfig.MachineVolumes()
 			if newVolumes[0] == ":" {
 				// $HOME is not set
