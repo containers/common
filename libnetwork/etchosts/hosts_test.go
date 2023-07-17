@@ -274,6 +274,12 @@ func TestNew(t *testing.T) {
 			extraHosts:      []string{"name"},
 			wantErrString:   "unable to parse host entry \"name\": incorrect format",
 		},
+		{
+			name:            "invalid host-gateway",
+			baseFileContent: baseFileContent1Spaces,
+			extraHosts:      []string{"gatewayname:host-gateway"},
+			wantErrString:   "host containers internal IP address is empty",
+		},
 	}
 
 	for _, tt := range tests {

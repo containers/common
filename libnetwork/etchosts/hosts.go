@@ -246,6 +246,9 @@ func parseExtraHosts(extraHosts []string, hostContainersInternalIP string) (Host
 		}
 		ip := values[1]
 		if values[1] == HostGateway {
+			if hostContainersInternalIP == "" {
+				return nil, fmt.Errorf("unable to replace %q of host entry %q: host containers internal IP address is empty", HostGateway, entry)
+			}
 			ip = hostContainersInternalIP
 		}
 		e := HostEntry{IP: ip, Names: []string{values[0]}}
