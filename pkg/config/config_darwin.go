@@ -11,6 +11,9 @@ const (
 	// DefaultContainersConfig holds the default containers config path
 	DefaultContainersConfig = "/usr/share/" + _configPath
 
+	// DefaultConnectionConfig holds the default connection path overridden by the root user
+	DefaultConnectionConfig = "/etc/" + _connectionPath
+
 	// DefaultSignaturePolicyPath is the default value for the
 	// policy.json file.
 	DefaultSignaturePolicyPath = "/etc/containers/policy.json"
@@ -28,6 +31,10 @@ func customConfigFile() (string, error) {
 }
 
 func ifRootlessConfigPath() (string, error) {
+	return rootlessConfigPath()
+}
+
+func ConnectionFile() (string, error) {
 	return rootlessConfigPath()
 }
 

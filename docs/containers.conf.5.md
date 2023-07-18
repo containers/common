@@ -415,7 +415,7 @@ The `engine` table contains configuration options used to set up container engin
 
 **active_service**=""
 
-Name of destination for accessing the Podman service. See SERVICE DESTINATION TABLE below.
+Name of destination for accessing the Podman service. See connections.conf(5).
 
 **cgroup_manager**="systemd"
 
