@@ -422,6 +422,12 @@ Name of destination for accessing the Podman service. See SERVICE DESTINATION TA
 The cgroup management implementation used for the runtime. Supports `cgroupfs`
 and `systemd`.
 
+**compat_api_enforce_docker_hub**=true
+
+Enforce using docker.io for completing short names in Podman's compatibility
+REST API. Note that this will ignore unqualified-search-registries and
+short-name aliases defined in containers-registries.conf(5).
+
 **conmon_env_vars**=[]
 
 Environment variables to pass into Conmon.
