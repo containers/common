@@ -428,6 +428,12 @@ Enforce using docker.io for completing short names in Podman's compatibility
 REST API. Note that this will ignore unqualified-search-registries and
 short-name aliases defined in containers-registries.conf(5).
 
+**compose_providers**=[]
+
+Specify one or more external providers for the compose command.  The first
+found provider is used for execution.  Can be an absolute and relative path or
+a (file) name.
+
 **compose_warning_logs**=true
 
 Emit logs on each invocation of the compose command indicating that an external
