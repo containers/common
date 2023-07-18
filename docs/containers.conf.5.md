@@ -428,6 +428,11 @@ Enforce using docker.io for completing short names in Podman's compatibility
 REST API. Note that this will ignore unqualified-search-registries and
 short-name aliases defined in containers-registries.conf(5).
 
+**compose_warning_logs**=true
+
+Emit logs on each invocation of the compose command indicating that an external
+compose provider is being executed.
+
 **conmon_env_vars**=[]
 
 Environment variables to pass into Conmon.

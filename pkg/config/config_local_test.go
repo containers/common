@@ -476,6 +476,18 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config2.Engine.CompatAPIEnforceDockerHub).To(gomega.Equal(false))
 	})
 
+	It("ComposeWarningLogs", func() {
+		// Given
+		config, err := NewConfig("")
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Engine.ComposeWarningLogs).To(gomega.Equal(true))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Engine.ComposeWarningLogs).To(gomega.Equal(false))
+	})
+
 	It("Set machine disk", func() {
 		// Given
 		config, err := NewConfig("")
