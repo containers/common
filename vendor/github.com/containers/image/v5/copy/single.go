@@ -336,7 +336,6 @@ func compareImageDestinationManifestEqual(ctx context.Context, options *Options,
 		logrus.Debugf("Unable to create destination image %s source: %v", dest.Reference(), err)
 		return false, nil, "", "", nil
 	}
-	defer destImageSource.Close()
 
 	destManifest, destManifestType, err := destImageSource.GetManifest(ctx, targetInstance)
 	if err != nil {
