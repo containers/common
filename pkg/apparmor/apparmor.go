@@ -2,16 +2,19 @@ package apparmor
 
 import (
 	"errors"
-
-	"github.com/containers/common/version"
 )
 
 const (
 	// ProfilePrefix is used for version-independent presence checks.
 	ProfilePrefix = "containers-default-"
 
-	// Profile default name
-	Profile = ProfilePrefix + version.Version
+	// Default AppArmor profile used by containers; by default this is set to unconfined.
+	// To override this, distros should supply their own profile and specify it in a default
+	// containers.conf.
+	// See the following issues for more information:
+	// - https://github.com/containers/common/issues/958
+	// - https://github.com/containers/podman/issues/15874
+	Profile = "unconfined"
 )
 
 var (
