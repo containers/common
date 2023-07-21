@@ -38,7 +38,11 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.NetNS()).To(gomega.BeEquivalentTo("private"))
 			gomega.Expect(defaultConfig.IPCNS()).To(gomega.BeEquivalentTo("shareable"))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo(""))
-			gomega.Expect(defaultConfig.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("bind"))
+			if runtime.GOOS == "freebsd" {
+				gomega.Expect(defaultConfig.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("nullfs"))
+			} else {
+				gomega.Expect(defaultConfig.Engine.ImageVolumeMode).To(gomega.BeEquivalentTo("bind"))
+			}
 			gomega.Expect(defaultConfig.Engine.SSHConfig).To(gomega.ContainSubstring("/.ssh/config"))
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.BeEquivalentTo(stringBoltDB))
