@@ -56,6 +56,10 @@ func queryPackageVersion(cmdArg ...string) string {
 // Note: This function is copied from containers/podman libpod/util.go
 // Please see https://github.com/containers/common/pull/1460
 func PackageVersion(program string) string { // program is full path
+	_, err := os.Stat(program)
+	if err != nil {
+		return UnknownPackage
+	}
 	packagers := [][]string{
 		{"/usr/bin/rpm", "-q", "-f"},
 		{"/usr/bin/dlocate", "-F"},             // Debian, Ubuntu (quick)
