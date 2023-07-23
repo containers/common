@@ -406,6 +406,7 @@ func defaultConfigFromMemory() (*EngineConfig, error) {
 		"runsc",
 		"youki",
 		"krun",
+		"ocijail",
 	}
 	c.RuntimeSupportsNoCgroups = []string{"crun", "krun"}
 	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}
