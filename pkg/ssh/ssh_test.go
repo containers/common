@@ -61,6 +61,19 @@ func TestDial(t *testing.T) {
 
 	_, err = Dial(&options, GolangMode)
 	require.Error(t, err, "failed to connect: ssh: handshake failed: ssh: disconnect, reason 2: Too many authentication failures")
+
+	// Test again without specifying sshd port, and code should default to port 22
+	options = ConnectionDialOptions{
+		Host: "localhost",
+	}
+
+	_, err = Dial(&options, NativeMode)
+	// exit status 255 is what you get when ssh is not enabled or the connection failed
+	// this means up to that point, everything worked
+	require.Error(t, err, "exit status 255")
+
+	_, err = Dial(&options, GolangMode)
+	require.Error(t, err, "failed to connect: ssh: handshake failed: ssh: disconnect, reason 2: Too many authentication failures")
 }
 
 func TestScp(t *testing.T) {
