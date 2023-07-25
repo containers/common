@@ -18,7 +18,7 @@ import (
 var _ = Describe("Config Local", func() {
 	BeforeEach(beforeEach)
 
-	It("should fail on invalid NetworkConfigDir", func() {
+	It("should not fail on invalid NetworkConfigDir", func() {
 		// Given
 		tmpfile := path.Join(os.TempDir(), "wrong-file")
 		file, err := os.Create(tmpfile)
@@ -32,10 +32,10 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		gomega.Expect(err).To(gomega.BeNil())
 	})
 
-	It("should fail on invalid CNIPluginDirs", func() {
+	It("should not fail on invalid CNIPluginDirs", func() {
 		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
@@ -49,41 +49,7 @@ var _ = Describe("Config Local", func() {
 		err = sut.Network.Validate()
 
 		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
-	})
-
-	It("should fail in validating invalid PluginDir", func() {
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
-		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{invalidPath}
-
-		// When
-		err = sut.Network.Validate()
-
-		// Then
-		gomega.Expect(err).ToNot(gomega.BeNil())
-	})
-
-	It("should fail on invalid CNIPluginDirs", func() {
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
-		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{invalidPath}
-
-		// When
-		err = sut.Network.Validate()
-
-		// Then
-		gomega.Expect(err).NotTo(gomega.BeNil())
+		gomega.Expect(err).To(gomega.BeNil())
 	})
 
 	It("should fail on invalid subnet pool", func() {
@@ -169,25 +135,6 @@ var _ = Describe("Config Local", func() {
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config2.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("pasta"))
-	})
-
-	It("should fail during runtime", func() {
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
-		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		tmpDir := path.Join(os.TempDir(), "cni-test")
-		sut.Network.CNIPluginDirs = []string{tmpDir}
-		defer os.RemoveAll(tmpDir)
-
-		// When
-		err = sut.Network.Validate()
-
-		// Then
-		gomega.Expect(err).ToNot(gomega.BeNil())
 	})
 
 	It("should fail on invalid device mode", func() {

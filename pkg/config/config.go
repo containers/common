@@ -1021,17 +1021,7 @@ func (c *NetworkConfig) Validate() error {
 		}
 	}
 
-	if stringsEq(c.CNIPluginDirs, DefaultCNIPluginDirs) {
-		return nil
-	}
-
-	for _, pluginDir := range c.CNIPluginDirs {
-		if err := isDirectory(pluginDir); err == nil {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("invalid cni_plugin_dirs: %s", strings.Join(c.CNIPluginDirs, ","))
+	return nil
 }
 
 // FindConmon iterates over (*Config).ConmonPath and returns the path
