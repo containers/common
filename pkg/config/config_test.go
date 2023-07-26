@@ -988,7 +988,7 @@ env=["foo=bar"]`
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		// config should only contain empty stanzas
 		gomega.Expect(string(b)).To(gomega.
-			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n"))
+			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n\n[farms]\n"))
 	})
 
 	It("validate ImageVolumeMode", func() {
