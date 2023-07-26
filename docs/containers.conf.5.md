@@ -229,6 +229,13 @@ limit is never exceeded.
 
 Default format tag for container log messages. This is useful for creating a specific tag for container log messages. Container log messages default to using the truncated container ID as a tag.
 
+**mounts**=[]
+
+List of mounts.
+Specified as "type=TYPE,source=<directory-on-host>,destination=<directory-in-container>,<options>"
+
+Example:  [ "type=bind,source=/var/lib/foobar,destination=/var/lib/foobar,ro", ]
+
 **netns**="private"
 
 Default way to to create a NET namespace for the container.

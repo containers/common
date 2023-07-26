@@ -249,6 +249,11 @@ image_copy_tmp_dir="storage"`
 				"TERM=xterm",
 			}
 
+			mounts := []string{
+				"type=glob,source=/tmp/test2*,ro=true",
+				"type=bind,source=/etc/services,destination=/etc/services,ro",
+			}
+
 			volumes := []string{
 				"$HOME:$HOME",
 			}
@@ -265,6 +270,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.Engine.CgroupManager).To(gomega.Equal("systemd"))
 			gomega.Expect(defaultConfig.Containers.Env).To(gomega.BeEquivalentTo(envs))
+			gomega.Expect(defaultConfig.Containers.Mounts).To(gomega.BeEquivalentTo(mounts))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Network.CNIPluginDirs).To(gomega.Equal(pluginDirs))
 			gomega.Expect(defaultConfig.Network.NetavarkPluginDirs).To(gomega.Equal([]string{"/usr/netavark"}))
