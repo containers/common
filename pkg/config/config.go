@@ -79,6 +79,8 @@ type Config struct {
 	Secrets SecretConfig `toml:"secrets"`
 	// ConfigMap section defines configurations for the configmaps management
 	ConfigMaps ConfigMapConfig `toml:"configmaps"`
+	// Farms defines configurations for the buildfarm farms
+	Farms FarmConfig `toml:"farms"`
 }
 
 // ContainersConfig represents the "containers" TOML config table
@@ -674,6 +676,14 @@ type MachineConfig struct {
 	Volumes []string `toml:"volumes"`
 	// Provider is the virtualization provider used to run podman-machine VM
 	Provider string `toml:"provider,omitempty"`
+}
+
+// FarmConfig represents the "farm" TOML config tabls
+type FarmConfig struct {
+	// Default is the default farm to be used when farming out builds
+	Default string `toml:"default,omitempty"`
+	// List is a map of farms created where key=farm-name and value=list of connections
+	List map[string][]string `toml:"list,omitempty"`
 }
 
 // Destination represents destination for remote service
@@ -1275,6 +1285,10 @@ func ReadCustomConfig() (*Config, error) {
 		if !errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
+	}
+	// Let's always initialize the farm list so it is never nil
+	if newConfig.Farms.List == nil {
+		newConfig.Farms.List = make(map[string][]string)
 	}
 	return newConfig, nil
 }
