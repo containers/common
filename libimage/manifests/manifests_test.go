@@ -333,4 +333,8 @@ func TestPush(t *testing.T) {
 	options.Instances = append(options.Instances, otherListDigest)
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.Nilf(t, err, "list.Push(four specified)")
+
+	options.AddCompression = []string{"zstd"}
+	_, _, err = list.Push(ctx, destRef, options)
+	assert.NoError(t, err, "list.Push(with replication for zstd specified)")
 }
