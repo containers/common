@@ -113,11 +113,9 @@ func TestRunEnvironment(t *testing.T) {
 			name: "set",
 			env: []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM=xterm",
 			},
 			expected: map[string]string{
 				"PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM": "xterm",
 			},
 		},
 	} {

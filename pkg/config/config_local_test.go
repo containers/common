@@ -260,7 +260,6 @@ var _ = Describe("Config Local", func() {
 	It("verify getDefaultEnv", func() {
 		envs := []string{
 			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-			"TERM=xterm",
 		}
 		// Given we do
 		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
