@@ -64,12 +64,12 @@ const targetFileContent5 = `1.1.1.1	name1
 
 const baseFileContent6 = `127.0.0.1	localhost
 ::1	localhost
-1.1.1.1 host.containers.internal
+1.1.1.1 host.containers.internal host.docker.internal
 `
 
 const targetFileContent6 = `127.0.0.1	localhost
 ::1	localhost
-1.1.1.1	host.containers.internal
+1.1.1.1	host.containers.internal host.docker.internal
 `
 
 const baseFileContent7 = `
@@ -216,21 +216,28 @@ func TestNew(t *testing.T) {
 			name:                      "with host.containers.internal ip",
 			baseFileContent:           baseFileContent1Spaces,
 			hostContainersInternal:    "10.0.0.1",
-			expectedTargetFileContent: targetFileContent1 + "10.0.0.1\thost.containers.internal\n",
+			expectedTargetFileContent: targetFileContent1 + "10.0.0.1\thost.containers.internal host.docker.internal\n",
 		},
 		{
 			name:                      "with host.containers.internal ip and host-gateway",
 			baseFileContent:           baseFileContent1Spaces,
 			extraHosts:                []string{"gatewayname:host-gateway"},
 			hostContainersInternal:    "10.0.0.1",
-			expectedTargetFileContent: "10.0.0.1\tgatewayname\n" + targetFileContent1 + "10.0.0.1\thost.containers.internal\n",
+			expectedTargetFileContent: "10.0.0.1\tgatewayname\n" + targetFileContent1 + "10.0.0.1\thost.containers.internal host.docker.internal\n",
 		},
 		{
 			name:                      "host.containers.internal not added when already present in extra hosts",
 			baseFileContent:           baseFileContent1Spaces,
 			extraHosts:                []string{"host.containers.internal:1.1.1.1"},
 			hostContainersInternal:    "10.0.0.1",
-			expectedTargetFileContent: "1.1.1.1\thost.containers.internal\n" + targetFileContent1,
+			expectedTargetFileContent: "1.1.1.1\thost.containers.internal\n" + targetFileContent1 + "10.0.0.1\thost.docker.internal\n",
+		},
+		{
+			name:                      "host.containers.internal and host.docker.internal not added when already present in extra hosts",
+			baseFileContent:           baseFileContent1Spaces,
+			extraHosts:                []string{"host.containers.internal:1.1.1.1", "host.docker.internal:1.1.1.1"},
+			hostContainersInternal:    "10.0.0.1",
+			expectedTargetFileContent: "1.1.1.1\thost.containers.internal\n1.1.1.1\thost.docker.internal\n" + targetFileContent1,
 		},
 		{
 			name:                      "host.containers.internal not added when already present in base hosts",
