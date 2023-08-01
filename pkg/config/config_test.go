@@ -246,7 +246,6 @@ image_copy_tmp_dir="storage"`
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM=xterm",
 			}
 
 			mounts := []string{
@@ -297,7 +296,6 @@ image_copy_tmp_dir="storage"`
 		It("test GetDefaultEnvEx", func() {
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM=xterm",
 			}
 			httpEnvs := append([]string{"HTTP_PROXY=1.2.3.4"}, envs...)
 			oldProxy, proxyEnvSet := os.LookupEnv("HTTP_PROXY")
@@ -395,7 +393,6 @@ image_copy_tmp_dir="storage"`
 
 			envs := []string{
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM=xterm",
 			}
 
 			// Given we do
@@ -900,7 +897,7 @@ env=["foo=bar"]`
 				os.Unsetenv("CONTAINERS_CONF")
 			}
 
-			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "TERM=xterm"}
+			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 			expectNewEnv := []string{"foo=bar"}
 			gomega.Expect(cfg.Containers.Env).To(gomega.Equal(expectOldEnv))
 			gomega.Expect(newCfg.Containers.Env).To(gomega.Equal(expectNewEnv))
