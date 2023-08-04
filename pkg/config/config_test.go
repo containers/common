@@ -18,8 +18,6 @@ import (
 )
 
 var _ = Describe("Config", func() {
-	BeforeEach(beforeEach)
-
 	Describe("ValidateConfig", func() {
 		It("should succeed with default config", func() {
 			// Given
@@ -57,8 +55,12 @@ var _ = Describe("Config", func() {
 		})
 
 		It("should succeed with devices", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 			// Given
-			sut.Containers.Devices = []string{
+			defConf.Containers.Devices = []string{
 				"/dev/null:/dev/null:rw",
 				"/dev/sdc/",
 				"/dev/sdc:/dev/xvdc",
@@ -66,49 +68,61 @@ var _ = Describe("Config", func() {
 			}
 
 			// When
-			err := sut.Containers.Validate()
+			err = defConf.Containers.Validate()
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 		})
 
 		It("should fail wrong max log size", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 			// Given
-			sut.Containers.LogSizeMax = 1
+			defConf.Containers.LogSizeMax = 1
 
 			// When
-			err := sut.Validate()
+			err = defConf.Validate()
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
 		})
 
 		It("should succeed with valid shm size", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 			// Given
-			sut.Containers.ShmSize = "1024"
+			defConf.Containers.ShmSize = "1024"
 
 			// When
-			err := sut.Validate()
+			err = defConf.Validate()
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 
 			// Given
-			sut.Containers.ShmSize = "64m"
+			defConf.Containers.ShmSize = "64m"
 
 			// When
-			err = sut.Validate()
+			err = defConf.Validate()
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 		})
 
 		It("should fail wrong shm size", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 			// Given
-			sut.Containers.ShmSize = "-2"
+			defConf.Containers.ShmSize = "-2"
 
 			// When
-			err := sut.Validate()
+			err = defConf.Validate()
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
@@ -124,9 +138,13 @@ var _ = Describe("Config", func() {
 
 	Describe("ValidateNetworkConfig", func() {
 		It("should succeed with default config", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 			// Given
 			// When
-			err := sut.Network.Validate()
+			err = defConf.Network.Validate()
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
@@ -589,30 +607,46 @@ image_copy_tmp_dir="storage"`
 		})
 
 		It("should succeed with default pull_policy", func() {
-			err := sut.Engine.Validate()
+			defConf, err := defaultConfig()
 			gomega.Expect(err).To(gomega.BeNil())
-			gomega.Expect(sut.Engine.PullPolicy).To(gomega.Equal("missing"))
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
-			sut.Engine.PullPolicy = DefaultPullPolicy
-			err = sut.Engine.Validate()
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf.Engine.PullPolicy).To(gomega.Equal("missing"))
+
+			defConf.Engine.PullPolicy = DefaultPullPolicy
+			err = defConf.Engine.Validate()
 			gomega.Expect(err).To(gomega.BeNil())
 		})
 
 		It("should succeed case-insensitive", func() {
-			sut.Engine.PullPolicy = "NeVer"
-			err := sut.Engine.Validate()
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+			defConf.Engine.PullPolicy = "NeVer"
+			err = defConf.Engine.Validate()
 			gomega.Expect(err).To(gomega.BeNil())
 		})
 
 		It("should fail with invalid pull_policy", func() {
-			sut.Engine.PullPolicy = "invalidPullPolicy"
-			err := sut.Engine.Validate()
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+			defConf.Engine.PullPolicy = "invalidPullPolicy"
+			err = defConf.Engine.Validate()
 			gomega.Expect(err).ToNot(gomega.BeNil())
 		})
 
 		It("should fail with invalid database_backend", func() {
-			sut.Engine.DBBackend = ""
-			err := sut.Engine.Validate()
+			defConf, err := defaultConfig()
+			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+			defConf.Engine.DBBackend = ""
+			err = defConf.Engine.Validate()
 			gomega.Expect(err).ToNot(gomega.BeNil())
 		})
 	})
