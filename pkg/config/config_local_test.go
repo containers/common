@@ -114,7 +114,7 @@ var _ = Describe("Config Local", func() {
 
 	It("parse dns port", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Network.DNSBindPort).To(gomega.Equal(uint16(0)))
 		// When
@@ -126,7 +126,7 @@ var _ = Describe("Config Local", func() {
 
 	It("parse pasta_options", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Network.PastaOptions).To(gomega.BeNil())
 		// When
@@ -298,7 +298,7 @@ var _ = Describe("Config Local", func() {
 	It("Expect Remote to be False", func() {
 		// Given
 		// When
-		config, err := NewConfig("")
+		config, err := New(nil)
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.Remote).To(gomega.BeFalse())
@@ -370,7 +370,7 @@ var _ = Describe("Config Local", func() {
 	It("Default Umask", func() {
 		// Given
 		// When
-		config, err := NewConfig("")
+		config, err := New(nil)
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0022"))
@@ -400,7 +400,7 @@ var _ = Describe("Config Local", func() {
 
 	It("Set Machine Enabled", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.MachineEnabled).To(gomega.Equal(false))
 		// When
@@ -412,7 +412,7 @@ var _ = Describe("Config Local", func() {
 
 	It("default netns", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Containers.NetNS).To(gomega.Equal("private"))
 		// When
@@ -448,7 +448,7 @@ var _ = Describe("Config Local", func() {
 
 	It("Set machine image path", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.Image).To(gomega.Equal("testing"))
 		// When
@@ -463,7 +463,7 @@ var _ = Describe("Config Local", func() {
 
 	It("CompatAPIEnforceDockerHub", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.CompatAPIEnforceDockerHub).To(gomega.Equal(true))
 		// When
@@ -475,7 +475,7 @@ var _ = Describe("Config Local", func() {
 
 	It("ComposeProviders", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.ComposeProviders).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all paltforms
 		// When
@@ -487,7 +487,7 @@ var _ = Describe("Config Local", func() {
 
 	It("ComposeWarningLogs", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.ComposeWarningLogs).To(gomega.Equal(true))
 		// When
@@ -499,7 +499,7 @@ var _ = Describe("Config Local", func() {
 
 	It("Set machine disk", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.DiskSize).To(gomega.Equal(uint64(100)))
 		// When
@@ -510,7 +510,7 @@ var _ = Describe("Config Local", func() {
 	})
 	It("Set machine CPUs", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.CPUs).To(gomega.Equal(uint64(1)))
 		// When
@@ -521,7 +521,7 @@ var _ = Describe("Config Local", func() {
 	})
 	It("Set machine memory", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.Memory).To(gomega.Equal(uint64(2048)))
 		// When
