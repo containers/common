@@ -159,7 +159,7 @@ const (
 
 // DefaultConfig defines the default values from containers.conf.
 func DefaultConfig() (*Config, error) {
-	defaultEngineConfig, err := defaultConfigFromMemory()
+	defaultEngineConfig, err := defaultEngineConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -266,9 +266,9 @@ func defaultFarmConfig() FarmConfig {
 	}
 }
 
-// defaultConfigFromMemory returns a default engine configuration. Note that the
+// defaultEngineConfig eturns a default engine configuration. Note that the
 // config is different for root and rootless. It also parses the storage.conf.
-func defaultConfigFromMemory() (*EngineConfig, error) {
+func defaultEngineConfig() (*EngineConfig, error) {
 	c := new(EngineConfig)
 	tmp, err := defaultTmpDir()
 	if err != nil {
