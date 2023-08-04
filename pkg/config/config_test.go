@@ -166,7 +166,7 @@ image_copy_tmp_dir="storage"`
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			defaultConfig, _ := DefaultConfig()
+			defaultConfig, _ := defaultConfig()
 			// prior to reading local config, shows hard coded defaults
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(true))
 
@@ -303,7 +303,7 @@ image_copy_tmp_dir="storage"`
 			oldFoo, fooEnvSet := os.LookupEnv("foo")
 			os.Setenv("foo", "bar")
 
-			defaultConfig, _ := DefaultConfig()
+			defaultConfig, _ := defaultConfig()
 			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, false)).To(gomega.BeEquivalentTo(envs))
 			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, true)).To(gomega.BeEquivalentTo(httpEnvs))
 			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("HTTP_PROXY"))

@@ -716,8 +716,8 @@ func (c *EngineConfig) ImagePlatformToRuntime(os string, arch string) string {
 // with cgroupv2v2. Other OCI runtimes are not yet supporting cgroupv2v2. This
 // might change in the future.
 func NewConfig(userConfigPath string) (*Config, error) {
-	// Generate the default config for the system
-	config, err := DefaultConfig()
+	// Start with the built-in defaults
+	config, err := defaultConfig()
 	if err != nil {
 		return nil, err
 	}

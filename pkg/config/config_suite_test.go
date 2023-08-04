@@ -19,12 +19,8 @@ const (
 var sut *Config
 
 func beforeEach() {
-	sut = defaultConfig()
-}
-
-func defaultConfig() *Config {
-	c, err := DefaultConfig()
+	c, err := defaultConfig()
 	gomega.Expect(err).To(gomega.BeNil())
 	gomega.Expect(c).NotTo(gomega.BeNil())
-	return c
+	sut = c
 }

@@ -157,8 +157,10 @@ const (
 	DefaultVolumePluginTimeout = 5
 )
 
-// DefaultConfig defines the default values from containers.conf.
-func DefaultConfig() (*Config, error) {
+// defaultConfig returns Config with builtin defaults and minimal adjustments
+// to the current host only. It does not read any config files from the host or
+// the environment.
+func defaultConfig() (*Config, error) {
 	defaultEngineConfig, err := defaultEngineConfig()
 	if err != nil {
 		return nil, err
