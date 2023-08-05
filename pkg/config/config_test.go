@@ -864,6 +864,67 @@ image_copy_tmp_dir="storage"`
 		})
 	})
 
+	Describe("Farms", func() {
+		ConfPath := struct {
+			Value string
+			IsSet bool
+		}{}
+
+		BeforeEach(func() {
+			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
+			conf, _ := os.CreateTemp("", "containersconf")
+			os.Setenv("CONTAINERS_CONF", conf.Name())
+		})
+
+		AfterEach(func() {
+			os.Remove(os.Getenv("CONTAINERS_CONF"))
+			if ConfPath.IsSet {
+				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
+		})
+
+		It("succeed to set and read", func() {
+			cfg, err := ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg.Engine.ActiveService = "QA"
+			cfg.Engine.ServiceDestinations = map[string]Destination{
+				"QA": {
+					URI:      "https://qa/run/podman/podman.sock",
+					Identity: "/.ssh/id_rsa",
+				},
+			}
+			err = cfg.Write()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			// test that connections were written correctly
+			cfg, err = ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			gomega.Expect(cfg.Engine.ActiveService, "QA")
+			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
+				"https://qa/run/podman/podman.sock")
+			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
+				"/.ssh/id_rsa")
+
+			// Create farm
+			cfg.Farms.Default = "Farm-1"
+			cfg.Farms.List = map[string][]string{
+				"Farm-1": {"QA"},
+			}
+			err = cfg.Write()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			cfg, err = ReadCustomConfig()
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+
+			gomega.Expect(cfg.Farms.Default, "Farm-1")
+			gomega.Expect(cfg.Farms.List["Farm-1"],
+				"QA")
+		})
+	})
+
 	Describe("Reload", func() {
 		It("test new config from reload", func() {
 			// Default configuration
@@ -924,7 +985,7 @@ env=["foo=bar"]`
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		// config should only contain empty stanzas
 		gomega.Expect(string(b)).To(gomega.
-			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n"))
+			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n\n[farms]\n"))
 	})
 
 	It("validate ImageVolumeMode", func() {

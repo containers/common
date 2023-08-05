@@ -848,6 +848,17 @@ Virtualization provider to be used for running a podman-machine VM. Empty value
 is interpreted as the default provider for the current host OS. On Linux/Mac
 default is `QEMU` and on Windows it is `WSL`.
 
+## FARMS TABLE
+The `farms` table contains configuration options used to group up remote connections into farms that will be used when sending out builds to different machines in a farm via `podman buildfarm`.
+
+**default**=""
+
+The default farm to use when farming out builds.
+
+**[farms.list]**
+
+Map of farms created where the key is the farm name and the value is the list of system connections.
+
 # FILES
 
 **containers.conf**
