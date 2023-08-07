@@ -3,12 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -705,98 +703,6 @@ func (c *EngineConfig) ImagePlatformToRuntime(os string, arch string) string {
 		return val
 	}
 	return c.OCIRuntime
-}
-
-// readConfigFromFile reads the specified config file at `path` and attempts to
-// unmarshal its content into a Config. The config param specifies the previous
-// default config. If the path, only specifies a few fields in the Toml file
-// the defaults from the config parameter will be used for all other fields.
-func readConfigFromFile(path string, config *Config) error {
-	logrus.Tracef("Reading configuration file %q", path)
-	meta, err := toml.DecodeFile(path, config)
-	if err != nil {
-		return fmt.Errorf("decode configuration %v: %w", path, err)
-	}
-	keys := meta.Undecoded()
-	if len(keys) > 0 {
-		logrus.Debugf("Failed to decode the keys %q from %q.", keys, path)
-	}
-
-	return nil
-}
-
-// addConfigs will search one level in the config dirPath for config files
-// If the dirPath does not exist, addConfigs will return nil
-func addConfigs(dirPath string, configs []string) ([]string, error) {
-	newConfigs := []string{}
-
-	err := filepath.WalkDir(dirPath,
-		// WalkFunc to read additional configs
-		func(path string, d fs.DirEntry, err error) error {
-			switch {
-			case err != nil:
-				// return error (could be a permission problem)
-				return err
-			case d.IsDir():
-				if path != dirPath {
-					// make sure to not recurse into sub-directories
-					return filepath.SkipDir
-				}
-				// ignore directories
-				return nil
-			default:
-				// only add *.conf files
-				if strings.HasSuffix(path, ".conf") {
-					newConfigs = append(newConfigs, path)
-				}
-				return nil
-			}
-		},
-	)
-	if errors.Is(err, os.ErrNotExist) {
-		err = nil
-	}
-	sort.Strings(newConfigs)
-	return append(configs, newConfigs...), err
-}
-
-// Returns the list of configuration files, if they exist in order of hierarchy.
-// The files are read in order and each new file can/will override previous
-// file settings.
-func systemConfigs() (configs []string, finalErr error) {
-	if path := os.Getenv("CONTAINERS_CONF"); path != "" {
-		if _, err := os.Stat(path); err != nil {
-			return nil, fmt.Errorf("CONTAINERS_CONF file: %w", err)
-		}
-		return append(configs, path), nil
-	}
-	if _, err := os.Stat(DefaultContainersConfig); err == nil {
-		configs = append(configs, DefaultContainersConfig)
-	}
-	if _, err := os.Stat(OverrideContainersConfig); err == nil {
-		configs = append(configs, OverrideContainersConfig)
-	}
-
-	var err error
-	configs, err = addConfigs(OverrideContainersConfig+".d", configs)
-	if err != nil {
-		return nil, err
-	}
-
-	path, err := ifRootlessConfigPath()
-	if err != nil {
-		return nil, err
-	}
-	if path != "" {
-		if _, err := os.Stat(path); err == nil {
-			configs = append(configs, path)
-		}
-		configs, err = addConfigs(path+".d", configs)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return configs, nil
 }
 
 // CheckCgroupsAndAdjustConfig checks if we're running rootless with the systemd

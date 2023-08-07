@@ -1,10 +1,16 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"sync"
 
+	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,14 +20,23 @@ var (
 	cachedConfig      *Config
 )
 
+const (
+	// FIXME: update code base and tests to use the two constants below.
+	containersConfEnv         = "CONTAINERS_CONF"
+	containersConfOverrideEnv = containersConfEnv + "_OVERRIDE"
+)
+
 // Options to use when loading a Config via New().
 type Options struct {
+	// Attempt to load the following config modules.
+	Modules []string
+
 	// Set the loaded config as the default one which can later on be
 	// accessed via Default().
 	SetDefault bool
 
-	// Additional configs that will be loaded after all system/user configs
-	// and environment variables but the _OVERRIDE one.
+	// Additional configs to load.  An internal only field to make the
+	// behavior observable and testable in unit tests.
 	additionalConfigs []string
 }
 
@@ -29,24 +44,36 @@ type Options struct {
 func New(options *Options) (*Config, error) {
 	if options == nil {
 		options = &Options{}
+	} else if options.SetDefault {
+		cachedConfigMutex.Lock()
+		defer cachedConfigMutex.Unlock()
 	}
-	cachedConfigMutex.Lock()
-	defer cachedConfigMutex.Unlock()
 	return newLocked(options)
 }
 
-// A helper function for New() expecting the caller to hold the
-// cachedConfigMutex.
-func newLocked(options *Options) (*Config, error) {
-	// The _OVERRIDE variable _must_ always win.  That's a contract we need
-	// to honor (for the Podman CI).
-	if path := os.Getenv("CONTAINERS_CONF_OVERRIDE"); path != "" {
-		if _, err := os.Stat(path); err != nil {
-			return nil, fmt.Errorf("CONTAINERS_CONF_OVERRIDE file: %w", err)
-		}
-		options.additionalConfigs = append(options.additionalConfigs, path)
+// Default returns the default container config.  If no default config has been
+// set yet, a new config will be loaded by New() and set as the default one.
+// All callers are expected to use the returned Config read only.  Changing
+// data may impact other call sites.
+func Default() (*Config, error) {
+	if cachedConfig != nil || cachedConfigError != nil {
+		return cachedConfig, cachedConfigError
 	}
+	// Lock and check again.  This has a minimal performance penalty for
+	// the single writer but prevents taking the lock for all readers (once
+	// the config is written).
+	cachedConfigMutex.Lock()
+	defer cachedConfigMutex.Unlock()
+	if cachedConfig != nil || cachedConfigError != nil {
+		return cachedConfig, cachedConfigError
+	}
+	cachedConfig, cachedConfigError = newLocked(&Options{SetDefault: true})
+	return cachedConfig, cachedConfigError
+}
 
+// A helper function for New() expecting the caller to hold the
+// cachedConfigMutex if options.SetDefault is set..
+func newLocked(options *Options) (*Config, error) {
 	// Start with the built-in defaults
 	config, err := defaultConfig()
 	if err != nil {
@@ -67,6 +94,22 @@ func newLocked(options *Options) (*Config, error) {
 		}
 		logrus.Debugf("Merged system config %q", path)
 		logrus.Tracef("%+v", config)
+	}
+
+	modules, err := options.modules()
+	if err != nil {
+		return nil, err
+	}
+
+	options.additionalConfigs = append(options.additionalConfigs, modules...)
+
+	// The _OVERRIDE variable _must_ always win.  That's a contract we need
+	// to honor (for the Podman CI).
+	if path := os.Getenv(containersConfOverrideEnv); path != "" {
+		if _, err := os.Stat(path); err != nil {
+			return nil, fmt.Errorf("%s file: %w", containersConfOverrideEnv, err)
+		}
+		options.additionalConfigs = append(options.additionalConfigs, path)
 	}
 
 	// If the caller specified a config path to use, then we read it to
@@ -109,16 +152,94 @@ func NewConfig(userConfigPath string) (*Config, error) {
 	return New(&Options{additionalConfigs: []string{userConfigPath}})
 }
 
-// Default returns the default container config.  If no default config has been
-// set yet, a new config will be loaded by New() and set as the default one.
-// All callers are expected to use the returned Config read only.  Changing
-// data may impact other call sites.
-func Default() (*Config, error) {
-	cachedConfigMutex.Lock()
-	defer cachedConfigMutex.Unlock()
-	if cachedConfig != nil || cachedConfigError != nil {
-		return cachedConfig, cachedConfigError
+// Returns the list of configuration files, if they exist in order of hierarchy.
+// The files are read in order and each new file can/will override previous
+// file settings.
+func systemConfigs() (configs []string, finalErr error) {
+	if path := os.Getenv(containersConfEnv); path != "" {
+		if _, err := os.Stat(path); err != nil {
+			return nil, fmt.Errorf("%s file: %w", containersConfEnv, err)
+		}
+		return append(configs, path), nil
 	}
-	cachedConfig, cachedConfigError = newLocked(&Options{SetDefault: true})
-	return cachedConfig, cachedConfigError
+	if _, err := os.Stat(DefaultContainersConfig); err == nil {
+		configs = append(configs, DefaultContainersConfig)
+	}
+	if _, err := os.Stat(OverrideContainersConfig); err == nil {
+		configs = append(configs, OverrideContainersConfig)
+	}
+
+	var err error
+	configs, err = addConfigs(OverrideContainersConfig+".d", configs)
+	if err != nil {
+		return nil, err
+	}
+
+	path, err := ifRootlessConfigPath()
+	if err != nil {
+		return nil, err
+	}
+	if path != "" {
+		if _, err := os.Stat(path); err == nil {
+			configs = append(configs, path)
+		}
+		configs, err = addConfigs(path+".d", configs)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return configs, nil
+}
+
+// addConfigs will search one level in the config dirPath for config files
+// If the dirPath does not exist, addConfigs will return nil
+func addConfigs(dirPath string, configs []string) ([]string, error) {
+	newConfigs := []string{}
+
+	err := filepath.WalkDir(dirPath,
+		// WalkFunc to read additional configs
+		func(path string, d fs.DirEntry, err error) error {
+			switch {
+			case err != nil:
+				// return error (could be a permission problem)
+				return err
+			case d.IsDir():
+				if path != dirPath {
+					// make sure to not recurse into sub-directories
+					return filepath.SkipDir
+				}
+				// ignore directories
+				return nil
+			default:
+				// only add *.conf files
+				if strings.HasSuffix(path, ".conf") {
+					newConfigs = append(newConfigs, path)
+				}
+				return nil
+			}
+		},
+	)
+	if errors.Is(err, os.ErrNotExist) {
+		err = nil
+	}
+	sort.Strings(newConfigs)
+	return append(configs, newConfigs...), err
+}
+
+// readConfigFromFile reads the specified config file at `path` and attempts to
+// unmarshal its content into a Config. The config param specifies the previous
+// default config. If the path, only specifies a few fields in the Toml file
+// the defaults from the config parameter will be used for all other fields.
+func readConfigFromFile(path string, config *Config) error {
+	logrus.Tracef("Reading configuration file %q", path)
+	meta, err := toml.DecodeFile(path, config)
+	if err != nil {
+		return fmt.Errorf("decode configuration %v: %w", path, err)
+	}
+	keys := meta.Undecoded()
+	if len(keys) > 0 {
+		logrus.Debugf("Failed to decode the keys %q from %q.", keys, path)
+	}
+
+	return nil
 }

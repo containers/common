@@ -30,6 +30,26 @@ Note, container engines also use other configuration files for configuring the e
 container images.
 * `policy.conf` for controlling which images can be pulled to the system.
 
+## ENVIRONMENT VARIABLES
+If the `CONTAINERS_CONF` environment variable is set, all system and user
+config files are ignored and only the specified config file will be loaded.
+
+If the `CONTAINERS_CONF_OVERRIDE` path environment variable is set, the config
+file will be loaded last even when `CONTAINERS_CONF` is set.
+
+The values of both environment variables may be absolute or relative paths, for
+instance, `CONTAINERS_CONF=/tmp/my_containers.conf`.
+
+## MODULES
+A module is a containers.conf file located directly in or a sub-directory of the following three directories:
+ - __$HOME/.config/containers/containers.conf.modules__
+ - __/etc/containers/containers.conf.modules__
+ - __/usr/share/containers/containers.conf.modules__
+
+Files in those locations are not loaded by default but only on-demand.  They are loaded after all system and user configuration files but before `CONTAINERS_CONF_OVERRIDE` hence allowing for overriding system and user configs.
+
+Modules are currently supported by podman(1).  The `podman --module` flag allows for loading a module and can be specified multiple times.  If the specified value is an absolute path, the config file will be loaded directly.  Relative paths are resolved relative to the three module directories mentioned above and in the specified order such that modules in `$HOME` allow for overriding those in `/etc` and `/usr/share`.  Modules in `$HOME` (or `$XDG_CONFIG_HOME` if specified) are only used for rootless users.
+
 # FORMAT
 The [TOML format][toml] is used as the encoding of the configuration file.
 Every option is nested under its table. No bare options are used. The format of
@@ -870,15 +890,6 @@ configuration. They may also drop `.conf` files in
 __/etc/containers/containers.conf.d__ which will be loaded in alphanumeric order.
 Rootless users can further override fields in the config by creating a config
 file stored in the __$HOME/.config/containers/containers.conf__ file or __.conf__ files in __$HOME/.config/containers/containers.conf.d__.
-
-If the `CONTAINERS_CONF` environment variable is set, all system and user
-config files are ignored and only the specified config file will be loaded.
-
-If the `CONTAINERS_CONF_OVERRIDE` path environment variable is set, the config
-file will be loaded last even when `CONTAINERS_CONF` is set.
-
-The values of both environment variables may be absolute or relative paths, for
-instance, `CONTAINERS_CONF=/tmp/my_containers.conf`.
 
 Fields specified in a containers.conf file override the default options, as
 well as options in previously loaded containers.conf files.
