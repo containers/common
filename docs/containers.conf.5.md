@@ -721,7 +721,7 @@ the primary uid/gid of the container.
 
 **compression_format**="gzip"
 
-Specifies the compression format to use when pushing an image. Supported values are: `gzip`, `zstd` and `zstd:chunked`.
+Specifies the compression format to use when pushing an image. Supported values are: `gzip` and `zstd`.
 
 **compression_level**="5"
 
