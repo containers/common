@@ -337,4 +337,8 @@ func TestPush(t *testing.T) {
 	options.AddCompression = []string{"zstd"}
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.NoError(t, err, "list.Push(with replication for zstd specified)")
+
+	options.ForceCompressionFormat = true
+	_, _, err = list.Push(ctx, destRef, options)
+	assert.NoError(t, err, "list.Push(with ForceCompressionFormat: true)")
 }
