@@ -5,7 +5,7 @@ import "os"
 // getDefaultImage returns the default machine image stream
 // On Windows this refers to the Fedora major release number
 func getDefaultMachineImage() string {
-	return "35"
+	return "testing"
 }
 
 // getDefaultMachineUser returns the user to use for rootless podman
