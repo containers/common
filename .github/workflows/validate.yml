@@ -15,7 +15,7 @@ env:
 
 jobs:
   codespell:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: install deps
@@ -24,7 +24,7 @@ jobs:
     - name: run codespell
       run: codespell -L ro,hastable,shouldnot
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
       with:
