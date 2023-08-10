@@ -9,8 +9,10 @@ func getDefaultMachineImage() string {
 }
 
 // getDefaultMachineUser returns the user to use for rootless podman
+// This is only for the hyperv and qemu implementations.  WSL's user
+// will be hardcoded in podman to "user"
 func getDefaultMachineUser() string {
-	return "user"
+	return "core"
 }
 
 // isCgroup2UnifiedMode returns whether we are running in cgroup2 mode.
