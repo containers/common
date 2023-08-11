@@ -1,13 +1,17 @@
 package config
 
 import (
+	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
@@ -1013,4 +1017,198 @@ env=["foo=bar"]`
 		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))
 		gomega.Expect(config.Containers.EnableLabeledUsers).To(gomega.BeTrue())
 	})
+
+	It("container conf lock operations", func() {
+		// This test tests two competing goroutines which both add a connection
+		// definition at the same time. Through the use of LockDefault/UnlockDefault
+		// each goroutine should be serialized and correctly observe the other's
+		// state
+		const oneURI = "https://qa/run/one.sock"
+		const twoURI = "https://qa/run/two.sock"
+
+		if _, err := os.Stat("../../bin/flocksim"); err != nil {
+			Skip("flocksim not present")
+			return
+		}
+
+		defer os.Unsetenv("CONTAINERS_CONF")
+		f, err := os.CreateTemp("", "container-common-test")
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		defer f.Close()
+		defer os.Remove(f.Name())
+
+		os.Setenv("CONTAINERS_CONF", f.Name())
+		primaryConfig, err := Default()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		err = primaryConfig.Write()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		configPath := f.Name()
+		lockPath, err := getLockFilePath()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		err = LockDefault()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		result := make(chan error, 3)
+		go func() {
+			// Since the contract for lock is global, simulate another process
+			// through a manual direct lock.
+			cmd, inStream, outStream, errStream, err := startCommandWithStreams("../../bin/flocksim", lockPath)
+			if err != nil {
+				result <- err
+			}
+
+			output := singleLineSlurp(outStream)
+			errResult := allLineSlurp(errStream)
+
+			// Wait until we get a lock acquired message, if we don't an error was thrown
+			if len(<-output) == 0 {
+				_ = cmd.Wait()
+				result <- errors.New(<-errResult)
+				return
+			}
+
+			defer func() {
+				// Tell flocksim to shutdown
+				_, _ = inStream.Write([]byte("done\n"))
+				_ = inStream.Close()
+				result <- waitCommandWithTimeout(cmd, 10)
+			}()
+
+			// Indicate success, we have a lock
+			result <- nil
+
+			racingConfig := Config{}
+			err = readConfigFromFile(configPath, &racingConfig)
+			if err != nil {
+				result <- err
+				return
+			}
+
+			sd, ok := racingConfig.Engine.ServiceDestinations["one"]
+			if !ok {
+				result <- errors.New("expected service definition missing")
+				return
+			}
+
+			if sd.URI != oneURI {
+				result <- errors.New("service definition did not match expected URI")
+				return
+			}
+
+			racingConfig.Engine.ServiceDestinations = map[string]Destination{
+				"two": {
+					URI:      twoURI,
+					Identity: "/.ssh/id_two",
+				},
+			}
+
+			result <- racingConfig.Write()
+		}()
+
+		// Not mandatory, just yielding to increase chance of failure if problem
+		time.Sleep(1 * time.Second)
+
+		primaryConfig, err = ReadCustomConfig()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		primaryConfig.Engine.ActiveService = "one"
+		primaryConfig.Engine.ServiceDestinations = map[string]Destination{
+			"one": {
+				URI:      oneURI,
+				Identity: "/.ssh/id_one",
+			},
+		}
+		err = primaryConfig.Write()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		UnlockDefault()
+		// Verify goroutine acquired lock successfully
+		gomega.Expect(<-result).ToNot(gomega.HaveOccurred())
+
+		// Block until goroutine finishes
+		err = LockDefault()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		// Verify goroutine's write was successful
+		gomega.Expect(<-result).ToNot(gomega.HaveOccurred())
+
+		// Verify goroutine exit was successful
+		gomega.Expect(<-result).ToNot(gomega.HaveOccurred())
+
+		primaryConfig, err = ReadCustomConfig()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		sd, ok := primaryConfig.Engine.ServiceDestinations["two"]
+		gomega.Expect(ok).To(gomega.BeTrue())
+		gomega.Expect(sd.URI).To(gomega.Equal(twoURI))
+	})
 })
+
+func waitCommandWithTimeout(cmd *exec.Cmd, seconds int) error {
+	wChan := make(chan error, 1)
+	go func() {
+		wChan <- cmd.Wait()
+	}()
+	select {
+	case err := <-wChan:
+		return err
+	case <-time.After(time.Duration(seconds) * time.Second):
+		_ = cmd.Process.Kill()
+		return fmt.Errorf("Timeout running %s had to kill: %w", cmd.Args[0], <-wChan)
+	}
+}
+
+func startCommandWithStreams(executable string, args ...string) (*exec.Cmd, io.WriteCloser, io.ReadCloser, io.ReadCloser, error) {
+	cmd := exec.Command(executable, args...)
+	outStream, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	errStream, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	inStream, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	err = cmd.Start()
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return cmd, inStream, outStream, errStream, nil
+}
+
+func singleLineSlurp(stream io.ReadCloser) chan string {
+	outChan := make(chan string, 1)
+
+	go func() {
+		reader := bufio.NewReader(stream)
+		str, err := reader.ReadString('\n')
+		if err != nil {
+			str = ""
+			stream.Close()
+		}
+		outChan <- str
+	}()
+
+	return outChan
+}
+
+func allLineSlurp(stream io.ReadCloser) chan string {
+	outChan := make(chan string, 1)
+
+	go func() {
+		reader := bufio.NewReader(stream)
+		bytes, err := io.ReadAll(reader)
+		if err != nil {
+			bytes = []byte{}
+			stream.Close()
+		}
+		outChan <- string(bytes)
+	}()
+
+	return outChan
+}

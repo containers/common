@@ -55,8 +55,15 @@ endif
 bin/netavark-testplugin:
 	$(GO_BUILD) -o $@ ./libnetwork/netavark/testplugin/
 
+.PHONY: bin/flocksim
+bin/flocksim:
+	$(GO_BUILD) -o $@ ./cmd/flocksim/
+
 .PHONY: netavark-testplugin
 netavark-testplugin: bin/netavark-testplugin
+
+.PHONY: flocksim
+flocksim: bin/flocksim
 
 .PHONY: docs
 docs:
@@ -97,7 +104,7 @@ install:
 test: test-unit
 
 .PHONY: test-unit
-test-unit: netavark-testplugin
+test-unit: netavark-testplugin flocksim
 	go test --tags $(BUILDTAGS) -v ./libimage
 	go test --tags $(BUILDTAGS) -v ./libnetwork/...
 	go test --tags $(BUILDTAGS) -v ./pkg/...
@@ -111,6 +118,7 @@ clean: ## Clean artifacts
 	$(MAKE) -C docs clean
 	find . -name \*~ -delete
 	find . -name \#\* -delete
+	rm -rf bin
 
 .PHONY: seccomp.json
 seccomp.json: $(sources)

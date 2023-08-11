@@ -17,6 +17,7 @@ import (
 	"github.com/containers/common/pkg/capabilities"
 	"github.com/containers/common/pkg/util"
 	"github.com/containers/storage/pkg/ioutils"
+	"github.com/containers/storage/pkg/lockfile"
 	"github.com/containers/storage/pkg/unshare"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
@@ -1191,9 +1192,10 @@ func rootlessConfigPath() (string, error) {
 }
 
 var (
-	configErr   error
-	configMutex sync.Mutex
-	config      *Config
+	configErr      error
+	configMutex    sync.Mutex
+	config         *Config
+	configLockFile *lockfile.LockFile
 )
 
 // Default returns the default container config.
@@ -1219,6 +1221,72 @@ func Default() (*Config, error) {
 func defConfig() (*Config, error) {
 	config, configErr = NewConfig("")
 	return config, configErr
+}
+
+// Locks the config default file through an associated runtime file lock
+// This method enables callers to coordinate updates to the default
+// configuration file, and ensure atomicity across multiple operations.
+// Typically a caller would call this method before reading values,
+// perform permutations to the config, write the config, and finally
+// call UnlockDefault(). Since this lock is global, callers should
+// aim to minimize the length of time the lock is held.
+//
+// Multiple calls to this method will reference count the underlying
+// lock.
+func LockDefault() error {
+	lockFile, err := getLockFile()
+	if err != nil {
+		return err
+	}
+	lockFile.Lock()
+	return nil
+}
+
+// Unlocks the config default file through an associated runtime file lock.
+// The underlying lock is reference counted. The file will only become
+// unlocked when a corresponding number of calls to this method have been
+// made matching the number of preceding LockDefault() calls.
+func UnlockDefault() {
+	lockFile, err := getLockFile()
+	if err != nil {
+		return
+	}
+	lockFile.Unlock()
+}
+
+func getLockFilePath() (string, error) {
+	lockDir, err := util.GetRuntimeDir()
+	if err != nil {
+		return "", err
+	}
+
+	lockDir = filepath.Join(lockDir, "containers")
+	if err := os.MkdirAll(lockDir, 0o755); err != nil {
+		return "", err
+	}
+
+	return filepath.Join(lockDir, "config.lck"), nil
+}
+
+func getLockFile() (*lockfile.LockFile, error) {
+	configMutex.Lock()
+	defer configMutex.Unlock()
+
+	if configLockFile != nil {
+		return configLockFile, nil
+	}
+
+	path, err := getLockFilePath()
+	if err != nil {
+		return nil, err
+	}
+	lockFile, err := lockfile.GetLockFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	configLockFile = lockFile
+	return lockFile, nil
 }
 
 func Path() string {
