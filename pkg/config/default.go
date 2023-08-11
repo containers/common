@@ -653,3 +653,16 @@ func useUserConfigLocations() bool {
 	// GetRootlessUID == -1 on Windows, so exclude negative range
 	return unshare.GetRootlessUID() > 0
 }
+
+// getDefaultImage returns the default machine image stream
+// On Windows this refers to the Fedora major release number
+func getDefaultMachineImage() string {
+	return "testing"
+}
+
+// getDefaultMachineUser returns the user to use for rootless podman
+// This is only for the apple, hyperv, and qemu implementations.
+// WSL's user will be hardcoded in podman to "user"
+func getDefaultMachineUser() string {
+	return "core"
+}
