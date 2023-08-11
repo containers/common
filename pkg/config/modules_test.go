@@ -110,6 +110,9 @@ var _ = Describe("Config Modules", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		defer cleanUp()
 
+		wd, err := os.Getwd()
+		gomega.Expect(err).To(gomega.BeNil())
+
 		options := &Options{Modules: []string{"none.conf"}}
 		_, err = New(options)
 		gomega.Expect(err).NotTo(gomega.BeNil()) // must error out
@@ -119,18 +122,23 @@ var _ = Describe("Config Modules", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(0)) // no module is getting loaded!
 		gomega.Expect(c).NotTo(gomega.BeNil())
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(0))
 
 		options = &Options{Modules: []string{"fourth.conf"}}
 		c, err = New(options)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
+		// Make sure the returned module path is absolute.
+		gomega.Expect(c.LoadedModules()).To(gomega.Equal([]string{filepath.Join(wd, "testdata/modules/etc/containers/containers.conf.modules/fourth.conf")}))
 
 		options = &Options{Modules: []string{"fourth.conf"}}
 		c, err = New(options)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
 
 		options = &Options{Modules: []string{"fourth.conf", "sub/share-only.conf", "sub/etc-only.conf"}}
 		c, err = New(options)
@@ -139,11 +147,13 @@ var _ = Describe("Config Modules", func() {
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.Containers.Env).To(gomega.Equal([]string{"usr share only"}))
 		gomega.Expect(c.Network.DefaultNetwork).To(gomega.Equal("etc only conf"))
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(3))
 
 		options = &Options{Modules: []string{"third.conf"}}
 		c, err = New(options)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
 		if unshare.IsRootless() {
 			gomega.Expect(c.Network.DefaultNetwork).To(gomega.Equal("home third"))
 		} else {

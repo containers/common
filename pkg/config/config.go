@@ -78,6 +78,8 @@ type Config struct {
 	ConfigMaps ConfigMapConfig `toml:"configmaps"`
 	// Farms defines configurations for the buildfarm farms
 	Farms FarmConfig `toml:"farms"`
+
+	loadedModules []string // only used at runtime to store which modules were loaded
 }
 
 // ContainersConfig represents the "containers" TOML config table

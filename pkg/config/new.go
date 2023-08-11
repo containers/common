@@ -56,12 +56,6 @@ func New(options *Options) (*Config, error) {
 // All callers are expected to use the returned Config read only.  Changing
 // data may impact other call sites.
 func Default() (*Config, error) {
-	if cachedConfig != nil || cachedConfigError != nil {
-		return cachedConfig, cachedConfigError
-	}
-	// Lock and check again.  This has a minimal performance penalty for
-	// the single writer but prevents taking the lock for all readers (once
-	// the config is written).
 	cachedConfigMutex.Lock()
 	defer cachedConfigMutex.Unlock()
 	if cachedConfig != nil || cachedConfigError != nil {
@@ -100,6 +94,7 @@ func newLocked(options *Options) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	config.loadedModules = modules
 
 	options.additionalConfigs = append(options.additionalConfigs, modules...)
 

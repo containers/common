@@ -20,6 +20,13 @@ var (
 	moduleBaseUsr = "/usr/share"
 )
 
+// LoadedModules returns absolute paths to loaded containers.conf modules.
+func (c *Config) LoadedModules() []string {
+	// Required for conmon's callback to Podman's cleanup.
+	// Absolute paths make loading the modules a bit faster.
+	return c.loadedModules
+}
+
 // Find the specified modules in the options.  Return an error if a specific
 // module cannot be located on the host.
 func (o *Options) modules() ([]string, error) {
