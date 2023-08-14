@@ -16,69 +16,80 @@ import (
 )
 
 var _ = Describe("Config Local", func() {
-	BeforeEach(beforeEach)
-
 	It("should not fail on invalid NetworkConfigDir", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
 		tmpfile := path.Join(os.TempDir(), "wrong-file")
 		file, err := os.Create(tmpfile)
 		gomega.Expect(err).To(gomega.BeNil())
 		file.Close()
 		defer os.Remove(tmpfile)
-		sut.Network.NetworkConfigDir = tmpfile
-		sut.Network.CNIPluginDirs = []string{}
+		defConf.Network.NetworkConfigDir = tmpfile
+		defConf.Network.CNIPluginDirs = []string{}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 	})
 
 	It("should not fail on invalid CNIPluginDirs", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
 		defer os.RemoveAll(validDirPath)
+
 		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{invalidPath}
+		defConf.Network.NetworkConfigDir = validDirPath
+		defConf.Network.CNIPluginDirs = []string{invalidPath}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 	})
 
 	It("should fail on invalid subnet pool", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
 			panic(err)
 		}
 		defer os.RemoveAll(validDirPath)
 		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{validDirPath}
+		defConf.Network.NetworkConfigDir = validDirPath
+		defConf.Network.CNIPluginDirs = []string{validDirPath}
 
 		net, _ := types.ParseCIDR("10.0.0.0/24")
-		sut.Network.DefaultSubnetPools = []SubnetPool{
+		defConf.Network.DefaultSubnetPools = []SubnetPool{
 			{Base: &net, Size: 16},
 		}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 
-		sut.Network.DefaultSubnetPools = []SubnetPool{
+		defConf.Network.DefaultSubnetPools = []SubnetPool{
 			{Base: &net, Size: 33},
 		}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
@@ -103,7 +114,7 @@ var _ = Describe("Config Local", func() {
 
 	It("parse dns port", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Network.DNSBindPort).To(gomega.Equal(uint16(0)))
 		// When
@@ -115,7 +126,7 @@ var _ = Describe("Config Local", func() {
 
 	It("parse pasta_options", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Network.PastaOptions).To(gomega.BeNil())
 		// When
@@ -138,99 +149,135 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("should fail on invalid device mode", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
+		defConf.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
 	It("should fail on invalid first device", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.Devices = []string{"wrong:/dev/null:rw"}
+		defConf.Containers.Devices = []string{"wrong:/dev/null:rw"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
 	It("should fail on invalid second device", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.Devices = []string{"/dev/null:wrong:rw"}
+		defConf.Containers.Devices = []string{"/dev/null:wrong:rw"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
 	It("should fail on invalid device", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.Devices = []string{invalidPath}
+		defConf.Containers.Devices = []string{invalidPath}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
 	It("should fail on wrong invalid device specification", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.Devices = []string{"::::"}
+		defConf.Containers.Devices = []string{"::::"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
 	It("should fail on bad timezone", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.TZ = "foo"
+		defConf.Containers.TZ = "foo"
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
 	It("should succeed on good timezone", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.TZ = "US/Eastern"
+		defConf.Containers.TZ = "US/Eastern"
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 	})
 
 	It("should succeed on local timezone", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.TZ = "local"
+		defConf.Containers.TZ = "local"
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 	})
 
 	It("should fail on wrong DefaultUlimits", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.DefaultUlimits = []string{invalidPath}
+		defConf.Containers.DefaultUlimits = []string{invalidPath}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
@@ -251,7 +298,7 @@ var _ = Describe("Config Local", func() {
 	It("Expect Remote to be False", func() {
 		// Given
 		// When
-		config, err := NewConfig("")
+		config, err := New(nil)
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.Remote).To(gomega.BeFalse())
@@ -323,7 +370,7 @@ var _ = Describe("Config Local", func() {
 	It("Default Umask", func() {
 		// Given
 		// When
-		config, err := NewConfig("")
+		config, err := New(nil)
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0022"))
@@ -337,11 +384,15 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0002"))
 	})
 	It("Should fail on bad Umask", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
 		// Given
-		sut.Containers.Umask = "88888"
+		defConf.Containers.Umask = "88888"
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).NotTo(gomega.BeNil())
@@ -349,7 +400,7 @@ var _ = Describe("Config Local", func() {
 
 	It("Set Machine Enabled", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.MachineEnabled).To(gomega.Equal(false))
 		// When
@@ -361,7 +412,7 @@ var _ = Describe("Config Local", func() {
 
 	It("default netns", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Containers.NetNS).To(gomega.Equal("private"))
 		// When
@@ -397,7 +448,7 @@ var _ = Describe("Config Local", func() {
 
 	It("Set machine image path", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.Image).To(gomega.Equal("testing"))
 		// When
@@ -412,7 +463,7 @@ var _ = Describe("Config Local", func() {
 
 	It("CompatAPIEnforceDockerHub", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.CompatAPIEnforceDockerHub).To(gomega.Equal(true))
 		// When
@@ -424,7 +475,7 @@ var _ = Describe("Config Local", func() {
 
 	It("ComposeProviders", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.ComposeProviders).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all paltforms
 		// When
@@ -436,7 +487,7 @@ var _ = Describe("Config Local", func() {
 
 	It("ComposeWarningLogs", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.ComposeWarningLogs).To(gomega.Equal(true))
 		// When
@@ -448,7 +499,7 @@ var _ = Describe("Config Local", func() {
 
 	It("Set machine disk", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.DiskSize).To(gomega.Equal(uint64(100)))
 		// When
@@ -459,7 +510,7 @@ var _ = Describe("Config Local", func() {
 	})
 	It("Set machine CPUs", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.CPUs).To(gomega.Equal(uint64(1)))
 		// When
@@ -470,7 +521,7 @@ var _ = Describe("Config Local", func() {
 	})
 	It("Set machine memory", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Machine.Memory).To(gomega.Equal(uint64(2048)))
 		// When

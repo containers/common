@@ -11,8 +11,6 @@ import (
 )
 
 var _ = Describe("Config Remote", func() {
-	BeforeEach(beforeEach)
-
 	It("should succeed on invalid CNIPluginDirs", func() {
 		validDirPath, err := os.MkdirTemp("", "config-empty")
 		if err != nil {
@@ -20,11 +18,15 @@ var _ = Describe("Config Remote", func() {
 		}
 		defer os.RemoveAll(validDirPath)
 		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{invalidPath}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+		defConf.Network.NetworkConfigDir = validDirPath
+		defConf.Network.CNIPluginDirs = []string{invalidPath}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -32,10 +34,13 @@ var _ = Describe("Config Remote", func() {
 
 	It("should succeed on invalid device mode", func() {
 		// Given
-		sut.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -43,10 +48,13 @@ var _ = Describe("Config Remote", func() {
 
 	It("should succeed on invalid first device", func() {
 		// Given
-		sut.Containers.Devices = []string{"wrong:/dev/null:rw"}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Containers.Devices = []string{"wrong:/dev/null:rw"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -54,10 +62,13 @@ var _ = Describe("Config Remote", func() {
 
 	It("should succeed on invalid second device", func() {
 		// Given
-		sut.Containers.Devices = []string{"/dev/null:wrong:rw"}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Containers.Devices = []string{"/dev/null:wrong:rw"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -65,10 +76,13 @@ var _ = Describe("Config Remote", func() {
 
 	It("should succeed on invalid device", func() {
 		// Given
-		sut.Containers.Devices = []string{invalidPath}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Containers.Devices = []string{invalidPath}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -76,10 +90,13 @@ var _ = Describe("Config Remote", func() {
 
 	It("should succeed on wrong invalid device specification", func() {
 		// Given
-		sut.Containers.Devices = []string{"::::"}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Containers.Devices = []string{"::::"}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -88,7 +105,7 @@ var _ = Describe("Config Remote", func() {
 	It("Expect Remote to be true", func() {
 		// Given
 		// When
-		config, err := NewConfig("")
+		config, err := New(nil)
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.Remote).To(gomega.BeTrue())
@@ -96,10 +113,13 @@ var _ = Describe("Config Remote", func() {
 
 	It("should succeed on wrong DefaultUlimits", func() {
 		// Given
-		sut.Containers.DefaultUlimits = []string{invalidPath}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Containers.DefaultUlimits = []string{invalidPath}
 
 		// When
-		err := sut.Containers.Validate()
+		err = defConf.Containers.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -112,11 +132,14 @@ var _ = Describe("Config Remote", func() {
 		}
 		defer os.RemoveAll(validDirPath)
 		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{invalidPath}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Network.NetworkConfigDir = validDirPath
+		defConf.Network.CNIPluginDirs = []string{invalidPath}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -129,11 +152,14 @@ var _ = Describe("Config Remote", func() {
 		}
 		defer os.RemoveAll(validDirPath)
 		// Given
-		sut.Network.NetworkConfigDir = validDirPath
-		sut.Network.CNIPluginDirs = []string{invalidPath}
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+		defConf.Network.NetworkConfigDir = validDirPath
+		defConf.Network.CNIPluginDirs = []string{invalidPath}
 
 		// When
-		err = sut.Network.Validate()
+		err = defConf.Network.Validate()
 
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())

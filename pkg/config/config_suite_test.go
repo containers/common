@@ -15,16 +15,3 @@ func TestConfig(t *testing.T) {
 const (
 	invalidPath = "/wrong"
 )
-
-var sut *Config
-
-func beforeEach() {
-	sut = defaultConfig()
-}
-
-func defaultConfig() *Config {
-	c, err := DefaultConfig()
-	gomega.Expect(err).To(gomega.BeNil())
-	gomega.Expect(c).NotTo(gomega.BeNil())
-	return c
-}
