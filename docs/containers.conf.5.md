@@ -176,6 +176,11 @@ container. The special value “none” can be specified to disable creation of
 Environment variable list for the container process, used for passing
 environment variables to the container.
 
+**env_append**=[]
+
+Append env variables list to list of env. env_append allows users to append to
+env variables provided via other containers.conf files.
+
 **env_host**=false
 
 Pass all host environment variables into the container.
@@ -255,6 +260,11 @@ List of mounts.
 Specified as "type=TYPE,source=<directory-on-host>,destination=<directory-in-container>,<options>"
 
 Example:  [ "type=bind,source=/var/lib/foobar,destination=/var/lib/foobar,ro", ]
+
+**mounts_append**=[]
+
+Append mounts list to list of mounts. mounts_append allows users to append to
+mounts provided via other containers.conf files.
 
 **netns**="private"
 
@@ -340,6 +350,11 @@ List of volumes.
 Specified as "directory-on-host:directory-in-container:options".
 
 Example:  "/db:/var/lib/db:ro".
+
+**volumes_append**=[]
+
+Append volume list to list of volumes. volumes_append allows users to append to
+volumes provided via other containers.conf files.
 
 ## NETWORK TABLE
 The `network` table contains settings pertaining to the management of CNI

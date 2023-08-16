@@ -976,7 +976,8 @@ image_copy_tmp_dir="storage"`
 			// Reload from new configuration file
 			testFile := "testdata/temp.conf"
 			content := `[containers]
-env=["foo=bar"]`
+env=["foo=bar"]
+env_append=["bax=baz"]`
 			err = os.WriteFile(testFile, []byte(content), os.ModePerm)
 			defer os.Remove(testFile)
 			gomega.Expect(err).To(gomega.BeNil())
@@ -994,8 +995,10 @@ env=["foo=bar"]`
 
 			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 			expectNewEnv := []string{"foo=bar"}
+			allEnv := []string{"foo=bar", "bax=baz"}
 			gomega.Expect(cfg.Containers.Env).To(gomega.Equal(expectOldEnv))
 			gomega.Expect(newCfg.Containers.Env).To(gomega.Equal(expectNewEnv))
+			gomega.Expect(newCfg.Env()).To(gomega.Equal(allEnv))
 			// Reload change back to default global configuration
 			_, err = Reload()
 			gomega.Expect(err).To(gomega.BeNil())
@@ -1046,5 +1049,7 @@ env=["foo=bar"]`
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))
 		gomega.Expect(config.Containers.EnableLabeledUsers).To(gomega.BeTrue())
+		env := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "bax=baz"}
+		gomega.Expect(config.Env()).To(gomega.Equal(env))
 	})
 })

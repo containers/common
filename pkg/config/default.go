@@ -508,12 +508,12 @@ func (c *Config) Sysctls() []string {
 
 // Volumes returns the default set of volumes that should be mounted in containers.
 func (c *Config) Volumes() []string {
-	return c.Containers.Volumes
+	return append(c.Containers.Volumes, c.Containers.VolumesAppend...)
 }
 
 // Mounts returns the default set of mounts that should be mounted in containers.
 func (c *Config) Mounts() []string {
-	return c.Containers.Mounts
+	return append(c.Containers.Mounts, c.Containers.MountsAppend...)
 }
 
 // Devices returns the default additional devices for containers.
@@ -538,7 +538,7 @@ func (c *Config) DNSOptions() []string {
 
 // Env returns the default additional environment variables to add to containers.
 func (c *Config) Env() []string {
-	return c.Containers.Env
+	return append(c.Containers.Env, c.Containers.EnvAppend...)
 }
 
 // InitPath returns location where init program added to containers when users specify the --init flag.

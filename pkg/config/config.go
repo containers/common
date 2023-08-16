@@ -91,6 +91,9 @@ type ContainersConfig struct {
 	// Volumes to add to all containers
 	Volumes []string `toml:"volumes,omitempty"`
 
+	// VolumesAppend appends to existing Volumes fields
+	VolumesAppend []string `toml:"volumes_append,omitempty"`
+
 	// ApparmorProfile is the apparmor profile name which is used as the
 	// default for the runtime.
 	ApparmorProfile string `toml:"apparmor_profile,omitempty"`
@@ -153,6 +156,9 @@ type ContainersConfig struct {
 	// Env is the environment variable list for container process.
 	Env []string `toml:"env,omitempty"`
 
+	// Append to existing Env fields
+	EnvAppend []string `toml:"env_append,omitempty"`
+
 	// EnvHost Pass all host environment variables into the container.
 	EnvHost bool `toml:"env_host,omitempty"`
 
@@ -188,6 +194,9 @@ type ContainersConfig struct {
 
 	// Mount to add to all containers
 	Mounts []string `toml:"mounts,omitempty"`
+
+	// MountsAppend appends to existing Mounts fields
+	MountsAppend []string `toml:"mounts_append,omitempty"`
 
 	// NetNS indicates how to create a network namespace for the container
 	NetNS string `toml:"netns,omitempty"`
