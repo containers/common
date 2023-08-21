@@ -21,7 +21,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/jinzhu/copier v0.3.5
+	github.com/jinzhu/copier v0.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
