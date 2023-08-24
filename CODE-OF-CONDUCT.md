@@ -37,7 +37,7 @@ projects.
 This code of conduct applies both within project spaces and in public spaces
 when an individual is representing the project or its community.
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting a maintainer of the project, Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting a maintainer of the project, the Container Organization's [Code of Conduct Mailing List](codeofconduct@lists.podman.io), Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
 
 
 ### Containers Events Code of Conduct
