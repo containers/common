@@ -485,6 +485,18 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config2.Engine.ComposeProviders).To(gomega.Equal([]string{"/some/thing/else", "/than/before"}))
 	})
 
+	It("AddCompression", func() {
+		// Given
+		config, err := New(nil)
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Engine.AddCompression).To(gomega.BeNil()) // no hard-coding to work on all paltforms
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Engine.AddCompression).To(gomega.Equal([]string{"zstd", "zstd:chunked"}))
+	})
+
 	It("ComposeWarningLogs", func() {
 		// Given
 		config, err := New(nil)

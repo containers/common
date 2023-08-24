@@ -45,6 +45,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.BeEquivalentTo(stringBoltDB))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
+			gomega.Expect(defaultConfig.Engine.AddCompression).To(gomega.BeNil())
 
 			dbBackend, err := defaultConfig.DBBackend()
 			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendBoltDB))

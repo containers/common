@@ -444,6 +444,17 @@ The `engine` table contains configuration options used to set up container engin
 
 Name of destination for accessing the Podman service. See SERVICE DESTINATION TABLE below.
 
+**add_compression**=[]
+
+List of compression algorithms. If set makes sure that requested compression variant
+for each platform is added to the manifest list keeping original instance intact in
+the same manifest list on every `manifest push`. Supported values are (`gzip`, `zstd` and `zstd:chunked`).
+
+Note: This is different from `compression_format` which allows users to select a default
+compression format for `push` and `manifest push`, while `add_compression` is limited to
+`manifest push` and allows users to append new instances to manifest list with specified compression
+algorithms in `add_compression` for each platform.
+
 **cgroup_manager**="systemd"
 
 The cgroup management implementation used for the runtime. Supports `cgroupfs`
