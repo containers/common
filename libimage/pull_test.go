@@ -220,3 +220,52 @@ func TestShortNameAndIDconflict(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, busybox[0].ID(), img.ID())
 }
+
+func TestPullOCINoReference(t *testing.T) {
+	// Exercise pulling from the OCI transport and make sure that a
+	// specified reference is preserved in the image name.
+
+	busybox := "docker.io/library/busybox:latest"
+	runtime, cleanup := testNewRuntime(t)
+	defer cleanup()
+	ctx := context.Background()
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+
+	images, err := runtime.Pull(ctx, busybox, config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, images, 1)
+
+	// Push one image without the optional reference
+	ociPathNoRef := "oci:" + t.TempDir() + "noRef"
+	_, err = runtime.Push(ctx, busybox, ociPathNoRef, nil)
+	require.NoError(t, err)
+
+	// Push another image _with_ the optional reference which allows for
+	// preserving the name.
+	ociPathWithRef := "oci:" + t.TempDir() + "withRef:" + busybox
+	_, err = runtime.Push(ctx, busybox, ociPathWithRef, nil)
+	require.NoError(t, err)
+
+	_, errors := runtime.RemoveImages(ctx, []string{busybox}, nil)
+	require.Nil(t, errors)
+
+	images, err = runtime.Pull(ctx, ociPathNoRef, config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, images, 1)
+
+	exists, err := runtime.Exists(busybox) // busybox does not exist
+	require.NoError(t, err)
+	require.False(t, exists)
+
+	names := images[0].Names() // The image has no names (i.e., <none>)
+	require.Nil(t, names)
+
+	images, err = runtime.Pull(ctx, ociPathWithRef, config.PullPolicyAlways, pullOptions)
+	require.NoError(t, err)
+	require.Len(t, images, 1)
+
+	exists, err = runtime.Exists(busybox) // busybox does exist now
+	require.NoError(t, err)
+	require.True(t, exists)
+}
