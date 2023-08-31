@@ -25,8 +25,8 @@ linters:
     - golint
     # linters explicitly disabled for the below mentioned reasons ...
     - funlen # too aggressive/wishful size/statement limit
+    - gochecknoinits # too many hard to fix init() funcs across the code
     # others to be re-enabled one-by-one ...
-    - gochecknoinits
     - gocognit
     - goconst
     - godox
