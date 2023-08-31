@@ -80,7 +80,6 @@ linters:
     - interfacebloat
     - forcetypeassert
     - gomoddirectives
-    - predeclared
 linters-settings:
   errcheck:
     check-type-assertions: true

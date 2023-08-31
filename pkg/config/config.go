@@ -740,14 +740,11 @@ func (c *Config) CheckCgroupsAndAdjustConfig() {
 }
 
 func (c *Config) addCAPPrefix() {
-	toCAPPrefixed := func(cap string) string {
-		if !strings.HasPrefix(strings.ToLower(cap), "cap_") {
-			return "CAP_" + strings.ToUpper(cap)
+	for i, val := range c.Containers.DefaultCapabilities {
+		if !strings.HasPrefix(strings.ToLower(val), "cap_") {
+			val = "CAP_" + strings.ToUpper(val)
 		}
-		return cap
-	}
-	for i, cap := range c.Containers.DefaultCapabilities {
-		c.Containers.DefaultCapabilities[i] = toCAPPrefixed(cap)
+		c.Containers.DefaultCapabilities[i] = val
 	}
 }
 
