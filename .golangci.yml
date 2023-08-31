@@ -30,7 +30,6 @@ linters:
     # others to be re-enabled one-by-one ...
     - goconst
     - godox
-    - golint
     - lll
     - maligned
     - mirror
