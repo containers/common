@@ -224,10 +224,10 @@ func TestMonitorTwoDirGood(t *testing.T) {
 		time.Sleep(100 * time.Millisecond) // wait for monitor to notice
 
 		config := &rspec.Spec{}
-		fmt.Println("expected: ", config.Hooks)
-		expected := primaryInjected // 0a.json is bad, a.json is still good
+		fmt.Println("expected: ", config.Hooks) //nolint:forbidigo
+		expected := primaryInjected             // 0a.json is bad, a.json is still good
 		_, err = manager.Hooks(config, map[string]string{}, false)
-		fmt.Println("actual: ", config.Hooks)
+		fmt.Println("actual: ", config.Hooks) //nolint:forbidigo
 		if err != nil {
 			t.Fatal(err)
 		}

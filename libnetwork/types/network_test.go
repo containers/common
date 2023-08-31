@@ -2,7 +2,6 @@ package types_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -101,9 +100,8 @@ func TestMarshalMacAddress(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			g, err := json.Marshal(test.arg)
 			got := string(g)
-			fmt.Println(got)
 			if (err != nil) != test.wantErr {
-				t.Errorf("types.HardwareAddress Marshal() error = %v, wantErr %v", err, test.wantErr)
+				t.Errorf("types.HardwareAddress Marshal() (got = %v) error = %v, wantErr %v", got, err, test.wantErr)
 				return
 			}
 			if test.wantErr {

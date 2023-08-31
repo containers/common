@@ -84,7 +84,7 @@ func (j JSONStructArray) Out() error {
 
 	// If the we did get NULL back, we should spit out {} which is
 	// at least valid JSON for the consumer.
-	fmt.Printf("%s", data)
+	fmt.Printf("%s", data) //nolint:forbidigo
 	humanNewLine()
 	return nil
 }
@@ -126,7 +126,7 @@ func (j JSONStruct) Out() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s", data)
+	fmt.Printf("%s", data) //nolint:forbidigo
 	humanNewLine()
 	return nil
 }
@@ -153,7 +153,7 @@ func (y YAMLStruct) Out() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s", string(buf))
+	fmt.Printf("%s", string(buf)) //nolint:forbidigo
 	humanNewLine()
 	return nil
 }
@@ -161,6 +161,6 @@ func (y YAMLStruct) Out() error {
 // humanNewLine prints a new line at the end of the output only if stdout is the terminal
 func humanNewLine() {
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {
-		fmt.Println()
+		fmt.Println() //nolint:forbidigo
 	}
 }

@@ -24,7 +24,6 @@ linters:
     - ifshort
     - golint
     # others to be re-enabled one-by-one ...
-    - forbidigo
     - funlen
     - gci
     - gochecknoinits

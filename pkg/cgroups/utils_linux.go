@@ -85,7 +85,6 @@ func OpenFile(dir, file string, flags int) (*os.File, error) {
 			Mode:    uint64(mode),
 		})
 	if err != nil {
-		fmt.Println("Error in openat")
 		return nil, err
 	}
 
