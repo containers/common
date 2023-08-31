@@ -6,10 +6,9 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/containers/common/pkg/umask"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/containers/common/pkg/umask"
 )
 
 func TestMkdirAllIgnoreUmask(t *testing.T) {

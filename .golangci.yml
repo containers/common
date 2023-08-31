@@ -26,7 +26,6 @@ linters:
     # linters explicitly disabled for the below mentioned reasons ...
     - funlen # too aggressive/wishful size/statement limit
     # others to be re-enabled one-by-one ...
-    - gci
     - gochecknoinits
     - gocognit
     - goconst
