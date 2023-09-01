@@ -28,7 +28,7 @@ import (
 func golangConnectionCreate(options ConnectionCreateOptions) error {
 	var match bool
 	var err error
-	if match, err = regexp.Match("^[A-Za-z][A-Za-z0-9+.-]*://", []byte(options.Path)); err != nil {
+	if match, err = regexp.MatchString("^[A-Za-z][A-Za-z0-9+.-]*://", options.Path); err != nil {
 		return fmt.Errorf("invalid destination: %w", err)
 	}
 
