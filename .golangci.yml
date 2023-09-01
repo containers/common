@@ -36,7 +36,6 @@ linters:
     - misspell
     - nestif
     - unconvert
-    - whitespace
     - wsl
     - contextcheck
     - cyclop

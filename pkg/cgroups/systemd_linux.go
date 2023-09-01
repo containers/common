@@ -250,7 +250,6 @@ func resourcesToProps(res *configs.Resources, v2 bool) (map[string]uint64, map[s
 			} else {
 				structMap["BlockIODeviceWeight"] = append(structMap["BlockIODeviceWeight"], newWeight)
 			}
-
 		}
 	}
 

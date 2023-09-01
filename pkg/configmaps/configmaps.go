@@ -270,7 +270,6 @@ func validateConfigMapName(name string) error {
 		strings.HasSuffix(name, "-") ||
 		strings.HasSuffix(name, ".") ||
 		strings.HasSuffix(name, "_") {
-
 		return fmt.Errorf("only 253 [a-zA-Z0-9-_.] characters allowed, and the start and end character must be [a-zA-Z0-9]: %s: %w", name, errInvalidConfigMapName)
 	}
 	return nil

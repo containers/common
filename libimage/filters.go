@@ -110,7 +110,6 @@ func (r *Runtime) compileImageFilters(ctx context.Context, options *ListImagesOp
 		key = split[0]
 		value = split[1]
 		switch key {
-
 		case "after", "since":
 			img, err := r.time(key, value)
 			if err != nil {
