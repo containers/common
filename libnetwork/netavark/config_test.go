@@ -279,7 +279,7 @@ var _ = Describe("Config", func() {
 			// reload configs from disk
 			libpodNet, err = getNetworkInterface(networkConfDir)
 			Expect(err).To(BeNil())
-			// check the the networks are identical
+			// check the networks are identical
 			network2, err := libpodNet.NetworkInspect(network1.Name)
 			Expect(err).To(BeNil())
 			EqualNetwork(network2, network1)

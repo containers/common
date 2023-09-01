@@ -259,7 +259,7 @@ func getUserAndPass(opts *LoginOptions, password, userFromAuthFile string) (user
 		if err != nil {
 			return "", "", fmt.Errorf("reading username: %w", err)
 		}
-		// If the user just hit enter, use the displayed user from the
+		// If the user just hit enter, use the displayed user from
 		// the authentication file.  This allows to do a lazy
 		// `$ buildah login -p $NEW_PASSWORD` without specifying the
 		// user.

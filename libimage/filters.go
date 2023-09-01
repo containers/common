@@ -243,7 +243,7 @@ func (r *Runtime) until(value string) (time.Time, error) {
 func (r *Runtime) time(key, value string) (*Image, error) {
 	img, _, err := r.LookupImage(value, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not find local image for filter filter %q=%q: %w", key, value, err)
+		return nil, fmt.Errorf("could not find local image for filter %q=%q: %w", key, value, err)
 	}
 	return img, nil
 }

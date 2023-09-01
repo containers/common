@@ -229,7 +229,7 @@ func GetUserInfo(uri *url.URL) (*url.Userinfo, error) {
 }
 
 // ValidateAndConfigure will take a ssh url and an identity key (rsa and the like) and ensure the information given is valid
-// iden iden can be blank to mean no identity key
+// iden can be blank to mean no identity key
 // once the function validates the information it creates and returns an ssh.ClientConfig.
 func ValidateAndConfigure(uri *url.URL, iden string, insecureIsMachineConnection bool) (*ssh.ClientConfig, error) {
 	var signers []ssh.Signer

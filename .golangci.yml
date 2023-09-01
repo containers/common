@@ -36,7 +36,6 @@ linters:
     - contextcheck
     - cyclop
     - depguard
-    - dupword
     - errchkjson
     - errname
     - errorlint
