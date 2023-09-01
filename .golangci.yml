@@ -27,13 +27,13 @@ linters:
     - funlen # too aggressive/wishful size/statement limit
     - gochecknoinits # too many hard to fix init() funcs across the code
     - gocognit # too aggressive default
+    - wsl # useful but too opinionated
     # others to be re-enabled one-by-one ...
     - goconst
     - godox
     - lll
     - maligned
     - nestif
-    - wsl
     - contextcheck
     - cyclop
     - depguard
