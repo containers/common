@@ -34,7 +34,6 @@ linters:
     - maligned
     - misspell
     - nestif
-    - unconvert
     - wsl
     - contextcheck
     - cyclop
