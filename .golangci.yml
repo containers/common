@@ -50,7 +50,6 @@ linters:
     - gomnd
     - nolintlint
     - wrapcheck
-    - wastedassign
     - varnamelen
     - testpackage
     - tenv
