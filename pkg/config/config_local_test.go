@@ -477,7 +477,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.ComposeProviders).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all paltforms
+		gomega.Expect(config.Engine.ComposeProviders).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all platforms
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
@@ -489,7 +489,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.AddCompression).To(gomega.BeNil()) // no hard-coding to work on all paltforms
+		gomega.Expect(config.Engine.AddCompression).To(gomega.BeNil()) // no hard-coding to work on all platforms
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
