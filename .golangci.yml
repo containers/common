@@ -32,7 +32,6 @@ linters:
     - goconst
     - godox
     - lll
-    - maligned
     - nestif
     - contextcheck
     - cyclop
