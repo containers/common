@@ -23,27 +23,19 @@ linters:
     - structcheck
     - ifshort
     - golint
+    # linters explicitly disabled for the below mentioned reasons ...
+    - funlen # too aggressive/wishful size/statement limit
+    - gochecknoinits # too many hard to fix init() funcs across the code
+    - gocognit # too aggressive default
+    - wsl # useful but too opinionated
     # others to be re-enabled one-by-one ...
-    - forbidigo
-    - funlen
-    - gci
-    - gochecknoinits
-    - gocognit
     - goconst
     - godox
-    - golint
     - lll
-    - maligned
-    - mirror
-    - misspell
     - nestif
-    - unconvert
-    - whitespace
-    - wsl
     - contextcheck
     - cyclop
     - depguard
-    - dupword
     - errchkjson
     - errname
     - errorlint
@@ -55,7 +47,6 @@ linters:
     - gomnd
     - nolintlint
     - wrapcheck
-    - wastedassign
     - varnamelen
     - testpackage
     - tenv
@@ -80,7 +71,6 @@ linters:
     - interfacebloat
     - forcetypeassert
     - gomoddirectives
-    - predeclared
 linters-settings:
   errcheck:
     check-type-assertions: true

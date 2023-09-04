@@ -150,7 +150,7 @@ func (d *Driver) getAllData() (map[string][]byte, error) {
 		return nil, err
 	}
 	configMapData := new(map[string][]byte)
-	err = json.Unmarshal([]byte(byteValue), configMapData)
+	err = json.Unmarshal(byteValue, configMapData)
 	if err != nil {
 		return nil, err
 	}

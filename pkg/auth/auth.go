@@ -259,7 +259,7 @@ func getUserAndPass(opts *LoginOptions, password, userFromAuthFile string) (user
 		if err != nil {
 			return "", "", fmt.Errorf("reading username: %w", err)
 		}
-		// If the user just hit enter, use the displayed user from the
+		// If the user just hit enter, use the displayed user from
 		// the authentication file.  This allows to do a lazy
 		// `$ buildah login -p $NEW_PASSWORD` without specifying the
 		// user.
@@ -336,7 +336,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 
 		authInvalid := docker.CheckAuth(context.Background(), systemContext, authConfig.Username, authConfig.Password, registry)
 		if authConfig.Username != "" && authConfig.Password != "" && authInvalid == nil {
-			fmt.Printf("Not logged into %s with current tool. Existing credentials were established via docker login. Please use docker logout instead.\n", key)
+			fmt.Printf("Not logged into %s with current tool. Existing credentials were established via docker login. Please use docker logout instead.\n", key) //nolint:forbidigo
 			return nil
 		}
 		return fmt.Errorf("not logged into %s", key)
