@@ -10,13 +10,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/containers/common/pkg/util"
 	"github.com/containers/image/v5/docker"
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/pkg/docker/config"
 	"github.com/containers/image/v5/pkg/sysregistriesv2"
 	"github.com/containers/image/v5/types"
 	"github.com/sirupsen/logrus"
-	terminal "golang.org/x/term"
 )
 
 // ErrNewCredentialsInvalid means that the new user-provided credentials are
@@ -269,7 +269,7 @@ func getUserAndPass(opts *LoginOptions, password, userFromAuthFile string) (user
 	}
 	if password == "" {
 		fmt.Fprint(opts.Stdout, "Password: ")
-		pass, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+		pass, err := util.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
 			return "", "", fmt.Errorf("reading password: %w", err)
 		}
