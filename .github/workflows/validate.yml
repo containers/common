@@ -17,7 +17,7 @@ jobs:
   codespell:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: install deps
       # Version of codespell bundled with Ubuntu is way old, so use pip.
       run: pip install codespell
@@ -26,7 +26,7 @@ jobs:
   lint:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 2
     - uses: actions/setup-go@v4
