@@ -55,7 +55,7 @@ github.com/asaskevich/govalidator
 # github.com/chzyer/readline v1.5.1
 ## explicit; go 1.15
 github.com/chzyer/readline
-# github.com/container-orchestrated-devices/container-device-interface v0.6.0
+# github.com/container-orchestrated-devices/container-device-interface v0.6.1
 ## explicit; go 1.17
 github.com/container-orchestrated-devices/container-device-interface/pkg/parser
 # github.com/containerd/cgroups/v3 v3.0.2
