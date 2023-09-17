@@ -798,9 +798,9 @@ URI to access the Podman service
 
   Example URIs:
 
-- **rootless local**  - unix://run/user/1000/podman/podman.sock
+- **rootless local**  - unix:///run/user/1000/podman/podman.sock
 - **rootless remote** - ssh://user@engineering.lab.company.com/run/user/1000/podman/podman.sock
-- **rootful local**  - unix://run/podman/podman.sock
+- **rootful local**  - unix:///run/podman/podman.sock
 - **rootful remote** - ssh://root@10.10.1.136:22/run/podman/podman.sock
 
 **identity="~/.ssh/id_rsa**
