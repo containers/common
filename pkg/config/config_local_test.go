@@ -522,14 +522,19 @@ var _ = Describe("Config Local", func() {
 	})
 	It("Set machine CPUs", func() {
 		// Given
+		cpus := runtime.NumCPU() / 2
+		if cpus == 0 {
+			cpus = 1
+		}
+
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Machine.CPUs).To(gomega.Equal(uint64(1)))
+		gomega.Expect(config.Machine.CPUs).To(gomega.Equal(uint64(cpus)))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config2.Machine.CPUs).To(gomega.Equal(uint64(2)))
+		gomega.Expect(config2.Machine.CPUs).To(gomega.Equal(uint64(1)))
 	})
 	It("Set machine memory", func() {
 		// Given
