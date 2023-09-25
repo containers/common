@@ -78,6 +78,80 @@ func TestMatchLabelFilters(t *testing.T) {
 	}
 }
 
+func TestMatchNegatedLabelFilters(t *testing.T) {
+	testLabels := map[string]string{
+		"label1": "",
+		"label2": "test",
+		"label3": "",
+	}
+	type args struct {
+		filterValues []string
+		labels       map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Do not match when all filters the same as labels",
+			args: args{
+				filterValues: []string{"label1", "label3", "label2=test"},
+				labels:       testLabels,
+			},
+			want: false,
+		},
+		{
+			name: "Do not match when filter value not provided in args",
+			args: args{
+				filterValues: []string{"label2"},
+				labels:       testLabels,
+			},
+			want: false,
+		},
+		{
+			name: "Do not match when no filter value is given",
+			args: args{
+				filterValues: []string{"label2="},
+				labels:       testLabels,
+			},
+			want: false,
+		},
+		{
+			name: "Match when filter value differs",
+			args: args{
+				filterValues: []string{"label2=differs"},
+				labels:       testLabels,
+			},
+			want: true,
+		},
+		{
+			name: "Match when filter value not listed in labels",
+			args: args{
+				filterValues: []string{"label1=xyz"},
+				labels:       testLabels,
+			},
+			want: true,
+		},
+		{
+			name: "Match when one from many not ok",
+			args: args{
+				filterValues: []string{"label1=xyz", "invalid=valid"},
+				labels:       testLabels,
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MatchNegatedLabelFilters(tt.args.filterValues, tt.args.labels); got != tt.want {
+				t.Errorf("MatchNegatedLabelFilters() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestComputeUntilTimestamp(t *testing.T) {
 	tests := []struct {
 		name    string
