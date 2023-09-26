@@ -910,6 +910,22 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring(`vlan ID -1 must be between 0 and 4094`))
 		})
 
+		It("create network with vrf option", func() {
+			network := types.Network{
+				Options: map[string]string{
+					types.VRFOption: "test",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(BeNil())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Options).ToNot(BeNil())
+			path := filepath.Join(networkConfDir, network1.Name+".json")
+			Expect(path).To(BeARegularFile())
+			grepInFile(path, `"vrf": "test"`)
+			Expect(network1.Options).To(HaveKeyWithValue("vrf", "test"))
+		})
+
 		It("network create unsupported option", func() {
 			network := types.Network{Options: map[string]string{
 				"someopt": "",
@@ -1839,7 +1855,7 @@ var _ = Describe("Config", func() {
 		It("load networks from disk", func() {
 			nets, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(8))
+			Expect(nets).To(HaveLen(9))
 			// test the we do not show logrus warnings/errors
 			logString := logBuffer.String()
 			Expect(logString).To(BeEmpty())
@@ -1848,12 +1864,12 @@ var _ = Describe("Config", func() {
 		It("change network struct fields should not affect network struct in the backend", func() {
 			nets, err := libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(8))
+			Expect(nets).To(HaveLen(9))
 
 			nets[0].Name = "myname"
 			nets, err = libpodNet.NetworkList()
 			Expect(err).To(BeNil())
-			Expect(nets).To(HaveLen(8))
+			Expect(nets).To(HaveLen(9))
 			Expect(nets).ToNot(ContainElement(HaveNetworkName("myname")))
 
 			network, err := libpodNet.NetworkInspect("bridge")
@@ -1962,6 +1978,18 @@ var _ = Describe("Config", func() {
 			))
 		})
 
+		It("bridge network with vrf", func() {
+			network, err := libpodNet.NetworkInspect("vrf")
+			Expect(err).To(BeNil())
+			Expect(network.Name).To(Equal("vrf"))
+			Expect(network.ID).To(HaveLen(64))
+			Expect(network.NetworkInterface).To(Equal("podman16"))
+			Expect(network.Driver).To(Equal("bridge"))
+			Expect(network.Subnets).To(HaveLen(1))
+			Expect(network.Options).To(HaveLen(1))
+			Expect(network.Options).To(HaveKeyWithValue("vrf", "test-vrf"))
+		})
+
 		It("network list with filters (name)", func() {
 			filters := map[string][]string{
 				"name": {"internal", "bridge"},
@@ -2036,10 +2064,11 @@ var _ = Describe("Config", func() {
 
 			networks, err := libpodNet.NetworkList(filterFuncs...)
 			Expect(err).To(BeNil())
-			Expect(networks).To(HaveLen(8))
+			Expect(networks).To(HaveLen(9))
 			Expect(networks).To(ConsistOf(HaveNetworkName("internal"), HaveNetworkName("bridge"),
 				HaveNetworkName("mtu"), HaveNetworkName("vlan"), HaveNetworkName("podman"),
-				HaveNetworkName("label"), HaveNetworkName("dualstack"), HaveNetworkName("metric")))
+				HaveNetworkName("label"), HaveNetworkName("dualstack"), HaveNetworkName("metric"),
+				HaveNetworkName("vrf")))
 		})
 
 		It("network list with filters (label)", func() {
