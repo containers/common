@@ -5,11 +5,11 @@
 
 As contributors and maintainers of the projects under the [Containers](https://github.com/containers) repository,
 and in the interest of fostering an open and welcoming community, we pledge to
-respect all people who contribute through reporting issues, posting feature 
+respect all people who contribute through reporting issues, posting feature
 requests, updating documentation, submitting pull requests or patches, and other
 activities to any of the projects under the containers umbrella.  These projects
 include Buildah, Conmon, Image, Podman, Storage, Skopeo, et al.
-as found [here](https://github.com/containers). 
+as found [here](https://github.com/containers).
 
 We are committed to making participation in these projects a harassment-free experience for
 everyone, regardless of level of experience, gender, gender identity and expression,
@@ -37,7 +37,7 @@ projects.
 This code of conduct applies both within project spaces and in public spaces
 when an individual is representing the project or its community.
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting a maintainer of the project, the Container Organization's [Code of Conduct Mailing List](codeofconduct@lists.podman.io), Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting a maintainer of the project, the Container Organization's Code of Conduct Mailing List <codeofconduct@lists.podman.io>, Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
 
 
 ### Containers Events Code of Conduct
