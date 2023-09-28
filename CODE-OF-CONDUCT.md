@@ -37,7 +37,7 @@ projects.
 This code of conduct applies both within project spaces and in public spaces
 when an individual is representing the project or its community.
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting a maintainer of the project, the Container Organization's Code of Conduct Mailing List <codeofconduct@lists.podman.io>, Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting a maintainer of the project, the Container Organization's Code of Conduct Mailing List <codeofconduct@lists.podman.io> ([List Members](#List-Members)), Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
 
 
 ### Containers Events Code of Conduct
@@ -54,7 +54,18 @@ The maintainers of the Containers projects do not condone any statements by spea
 The maintainers of the Containers projects reserves the right to deny entrance and/or eject from an event
 (without refund) any individual found to be engaging in discriminatory or offensive speech or actions.
 
-Please bring any concerns to the immediate attention of the Containers maintainers of the
-particular project or projects.
+Please bring any concerns to the immediate attention of a maintainer of the project, the Container Organization's Code of Conduct Mailing List <codeofconduct@lists.podman.io> ([List Members](#List-Members)), Dan Walsh <dwalsh@redhat.com>, and/or Tom Sweeney <tsweeney@redhat.com>.
 
 This Code of Conduct was adapted from the [CNCF Community Code of Conduct v1.0](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
+
+### List Members
+
+| List Member      | email  |
+| ------------     | ------ |
+| Chris Evich      | cevich@redhat.com      |
+| Dan Walsh        | dwalsh@redhat.com      |
+| Lokesh Mandvekar | lsm5@redhat.com        |
+| Mohan Boddu      | mboddu@redhat.com      |
+| Paul Holzinger   | pholzing@redhat.com    |
+| Preethi Thomas   | pthomas@redhat.com     |
+| Tom Sweeney      | tsweeney@redhat.com    |
