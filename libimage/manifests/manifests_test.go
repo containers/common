@@ -10,6 +10,7 @@ import (
 	"github.com/containers/common/pkg/manifests"
 	cp "github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/manifest"
+	"github.com/containers/image/v5/pkg/compression"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
@@ -258,7 +259,7 @@ func TestReference(t *testing.T) {
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 }
 
-func TestPush(t *testing.T) {
+func TestPushManifest(t *testing.T) {
 	if unshare.IsRootless() {
 		t.Skip("Test can only run as root")
 	}
@@ -335,10 +336,13 @@ func TestPush(t *testing.T) {
 	assert.Nilf(t, err, "list.Push(four specified)")
 
 	options.AddCompression = []string{"zstd"}
+	options.ImageListSelection = cp.CopyAllImages
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.NoError(t, err, "list.Push(with replication for zstd specified)")
 
 	options.ForceCompressionFormat = true
+	options.ImageListSelection = cp.CopyAllImages
+	options.SystemContext.CompressionFormat = &compression.Gzip
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.NoError(t, err, "list.Push(with ForceCompressionFormat: true)")
 }
