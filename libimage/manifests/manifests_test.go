@@ -1,11 +1,13 @@
 package manifests
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/containers/common/pkg/manifests"
 	cp "github.com/containers/image/v5/copy"
@@ -16,6 +18,7 @@ import (
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/unshare"
 	digest "github.com/opencontainers/go-digest"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -334,6 +337,30 @@ func TestPushManifest(t *testing.T) {
 	options.Instances = append(options.Instances, otherListDigest)
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.Nilf(t, err, "list.Push(four specified)")
+
+	bogusDestRef, err := alltransports.ParseImageName("docker://localhost/bogus/dest:latest")
+	assert.NoErrorf(t, err, "ParseImageName()")
+
+	var logBuffer bytes.Buffer
+	logBuffer = bytes.Buffer{}
+	logrus.SetOutput(&logBuffer)
+	maxRetry := uint(5)
+	delay := 3 * time.Second
+	options.MaxRetries = &maxRetry
+	_, _, err = list.Push(ctx, bogusDestRef, options)
+	assert.Error(t, err)
+	logString := logBuffer.String()
+	// Must show warning where libimage is going to retry 5 times with 1s delay
+	assert.Contains(t, logString, "Failed, retrying in 1s ... (1/5)", "warning not matched")
+
+	logBuffer = bytes.Buffer{}
+	logrus.SetOutput(&logBuffer)
+	options.RetryDelay = &delay
+	_, _, err = list.Push(ctx, bogusDestRef, options)
+	assert.Error(t, err)
+	logString = logBuffer.String()
+	// Must show warning where libimage is going to retry 5 times with 3s delay
+	assert.Contains(t, logString, "Failed, retrying in 3s ... (1/5)", "warning not matched")
 
 	options.AddCompression = []string{"zstd"}
 	options.ImageListSelection = cp.CopyAllImages
