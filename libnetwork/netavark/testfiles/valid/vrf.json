@@ -1,0 +1,22 @@
+{
+    "name": "vrf",
+    "id": "60527704a34bd163f6b64857b601585f4b00a02a5f2f00fe139ab72347fd6cdc",
+    "driver": "bridge",
+    "network_interface": "podman16",
+    "created": "2021-10-06T18:50:54.25770461+02:00",
+    "subnets": [
+        {
+            "subnet": "10.89.13.0/24",
+            "gateway": "10.89.13.1"
+        }
+    ],
+    "ipv6_enabled": false,
+    "internal": false,
+    "dns_enabled": true,
+    "options": {
+        "vrf": "test-vrf"
+    },
+    "ipam_options": {
+        "driver": "host-local"
+    }
+}
