@@ -289,6 +289,13 @@ is imposed.
 
 Copy the content from the underlying image into the newly created volume when the container is created instead of when it is started. If `false`, the container engine will not copy the content until the container is started. Setting it to `true` may have negative performance implications.
 
+**privileged**=false
+
+Run all containers in privileged mode. The privileged field should almost
+never be set, containers running in privileged mode have no separation from
+the host other then namespaces. This means they can easily break out of
+confinement.
+
 **read_only**=true|false
 
 Run all containers with root file system mounted read-only. Set to false by default.

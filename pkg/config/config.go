@@ -213,6 +213,9 @@ type ContainersConfig struct {
 	// performance implications.
 	PrepareVolumeOnCreate bool `toml:"prepare_volume_on_create,omitempty"`
 
+	// Privileged causes engine to run all containers in privileged mode
+	Privileged bool `toml:"privileged,omitempty"`
+
 	// ReadOnly causes engine to run all containers with root file system mounted read-only
 	ReadOnly bool `toml:"read_only,omitempty"`
 
