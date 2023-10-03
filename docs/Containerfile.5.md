@@ -49,7 +49,7 @@ A Containerfile is similar to a Makefile.
   to a new image if necessary, before finally outputting the ID of the new
   image.
 
-  Container engines re-use intermediate images whenever possible. This significantly
+  Container engines reuse intermediate images whenever possible. This significantly
   accelerates the *build* process.
 
 # FORMAT

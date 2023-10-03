@@ -662,7 +662,7 @@ type MachineConfig struct {
 	Provider string `toml:"provider,omitempty"`
 }
 
-// FarmConfig represents the "farm" TOML config tabls
+// FarmConfig represents the "farm" TOML config tables
 type FarmConfig struct {
 	// Default is the default farm to be used when farming out builds
 	Default string `toml:"default,omitempty"`
