@@ -289,6 +289,12 @@ is imposed.
 
 Copy the content from the underlying image into the newly created volume when the container is created instead of when it is started. If `false`, the container engine will not copy the content until the container is started. Setting it to `true` may have negative performance implications.
 
+**privileged**=false
+
+Give extended privileges to all containers. A privileged container turns off the security features that isolate the container from the host. Dropped Capabilities, limited devices, read-only mount points, Apparmor/SELinux separation, and Seccomp filters are all disabled. Due to the disabled security features, the privileged field should almost never be set as containers can easily break out of confinment.
+
+Containers running in a user namespace (e.g., rootless containers) cannot have more privileges than the user that launched them.
+
 **read_only**=true|false
 
 Run all containers with root file system mounted read-only. Set to false by default.
