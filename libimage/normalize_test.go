@@ -3,6 +3,7 @@ package libimage
 import (
 	"testing"
 
+	lplatform "github.com/containers/common/libimage/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -83,7 +84,7 @@ func TestNormalizePlatform(t *testing.T) {
 			platform{"linux", "arm", "v6"},
 		},
 	} {
-		os, arch, variant := NormalizePlatform(test.input.os, test.input.arch, test.input.variant)
+		os, arch, variant := lplatform.Normalize(test.input.os, test.input.arch, test.input.variant)
 		assert.Equal(t, test.expected.os, os, test.input)
 		assert.Equal(t, test.expected.arch, arch, test.input)
 		assert.Equal(t, test.expected.variant, variant, test.input)
