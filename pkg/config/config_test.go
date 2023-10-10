@@ -44,13 +44,10 @@ var _ = Describe("Config", func() {
 			}
 			gomega.Expect(defaultConfig.Engine.SSHConfig).To(gomega.ContainSubstring("/.ssh/config"))
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
-			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.BeEquivalentTo(stringBoltDB))
+			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
 			gomega.Expect(defaultConfig.Engine.AddCompression).To(gomega.BeNil())
 
-			dbBackend, err := defaultConfig.DBBackend()
-			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendBoltDB))
-			gomega.Expect(err).To(gomega.BeNil())
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
@@ -476,9 +473,6 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.SSHConfig).To(gomega.Equal("/foo/bar/.ssh/config"))
 
 			gomega.Expect(config.Engine.DBBackend).To(gomega.Equal(stringSQLite))
-			dbBackend, err := config.DBBackend()
-			gomega.Expect(err).To(gomega.BeNil())
-			gomega.Expect(dbBackend).To(gomega.BeEquivalentTo(DBBackendSQLite))
 			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
 			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
 			gomega.Expect(config.Engine.KubeGenerateType).To(gomega.Equal("pod"))
@@ -648,9 +642,9 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
-			defConf.Engine.DBBackend = ""
+			defConf.Engine.DBBackend = "blah"
 			err = defConf.Engine.Validate()
-			gomega.Expect(err).ToNot(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
 	})
 

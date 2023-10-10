@@ -507,10 +507,13 @@ conmon_path=[
 ]
 ```
 
-**database_backend**="boltdb"
+**database_backend**=""
 
-The database backend of Podman.  Supported values are "boltdb" (default) and
-"sqlite". Please run `podman-system-reset` prior to changing the database
+The database backend of Podman.  Supported values are "" (default), "boltdb"
+and "sqlite". An empty value means it will check whenever a boltdb already
+exists and use it when it does, otherwise it will use sqlite as default
+(e.g. new installs). This allows for backwards compatibility with older versions.
+Please run `podman-system-reset` prior to changing the database
 backend of an existing deployment, to make sure Podman can operate correctly.
 
 **detach_keys**="ctrl-p,ctrl-q"

@@ -14,7 +14,7 @@ func TestDBBackend(t *testing.T) {
 	}{
 		{stringBoltDB, true, DBBackendBoltDB},
 		{stringSQLite, true, DBBackendSQLite},
-		{"", false, DBBackendUnsupported},
+		{"", true, DBBackendDefault},
 		{stringSQLite + " ", false, DBBackendUnsupported},
 	}
 
