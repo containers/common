@@ -1,4 +1,4 @@
-package libimage
+package platform
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func TestToPlatformString(t *testing.T) {
 		{"", "", "", fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)},
 		{"", "", "c", fmt.Sprintf("%s/%s/c", runtime.GOOS, runtime.GOARCH)},
 	} {
-		platform := toPlatformString(test.os, test.arch, test.variant)
+		platform := ToString(test.os, test.arch, test.variant)
 		require.Equal(t, test.expected, platform)
 	}
 }
