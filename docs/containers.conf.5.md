@@ -205,6 +205,10 @@ Run an init inside the container that forwards signals and reaps processes.
 
 **init_path**="/usr/libexec/podman/catatonit"
 
+If this option is not set catatonit is searched in the directories listed under
+the **helper_binaries_dir** option. It is recommended to just install catatonit
+there instead of configuring this option here.
+
 Path to the container-init binary, which forwards signals and reaps processes
 within containers. Note that the container-init binary will only be used when
 the `--init` for podman-create and podman-run is set.
@@ -574,6 +578,17 @@ with detailed information about the container.  Set to false by default.
 **helper_binaries_dir**=["/usr/libexec/podman", ...]
 
 A is a list of directories which are used to search for helper binaries.
+The following binaries are searched in these directories:
+ - aardvark-dns
+ - catatonit
+ - netavark
+ - pasta
+ - slirp4netns
+
+Podman machine uses it for these binaries:
+ - gvproxy
+ - qemu
+ - vfkit
 
 The default paths on Linux are:
 
