@@ -24,5 +24,7 @@ func TestHistory(t *testing.T) {
 	require.Len(t, history, 2)
 
 	require.Equal(t, []string{name}, history[0].Tags)
-	require.Len(t, history[1].Tags, 0)
+	require.Equal(t, history[1].Tags, []string{name})
+	require.NotEqual(t, history[0].Size, 0)
+	require.NotEqual(t, history[1].Size, 0)
 }
