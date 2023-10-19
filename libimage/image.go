@@ -580,16 +580,12 @@ func (i *Image) Tag(name string) error {
 		defer i.runtime.writeEvent(&Event{ID: i.ID(), Name: name, Time: time.Now(), Type: EventTypeImageTag})
 	}
 
-	newNames := append(i.Names(), ref.String())
-	if err := i.runtime.store.SetNames(i.ID(), newNames); err != nil {
+	if err := i.runtime.store.AddNames(i.ID(), []string{ref.String()}); err != nil {
 		return err
 	}
 
 	return i.reload()
 }
-
-// to have some symmetry with the errors from containers/storage.
-var errTagUnknown = errors.New("tag not known")
 
 // TODO (@vrothberg) - `docker rmi sha256:` will remove the digest from the
 // image.  However, that's something containers storage does not support.
@@ -625,21 +621,7 @@ func (i *Image) Untag(name string) error {
 		defer i.runtime.writeEvent(&Event{ID: i.ID(), Name: name, Time: time.Now(), Type: EventTypeImageUntag})
 	}
 
-	removedName := false
-	newNames := []string{}
-	for _, n := range i.Names() {
-		if n == name {
-			removedName = true
-			continue
-		}
-		newNames = append(newNames, n)
-	}
-
-	if !removedName {
-		return fmt.Errorf("%s: %w", name, errTagUnknown)
-	}
-
-	if err := i.runtime.store.SetNames(i.ID(), newNames); err != nil {
+	if err := i.runtime.store.RemoveNames(i.ID(), []string{name}); err != nil {
 		return err
 	}
 
