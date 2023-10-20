@@ -361,15 +361,16 @@ func TestUntag(t *testing.T) {
 	for _, test := range []struct {
 		tag         string
 		untag       string
-		expectError bool
+		expectError string
 	}{
-		{"foo", "foo", false},
-		{"foo", "foo:latest", false},
-		{"foo", "localhost/foo", false},
-		{"foo", "localhost/foo:latest", false},
-		{"quay.io/image/foo", "quay.io/image/foo", false},
-		{"foo", "doNotExist", true},
-		{"foo", digest, true},
+		{"foo", "foo", ""},
+		{"foo", "foo:latest", ""},
+		{"foo", "localhost/foo", ""},
+		{"foo", "localhost/foo:latest", ""},
+		{"quay.io/image/foo", "quay.io/image/foo", ""},
+		{"foo", "upperCase", "normalizing name \"upperCase\": repository name must be lowercase"},
+		{"foo", "donotexist", "localhost/donotexist:latest: tag not known"},
+		{"foo", digest, digest + ": untag by digest not supported"},
 		//		{"foo", "foo@" + digest, false},
 		//		{"foo", "localhost/foo@" + digest, false},
 	} {
@@ -377,8 +378,8 @@ func TestUntag(t *testing.T) {
 		require.NoError(t, err, "tag should have succeeded: %v", test)
 
 		err = image.Untag(test.untag)
-		if test.expectError {
-			require.Error(t, err, "untag should have failed: %v", test)
+		if test.expectError != "" {
+			require.EqualError(t, err, test.expectError, "untag should have failed: %v", test)
 			continue
 		}
 		require.NoError(t, err, "untag should have succeedded: %v", test)
@@ -388,7 +389,7 @@ func TestUntag(t *testing.T) {
 
 	// Check for specific error.
 	err := image.Untag(digest)
-	require.True(t, errors.Is(err, errUntagDigest), "check for specific digest error")
+	require.ErrorIs(t, err, errUntagDigest, "check for specific digest error")
 }
 
 func getImageAndRuntime(t *testing.T) (*Runtime, *Image, func()) {
