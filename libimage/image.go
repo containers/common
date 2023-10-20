@@ -587,6 +587,9 @@ func (i *Image) Tag(name string) error {
 	return i.reload()
 }
 
+// to have some symmetry with the errors from containers/storage.
+var errTagUnknown = errors.New("tag not known")
+
 // TODO (@vrothberg) - `docker rmi sha256:` will remove the digest from the
 // image.  However, that's something containers storage does not support.
 var errUntagDigest = errors.New("untag by digest not supported")
@@ -601,7 +604,7 @@ func (i *Image) Untag(name string) error {
 
 	ref, err := NormalizeName(name)
 	if err != nil {
-		return fmt.Errorf("normalizing name %q: %w", name, err)
+		return err
 	}
 
 	// FIXME: this is breaking Podman CI but must be re-enabled once
@@ -615,6 +618,19 @@ func (i *Image) Untag(name string) error {
 	// }
 
 	name = ref.String()
+
+	foundName := false
+	for _, n := range i.Names() {
+		if n == name {
+			foundName = true
+			break
+		}
+	}
+	// Return an error if the name is not found, the c/storage
+	// RemoveNames() API does not create one if no match is found.
+	if !foundName {
+		return fmt.Errorf("%s: %w", name, errTagUnknown)
+	}
 
 	logrus.Debugf("Untagging %q from image %s", ref.String(), i.ID())
 	if i.runtime.eventChannel != nil {
