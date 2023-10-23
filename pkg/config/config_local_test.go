@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/libnetwork/types"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -342,6 +343,14 @@ var _ = Describe("Config Local", func() {
 		tmpfile := "containers.conf.test"
 		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
 		os.Setenv("CONTAINERS_CONF", tmpfile)
+		defer func() {
+			if envSet {
+				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+			} else {
+				os.Unsetenv("CONTAINERS_CONF")
+			}
+		}()
+
 		config, err := ReadCustomConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		config.Containers.Devices = []string{
@@ -350,22 +359,25 @@ var _ = Describe("Config Local", func() {
 			"/dev/sdc:/dev/xvdc",
 			"/dev/sdc:rm",
 		}
+		boolTrue := true
+		config.Containers.Env = attributedstring.Slice{Values: []string{"A", "B", "C"}}
+		config.Containers.Env.Attributes.Append = &boolTrue
 
 		err = config.Write()
-		// Undo that
-		if envSet {
-			os.Setenv("CONTAINERS_CONF", oldContainersConf)
-		} else {
-			os.Unsetenv("CONTAINERS_CONF")
-		}
-		// Then
 		gomega.Expect(err).To(gomega.BeNil())
+
 		fi, err := os.Stat(tmpfile)
 		gomega.Expect(err).To(gomega.BeNil())
 		perm := int(fi.Mode().Perm())
 		// 436 decimal = 644 octal
 		gomega.Expect(perm).To(gomega.Equal(420))
 		defer os.Remove(tmpfile)
+
+		writtenConfig, err := ReadCustomConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(writtenConfig.Containers.Devices).To(gomega.BeEquivalentTo(config.Containers.Devices))
+		gomega.Expect(writtenConfig.Containers.Env).To(gomega.BeEquivalentTo(config.Containers.Env))
+		gomega.Expect(writtenConfig.Containers.Env.Attributes.Append).To(gomega.BeEquivalentTo(&boolTrue))
 	})
 	It("Default Umask", func() {
 		// Given

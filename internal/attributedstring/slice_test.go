@@ -1,4 +1,4 @@
-package attributedstringslice
+package attributedstring
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 )
 
 type testConfig struct {
-	Array attributedStringSlice `toml:"array,omitempty"`
+	Array Slice `toml:"array,omitempty"`
 }
 
 const (
@@ -35,10 +35,10 @@ func loadConfigs(configs []string) (*testConfig, error) {
 	return &config, nil
 }
 
-func TestAttributedStringSliceLoading(t *testing.T) {
+func TestSliceLoading(t *testing.T) {
 	for _, test := range []struct {
 		configs                []string
-		expectedSlice          []string
+		expectedValues         []string
 		expectedAppend         *bool
 		expectedErrorSubstring string
 	}{
@@ -71,16 +71,16 @@ func TestAttributedStringSliceLoading(t *testing.T) {
 		}
 		require.NoError(t, err, "test is expected to succeed: %v", test)
 		require.NotNil(t, result, "loaded config must not be nil: %v", test)
-		require.Equal(t, result.Array.slice, test.expectedSlice, "slices do not match: %v", test)
-		require.Equal(t, result.Array.attributes.append, test.expectedAppend, "append field does not match: %v", test)
+		require.Equal(t, result.Array.Values, test.expectedValues, "slices do not match: %v", test)
+		require.Equal(t, result.Array.Attributes.Append, test.expectedAppend, "append field does not match: %v", test)
 	}
 }
 
-func TestAttributedStringSliceEncoding(t *testing.T) {
+func TestSliceEncoding(t *testing.T) {
 	for _, test := range []struct {
 		configs        []string
 		marshalledData string
-		expectedSlice  []string
+		expectedValues []string
 		expectedAppend *bool
 	}{
 		{
@@ -106,8 +106,8 @@ func TestAttributedStringSliceEncoding(t *testing.T) {
 		result, err := loadConfigs(test.configs)
 		require.NoError(t, err, "loading config must succeed")
 		require.NotNil(t, result, "loaded config must not be nil")
-		require.Equal(t, result.Array.slice, test.expectedSlice, "slices do not match: %v", test)
-		require.Equal(t, result.Array.attributes.append, test.expectedAppend, "append field does not match: %v", test)
+		require.Equal(t, result.Array.Values, test.expectedValues, "slices do not match: %v", test)
+		require.Equal(t, result.Array.Attributes.Append, test.expectedAppend, "append field does not match: %v", test)
 
 		// 2) Marshal the config to emulate writing it to disk
 		buf := new(bytes.Buffer)
@@ -121,7 +121,7 @@ func TestAttributedStringSliceEncoding(t *testing.T) {
 		_, decErr := toml.Decode(buf.String(), &reloadedConfig)
 		require.NoError(t, decErr, "loading config must succeed")
 		require.NotNil(t, reloadedConfig, "re-loaded config must not be nil")
-		require.Equal(t, reloadedConfig.Array.slice, test.expectedSlice, "slices do not match: %v", test)
-		require.Equal(t, reloadedConfig.Array.attributes.append, test.expectedAppend, "append field does not match: %v", test)
+		require.Equal(t, reloadedConfig.Array.Values, test.expectedValues, "slices do not match: %v", test)
+		require.Equal(t, reloadedConfig.Array.Attributes.Append, test.expectedAppend, "append field does not match: %v", test)
 	}
 }
