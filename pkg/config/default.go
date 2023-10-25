@@ -401,9 +401,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	// Needs to be called after populating c.OCIRuntimes.
 	c.OCIRuntime = c.findRuntime()
 
-	c.ConmonEnvVars = []string{
-		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-	}
+	c.ConmonEnvVars = attributedstring.Slice{Values: []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}}
 	c.ConmonPath = []string{
 		"/usr/libexec/podman/conmon",
 		"/usr/local/libexec/podman/conmon",

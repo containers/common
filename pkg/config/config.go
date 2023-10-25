@@ -251,7 +251,7 @@ type EngineConfig struct {
 
 	// ConmonEnvVars are environment variables to pass to the Conmon binary
 	// when it is launched.
-	ConmonEnvVars []string `toml:"conmon_env_vars,omitempty"`
+	ConmonEnvVars attributedstring.Slice `toml:"conmon_env_vars,omitempty"`
 
 	// ConmonPath is the path to the Conmon binary used for managing containers.
 	// The first path pointing to a valid file will be used.
