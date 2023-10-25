@@ -79,7 +79,7 @@ type ContainersConfig struct {
 	ApparmorProfile string `toml:"apparmor_profile,omitempty"`
 
 	// Annotation to add to all containers
-	Annotations []string `toml:"annotations,omitempty"`
+	Annotations attributedstring.Slice `toml:"annotations,omitempty"`
 
 	// BaseHostsFile is the path to a hosts file, the entries from this file
 	// are added to the containers hosts file. As special value "image" is

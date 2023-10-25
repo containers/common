@@ -191,7 +191,7 @@ func defaultConfig() (*Config, error) {
 
 	return &Config{
 		Containers: ContainersConfig{
-			Annotations:         []string{},
+			Annotations:         attributedstring.Slice{},
 			ApparmorProfile:     DefaultApparmorProfile,
 			BaseHostsFile:       "",
 			CgroupNS:            cgroupNS,
