@@ -29,7 +29,7 @@ var _ = Describe("Config Local", func() {
 		file.Close()
 		defer os.Remove(tmpfile)
 		defConf.Network.NetworkConfigDir = tmpfile
-		defConf.Network.CNIPluginDirs = []string{}
+		defConf.Network.CNIPluginDirs.Values = []string{}
 
 		// When
 		err = defConf.Network.Validate()
@@ -51,7 +51,7 @@ var _ = Describe("Config Local", func() {
 
 		// Given
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs = []string{invalidPath}
+		defConf.Network.CNIPluginDirs.Values = []string{invalidPath}
 
 		// When
 		err = defConf.Network.Validate()
@@ -72,7 +72,7 @@ var _ = Describe("Config Local", func() {
 		defer os.RemoveAll(validDirPath)
 		// Given
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs = []string{validDirPath}
+		defConf.Network.CNIPluginDirs.Values = []string{validDirPath}
 
 		net, _ := types.ParseCIDR("10.0.0.0/24")
 		defConf.Network.DefaultSubnetPools = []SubnetPool{

@@ -562,7 +562,7 @@ type NetworkConfig struct {
 	NetworkBackend string `toml:"network_backend,omitempty"`
 
 	// CNIPluginDirs is where CNI plugin binaries are stored.
-	CNIPluginDirs []string `toml:"cni_plugin_dirs,omitempty"`
+	CNIPluginDirs attributedstring.Slice `toml:"cni_plugin_dirs,omitempty"`
 
 	// NetavarkPluginDirs is a list of directories which contain netavark plugins.
 	NetavarkPluginDirs []string `toml:"netavark_plugin_dirs,omitempty"`

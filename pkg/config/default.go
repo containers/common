@@ -233,7 +233,7 @@ func defaultConfig() (*Config, error) {
 			DefaultSubnetPools:        DefaultSubnetPools,
 			DefaultRootlessNetworkCmd: "slirp4netns",
 			DNSBindPort:               0,
-			CNIPluginDirs:             DefaultCNIPluginDirs,
+			CNIPluginDirs:             attributedstring.Slice{Values: DefaultCNIPluginDirs},
 			NetavarkPluginDirs:        DefaultNetavarkPluginDirs,
 		},
 		Engine:  *defaultEngineConfig,
