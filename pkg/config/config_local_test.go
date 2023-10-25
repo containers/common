@@ -291,7 +291,7 @@ var _ = Describe("Config Local", func() {
 		config, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.Env).To(gomega.BeEquivalentTo(expectedEnv))
+		gomega.Expect(config.Engine.Env.Get()).To(gomega.BeEquivalentTo(expectedEnv))
 		gomega.Expect(os.Getenv("super")).To(gomega.BeEquivalentTo("duper"))
 		gomega.Expect(os.Getenv("foo")).To(gomega.BeEquivalentTo("bar"))
 	})

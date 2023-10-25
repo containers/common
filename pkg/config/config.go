@@ -294,7 +294,7 @@ type EngineConfig struct {
 	EnablePortReservation bool `toml:"enable_port_reservation,omitempty"`
 
 	// Environment variables to be used when running the container engine (e.g., Podman, Buildah). For example "http_proxy=internal.proxy.company.com"
-	Env []string `toml:"env,omitempty"`
+	Env attributedstring.Slice `toml:"env,omitempty"`
 
 	// EventsLogFilePath is where the events log is stored.
 	EventsLogFilePath string `toml:"events_logfile_path,omitempty"`
@@ -1170,7 +1170,7 @@ func (c *Config) ImageCopyTmpDir() (string, error) {
 
 // setupEnv sets the environment variables for the engine
 func (c *Config) setupEnv() error {
-	for _, env := range c.Engine.Env {
+	for _, env := range c.Engine.Env.Get() {
 		splitEnv := strings.SplitN(env, "=", 2)
 		if len(splitEnv) != 2 {
 			logrus.Warnf("invalid environment variable for engine %s, valid configuration is KEY=value pair", env)
