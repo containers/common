@@ -452,7 +452,7 @@ type EngineConfig struct {
 
 	// RuntimeSupportsKVM is a list of OCI runtimes that support
 	// KVM separation for containers.
-	RuntimeSupportsKVM []string `toml:"runtime_supports_kvm,omitempty"`
+	RuntimeSupportsKVM attributedstring.Slice `toml:"runtime_supports_kvm,omitempty"`
 
 	// SetOptions contains a subset of config options. It's used to indicate if
 	// a given option has either been set by the user or by the parsed

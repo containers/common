@@ -433,7 +433,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"ocijail",
 	}}
 	c.RuntimeSupportsNoCgroups = attributedstring.Slice{Values: []string{"crun", "krun"}}
-	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}
+	c.RuntimeSupportsKVM = attributedstring.Slice{Values: []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}}
 	c.NoPivotRoot = false
 
 	c.InfraImage = DefaultInfraImage
