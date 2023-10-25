@@ -432,7 +432,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"krun",
 		"ocijail",
 	}}
-	c.RuntimeSupportsNoCgroups = []string{"crun", "krun"}
+	c.RuntimeSupportsNoCgroups = attributedstring.Slice{Values: []string{"crun", "krun"}}
 	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}
 	c.NoPivotRoot = false
 
