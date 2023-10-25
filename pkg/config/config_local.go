@@ -44,7 +44,7 @@ func (c *ContainersConfig) validateDevices() error {
 }
 
 func (c *ContainersConfig) validateUlimits() error {
-	for _, u := range c.DefaultUlimits {
+	for _, u := range c.DefaultUlimits.Values {
 		ul, err := units.ParseUlimit(u)
 		if err != nil {
 			return fmt.Errorf("unrecognized ulimit %s: %w", u, err)

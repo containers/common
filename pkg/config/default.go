@@ -201,7 +201,7 @@ func defaultConfig() (*Config, error) {
 			DNSServers:          []string{},
 			DefaultCapabilities: attributedstring.Slice{Values: DefaultCapabilities},
 			DefaultSysctls:      attributedstring.Slice{},
-			DefaultUlimits:      getDefaultProcessLimits(),
+			DefaultUlimits:      attributedstring.Slice{Values: getDefaultProcessLimits()},
 			Devices:             attributedstring.Slice{},
 			EnableKeyring:       true,
 			EnableLabeling:      selinuxEnabled(),
@@ -575,7 +575,7 @@ func (c *Config) ShmSize() string {
 
 // Ulimits returns the default ulimits to use in containers.
 func (c *Config) Ulimits() []string {
-	return c.Containers.DefaultUlimits
+	return c.Containers.DefaultUlimits.Get()
 }
 
 // PidsLimit returns the default maximum number of pids to use in containers.

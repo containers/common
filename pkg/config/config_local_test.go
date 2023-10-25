@@ -275,7 +275,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.DefaultUlimits = []string{invalidPath}
+		defConf.Containers.DefaultUlimits.Values = []string{invalidPath}
 
 		// When
 		err = defConf.Containers.Validate()

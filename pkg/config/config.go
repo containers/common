@@ -105,7 +105,7 @@ type ContainersConfig struct {
 	DefaultSysctls attributedstring.Slice `toml:"default_sysctls,omitempty"`
 
 	// DefaultUlimits specifies the default ulimits to apply to containers
-	DefaultUlimits []string `toml:"default_ulimits,omitempty"`
+	DefaultUlimits attributedstring.Slice `toml:"default_ulimits,omitempty"`
 
 	// DefaultMountsFile is the path to the default mounts file for testing
 	DefaultMountsFile string `toml:"-"`
