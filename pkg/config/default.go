@@ -423,7 +423,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"/run/current-system/sw/bin/conmonrs",
 	}}
 	c.PullPolicy = DefaultPullPolicy
-	c.RuntimeSupportsJSON = []string{
+	c.RuntimeSupportsJSON = attributedstring.Slice{Values: []string{
 		"crun",
 		"runc",
 		"kata",
@@ -431,7 +431,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"youki",
 		"krun",
 		"ocijail",
-	}
+	}}
 	c.RuntimeSupportsNoCgroups = []string{"crun", "krun"}
 	c.RuntimeSupportsKVM = []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}
 	c.NoPivotRoot = false

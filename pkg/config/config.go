@@ -444,7 +444,7 @@ type EngineConfig struct {
 
 	// RuntimeSupportsJSON is the list of the OCI runtimes that support
 	// --format=json.
-	RuntimeSupportsJSON []string `toml:"runtime_supports_json,omitempty"`
+	RuntimeSupportsJSON attributedstring.Slice `toml:"runtime_supports_json,omitempty"`
 
 	// RuntimeSupportsNoCgroups is a list of OCI runtimes that support
 	// running containers without CGroups.
