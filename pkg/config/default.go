@@ -412,7 +412,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"/usr/local/sbin/conmon",
 		"/run/current-system/sw/bin/conmon",
 	}}
-	c.ConmonRsPath = []string{
+	c.ConmonRsPath = attributedstring.Slice{Values: []string{
 		"/usr/libexec/podman/conmonrs",
 		"/usr/local/libexec/podman/conmonrs",
 		"/usr/local/lib/podman/conmonrs",
@@ -421,7 +421,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"/usr/local/bin/conmonrs",
 		"/usr/local/sbin/conmonrs",
 		"/run/current-system/sw/bin/conmonrs",
-	}
+	}}
 	c.PullPolicy = DefaultPullPolicy
 	c.RuntimeSupportsJSON = []string{
 		"crun",

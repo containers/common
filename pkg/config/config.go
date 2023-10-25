@@ -259,7 +259,7 @@ type EngineConfig struct {
 
 	// ConmonRsPath is the path to the Conmon-rs binary used for managing containers.
 	// The first path pointing to a valid file will be used.
-	ConmonRsPath []string `toml:"conmonrs_path,omitempty"`
+	ConmonRsPath attributedstring.Slice `toml:"conmonrs_path,omitempty"`
 
 	// CompatAPIEnforceDockerHub enforces using docker.io for completing
 	// short names in Podman's compatibility REST API.  Note that this will
@@ -884,7 +884,7 @@ func findConmonPath(paths []string, binaryName string) (string, error) {
 // to first (version) matching conmonrs binary. If non is found, we try
 // to do a path lookup of "conmonrs".
 func (c *Config) FindConmonRs() (string, error) {
-	return findConmonPath(c.Engine.ConmonRsPath, "conmonrs")
+	return findConmonPath(c.Engine.ConmonRsPath.Get(), "conmonrs")
 }
 
 // GetDefaultEnv returns the environment variables for the container.
