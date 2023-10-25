@@ -312,9 +312,9 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	c.VolumePluginTimeout = DefaultVolumePluginTimeout
 	c.CompressionFormat = "gzip"
 
-	c.HelperBinariesDir = defaultHelperBinariesDir
+	c.HelperBinariesDir = attributedstring.Slice{Values: defaultHelperBinariesDir}
 	if additionalHelperBinariesDir != "" {
-		c.HelperBinariesDir = append(c.HelperBinariesDir, additionalHelperBinariesDir)
+		c.HelperBinariesDir.Values = append(c.HelperBinariesDir.Values, additionalHelperBinariesDir)
 	}
 	c.HooksDir = DefaultHooksDirs
 	c.ImageDefaultTransport = _defaultTransport

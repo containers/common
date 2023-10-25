@@ -316,7 +316,7 @@ type EngineConfig struct {
 
 	// HelperBinariesDir is a list of directories which are used to search for
 	// helper binaries.
-	HelperBinariesDir []string `toml:"helper_binaries_dir"`
+	HelperBinariesDir attributedstring.Slice `toml:"helper_binaries_dir,omitempty"`
 
 	// configuration files. When the same filename is present in
 	// multiple directories, the file in the directory listed last in
@@ -1102,7 +1102,7 @@ func findBindir() string {
 // FindHelperBinary will search the given binary name in the configured directories.
 // If searchPATH is set to true it will also search in $PATH.
 func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) {
-	dirList := c.Engine.HelperBinariesDir
+	dirList := c.Engine.HelperBinariesDir.Get()
 	bindirPath := ""
 	bindirSearched := false
 
@@ -1143,7 +1143,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 		return exec.LookPath(name)
 	}
 	configHint := "To resolve this error, set the helper_binaries_dir key in the `[engine]` section of containers.conf to the directory containing your helper binaries."
-	if len(c.Engine.HelperBinariesDir) == 0 {
+	if len(c.Engine.HelperBinariesDir.Values) == 0 {
 		return "", fmt.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
 	}
 	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, c.Engine.HelperBinariesDir, configHint)
