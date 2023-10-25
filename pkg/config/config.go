@@ -440,7 +440,7 @@ type EngineConfig struct {
 	// The first path pointing to a valid file will be used This is used only
 	// when there are no OCIRuntime/OCIRuntimes defined.  It is used only to be
 	// backward compatible with older versions of Podman.
-	RuntimePath []string `toml:"runtime_path,omitempty"`
+	RuntimePath attributedstring.Slice `toml:"runtime_path,omitempty"`
 
 	// RuntimeSupportsJSON is the list of the OCI runtimes that support
 	// --format=json.
