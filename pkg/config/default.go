@@ -288,7 +288,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	c.EventsLogFileMaxSize = eventsLogMaxSize(DefaultEventsLogSizeMax)
 
 	c.CompatAPIEnforceDockerHub = true
-	c.ComposeProviders = getDefaultComposeProviders() // may vary across supported platforms
+	c.ComposeProviders = attributedstring.Slice{Values: getDefaultComposeProviders()} // may vary across supported platforms
 	c.ComposeWarningLogs = true
 
 	if path, ok := os.LookupEnv("CONTAINERS_STORAGE_CONF"); ok {

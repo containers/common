@@ -489,12 +489,12 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.ComposeProviders).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all platforms
+		gomega.Expect(config.Engine.ComposeProviders.Get()).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all platforms
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config2.Engine.ComposeProviders).To(gomega.Equal([]string{"/some/thing/else", "/than/before"}))
+		gomega.Expect(config2.Engine.ComposeProviders.Get()).To(gomega.Equal([]string{"/some/thing/else", "/than/before"}))
 	})
 
 	It("AddCompression", func() {

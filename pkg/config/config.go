@@ -271,7 +271,7 @@ type EngineConfig struct {
 	// compose command.  The first found provider is used for execution.
 	// Can be an absolute and relative path or a (file) name.  Make sure to
 	// expand the return items via `os.ExpandEnv`.
-	ComposeProviders []string `toml:"compose_providers,omitempty"`
+	ComposeProviders attributedstring.Slice `toml:"compose_providers,omitempty"`
 
 	// ComposeWarningLogs emits logs on each invocation of the compose
 	// command indicating that an external compose provider is being
