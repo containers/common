@@ -99,7 +99,7 @@ type ContainersConfig struct {
 	CgroupConf attributedstring.Slice `toml:"cgroup_conf,omitempty"`
 
 	// Capabilities to add to all containers.
-	DefaultCapabilities []string `toml:"default_capabilities,omitempty"`
+	DefaultCapabilities attributedstring.Slice `toml:"default_capabilities,omitempty"`
 
 	// Sysctls to add to all containers.
 	DefaultSysctls []string `toml:"default_sysctls,omitempty"`
@@ -714,11 +714,11 @@ func (c *Config) CheckCgroupsAndAdjustConfig() {
 }
 
 func (c *Config) addCAPPrefix() {
-	for i, val := range c.Containers.DefaultCapabilities {
+	for i, val := range c.Containers.DefaultCapabilities.Get() {
 		if !strings.HasPrefix(strings.ToLower(val), "cap_") {
 			val = "CAP_" + strings.ToUpper(val)
 		}
-		c.Containers.DefaultCapabilities[i] = val
+		c.Containers.DefaultCapabilities.Values[i] = val
 	}
 }
 
@@ -921,7 +921,7 @@ func (c *Config) Capabilities(user string, addCapabilities, dropCapabilities []s
 		return true
 	}
 
-	defaultCapabilities := c.Containers.DefaultCapabilities
+	defaultCapabilities := c.Containers.DefaultCapabilities.Get()
 	if userNotRoot(user) {
 		defaultCapabilities = []string{}
 	}

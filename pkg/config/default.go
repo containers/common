@@ -199,7 +199,7 @@ func defaultConfig() (*Config, error) {
 			DNSOptions:          []string{},
 			DNSSearches:         []string{},
 			DNSServers:          []string{},
-			DefaultCapabilities: DefaultCapabilities,
+			DefaultCapabilities: attributedstring.Slice{Values: DefaultCapabilities},
 			DefaultSysctls:      []string{},
 			DefaultUlimits:      getDefaultProcessLimits(),
 			Devices:             attributedstring.Slice{},

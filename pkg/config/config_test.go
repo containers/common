@@ -548,7 +548,7 @@ image_copy_tmp_dir="storage"`
 			caps, err := config.Capabilities("0", addcaps, dropcaps)
 			gomega.Expect(err).To(gomega.BeNil())
 			sort.Strings(caps)
-			defaultCaps := config.Containers.DefaultCapabilities
+			defaultCaps := config.Containers.DefaultCapabilities.Get()
 			sort.Strings(defaultCaps)
 			gomega.Expect(caps).To(gomega.BeEquivalentTo(defaultCaps))
 
@@ -568,7 +568,7 @@ image_copy_tmp_dir="storage"`
 			sort.Strings(caps)
 			gomega.Expect(caps).ToNot(gomega.BeEquivalentTo([]string{}))
 
-			config.Containers.DefaultCapabilities = []string{
+			config.Containers.DefaultCapabilities.Values = []string{
 				"CAP_AUDIT_WRITE",
 				"CAP_CHOWN",
 				"CAP_DAC_OVERRIDE",
