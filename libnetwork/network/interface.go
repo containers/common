@@ -81,7 +81,7 @@ func NetworkBackend(store storage.Store, conf *config.Config, syslog bool) (type
 			NetworkRunDir:      runDir,
 			NetavarkBinary:     netavarkBin,
 			AardvarkBinary:     aardvarkBin,
-			PluginDirs:         conf.Network.NetavarkPluginDirs,
+			PluginDirs:         conf.Network.NetavarkPluginDirs.Get(),
 			DefaultNetwork:     conf.Network.DefaultNetwork,
 			DefaultSubnet:      conf.Network.DefaultSubnet,
 			DefaultsubnetPools: conf.Network.DefaultSubnetPools,
