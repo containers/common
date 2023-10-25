@@ -155,7 +155,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
+		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"/dev/null:/dev/null:abc"}}
 
 		// When
 		err = defConf.Containers.Validate()
@@ -170,7 +170,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = []string{"wrong:/dev/null:rw"}
+		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"wrong:/dev/null:rw"}}
 
 		// When
 		err = defConf.Containers.Validate()
@@ -185,7 +185,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = []string{"/dev/null:wrong:rw"}
+		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"/dev/null:wrong:rw"}}
 
 		// When
 		err = defConf.Containers.Validate()
@@ -200,7 +200,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = []string{invalidPath}
+		defConf.Containers.Devices = attributedstring.Slice{Values: []string{invalidPath}}
 
 		// When
 		err = defConf.Containers.Validate()
@@ -215,7 +215,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = []string{"::::"}
+		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"::::"}}
 
 		// When
 		err = defConf.Containers.Validate()
@@ -353,12 +353,12 @@ var _ = Describe("Config Local", func() {
 
 		config, err := ReadCustomConfig()
 		gomega.Expect(err).To(gomega.BeNil())
-		config.Containers.Devices = []string{
+		config.Containers.Devices = attributedstring.Slice{Values: []string{
 			"/dev/null:/dev/null:rw",
 			"/dev/sdc/",
 			"/dev/sdc:/dev/xvdc",
 			"/dev/sdc:rm",
-		}
+		}}
 		boolTrue := true
 		config.Containers.Env = attributedstring.Slice{Values: []string{"A", "B", "C"}}
 		config.Containers.Env.Attributes.Append = &boolTrue

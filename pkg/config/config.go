@@ -69,7 +69,7 @@ type Config struct {
 // containers global options for containers tools
 type ContainersConfig struct {
 	// Devices to add to all containers
-	Devices []string `toml:"devices,omitempty"`
+	Devices attributedstring.Slice `toml:"devices,omitempty"`
 
 	// Volumes to add to all containers
 	Volumes attributedstring.Slice `toml:"volumes,omitempty"`

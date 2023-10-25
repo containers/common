@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
 	. "github.com/onsi/ginkgo/v2"
@@ -59,12 +60,12 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
-			defConf.Containers.Devices = []string{
+			defConf.Containers.Devices = attributedstring.Slice{Values: []string{
 				"/dev/null:/dev/null:rw",
 				"/dev/sdc/",
 				"/dev/sdc:/dev/xvdc",
 				"/dev/sdc:rm",
-			}
+			}}
 
 			// When
 			err = defConf.Containers.Validate()

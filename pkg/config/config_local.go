@@ -31,7 +31,7 @@ func (c *EngineConfig) validatePaths() error {
 }
 
 func (c *ContainersConfig) validateDevices() error {
-	for _, d := range c.Devices {
+	for _, d := range c.Devices.Values {
 		if parser.IsQualifiedName(d) {
 			continue
 		}

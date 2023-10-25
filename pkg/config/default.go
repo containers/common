@@ -202,7 +202,7 @@ func defaultConfig() (*Config, error) {
 			DefaultCapabilities: DefaultCapabilities,
 			DefaultSysctls:      []string{},
 			DefaultUlimits:      getDefaultProcessLimits(),
-			Devices:             []string{},
+			Devices:             attributedstring.Slice{},
 			EnableKeyring:       true,
 			EnableLabeling:      selinuxEnabled(),
 			Env: attributedstring.Slice{
@@ -520,7 +520,7 @@ func (c *Config) Mounts() []string {
 
 // Devices returns the default additional devices for containers.
 func (c *Config) Devices() []string {
-	return c.Containers.Devices
+	return c.Containers.Devices.Get()
 }
 
 // DNSServers returns the default DNS servers to add to resolv.conf in containers.
