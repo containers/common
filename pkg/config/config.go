@@ -321,7 +321,7 @@ type EngineConfig struct {
 	// configuration files. When the same filename is present in
 	// multiple directories, the file in the directory listed last in
 	// this slice takes precedence.
-	HooksDir []string `toml:"hooks_dir,omitempty"`
+	HooksDir attributedstring.Slice `toml:"hooks_dir,omitempty"`
 
 	// ImageBuildFormat (DEPRECATED) indicates the default image format to
 	// building container images. Should use ImageDefaultFormat

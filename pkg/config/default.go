@@ -316,7 +316,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	if additionalHelperBinariesDir != "" {
 		c.HelperBinariesDir.Values = append(c.HelperBinariesDir.Values, additionalHelperBinariesDir)
 	}
-	c.HooksDir = DefaultHooksDirs
+	c.HooksDir = attributedstring.Slice{Values: DefaultHooksDirs}
 	c.ImageDefaultTransport = _defaultTransport
 	c.ImageVolumeMode = _defaultImageVolumeMode
 
