@@ -200,7 +200,7 @@ func defaultConfig() (*Config, error) {
 			DNSSearches:         []string{},
 			DNSServers:          []string{},
 			DefaultCapabilities: attributedstring.Slice{Values: DefaultCapabilities},
-			DefaultSysctls:      []string{},
+			DefaultSysctls:      attributedstring.Slice{},
 			DefaultUlimits:      getDefaultProcessLimits(),
 			Devices:             attributedstring.Slice{},
 			EnableKeyring:       true,
@@ -505,7 +505,7 @@ func (c *Config) SecurityOptions() []string {
 
 // Sysctls returns the default sysctls to set in containers.
 func (c *Config) Sysctls() []string {
-	return c.Containers.DefaultSysctls
+	return c.Containers.DefaultSysctls.Get()
 }
 
 // Volumes returns the default set of volumes that should be mounted in containers.

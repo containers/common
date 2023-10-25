@@ -102,7 +102,7 @@ type ContainersConfig struct {
 	DefaultCapabilities attributedstring.Slice `toml:"default_capabilities,omitempty"`
 
 	// Sysctls to add to all containers.
-	DefaultSysctls []string `toml:"default_sysctls,omitempty"`
+	DefaultSysctls attributedstring.Slice `toml:"default_sysctls,omitempty"`
 
 	// DefaultUlimits specifies the default ulimits to apply to containers
 	DefaultUlimits []string `toml:"default_ulimits,omitempty"`
