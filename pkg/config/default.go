@@ -198,7 +198,7 @@ func defaultConfig() (*Config, error) {
 			Cgroups:             getDefaultCgroupsMode(),
 			DNSOptions:          []string{},
 			DNSSearches:         []string{},
-			DNSServers:          []string{},
+			DNSServers:          attributedstring.Slice{},
 			DefaultCapabilities: attributedstring.Slice{Values: DefaultCapabilities},
 			DefaultSysctls:      attributedstring.Slice{},
 			DefaultUlimits:      attributedstring.Slice{Values: getDefaultProcessLimits()},
@@ -525,7 +525,7 @@ func (c *Config) Devices() []string {
 
 // DNSServers returns the default DNS servers to add to resolv.conf in containers.
 func (c *Config) DNSServers() []string {
-	return c.Containers.DNSServers
+	return c.Containers.DNSServers.Get()
 }
 
 // DNSSerches returns the default DNS searches to add to resolv.conf in containers.

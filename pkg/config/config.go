@@ -111,7 +111,7 @@ type ContainersConfig struct {
 	DefaultMountsFile string `toml:"-"`
 
 	// DNSServers set default DNS servers.
-	DNSServers []string `toml:"dns_servers,omitempty"`
+	DNSServers attributedstring.Slice `toml:"dns_servers,omitempty"`
 
 	// DNSOptions set default DNS options.
 	DNSOptions []string `toml:"dns_options,omitempty"`
