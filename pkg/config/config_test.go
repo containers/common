@@ -434,7 +434,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Network.NetavarkPluginDirs).To(gomega.Equal(DefaultNetavarkPluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
-			gomega.Expect(config.Containers.CgroupConf).To(gomega.BeNil())
+			gomega.Expect(config.Containers.CgroupConf.Values).To(gomega.BeNil())
 
 			caps, _ := config.Capabilities("", nil, nil)
 			gomega.Expect(caps).Should(gomega.Equal(defCaps))
@@ -474,7 +474,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.SSHConfig).To(gomega.Equal("/foo/bar/.ssh/config"))
 
 			gomega.Expect(config.Engine.DBBackend).To(gomega.Equal(stringSQLite))
-			gomega.Expect(config.Containers.CgroupConf).To(gomega.Equal(cgroupConf))
+			gomega.Expect(config.Containers.CgroupConf.Values).To(gomega.Equal(cgroupConf))
 			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
 			gomega.Expect(config.Engine.KubeGenerateType).To(gomega.Equal("pod"))
 		})

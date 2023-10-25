@@ -96,7 +96,7 @@ type ContainersConfig struct {
 
 	// CgroupConf entries specifies a list of cgroup files to write to and their values. For example
 	// "memory.high=1073741824" sets the memory.high limit to 1GB.
-	CgroupConf []string `toml:"cgroup_conf,omitempty"`
+	CgroupConf attributedstring.Slice `toml:"cgroup_conf,omitempty"`
 
 	// Capabilities to add to all containers.
 	DefaultCapabilities []string `toml:"default_capabilities,omitempty"`
