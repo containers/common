@@ -196,7 +196,7 @@ func defaultConfig() (*Config, error) {
 			BaseHostsFile:       "",
 			CgroupNS:            cgroupNS,
 			Cgroups:             getDefaultCgroupsMode(),
-			DNSOptions:          []string{},
+			DNSOptions:          attributedstring.Slice{},
 			DNSSearches:         []string{},
 			DNSServers:          attributedstring.Slice{},
 			DefaultCapabilities: attributedstring.Slice{Values: DefaultCapabilities},
@@ -535,7 +535,7 @@ func (c *Config) DNSSearches() []string {
 
 // DNSOptions returns the default DNS options to add to resolv.conf in containers.
 func (c *Config) DNSOptions() []string {
-	return c.Containers.DNSOptions
+	return c.Containers.DNSOptions.Get()
 }
 
 // Env returns the default additional environment variables to add to containers.

@@ -114,7 +114,7 @@ type ContainersConfig struct {
 	DNSServers attributedstring.Slice `toml:"dns_servers,omitempty"`
 
 	// DNSOptions set default DNS options.
-	DNSOptions []string `toml:"dns_options,omitempty"`
+	DNSOptions attributedstring.Slice `toml:"dns_options,omitempty"`
 
 	// DNSSearches set default DNS search domains.
 	DNSSearches []string `toml:"dns_searches,omitempty"`
