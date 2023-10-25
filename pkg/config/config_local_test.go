@@ -129,12 +129,12 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Network.PastaOptions).To(gomega.BeNil())
+		gomega.Expect(config.Network.PastaOptions.Values).To(gomega.BeNil())
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config2.Network.PastaOptions).To(gomega.Equal([]string{"-t", "auto"}))
+		gomega.Expect(config2.Network.PastaOptions.Get()).To(gomega.Equal([]string{"-t", "auto"}))
 	})
 
 	It("parse default_rootless_network_cmd", func() {

@@ -598,7 +598,7 @@ type NetworkConfig struct {
 
 	// PastaOptions contains a default list of pasta(1) options that should
 	// be used when running pasta.
-	PastaOptions []string `toml:"pasta_options,omitempty"`
+	PastaOptions attributedstring.Slice `toml:"pasta_options,omitempty"`
 }
 
 type SubnetPool struct {
