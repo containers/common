@@ -117,7 +117,7 @@ type ContainersConfig struct {
 	DNSOptions attributedstring.Slice `toml:"dns_options,omitempty"`
 
 	// DNSSearches set default DNS search domains.
-	DNSSearches []string `toml:"dns_searches,omitempty"`
+	DNSSearches attributedstring.Slice `toml:"dns_searches,omitempty"`
 
 	// EnableKeyring tells the container engines whether to create
 	// a kernel keyring for use within the container
