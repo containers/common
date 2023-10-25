@@ -388,7 +388,7 @@ type EngineConfig struct {
 
 	// NetworkCmdOptions is the default options to pass to the slirp4netns binary.
 	// For example "allow_host_loopback=true"
-	NetworkCmdOptions []string `toml:"network_cmd_options,omitempty"`
+	NetworkCmdOptions attributedstring.Slice `toml:"network_cmd_options,omitempty"`
 
 	// NoPivotRoot sets whether to set no-pivot-root in the OCI runtime.
 	NoPivotRoot bool `toml:"no_pivot_root,omitempty"`
