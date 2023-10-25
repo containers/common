@@ -649,7 +649,7 @@ type MachineConfig struct {
 	// User to use for rootless podman when init-ing a podman machine VM
 	User string `toml:"user,omitempty"`
 	// Volumes are host directories mounted into the VM by default.
-	Volumes []string `toml:"volumes"`
+	Volumes attributedstring.Slice `toml:"volumes,omitempty"`
 	// Provider is the virtualization provider used to run podman-machine VM
 	Provider string `toml:"provider,omitempty"`
 }

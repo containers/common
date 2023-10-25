@@ -263,7 +263,7 @@ func defaultMachineConfig() MachineConfig {
 		Image:    getDefaultMachineImage(),
 		Memory:   2048,
 		User:     getDefaultMachineUser(),
-		Volumes:  getDefaultMachineVolumes(),
+		Volumes:  attributedstring.Slice{Values: getDefaultMachineVolumes()},
 	}
 }
 
@@ -618,7 +618,7 @@ func (c *Config) MachineEnabled() bool {
 
 // MachineVolumes returns volumes to mount into the VM.
 func (c *Config) MachineVolumes() ([]string, error) {
-	return machineVolumes(c.Machine.Volumes)
+	return machineVolumes(c.Machine.Volumes.Get())
 }
 
 func machineVolumes(volumes []string) ([]string, error) {
