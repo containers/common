@@ -255,7 +255,7 @@ type EngineConfig struct {
 
 	// ConmonPath is the path to the Conmon binary used for managing containers.
 	// The first path pointing to a valid file will be used.
-	ConmonPath []string `toml:"conmon_path,omitempty"`
+	ConmonPath attributedstring.Slice `toml:"conmon_path,omitempty"`
 
 	// ConmonRsPath is the path to the Conmon-rs binary used for managing containers.
 	// The first path pointing to a valid file will be used.
@@ -854,7 +854,7 @@ func (c *NetworkConfig) Validate() error {
 // to first (version) matching conmon binary. If non is found, we try
 // to do a path lookup of "conmon".
 func (c *Config) FindConmon() (string, error) {
-	return findConmonPath(c.Engine.ConmonPath, "conmon")
+	return findConmonPath(c.Engine.ConmonPath.Get(), "conmon")
 }
 
 func findConmonPath(paths []string, binaryName string) (string, error) {

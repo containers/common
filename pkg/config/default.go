@@ -402,7 +402,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	c.OCIRuntime = c.findRuntime()
 
 	c.ConmonEnvVars = attributedstring.Slice{Values: []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}}
-	c.ConmonPath = []string{
+	c.ConmonPath = attributedstring.Slice{Values: []string{
 		"/usr/libexec/podman/conmon",
 		"/usr/local/libexec/podman/conmon",
 		"/usr/local/lib/podman/conmon",
@@ -411,7 +411,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"/usr/local/bin/conmon",
 		"/usr/local/sbin/conmon",
 		"/run/current-system/sw/bin/conmon",
-	}
+	}}
 	c.ConmonRsPath = []string{
 		"/usr/libexec/podman/conmonrs",
 		"/usr/local/libexec/podman/conmonrs",
