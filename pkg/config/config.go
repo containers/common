@@ -428,7 +428,7 @@ type EngineConfig struct {
 	ActiveService string `toml:"active_service,omitempty"`
 
 	// Add existing instances with requested compression algorithms to manifest list
-	AddCompression []string `toml:"add_compression,omitempty"`
+	AddCompression attributedstring.Slice `toml:"add_compression,omitempty"`
 
 	// ServiceDestinations mapped by service Names
 	ServiceDestinations map[string]Destination `toml:"service_destinations,omitempty"`

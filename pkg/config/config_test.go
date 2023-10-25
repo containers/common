@@ -47,7 +47,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
-			gomega.Expect(defaultConfig.Engine.AddCompression).To(gomega.BeNil())
+			gomega.Expect(defaultConfig.Engine.AddCompression.Values).To(gomega.BeNil())
 
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
