@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/libnetwork/types"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -29,7 +28,7 @@ var _ = Describe("Config Local", func() {
 		file.Close()
 		defer os.Remove(tmpfile)
 		defConf.Network.NetworkConfigDir = tmpfile
-		defConf.Network.CNIPluginDirs.Values = []string{}
+		defConf.Network.CNIPluginDirs.Set([]string{})
 
 		// When
 		err = defConf.Network.Validate()
@@ -51,7 +50,7 @@ var _ = Describe("Config Local", func() {
 
 		// Given
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs.Values = []string{invalidPath}
+		defConf.Network.CNIPluginDirs.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Network.Validate()
@@ -72,7 +71,7 @@ var _ = Describe("Config Local", func() {
 		defer os.RemoveAll(validDirPath)
 		// Given
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs.Values = []string{validDirPath}
+		defConf.Network.CNIPluginDirs.Set([]string{validDirPath})
 
 		net, _ := types.ParseCIDR("10.0.0.0/24")
 		defConf.Network.DefaultSubnetPools = []SubnetPool{
@@ -129,7 +128,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Network.PastaOptions.Values).To(gomega.BeNil())
+		gomega.Expect(config.Network.PastaOptions.Get()).To(gomega.HaveLen(0))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
@@ -155,7 +154,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"/dev/null:/dev/null:abc"}}
+		defConf.Containers.Devices.Set([]string{"/dev/null:/dev/null:abc"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -170,7 +169,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"wrong:/dev/null:rw"}}
+		defConf.Containers.Devices.Set([]string{"wrong:/dev/null:rw"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -185,7 +184,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"/dev/null:wrong:rw"}}
+		defConf.Containers.Devices.Set([]string{"/dev/null:wrong:rw"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -200,7 +199,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = attributedstring.Slice{Values: []string{invalidPath}}
+		defConf.Containers.Devices.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -215,7 +214,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.Devices = attributedstring.Slice{Values: []string{"::::"}}
+		defConf.Containers.Devices.Set([]string{"::::"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -275,7 +274,7 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		// Given
-		defConf.Containers.DefaultUlimits.Values = []string{invalidPath}
+		defConf.Containers.DefaultUlimits.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -353,14 +352,14 @@ var _ = Describe("Config Local", func() {
 
 		config, err := ReadCustomConfig()
 		gomega.Expect(err).To(gomega.BeNil())
-		config.Containers.Devices = attributedstring.Slice{Values: []string{
+		config.Containers.Devices.Set([]string{
 			"/dev/null:/dev/null:rw",
 			"/dev/sdc/",
 			"/dev/sdc:/dev/xvdc",
 			"/dev/sdc:rm",
-		}}
+		})
 		boolTrue := true
-		config.Containers.Env = attributedstring.Slice{Values: []string{"A", "B", "C"}}
+		config.Containers.Env.Set([]string{"A", "B", "C"})
 		config.Containers.Env.Attributes.Append = &boolTrue
 
 		err = config.Write()
@@ -501,7 +500,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.AddCompression.Values).To(gomega.BeNil()) // no hard-coding to work on all platforms
+		gomega.Expect(config.Engine.AddCompression.Get()).To(gomega.HaveLen(0)) // no hard-coding to work on all platforms
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then

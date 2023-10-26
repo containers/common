@@ -102,6 +102,8 @@ var (
 		"/usr/libexec/docker/cli-plugins/docker-compose",
 		"podman-compose",
 	}
+
+	defaultContainerEnv = []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 )
 
 // nolint:unparam
@@ -199,33 +201,31 @@ func defaultConfig() (*Config, error) {
 			DNSOptions:          attributedstring.Slice{},
 			DNSSearches:         attributedstring.Slice{},
 			DNSServers:          attributedstring.Slice{},
-			DefaultCapabilities: attributedstring.Slice{Values: DefaultCapabilities},
+			DefaultCapabilities: attributedstring.NewSlice(DefaultCapabilities),
 			DefaultSysctls:      attributedstring.Slice{},
-			DefaultUlimits:      attributedstring.Slice{Values: getDefaultProcessLimits()},
+			DefaultUlimits:      attributedstring.NewSlice(getDefaultProcessLimits()),
 			Devices:             attributedstring.Slice{},
 			EnableKeyring:       true,
 			EnableLabeling:      selinuxEnabled(),
-			Env: attributedstring.Slice{
-				Values: []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
-			},
-			EnvHost:    false,
-			HTTPProxy:  true,
-			IPCNS:      "shareable",
-			Init:       false,
-			InitPath:   "",
-			LogDriver:  defaultLogDriver(),
-			LogSizeMax: DefaultLogSizeMax,
-			Mounts:     attributedstring.Slice{},
-			NetNS:      "private",
-			NoHosts:    false,
-			PidNS:      "private",
-			PidsLimit:  DefaultPidsLimit,
-			ShmSize:    DefaultShmSize,
-			TZ:         "",
-			UTSNS:      "private",
-			Umask:      "0022",
-			UserNSSize: DefaultUserNSSize, // Deprecated
-			Volumes:    attributedstring.Slice{},
+			Env:                 attributedstring.NewSlice(defaultContainerEnv),
+			EnvHost:             false,
+			HTTPProxy:           true,
+			IPCNS:               "shareable",
+			Init:                false,
+			InitPath:            "",
+			LogDriver:           defaultLogDriver(),
+			LogSizeMax:          DefaultLogSizeMax,
+			Mounts:              attributedstring.Slice{},
+			NetNS:               "private",
+			NoHosts:             false,
+			PidNS:               "private",
+			PidsLimit:           DefaultPidsLimit,
+			ShmSize:             DefaultShmSize,
+			TZ:                  "",
+			UTSNS:               "private",
+			Umask:               "0022",
+			UserNSSize:          DefaultUserNSSize, // Deprecated
+			Volumes:             attributedstring.Slice{},
 		},
 		Network: NetworkConfig{
 			DefaultNetwork:            "podman",
@@ -233,8 +233,8 @@ func defaultConfig() (*Config, error) {
 			DefaultSubnetPools:        DefaultSubnetPools,
 			DefaultRootlessNetworkCmd: "slirp4netns",
 			DNSBindPort:               0,
-			CNIPluginDirs:             attributedstring.Slice{Values: DefaultCNIPluginDirs},
-			NetavarkPluginDirs:        attributedstring.Slice{Values: DefaultNetavarkPluginDirs},
+			CNIPluginDirs:             attributedstring.NewSlice(DefaultCNIPluginDirs),
+			NetavarkPluginDirs:        attributedstring.NewSlice(DefaultNetavarkPluginDirs),
 		},
 		Engine:  *defaultEngineConfig,
 		Secrets: defaultSecretConfig(),
@@ -263,7 +263,7 @@ func defaultMachineConfig() MachineConfig {
 		Image:    getDefaultMachineImage(),
 		Memory:   2048,
 		User:     getDefaultMachineUser(),
-		Volumes:  attributedstring.Slice{Values: getDefaultMachineVolumes()},
+		Volumes:  attributedstring.NewSlice(getDefaultMachineVolumes()),
 	}
 }
 
@@ -288,7 +288,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	c.EventsLogFileMaxSize = eventsLogMaxSize(DefaultEventsLogSizeMax)
 
 	c.CompatAPIEnforceDockerHub = true
-	c.ComposeProviders = attributedstring.Slice{Values: getDefaultComposeProviders()} // may vary across supported platforms
+	c.ComposeProviders.Set(getDefaultComposeProviders()) // may vary across supported platforms
 	c.ComposeWarningLogs = true
 
 	if path, ok := os.LookupEnv("CONTAINERS_STORAGE_CONF"); ok {
@@ -312,11 +312,11 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	c.VolumePluginTimeout = DefaultVolumePluginTimeout
 	c.CompressionFormat = "gzip"
 
-	c.HelperBinariesDir = attributedstring.Slice{Values: defaultHelperBinariesDir}
+	c.HelperBinariesDir.Set(defaultHelperBinariesDir)
 	if additionalHelperBinariesDir != "" {
-		c.HelperBinariesDir.Values = append(c.HelperBinariesDir.Values, additionalHelperBinariesDir)
+		c.HelperBinariesDir.Set(append(c.HelperBinariesDir.Get(), additionalHelperBinariesDir))
 	}
-	c.HooksDir = attributedstring.Slice{Values: DefaultHooksDirs}
+	c.HooksDir.Set(DefaultHooksDirs)
 	c.ImageDefaultTransport = _defaultTransport
 	c.ImageVolumeMode = _defaultImageVolumeMode
 
@@ -401,8 +401,8 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	// Needs to be called after populating c.OCIRuntimes.
 	c.OCIRuntime = c.findRuntime()
 
-	c.ConmonEnvVars = attributedstring.Slice{Values: []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}}
-	c.ConmonPath = attributedstring.Slice{Values: []string{
+	c.ConmonEnvVars.Set([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"})
+	c.ConmonPath.Set([]string{
 		"/usr/libexec/podman/conmon",
 		"/usr/local/libexec/podman/conmon",
 		"/usr/local/lib/podman/conmon",
@@ -411,8 +411,8 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"/usr/local/bin/conmon",
 		"/usr/local/sbin/conmon",
 		"/run/current-system/sw/bin/conmon",
-	}}
-	c.ConmonRsPath = attributedstring.Slice{Values: []string{
+	})
+	c.ConmonRsPath.Set([]string{
 		"/usr/libexec/podman/conmonrs",
 		"/usr/local/libexec/podman/conmonrs",
 		"/usr/local/lib/podman/conmonrs",
@@ -421,9 +421,9 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"/usr/local/bin/conmonrs",
 		"/usr/local/sbin/conmonrs",
 		"/run/current-system/sw/bin/conmonrs",
-	}}
+	})
 	c.PullPolicy = DefaultPullPolicy
-	c.RuntimeSupportsJSON = attributedstring.Slice{Values: []string{
+	c.RuntimeSupportsJSON.Set([]string{
 		"crun",
 		"runc",
 		"kata",
@@ -431,9 +431,9 @@ func defaultEngineConfig() (*EngineConfig, error) {
 		"youki",
 		"krun",
 		"ocijail",
-	}}
-	c.RuntimeSupportsNoCgroups = attributedstring.Slice{Values: []string{"crun", "krun"}}
-	c.RuntimeSupportsKVM = attributedstring.Slice{Values: []string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"}}
+	})
+	c.RuntimeSupportsNoCgroups.Set([]string{"crun", "krun"})
+	c.RuntimeSupportsKVM.Set([]string{"kata", "kata-runtime", "kata-qemu", "kata-fc", "krun"})
 	c.NoPivotRoot = false
 
 	c.InfraImage = DefaultInfraImage
@@ -538,7 +538,7 @@ func (c *Config) DNSOptions() []string {
 
 // Env returns the default additional environment variables to add to containers.
 func (c *Config) Env() []string {
-	return c.Containers.Env.Values
+	return c.Containers.Env.Get()
 }
 
 // IPCNS returns the default IPC Namespace configuration to run containers with.

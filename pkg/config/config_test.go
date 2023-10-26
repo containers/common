@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/pkg/apparmor"
 	"github.com/containers/common/pkg/capabilities"
 	. "github.com/onsi/ginkgo/v2"
@@ -47,7 +46,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
-			gomega.Expect(defaultConfig.Engine.AddCompression.Values).To(gomega.BeNil())
+			gomega.Expect(defaultConfig.Engine.AddCompression.Get()).To(gomega.HaveLen(0))
 
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
@@ -60,12 +59,12 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
-			defConf.Containers.Devices = attributedstring.Slice{Values: []string{
+			defConf.Containers.Devices.Set([]string{
 				"/dev/null:/dev/null:rw",
 				"/dev/sdc/",
 				"/dev/sdc:/dev/xvdc",
 				"/dev/sdc:rm",
-			}}
+			})
 
 			// When
 			err = defConf.Containers.Validate()
@@ -286,8 +285,8 @@ image_copy_tmp_dir="storage"`
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.Engine.CgroupManager).To(gomega.Equal("systemd"))
-			gomega.Expect(defaultConfig.Containers.Env.Values).To(gomega.BeEquivalentTo(envs))
-			gomega.Expect(defaultConfig.Containers.Mounts.Values).To(gomega.BeEquivalentTo(mounts))
+			gomega.Expect(defaultConfig.Containers.Env.Get()).To(gomega.BeEquivalentTo(envs))
+			gomega.Expect(defaultConfig.Containers.Mounts.Get()).To(gomega.BeEquivalentTo(mounts))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Network.CNIPluginDirs.Get()).To(gomega.Equal(pluginDirs))
 			gomega.Expect(defaultConfig.Network.NetavarkPluginDirs.Get()).To(gomega.Equal([]string{"/usr/netavark"}))
@@ -295,7 +294,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
 			gomega.Expect(defaultConfig.Engine.PlatformToOCIRuntime).To(gomega.Equal(PlatformToOCIRuntimeMap))
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(false))
-			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions.Values).To(gomega.BeNil())
+			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions.Get()).To(gomega.HaveLen(0))
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir.Get()).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
@@ -428,13 +427,13 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
-			gomega.Expect(config.Containers.Env.Values).To(gomega.BeEquivalentTo(envs))
+			gomega.Expect(config.Containers.Env.Get()).To(gomega.BeEquivalentTo(envs))
 			gomega.Expect(config.Containers.UserNS).To(gomega.BeEquivalentTo(""))
 			gomega.Expect(config.Network.CNIPluginDirs.Get()).To(gomega.Equal(DefaultCNIPluginDirs))
 			gomega.Expect(config.Network.NetavarkPluginDirs.Get()).To(gomega.Equal(DefaultNetavarkPluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
-			gomega.Expect(config.Containers.CgroupConf.Values).To(gomega.BeNil())
+			gomega.Expect(config.Containers.CgroupConf.Get()).To(gomega.HaveLen(0))
 
 			caps, _ := config.Capabilities("", nil, nil)
 			gomega.Expect(caps).Should(gomega.Equal(defCaps))
@@ -474,7 +473,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.SSHConfig).To(gomega.Equal("/foo/bar/.ssh/config"))
 
 			gomega.Expect(config.Engine.DBBackend).To(gomega.Equal(stringSQLite))
-			gomega.Expect(config.Containers.CgroupConf.Values).To(gomega.Equal(cgroupConf))
+			gomega.Expect(config.Containers.CgroupConf.Get()).To(gomega.Equal(cgroupConf))
 			gomega.Expect(*config.Containers.OOMScoreAdj).To(gomega.Equal(int(750)))
 			gomega.Expect(config.Engine.KubeGenerateType).To(gomega.Equal("pod"))
 		})
@@ -568,12 +567,12 @@ image_copy_tmp_dir="storage"`
 			sort.Strings(caps)
 			gomega.Expect(caps).ToNot(gomega.BeEquivalentTo([]string{}))
 
-			config.Containers.DefaultCapabilities.Values = []string{
+			config.Containers.DefaultCapabilities.Set([]string{
 				"CAP_AUDIT_WRITE",
 				"CAP_CHOWN",
 				"CAP_DAC_OVERRIDE",
 				"CAP_FOWNER",
-			}
+			})
 
 			expectedCaps := []string{
 				"CAP_AUDIT_WRITE",
@@ -867,8 +866,8 @@ env=["foo=bar"]`
 
 			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 			expectNewEnv := []string{"foo=bar"}
-			gomega.Expect(cfg.Containers.Env.Values).To(gomega.Equal(expectOldEnv))
-			gomega.Expect(newCfg.Containers.Env.Values).To(gomega.Equal(expectNewEnv))
+			gomega.Expect(cfg.Containers.Env.Get()).To(gomega.Equal(expectOldEnv))
+			gomega.Expect(newCfg.Containers.Env.Get()).To(gomega.Equal(expectNewEnv))
 			// Reload change back to default global configuration
 			_, err = Reload()
 			gomega.Expect(err).To(gomega.BeNil())

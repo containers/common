@@ -714,12 +714,15 @@ func (c *Config) CheckCgroupsAndAdjustConfig() {
 }
 
 func (c *Config) addCAPPrefix() {
-	for i, val := range c.Containers.DefaultCapabilities.Get() {
+	caps := c.Containers.DefaultCapabilities.Get()
+	newCaps := make([]string, 0, len(caps))
+	for _, val := range caps {
 		if !strings.HasPrefix(strings.ToLower(val), "cap_") {
 			val = "CAP_" + strings.ToUpper(val)
 		}
-		c.Containers.DefaultCapabilities.Values[i] = val
+		newCaps = append(newCaps, val)
 	}
+	c.Containers.DefaultCapabilities.Set(newCaps)
 }
 
 // Validate is the main entry point for library configuration validation.
@@ -1143,7 +1146,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 		return exec.LookPath(name)
 	}
 	configHint := "To resolve this error, set the helper_binaries_dir key in the `[engine]` section of containers.conf to the directory containing your helper binaries."
-	if len(c.Engine.HelperBinariesDir.Values) == 0 {
+	if len(c.Engine.HelperBinariesDir.Get()) == 0 {
 		return "", fmt.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
 	}
 	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, c.Engine.HelperBinariesDir, configHint)
