@@ -145,7 +145,7 @@ var _ = Describe("Config Modules", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(3)) // 3 modules are getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
-		gomega.Expect(c.Containers.Env.Values).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only"}))
+		gomega.Expect(c.Containers.Env.Get()).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only"}))
 		gomega.Expect(c.Network.DefaultNetwork).To(gomega.Equal("etc only conf"))
 		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(3))
 
@@ -184,7 +184,7 @@ var _ = Describe("Config Modules", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(4)) // 2 modules + abs path + override conf are getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
-		gomega.Expect(c.Containers.Env.Values).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only", "override conf always wins"}))
-		gomega.Expect(c.Containers.Volumes.Values).To(gomega.Equal([]string{"volume four", "home second"}))
+		gomega.Expect(c.Containers.Env.Get()).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only", "override conf always wins"}))
+		gomega.Expect(c.Containers.Volumes.Get()).To(gomega.Equal([]string{"volume four", "home second"}))
 	})
 })

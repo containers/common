@@ -23,7 +23,7 @@ var _ = Describe("Config Remote", func() {
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs = []string{invalidPath}
+		defConf.Network.CNIPluginDirs.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Network.Validate()
@@ -37,7 +37,7 @@ var _ = Describe("Config Remote", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
-		defConf.Containers.Devices = []string{"/dev/null:/dev/null:abc"}
+		defConf.Containers.Devices.Set([]string{"/dev/null:/dev/null:abc"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -51,7 +51,7 @@ var _ = Describe("Config Remote", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
-		defConf.Containers.Devices = []string{"wrong:/dev/null:rw"}
+		defConf.Containers.Devices.Set([]string{"wrong:/dev/null:rw"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -65,7 +65,7 @@ var _ = Describe("Config Remote", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
-		defConf.Containers.Devices = []string{"/dev/null:wrong:rw"}
+		defConf.Containers.Devices.Set([]string{"/dev/null:wrong:rw"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -79,7 +79,7 @@ var _ = Describe("Config Remote", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
-		defConf.Containers.Devices = []string{invalidPath}
+		defConf.Containers.Devices.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -93,7 +93,7 @@ var _ = Describe("Config Remote", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
-		defConf.Containers.Devices = []string{"::::"}
+		defConf.Containers.Devices.Set([]string{"::::"})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -116,7 +116,7 @@ var _ = Describe("Config Remote", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
-		defConf.Containers.DefaultUlimits = []string{invalidPath}
+		defConf.Containers.DefaultUlimits.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Containers.Validate()
@@ -136,7 +136,7 @@ var _ = Describe("Config Remote", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs = []string{invalidPath}
+		defConf.Network.CNIPluginDirs.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Network.Validate()
@@ -156,7 +156,7 @@ var _ = Describe("Config Remote", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 		defConf.Network.NetworkConfigDir = validDirPath
-		defConf.Network.CNIPluginDirs = []string{invalidPath}
+		defConf.Network.CNIPluginDirs.Set([]string{invalidPath})
 
 		// When
 		err = defConf.Network.Validate()
