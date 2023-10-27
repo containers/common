@@ -702,3 +702,41 @@ func cpusetCopyFileFromParent(dir, file string, cgroupv2 bool) ([]byte, error) {
 	}
 	return data, nil
 }
+
+// SystemCPUUsage returns the system usage for all the cgroups
+func SystemCPUUsage() (uint64, error) {
+	cgroupv2, err := IsCgroup2UnifiedMode()
+	if err != nil {
+		return 0, err
+	}
+	if !cgroupv2 {
+		p := filepath.Join(cgroupRoot, CPUAcct, "cpuacct.usage")
+		return readFileAsUint64(p)
+	}
+
+	files, err := os.ReadDir(cgroupRoot)
+	if err != nil {
+		return 0, err
+	}
+	var total uint64
+	for _, file := range files {
+		if !file.IsDir() {
+			continue
+		}
+		p := filepath.Join(cgroupRoot, file.Name(), "cpu.stat")
+
+		values, err := readCgroupMapPath(p)
+		if err != nil {
+			return 0, err
+		}
+
+		if val, found := values["usage_usec"]; found {
+			v, err := strconv.ParseUint(cleanString(val[0]), 10, 64)
+			if err != nil {
+				return 0, err
+			}
+			total += v * 1000
+		}
+	}
+	return total, nil
+}
