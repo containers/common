@@ -50,6 +50,20 @@ Files in those locations are not loaded by default but only on-demand.  They are
 
 Modules are currently supported by podman(1).  The `podman --module` flag allows for loading a module and can be specified multiple times.  If the specified value is an absolute path, the config file will be loaded directly.  Relative paths are resolved relative to the three module directories mentioned above and in the specified order such that modules in `$HOME` allow for overriding those in `/etc` and `/usr/share`.  Modules in `$HOME` (or `$XDG_CONFIG_HOME` if specified) are only used for rootless users.
 
+## APPENDING TO STRING ARRAYS
+
+The default behavior during the loading sequence of multiple containers.conf files is to override previous data.  To change the behavior from overriding to appending, you can set the `append` attribute as follows: `array=["item-1", "item=2", ..., {append=true}]`.  Setting the append attribute instructs to append to this specific string array for the current and also subsequent loading steps.  To change back to overriding, set `{append=false}`.
+
+Consider the following example:
+```
+modules1.conf: env=["1=true"]
+modules2.conf: env=["2=true"]
+modules3.conf: env=["3=true", {append=true}]
+modules3.conf: env=["4=true"]
+```
+
+After loading the files in the given order, the final contents are `env=["2=true", "3=true", "4=true"]`.  If modules4.conf would set `{append=false}`, the final contents would be `env=["4=true"]`.
+
 # FORMAT
 The [TOML format][toml] is used as the encoding of the configuration file.
 Every option is nested under its table. No bare options are used. The format of
