@@ -135,8 +135,8 @@ func getAvailableControllers(exclude map[string]controllerHandler, cgroup2 bool)
 	return controllers, nil
 }
 
-// GetAvailableControllers get string:bool map of all the available controllers
-func GetAvailableControllers(exclude map[string]controllerHandler, cgroup2 bool) ([]string, error) {
+// AvailableControllers get string:bool map of all the available controllers
+func AvailableControllers(exclude map[string]controllerHandler, cgroup2 bool) ([]string, error) {
 	availableControllers, err := getAvailableControllers(exclude, cgroup2)
 	if err != nil {
 		return nil, err
@@ -392,20 +392,13 @@ func (c *CgroupControl) CreateSystemdUnit(path string) error {
 	return systemdCreate(c.config.Resources, path, conn)
 }
 
-// GetUserConnection returns an user connection to D-BUS
-func GetUserConnection(uid int) (*systemdDbus.Conn, error) {
-	return systemdDbus.NewConnection(func() (*dbus.Conn, error) {
-		return dbusAuthConnection(uid, dbus.SessionBusPrivateNoAutoStartup)
-	})
-}
-
 // CreateSystemdUserUnit creates the systemd cgroup for the specified user
 func (c *CgroupControl) CreateSystemdUserUnit(path string, uid int) error {
 	if !c.systemd {
 		return fmt.Errorf("the cgroup controller is not using systemd")
 	}
 
-	conn, err := GetUserConnection(uid)
+	conn, err := UserConnection(uid)
 	if err != nil {
 		return err
 	}
