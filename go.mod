@@ -9,7 +9,7 @@ require (
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.3.0
 	github.com/containers/image/v5 v5.28.0
-	github.com/containers/ocicrypt v1.1.8
+	github.com/containers/ocicrypt v1.1.9
 	github.com/containers/storage v1.50.2
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.4
