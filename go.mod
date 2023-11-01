@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/container-orchestrated-devices/container-device-interface v0.6.1
 	github.com/containerd/containerd v1.7.8
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.3.0
@@ -46,6 +45,7 @@ require (
 	golang.org/x/sys v0.13.0
 	golang.org/x/term v0.13.0
 	sigs.k8s.io/yaml v1.4.0
+	tags.cncf.io/container-device-interface v0.6.2
 )
 
 require (
