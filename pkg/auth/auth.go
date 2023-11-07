@@ -16,6 +16,7 @@ import (
 	"github.com/containers/image/v5/pkg/docker/config"
 	"github.com/containers/image/v5/pkg/sysregistriesv2"
 	"github.com/containers/image/v5/types"
+	"github.com/containers/storage/pkg/homedir"
 	"github.com/sirupsen/logrus"
 )
 
@@ -86,10 +87,14 @@ func systemContextWithOptions(sys *types.SystemContext, authFile, dockerCompatAu
 		sys = &types.SystemContext{}
 	}
 
+	defaultDockerConfigPath := filepath.Join(homedir.Get(), ".docker", "config.json")
 	switch {
 	case authFile != "" && dockerCompatAuthFile != "":
 		return nil, errors.New("options for paths to the credential file and to the Docker-compatible credential file can not be set simultaneously")
 	case authFile != "":
+		if authFile == defaultDockerConfigPath {
+			logrus.Warn("saving credentials to ~/.docker/config.json, but not using Docker-compatible file format")
+		}
 		sys.AuthFilePath = authFile
 	case dockerCompatAuthFile != "":
 		sys.DockerCompatAuthFilePath = dockerCompatAuthFile
@@ -99,6 +104,9 @@ func systemContextWithOptions(sys *types.SystemContext, authFile, dockerCompatAu
 		// Note that c/image does not natively implement the REGISTRY_AUTH_FILE
 		// variable, so not all callers look for credentials in this location.
 		if authFileVar := os.Getenv("REGISTRY_AUTH_FILE"); authFileVar != "" {
+			if authFileVar == defaultDockerConfigPath {
+				logrus.Warn("$REGISTRY_AUTH_FILE points to ~/.docker/config.json, but the file format is not fully compatible; use the Docker-compatible file path option instead")
+			}
 			sys.AuthFilePath = authFileVar
 		} else if dockerConfig := os.Getenv("DOCKER_CONFIG"); dockerConfig != "" {
 			// This preserves pre-existing _inconsistent_ behavior:
