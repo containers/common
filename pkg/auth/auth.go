@@ -39,10 +39,24 @@ func (e ErrNewCredentialsInvalid) Unwrap() error {
 // GetDefaultAuthFile returns env value REGISTRY_AUTH_FILE as default
 // --authfile path used in multiple --authfile flag definitions
 // Will fail over to DOCKER_CONFIG if REGISTRY_AUTH_FILE environment is not set
+//
+// WARNINGS:
+//   - In almost all invocations, expect this function to return ""; so it can not be used
+//     for directly accessing the file.
+//   - Use this only for commands that _read_ credentials, not write them.
+//     The path may refer to github.com/containers auth.json, or to Docker config.json,
+//     and the distinction is lost; writing auth.json data to config.json may not be consumable by Docker,
+//     or it may overwrite and discard unrelated Docker configuration set by the user.
 func GetDefaultAuthFile() string {
+	// Keep this in sync with the default logic in systemContextWithOptions!
+
 	if authfile := os.Getenv("REGISTRY_AUTH_FILE"); authfile != "" {
 		return authfile
 	}
+	// This pre-existing behavior is not conceptually consistent:
+	// If users have a ~/.docker/config.json in the default path, and no environment variable
+	// set, we read auth.json first, falling back to config.json;
+	// but if DOCKER_CONFIG is set, we read only config.json in that path, and we don’t read auth.json at all.
 	if authEnv := os.Getenv("DOCKER_CONFIG"); authEnv != "" {
 		return filepath.Join(authEnv, "config.json")
 	}
@@ -74,6 +88,20 @@ func systemContextWithOptions(sys *types.SystemContext, authFile, certDir string
 
 	if authFile != "" {
 		sys.AuthFilePath = authFile
+	} else {
+		// Keep this in sync with GetDefaultAuthFile()!
+		//
+		// Note that c/image does not natively implement the REGISTRY_AUTH_FILE
+		// variable, so not all callers look for credentials in this location.
+		if authFileVar := os.Getenv("REGISTRY_AUTH_FILE"); authFileVar != "" {
+			sys.AuthFilePath = authFileVar
+		} else if dockerConfig := os.Getenv("DOCKER_CONFIG"); dockerConfig != "" {
+			// This preserves pre-existing _inconsistent_ behavior:
+			// If the Docker configuration exists in the default ~/.docker/config.json location,
+			// we DO NOT write to it; instead, we update auth.json in the default path.
+			// Only if the user explicitly sets DOCKER_CONFIG, we write to that config.json.
+			sys.AuthFilePath = filepath.Join(dockerConfig, "config.json")
+		}
 	}
 	if certDir != "" {
 		sys.DockerCertPath = certDir

@@ -45,7 +45,7 @@ type LogoutOptions struct {
 // GetLoginFlags defines and returns login flags for containers tools
 func GetLoginFlags(flags *LoginOptions) *pflag.FlagSet {
 	fs := pflag.FlagSet{}
-	fs.StringVar(&flags.AuthFile, "authfile", GetDefaultAuthFile(), "path of the authentication file. Use REGISTRY_AUTH_FILE environment variable to override")
+	fs.StringVar(&flags.AuthFile, "authfile", "", "path of the authentication file. Use REGISTRY_AUTH_FILE environment variable to override")
 	fs.StringVar(&flags.CertDir, "cert-dir", "", "use certificates at the specified path to access the registry")
 	fs.StringVarP(&flags.Password, "password", "p", "", "Password for registry")
 	fs.StringVarP(&flags.Username, "username", "u", "", "Username for registry")
@@ -68,7 +68,7 @@ func GetLoginFlagsCompletions() completion.FlagCompletions {
 // GetLogoutFlags defines and returns logout flags for containers tools
 func GetLogoutFlags(flags *LogoutOptions) *pflag.FlagSet {
 	fs := pflag.FlagSet{}
-	fs.StringVar(&flags.AuthFile, "authfile", GetDefaultAuthFile(), "path of the authentication file. Use REGISTRY_AUTH_FILE environment variable to override")
+	fs.StringVar(&flags.AuthFile, "authfile", "", "path of the authentication file. Use REGISTRY_AUTH_FILE environment variable to override")
 	fs.BoolVarP(&flags.All, "all", "a", false, "Remove the cached credentials for all registries in the auth file")
 	return &fs
 }
