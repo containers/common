@@ -49,14 +49,13 @@ func GetDefaultAuthFile() string {
 	return ""
 }
 
-// CheckAuthFile validates filepath given by --authfile
-// used by command has --authfile flag
-func CheckAuthFile(authfile string) error {
-	if authfile == "" {
+// CheckAuthFile validates a path option, failing if the option is set but the referenced file is not accessible.
+func CheckAuthFile(pathOption string) error {
+	if pathOption == "" {
 		return nil
 	}
-	if _, err := os.Stat(authfile); err != nil {
-		return fmt.Errorf("checking authfile: %w", err)
+	if _, err := os.Stat(pathOption); err != nil {
+		return fmt.Errorf("credential file is not accessible: %w", err)
 	}
 	return nil
 }
