@@ -75,10 +75,10 @@ func CheckAuthFile(pathOption string) error {
 }
 
 // systemContextWithOptions returns a version of sys
-// updated with authFile and certDir values (if they are not "").
+// updated with authFile, dockerCompatAuthFile and certDir values (if they are not "").
 // NOTE: this is a shallow copy that can be used and updated, but may share
 // data with the original parameter.
-func systemContextWithOptions(sys *types.SystemContext, authFile, certDir string) *types.SystemContext {
+func systemContextWithOptions(sys *types.SystemContext, authFile, dockerCompatAuthFile, certDir string) (*types.SystemContext, error) {
 	if sys != nil {
 		sysCopy := *sys
 		sys = &sysCopy
@@ -86,9 +86,14 @@ func systemContextWithOptions(sys *types.SystemContext, authFile, certDir string
 		sys = &types.SystemContext{}
 	}
 
-	if authFile != "" {
+	switch {
+	case authFile != "" && dockerCompatAuthFile != "":
+		return nil, errors.New("options for paths to the credential file and to the Docker-compatible credential file can not be set simultaneously")
+	case authFile != "":
 		sys.AuthFilePath = authFile
-	} else {
+	case dockerCompatAuthFile != "":
+		sys.DockerCompatAuthFilePath = dockerCompatAuthFile
+	default:
 		// Keep this in sync with GetDefaultAuthFile()!
 		//
 		// Note that c/image does not natively implement the REGISTRY_AUTH_FILE
@@ -100,24 +105,24 @@ func systemContextWithOptions(sys *types.SystemContext, authFile, certDir string
 			// If the Docker configuration exists in the default ~/.docker/config.json location,
 			// we DO NOT write to it; instead, we update auth.json in the default path.
 			// Only if the user explicitly sets DOCKER_CONFIG, we write to that config.json.
-			sys.AuthFilePath = filepath.Join(dockerConfig, "config.json")
+			sys.DockerCompatAuthFilePath = filepath.Join(dockerConfig, "config.json")
 		}
 	}
 	if certDir != "" {
 		sys.DockerCertPath = certDir
 	}
-	return sys
+	return sys, nil
 }
 
 // Login implements a “log in” command with the provided opts and args
 // reading the password from opts.Stdin or the options in opts.
 func Login(ctx context.Context, systemContext *types.SystemContext, opts *LoginOptions, args []string) error {
-	systemContext = systemContextWithOptions(systemContext, opts.AuthFile, opts.CertDir)
+	systemContext, err := systemContextWithOptions(systemContext, opts.AuthFile, opts.DockerCompatAuthFile, opts.CertDir)
+	if err != nil {
+		return err
+	}
 
-	var (
-		key, registry string
-		err           error
-	)
+	var key, registry string
 	switch len(args) {
 	case 0:
 		if !opts.AcceptUnspecifiedRegistry {
@@ -311,7 +316,13 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 	if err := CheckAuthFile(opts.AuthFile); err != nil {
 		return err
 	}
-	systemContext = systemContextWithOptions(systemContext, opts.AuthFile, "")
+	if err := CheckAuthFile(opts.DockerCompatAuthFile); err != nil {
+		return err
+	}
+	systemContext, err := systemContextWithOptions(systemContext, opts.AuthFile, opts.DockerCompatAuthFile, "")
+	if err != nil {
+		return err
+	}
 
 	if opts.All {
 		if len(args) != 0 {
@@ -324,10 +335,7 @@ func Logout(systemContext *types.SystemContext, opts *LogoutOptions, args []stri
 		return nil
 	}
 
-	var (
-		key, registry string
-		err           error
-	)
+	var key, registry string
 	switch len(args) {
 	case 0:
 		if !opts.AcceptUnspecifiedRegistry {
