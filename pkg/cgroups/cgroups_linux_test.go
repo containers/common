@@ -46,27 +46,9 @@ func TestResources(t *testing.T) {
 
 	wtDevices := []*configs.WeightDevice{}
 	devices := []*configs.ThrottleDevice{}
-	dev1 := &configs.ThrottleDevice{
-		BlockIODevice: configs.BlockIODevice{
-			Major: 1,
-			Minor: 3,
-		},
-		Rate: 2097152,
-	}
-	dev2 := &configs.ThrottleDevice{
-		BlockIODevice: configs.BlockIODevice{
-			Major: 3,
-			Minor: 10,
-		},
-		Rate: 2097152,
-	}
-	dev3 := &configs.WeightDevice{
-		BlockIODevice: configs.BlockIODevice{
-			Major: 5,
-			Minor: 9,
-		},
-		Weight: 500,
-	}
+	dev1 := configs.NewThrottleDevice(1, 3, 2097152)
+	dev2 := configs.NewThrottleDevice(3, 10, 2097152)
+	dev3 := configs.NewWeightDevice(5, 9, 500, 0)
 	devices = append(devices, dev1, dev2)
 	wtDevices = append(wtDevices, dev3)
 
