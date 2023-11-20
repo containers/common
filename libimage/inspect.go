@@ -180,7 +180,7 @@ func (i *Image) Inspect(ctx context.Context, options *InspectOptions) (*ImageDat
 		}
 
 	// Docker image
-	case manifest.DockerV2Schema1MediaType, manifest.DockerV2Schema2MediaType:
+	case manifest.DockerV2Schema2MediaType:
 		rawConfig, err := i.rawConfigBlob(ctx)
 		if err != nil {
 			return nil, err
@@ -196,6 +196,10 @@ func (i *Image) Inspect(ctx context.Context, options *InspectOptions) (*ImageDat
 		if data.HealthCheck == nil && dockerConfig.Config != nil {
 			data.HealthCheck = dockerConfig.Config.Healthcheck
 		}
+
+	case manifest.DockerV2Schema1MediaType, manifest.DockerV2Schema1SignedMediaType:
+		// There seem to be at least _some_ images with .Healthcheck set in schema1 (possibly just as an artifact
+		// of testing format conversion?), so this could plausibly read these values.
 	}
 
 	if data.Annotations == nil {
