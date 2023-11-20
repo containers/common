@@ -185,16 +185,16 @@ func (i *Image) Inspect(ctx context.Context, options *InspectOptions) (*ImageDat
 		if err != nil {
 			return nil, err
 		}
-		var dockerManifest manifest.Schema2V1Image
-		if err := json.Unmarshal(rawConfig, &dockerManifest); err != nil {
+		var dockerConfig manifest.Schema2V1Image
+		if err := json.Unmarshal(rawConfig, &dockerConfig); err != nil {
 			return nil, err
 		}
-		data.Comment = dockerManifest.Comment
+		data.Comment = dockerConfig.Comment
 		// NOTE: Health checks may be listed in the container config or
 		// the config.
-		data.HealthCheck = dockerManifest.ContainerConfig.Healthcheck
-		if data.HealthCheck == nil && dockerManifest.Config != nil {
-			data.HealthCheck = dockerManifest.Config.Healthcheck
+		data.HealthCheck = dockerConfig.ContainerConfig.Healthcheck
+		if data.HealthCheck == nil && dockerConfig.Config != nil {
+			data.HealthCheck = dockerConfig.Config.Healthcheck
 		}
 	}
 
