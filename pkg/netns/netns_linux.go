@@ -143,18 +143,6 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 		// Don't unlock. By not unlocking, golang will kill the OS thread when the
 		// goroutine is done (for go1.10+)
 
-		var origNS ns.NetNS
-		origNS, err = ns.GetNS(threadNsPath)
-		if err != nil {
-			logrus.Warnf("Cannot open current network namespace %s: %q", threadNsPath, err)
-			return
-		}
-		defer func() {
-			if err := origNS.Close(); err != nil {
-				logrus.Errorf("Unable to close namespace: %q", err)
-			}
-		}()
-
 		// create a new netns on the current thread
 		err = unix.Unshare(unix.CLONE_NEWNET)
 		if err != nil {
