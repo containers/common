@@ -36,6 +36,9 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// threadNsPath is the /proc path to the current netns handle for the current thread
+const threadNsPath = "/proc/thread-self/ns/net"
+
 // GetNSRunDir returns the dir of where to create the netNS. When running
 // rootless, it needs to be at a location writable by user.
 func GetNSRunDir() (string, error) {
@@ -140,8 +143,6 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 		// Don't unlock. By not unlocking, golang will kill the OS thread when the
 		// goroutine is done (for go1.10+)
 
-		threadNsPath := getCurrentThreadNetNSPath()
-
 		var origNS ns.NetNS
 		origNS, err = ns.GetNS(threadNsPath)
 		if err != nil {
@@ -198,12 +199,4 @@ func UnmountNS(nsPath string) error {
 	}
 
 	return nil
-}
-
-// getCurrentThreadNetNSPath copied from pkg/ns
-func getCurrentThreadNetNSPath() string {
-	// /proc/self/ns/net returns the namespace of the main thread, not
-	// of whatever thread this goroutine is running on.  Make sure we
-	// use the thread's net namespace since the thread is switching around
-	return fmt.Sprintf("/proc/%d/task/%d/ns/net", os.Getpid(), unix.Gettid())
 }
