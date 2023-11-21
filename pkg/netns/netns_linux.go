@@ -51,6 +51,10 @@ func GetNSRunDir() (string, error) {
 	return "/run/netns", nil
 }
 
+func NewNSAtPath(nsPath string) (ns.NetNS, error) {
+	return newNSPath(nsPath)
+}
+
 // NewNS creates a new persistent (bind-mounted) network namespace and returns
 // an object representing that namespace, without switching to it.
 func NewNS() (ns.NetNS, error) {
@@ -113,8 +117,12 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 		}
 	}
 
-	// create an empty file at the mount point
 	nsPath := path.Join(nsRunDir, name)
+	return newNSPath(nsPath)
+}
+
+func newNSPath(nsPath string) (ns.NetNS, error) {
+	// create an empty file at the mount point
 	mountPointFd, err := os.OpenFile(nsPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return nil, err
