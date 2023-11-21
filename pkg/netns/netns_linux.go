@@ -32,7 +32,6 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/containers/storage/pkg/homedir"
 	"github.com/containers/storage/pkg/unshare"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
 
@@ -146,7 +145,7 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 		// create a new netns on the current thread
 		err = unix.Unshare(unix.CLONE_NEWNET)
 		if err != nil {
-			logrus.Warnf("Cannot create a new network namespace: %q", err)
+			err = fmt.Errorf("unshare network namespace: %w", err)
 			return
 		}
 
