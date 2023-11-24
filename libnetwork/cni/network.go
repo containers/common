@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/containernetworking/cni/libcni"
+	"github.com/containers/common/libnetwork/internal/rootlessnetns"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/config"
 	"github.com/containers/common/pkg/version"
@@ -53,6 +54,9 @@ type cniNetwork struct {
 
 	// networks is a map with loaded networks, the key is the network name
 	networks map[string]*network
+
+	// rootlessNetns is used for the rootless network setup/teardown
+	rootlessNetns *rootlessnetns.Netns
 }
 
 type network struct {
@@ -115,6 +119,14 @@ func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		defaultSubnetPools = config.DefaultSubnetPools
 	}
 
+	var netns *rootlessnetns.Netns
+	if unshare.IsRootless() {
+		netns, err = rootlessnetns.New(conf.RunDir, rootlessnetns.CNI, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	cni := libcni.NewCNIConfig(conf.CNIPluginDirs, &cniExec{})
 	n := &cniNetwork{
 		cniConfigDir:       conf.CNIConfigDir,
@@ -125,6 +137,7 @@ func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		defaultsubnetPools: defaultSubnetPools,
 		isMachine:          conf.IsMachine,
 		lock:               lock,
+		rootlessNetns:      netns,
 	}
 
 	return n, nil
