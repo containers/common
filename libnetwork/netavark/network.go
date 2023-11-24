@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/containers/common/libnetwork/internal/rootlessnetns"
 	"github.com/containers/common/libnetwork/internal/util"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/config"
@@ -68,6 +69,9 @@ type netavarkNetwork struct {
 
 	// networks is a map with loaded networks, the key is the network name
 	networks map[string]*types.Network
+
+	// rootlessNetns is used for the rootless network setup/teardown
+	rootlessNetns *rootlessnetns.Netns
 }
 
 type InitConfig struct {
@@ -145,6 +149,14 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		defaultSubnetPools = config.DefaultSubnetPools
 	}
 
+	var netns *rootlessnetns.Netns
+	if unshare.IsRootless() {
+		netns, err = rootlessnetns.New(conf.NetworkRunDir, rootlessnetns.Netavark, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	n := &netavarkNetwork{
 		networkConfigDir:   conf.NetworkConfigDir,
 		networkRunDir:      conf.NetworkRunDir,
@@ -160,6 +172,7 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		pluginDirs:         conf.PluginDirs,
 		lock:               lock,
 		syslog:             conf.Syslog,
+		rootlessNetns:      netns,
 	}
 
 	return n, nil
