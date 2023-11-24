@@ -253,6 +253,7 @@ func defaultConfig() (*Config, error) {
 			Volumes:             attributedstring.Slice{},
 		},
 		Network: NetworkConfig{
+			FirewallDriver:            "",
 			DefaultNetwork:            "podman",
 			DefaultSubnet:             DefaultSubnet,
 			DefaultSubnetPools:        DefaultSubnetPools,
