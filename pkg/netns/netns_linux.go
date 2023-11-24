@@ -177,13 +177,8 @@ func newNSPath(nsPath string) (ns.NetNS, error) {
 
 // UnmountNS unmounts the given netns path
 func UnmountNS(nsPath string) error {
-	nsRunDir, err := GetNSRunDir()
-	if err != nil {
-		return err
-	}
-
 	// Only unmount if it's been bind-mounted (don't touch namespaces in /proc...)
-	if strings.HasPrefix(nsPath, nsRunDir) {
+	if !strings.HasPrefix(nsPath, "/proc/") {
 		if err := unix.Unmount(nsPath, unix.MNT_DETACH); err != nil {
 			return fmt.Errorf("failed to unmount NS: at %s: %v", nsPath, err)
 		}
