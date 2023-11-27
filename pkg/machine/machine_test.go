@@ -21,7 +21,7 @@ var _ = Describe("Machine", func() {
 		loadMachineMarker("testdata/does-not-exist")
 
 		gomega.Expect(IsPodmanMachine()).To(gomega.BeFalse())
-		gomega.Expect(MachineHostType()).To(gomega.BeEmpty())
+		gomega.Expect(HostType()).To(gomega.BeEmpty())
 		gomega.Expect(IsGvProxyBased()).To(gomega.BeFalse())
 	})
 
@@ -29,7 +29,7 @@ var _ = Describe("Machine", func() {
 		loadMachineMarker("testdata/empty-machine")
 
 		gomega.Expect(IsPodmanMachine()).To(gomega.BeTrue())
-		gomega.Expect(MachineHostType()).To(gomega.BeEmpty())
+		gomega.Expect(HostType()).To(gomega.BeEmpty())
 		gomega.Expect(IsGvProxyBased()).To(gomega.BeTrue())
 	})
 
@@ -37,8 +37,32 @@ var _ = Describe("Machine", func() {
 		loadMachineMarker("testdata/wsl-machine")
 
 		gomega.Expect(IsPodmanMachine()).To(gomega.BeTrue())
-		gomega.Expect(MachineHostType()).To(gomega.Equal(Wsl))
+		gomega.Expect(HostType()).To(gomega.Equal(Wsl))
 		gomega.Expect(IsGvProxyBased()).To(gomega.BeFalse())
+	})
+
+	It("qemu machine", func() {
+		loadMachineMarker("testdata/qemu-machine")
+
+		gomega.Expect(IsPodmanMachine()).To(gomega.BeTrue())
+		gomega.Expect(HostType()).To(gomega.Equal(Qemu))
+		gomega.Expect(IsGvProxyBased()).To(gomega.BeTrue())
+	})
+
+	It("applehv machine", func() {
+		loadMachineMarker("testdata/applehv-machine")
+
+		gomega.Expect(IsPodmanMachine()).To(gomega.BeTrue())
+		gomega.Expect(HostType()).To(gomega.Equal(AppleHV))
+		gomega.Expect(IsGvProxyBased()).To(gomega.BeTrue())
+	})
+
+	It("hyperv machine", func() {
+		loadMachineMarker("testdata/hyperv-machine")
+
+		gomega.Expect(IsPodmanMachine()).To(gomega.BeTrue())
+		gomega.Expect(HostType()).To(gomega.Equal(HyperV))
+		gomega.Expect(IsGvProxyBased()).To(gomega.BeTrue())
 	})
 
 	It("legacy config machine", func() {
@@ -48,7 +72,7 @@ var _ = Describe("Machine", func() {
 		loadMachineMarker("testdata/does-not-exist")
 
 		gomega.Expect(IsPodmanMachine()).To(gomega.BeTrue())
-		gomega.Expect(MachineHostType()).To(gomega.BeEmpty())
+		gomega.Expect(HostType()).To(gomega.BeEmpty())
 		gomega.Expect(IsGvProxyBased()).To(gomega.BeTrue())
 	})
 })
