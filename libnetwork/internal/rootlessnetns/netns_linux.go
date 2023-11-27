@@ -15,6 +15,7 @@ import (
 	"github.com/containers/common/libnetwork/slirp4netns"
 	"github.com/containers/common/pkg/config"
 	"github.com/containers/common/pkg/netns"
+	"github.com/containers/common/pkg/systemd"
 	"github.com/containers/storage/pkg/homedir"
 	"github.com/containers/storage/pkg/lockfile"
 	"github.com/hashicorp/go-multierror"
@@ -163,15 +164,14 @@ func (n *Netns) setupSlirp4netns(nsPath string) error {
 		return wrapError("write slirp4netns pid file", err)
 	}
 
-	// FIXME
-	// if utils.RunsOnSystemd() {
-	// 	// move to systemd scope to prevent systemd from killing it
-	// 	err = utils.MoveRootlessNetnsSlirpProcessToUserSlice(res.Pid)
-	// 	if err != nil {
-	// 		// only log this, it is not fatal but can lead to issues when running podman inside systemd units
-	// 		logrus.Errorf("failed to move the rootless netns slirp4netns process to the systemd user.slice: %v", err)
-	// 	}
-	// }
+	if systemd.RunsOnSystemd() {
+		// move to systemd scope to prevent systemd from killing it
+		err = systemd.MoveRootlessNetnsSlirpProcessToUserSlice(res.Pid)
+		if err != nil {
+			// only log this, it is not fatal but can lead to issues when running podman inside systemd units
+			logrus.Errorf("failed to move the rootless netns slirp4netns process to the systemd user.slice: %v", err)
+		}
+	}
 
 	// build a new resolv.conf file which uses the slirp4netns dns server address
 	resolveIP, err := slirp4netns.GetDNS(res.Subnet)
