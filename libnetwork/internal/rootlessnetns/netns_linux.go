@@ -105,20 +105,27 @@ func (n *Netns) getPath(path string) string {
 	return filepath.Join(n.dir, path)
 }
 
-func (n *Netns) getOrCreateNetns() (ns.NetNS, error) {
+// getOrCreateNetns returns the rootless netns, if it created a new one the
+// returned bool is set to true.
+func (n *Netns) getOrCreateNetns() (ns.NetNS, bool, error) {
 	nsPath := n.getPath(rootlessNetnsDir)
 	nsRef, err := ns.GetNS(nsPath)
 	if err == nil {
 		// TODO check if slirp4netns is alive
-		return nsRef, nil
+		return nsRef, false, nil
 	}
 	logrus.Debugf("Creating rootless network namespace at %q", nsPath)
+	// We have to create the netns dir again here because it is possible
+	// that cleanup() removed it.
+	if err := os.MkdirAll(n.dir, 0o700); err != nil {
+		return nil, false, wrapError("", err)
+	}
 	netns, err := netns.NewNSAtPath(nsPath)
 	if err != nil {
-		return nil, err
+		return nil, false, wrapError("create netns", err)
 	}
 	err = n.setupSlirp4netns(nsPath)
-	return netns, err
+	return netns, true, err
 }
 
 func (n *Netns) cleanup() error {
@@ -419,12 +426,22 @@ func (n *Netns) mountCNIVarDir() error {
 	return nil
 }
 
-func (n *Netns) runInner(toRun func() error) error {
-	nsRef, err := n.getOrCreateNetns()
+func (n *Netns) runInner(toRun func() error) (err error) {
+	nsRef, newNs, err := n.getOrCreateNetns()
 	if err != nil {
 		return err
 	}
 	defer nsRef.Close()
+	// If a new netns was created make sure to clean it up again on an error to not leak it.
+	if newNs {
+		defer func() {
+			if err != nil {
+				if err := n.cleanup(); err != nil {
+					logrus.Errorf("Rootless netns cleanup error after failed setup: %v", err)
+				}
+			}
+		}()
+	}
 
 	return nsRef.Do(func(_ ns.NetNS) error {
 		if err := n.setupMounts(); err != nil {
