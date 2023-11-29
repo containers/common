@@ -449,6 +449,14 @@ and __$HOME/.config/cni/net.d__ as rootless.
 For the netavark backend "/etc/containers/networks" is used as root
 and "$graphroot/networks" as rootless.
 
+**firewall_driver**=""
+
+The firewall driver to be used by netavark.
+The default is empty which means netavark will pick one accordingly. Current supported 
+drivers are "iptables", "none" (no firewall rules will be created) and "firewalld" (firewalld is
+experimental at the moment and not recommend outside of testing). In the future we are
+planning to add support for a "nftables" driver.
+
 **dns_bind_port**=53
 
 Port to use for dns forwarding daemon with netavark in rootful bridge

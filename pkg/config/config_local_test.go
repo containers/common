@@ -124,6 +124,18 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(config2.Network.DNSBindPort).To(gomega.Equal(uint16(1153)))
 	})
 
+	It("test firewall", func() {
+		// Given
+		config, err := New(nil)
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Network.FirewallDriver).To(gomega.Equal(string("")))
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Network.FirewallDriver).To(gomega.Equal("none"))
+	})
+
 	It("parse pasta_options", func() {
 		// Given
 		config, err := New(nil)
