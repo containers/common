@@ -3,6 +3,12 @@ GO_BUILD=$(GO) build
 BUILDTAGS := containers_image_openpgp,systemd,exclude_graphdriver_devicemapper
 DESTDIR ?=
 PREFIX := /usr/local
+ifeq ($(shell uname -s),FreeBSD)
+CONTAINERSCONFDIR ?= /usr/local/etc/containers
+else
+CONTAINERSCONFDIR ?= /etc/containers
+endif
+REGISTRIESDDIR ?= ${CONTAINERSCONFDIR}/registries.d
 CONFIGDIR := ${PREFIX}/share/containers
 
 define go-build
@@ -90,6 +96,11 @@ build/golangci-lint:
 install:
 	install -d ${DESTDIR}/${CONFIGDIR}
 	install -m 0644 pkg/config/containers.conf ${DESTDIR}/${CONFIGDIR}/containers.conf
+	install -d -m 755 ${DESTDIR}${LOOKASIDEDIR}
+	install -d -m 755 ${DESTDIR}${CONTAINERSCONFDIR}
+	install -m 644 default-policy.json ${DESTDIR}${CONTAINERSCONFDIR}/policy.json
+	install -d -m 755 ${DESTDIR}${REGISTRIESDDIR}
+	install -m 644 default.yaml ${DESTDIR}${REGISTRIESDDIR}/default.yaml
 
 	$(MAKE) -C docs install
 
