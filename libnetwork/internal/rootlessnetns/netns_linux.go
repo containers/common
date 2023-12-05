@@ -25,13 +25,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type NetworkBackend int
-
-const (
-	Netavark NetworkBackend = iota
-	CNI
-)
-
 const (
 	// rootlessNetnsDir is the directory name
 	rootlessNetnsDir = "rootless-netns"
