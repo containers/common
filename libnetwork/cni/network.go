@@ -69,21 +69,14 @@ type network struct {
 type InitConfig struct {
 	// CNIConfigDir is directory where the cni config files are stored.
 	CNIConfigDir string
-	// CNIPluginDirs is a list of directories where cni should look for the plugins.
-	CNIPluginDirs []string
 	// RunDir is a directory where temporary files can be stored.
 	RunDir string
 
-	// DefaultNetwork is the name for the default network.
-	DefaultNetwork string
-	// DefaultSubnet is the default subnet for the default network.
-	DefaultSubnet string
-
-	// DefaultsubnetPools contains the subnets which must be used to allocate a free subnet by network create
-	DefaultsubnetPools []config.SubnetPool
-
 	// IsMachine describes whenever podman runs in a podman machine environment.
 	IsMachine bool
+
+	// Config containers.conf options
+	Config *config.Config
 }
 
 // NewCNINetworkInterface creates the ContainerNetwork interface for the CNI backend.
@@ -100,12 +93,12 @@ func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		return nil, err
 	}
 
-	defaultNetworkName := conf.DefaultNetwork
+	defaultNetworkName := conf.Config.Network.DefaultNetwork
 	if defaultNetworkName == "" {
 		defaultNetworkName = types.DefaultNetworkName
 	}
 
-	defaultSubnet := conf.DefaultSubnet
+	defaultSubnet := conf.Config.Network.DefaultSubnet
 	if defaultSubnet == "" {
 		defaultSubnet = types.DefaultSubnet
 	}
@@ -114,23 +107,23 @@ func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 		return nil, fmt.Errorf("failed to parse default subnet: %w", err)
 	}
 
-	defaultSubnetPools := conf.DefaultsubnetPools
+	defaultSubnetPools := conf.Config.Network.DefaultSubnetPools
 	if defaultSubnetPools == nil {
 		defaultSubnetPools = config.DefaultSubnetPools
 	}
 
 	var netns *rootlessnetns.Netns
 	if unshare.IsRootless() {
-		netns, err = rootlessnetns.New(conf.RunDir, rootlessnetns.CNI, nil)
+		netns, err = rootlessnetns.New(conf.RunDir, rootlessnetns.CNI, conf.Config)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	cni := libcni.NewCNIConfig(conf.CNIPluginDirs, &cniExec{})
+	cni := libcni.NewCNIConfig(conf.Config.Network.CNIPluginDirs.Values, &cniExec{})
 	n := &cniNetwork{
 		cniConfigDir:       conf.CNIConfigDir,
-		cniPluginDirs:      conf.CNIPluginDirs,
+		cniPluginDirs:      conf.Config.Network.CNIPluginDirs.Get(),
 		cniConf:            cni,
 		defaultNetwork:     defaultNetworkName,
 		defaultSubnet:      defaultNet,

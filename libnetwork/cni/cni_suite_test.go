@@ -8,8 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/libnetwork/cni"
 	"github.com/containers/common/libnetwork/types"
+	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -28,8 +30,12 @@ func TestCni(t *testing.T) {
 
 func getNetworkInterface(cniConfDir string) (types.ContainerNetwork, error) {
 	return cni.NewCNINetworkInterface(&cni.InitConfig{
-		CNIConfigDir:  cniConfDir,
-		CNIPluginDirs: cniPluginDirs,
+		CNIConfigDir: cniConfDir,
+		Config: &config.Config{
+			Network: config.NetworkConfig{
+				CNIPluginDirs: attributedstring.NewSlice(cniPluginDirs),
+			},
+		},
 	})
 }
 

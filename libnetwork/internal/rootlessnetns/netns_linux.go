@@ -89,10 +89,6 @@ func New(dir string, backend NetworkBackend, conf *config.Config) (*Netns, error
 	if err := os.MkdirAll(netnsDir, 0o700); err != nil {
 		return nil, wrapError("", err)
 	}
-	conf, err := config.Default()
-	if err != nil {
-		return nil, err
-	}
 	return &Netns{
 		dir:     netnsDir,
 		backend: backend,
