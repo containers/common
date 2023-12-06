@@ -13,6 +13,7 @@ import (
 	"github.com/containers/common/libnetwork/netavark"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/libnetwork/util"
+	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	gomegaTypes "github.com/onsi/gomega/types"
@@ -684,6 +685,7 @@ var _ = Describe("Config", func() {
 
 		It("update NetworkDNSServers AddDNSServers", func() {
 			libpodNet, err := netavark.NewNetworkInterface(&netavark.InitConfig{
+				Config:           &config.Config{},
 				NetworkConfigDir: networkConfDir,
 				NetworkRunDir:    networkConfDir,
 				NetavarkBinary:   "true",
@@ -710,6 +712,7 @@ var _ = Describe("Config", func() {
 
 		It("update NetworkDNSServers RemoveDNSServers", func() {
 			libpodNet, err := netavark.NewNetworkInterface(&netavark.InitConfig{
+				Config:           &config.Config{},
 				NetworkConfigDir: networkConfDir,
 				NetworkRunDir:    networkConfDir,
 				NetavarkBinary:   "true",
@@ -736,6 +739,7 @@ var _ = Describe("Config", func() {
 
 		It("update NetworkDNSServers Add and Remove DNSServers", func() {
 			libpodNet, err := netavark.NewNetworkInterface(&netavark.InitConfig{
+				Config:           &config.Config{},
 				NetworkConfigDir: networkConfDir,
 				NetworkRunDir:    networkConfDir,
 				NetavarkBinary:   "true",

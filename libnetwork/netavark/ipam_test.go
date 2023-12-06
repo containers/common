@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/containers/common/libnetwork/types"
+	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,7 @@ var _ = Describe("IPAM", func() {
 
 	JustBeforeEach(func() {
 		libpodNet, err := NewNetworkInterface(&InitConfig{
+			Config:           &config.Config{},
 			NetworkConfigDir: networkConfDir,
 			NetworkRunDir:    networkConfDir,
 		})

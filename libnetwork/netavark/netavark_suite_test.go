@@ -10,9 +10,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/libnetwork/netavark"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/libnetwork/util"
+	"github.com/containers/common/pkg/config"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	gomegaTypes "github.com/onsi/gomega/types"
@@ -34,6 +36,7 @@ func init() {
 
 func getNetworkInterface(confDir string) (types.ContainerNetwork, error) {
 	return netavark.NewNetworkInterface(&netavark.InitConfig{
+		Config:           &config.Config{},
 		NetworkConfigDir: confDir,
 		NetavarkBinary:   netavarkBinary,
 		NetworkRunDir:    confDir,
@@ -45,7 +48,11 @@ func getNetworkInterfaceWithPlugins(confDir string, pluginDirs []string) (types.
 		NetworkConfigDir: confDir,
 		NetavarkBinary:   netavarkBinary,
 		NetworkRunDir:    confDir,
-		PluginDirs:       pluginDirs,
+		Config: &config.Config{
+			Network: config.NetworkConfig{
+				NetavarkPluginDirs: attributedstring.NewSlice(pluginDirs),
+			},
+		},
 	})
 }
 
