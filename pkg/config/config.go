@@ -1020,19 +1020,6 @@ func rootlessConfigPath() (string, error) {
 	return filepath.Join(home, UserOverrideContainersConfig), nil
 }
 
-func Path() string {
-	if path := os.Getenv(containersConfEnv); path != "" {
-		return path
-	}
-	if unshare.IsRootless() {
-		if rpath, err := rootlessConfigPath(); err == nil {
-			return rpath
-		}
-		return "$HOME/" + UserOverrideContainersConfig
-	}
-	return OverrideContainersConfig
-}
-
 // ReadCustomConfig reads the custom config and only generates a config based on it
 // If the custom config file does not exists, function will return an empty config
 func ReadCustomConfig() (*Config, error) {
