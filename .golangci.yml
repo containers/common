@@ -7,6 +7,7 @@ run:
     - systemd
     - exclude_graphdriver_btrfs
     - containers_image_openpgp
+    - cni
   concurrency: 6
   deadline: 5m
 linters:

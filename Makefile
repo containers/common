@@ -36,14 +36,18 @@ build-cross:
 	$(call go-build,windows,386,${BUILDTAGS})
 
 .PHONY: all
-all: build-amd64 build-386
+all: build-amd64 build-386 build-amd64-cni
 
 .PHONY: build
-build: build-amd64 build-386
+build: build-amd64 build-386 build-amd64-cni
 
 .PHONY: build-amd64
 build-amd64:
 	GOARCH=amd64 $(GO_BUILD) -tags $(BUILDTAGS) ./...
+
+.PHONY: build-amd64-cni
+build-amd64-cni:
+	GOARCH=amd64 $(GO_BUILD) -tags $(BUILDTAGS),cni ./...
 
 .PHONY: build-386
 build-386:
@@ -100,6 +104,7 @@ test: test-unit
 test-unit: netavark-testplugin
 	go test --tags seccomp,$(BUILDTAGS) -v ./...
 	go test --tags remote,$(BUILDTAGS) -v ./pkg/config
+	go test --tags cni,$(BUILDTAGS) -v ./libnetwork/cni
 
 .PHONY: codespell
 codespell:
