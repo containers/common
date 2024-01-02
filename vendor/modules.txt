@@ -16,7 +16,7 @@ github.com/Microsoft/go-winio/internal/socket
 github.com/Microsoft/go-winio/internal/stringbuffer
 github.com/Microsoft/go-winio/pkg/guid
 github.com/Microsoft/go-winio/vhd
-# github.com/Microsoft/hcsshim v0.12.0-rc.1
+# github.com/Microsoft/hcsshim v0.12.0-rc.2
 ## explicit; go 1.18
 github.com/Microsoft/hcsshim
 github.com/Microsoft/hcsshim/computestorage
@@ -179,7 +179,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.51.1-0.20231205203947-fe005407c7d5
+# github.com/containers/storage v1.51.1-0.20231221151421-1020ab61b4e5
 ## explicit; go 1.19
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -754,7 +754,7 @@ golang.org/x/tools/internal/typesinternal
 # google.golang.org/genproto/googleapis/rpc v0.0.0-20230920204549-e6e6cdab5c13
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.58.3
+# google.golang.org/grpc v1.59.0
 ## explicit; go 1.19
 google.golang.org/grpc
 google.golang.org/grpc/attributes
