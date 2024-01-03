@@ -47,14 +47,14 @@ var _ = Describe("run CNI", func() {
 	const cniVarDir = "/var/lib/cni"
 
 	// runTest is a helper function to run a test. It ensures that each test
-	// is run in its own netns. It also creates a mountns to mount a tmpfs to /var/lib/cni.
+	// is run in its own netns. It also creates a mounts to mount a tmpfs to /var/lib/cni.
 	runTest := func(run func()) {
 		_ = netNSTest.Do(func(_ ns.NetNS) error {
 			defer GinkgoRecover()
 			err := os.MkdirAll(cniVarDir, 0o755)
 			Expect(err).To(BeNil(), "Failed to create cniVarDir")
 			err = unix.Unshare(unix.CLONE_NEWNS)
-			Expect(err).To(BeNil(), "Failed to create new mountns")
+			Expect(err).To(BeNil(), "Failed to create new mounts")
 			err = unix.Mount("tmpfs", cniVarDir, "tmpfs", unix.MS_NOEXEC|unix.MS_NOSUID|unix.MS_NODEV, "")
 			Expect(err).To(BeNil(), "Failed to mount tmpfs for cniVarDir")
 			defer unix.Unmount(cniVarDir, 0) //nolint:errcheck

@@ -2162,7 +2162,7 @@ var _ = Describe("Config", func() {
 			logString := logBuffer.String()
 			Expect(logString).To(ContainSubstring("Error reading network config file \\\"%s/broken.json\\\": unexpected EOF", networkConfDir))
 			Expect(logString).To(ContainSubstring("Network config \\\"%s/invalid name.json\\\" has invalid name: \\\"invalid name\\\", skipping: names must match [a-zA-Z0-9][a-zA-Z0-9_.-]*: invalid argument", networkConfDir))
-			Expect(logString).To(ContainSubstring("Network config name \\\"name_miss\\\" does not match file name \\\"name_missmatch.json\\\", skipping"))
+			Expect(logString).To(ContainSubstring("Network config name \\\"name_miss\\\" does not match file name \\\"name_mismatch.json\\\", skipping"))
 			Expect(logString).To(ContainSubstring("Network config \\\"%s/wrongID.json\\\" could not be parsed, skipping: invalid network ID \\\"someID\\\"", networkConfDir))
 			Expect(logString).To(ContainSubstring("Network config \\\"%s/invalid_gateway.json\\\" could not be parsed, skipping: gateway 10.89.100.1 not in subnet 10.89.9.0/24", networkConfDir))
 		})

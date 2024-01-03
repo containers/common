@@ -13,7 +13,7 @@ type testConfig struct {
 }
 
 const (
-	confingDefault    = `array=["1", "2", "3"]`
+	configDefault     = `array=["1", "2", "3"]`
 	configAppendFront = `array=[{append=true},"4", "5", "6"]`
 	configAppendMid   = `array=["7", {append=true}, "8"]`
 	configAppendBack  = `array=["9", {append=true}]`
@@ -43,19 +43,19 @@ func TestSliceLoading(t *testing.T) {
 		expectedErrorSubstring string
 	}{
 		// Load single configs
-		{[]string{confingDefault}, []string{"1", "2", "3"}, nil, ""},
+		{[]string{configDefault}, []string{"1", "2", "3"}, nil, ""},
 		{[]string{configAppendFront}, []string{"4", "5", "6"}, &bTrue, ""},
 		{[]string{configAppendMid}, []string{"7", "8"}, &bTrue, ""},
 		{[]string{configAppendBack}, []string{"9"}, &bTrue, ""},
 		{[]string{configAppendFalse}, []string{"10"}, &bFalse, ""},
 		// Append=true
-		{[]string{confingDefault, configAppendFront}, []string{"1", "2", "3", "4", "5", "6"}, &bTrue, ""},
-		{[]string{configAppendFront, confingDefault}, []string{"4", "5", "6", "1", "2", "3"}, &bTrue, ""}, // The attribute is sticky unless explicitly being turned off in a later config
-		{[]string{configAppendFront, confingDefault, configAppendBack}, []string{"4", "5", "6", "1", "2", "3", "9"}, &bTrue, ""},
+		{[]string{configDefault, configAppendFront}, []string{"1", "2", "3", "4", "5", "6"}, &bTrue, ""},
+		{[]string{configAppendFront, configDefault}, []string{"4", "5", "6", "1", "2", "3"}, &bTrue, ""}, // The attribute is sticky unless explicitly being turned off in a later config
+		{[]string{configAppendFront, configDefault, configAppendBack}, []string{"4", "5", "6", "1", "2", "3", "9"}, &bTrue, ""},
 		// Append=false
-		{[]string{confingDefault, configAppendFalse}, []string{"10"}, &bFalse, ""},
-		{[]string{confingDefault, configAppendMid, configAppendFalse}, []string{"10"}, &bFalse, ""},
-		{[]string{confingDefault, configAppendFalse, configAppendMid}, []string{"10", "7", "8"}, &bTrue, ""}, // Append can be re-enabled by a later config
+		{[]string{configDefault, configAppendFalse}, []string{"10"}, &bFalse, ""},
+		{[]string{configDefault, configAppendMid, configAppendFalse}, []string{"10"}, &bFalse, ""},
+		{[]string{configDefault, configAppendFalse, configAppendMid}, []string{"10", "7", "8"}, &bTrue, ""}, // Append can be re-enabled by a later config
 
 		// Error checks
 		{[]string{`array=["1", false]`}, nil, nil, `unsupported item in attributed string slice: false`},
@@ -84,7 +84,7 @@ func TestSliceEncoding(t *testing.T) {
 		expectedAppend *bool
 	}{
 		{
-			[]string{confingDefault},
+			[]string{configDefault},
 			"array = [\"1\", \"2\", \"3\"]\n",
 			[]string{"1", "2", "3"},
 			nil,

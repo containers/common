@@ -103,7 +103,7 @@ test-unit: netavark-testplugin
 
 .PHONY: codespell
 codespell:
-	codespell -L ro,hastable,shouldnot -w
+	codespell --dictionary=- -w
 
 clean: ## Clean artifacts
 	$(MAKE) -C docs clean

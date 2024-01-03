@@ -577,7 +577,7 @@ The unit can be b (bytes), k (kilobytes), m (megabytes) or g (gigabytes).
 The format for the size is `<number><unit>`, e.g., `1b` or `3g`.
 If no unit is included then the size will be in bytes.
 When the limit is exceeded, the logfile will be rotated and the old one will be deleted.
-If the maximumn size is set to 0, then no limit will be applied,
+If the maximum size is set to 0, then no limit will be applied,
 and the logfile will not be rotated.
 
 **events_logger**="journald"

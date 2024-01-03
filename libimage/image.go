@@ -67,7 +67,7 @@ type Image struct {
 	}
 }
 
-// reload the image and pessimitically clear all cached data.
+// reload the image and pessimistically clear all cached data.
 func (i *Image) reload() error {
 	logrus.Tracef("Reloading image %s", i.ID())
 	img, err := i.runtime.store.Image(i.ID())
@@ -611,7 +611,7 @@ func (i *Image) Untag(name string) error {
 	}
 
 	// FIXME: this is breaking Podman CI but must be re-enabled once
-	// c/storage supports alterting the digests of an image.  Then,
+	// c/storage supports altering the digests of an image.  Then,
 	// Podman will do the right thing.
 	//
 	// !!! Also make sure to re-enable the tests !!!

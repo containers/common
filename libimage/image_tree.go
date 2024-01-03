@@ -53,7 +53,7 @@ func (i *Image) Tree(traverseChildren bool) (string, error) {
 		return tree.Print(), nil
 	}
 
-	// Walk all layers of the image and assemlbe their data.  Note that the
+	// Walk all layers of the image and assemble their data.  Note that the
 	// tree is constructed in reverse order to remain backwards compatible
 	// with Podman.
 	contents := []string{}

@@ -79,7 +79,7 @@ func (d *Driver) Lookup(id string) ([]byte, error) {
 	return nil, fmt.Errorf("%s: %w", id, errNoSecretData)
 }
 
-// Store stores the bytes associated with an ID. An error is returned if the ID arleady exists
+// Store stores the bytes associated with an ID. An error is returned if the ID already exists
 func (d *Driver) Store(id string, data []byte) error {
 	d.lockfile.Lock()
 	defer d.lockfile.Unlock()

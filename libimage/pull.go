@@ -31,7 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// PullOptions allows for custommizing image pulls.
+// PullOptions allows for customizing image pulls.
 type PullOptions struct {
 	CopyOptions
 

@@ -98,7 +98,7 @@ func TestValidateCapabilities(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestValidateCapabilitieBadCapabilities(t *testing.T) {
+func TestValidateCapabilitiesBadCapabilities(t *testing.T) {
 	strSlice := []string{"CAP_SYS_ADMIN", "NO_ADMIN"}
 	err := ValidateCapabilities(strSlice)
 	assert.Error(t, err)
