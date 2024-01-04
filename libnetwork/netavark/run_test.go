@@ -42,7 +42,7 @@ var _ = Describe("run netavark", func() {
 	)
 
 	// runTest is a helper function to run a test. It ensures that each test
-	// is run in its own netns. It also creates a mountns to mount a tmpfs to /var/lib/cni.
+	// is run in its own netns. It also creates a mounts to mount a tmpfs to /var/lib/cni.
 	runTest := func(run func()) {
 		_ = netNSTest.Do(func(_ ns.NetNS) error {
 			defer GinkgoRecover()

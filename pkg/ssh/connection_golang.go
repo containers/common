@@ -262,7 +262,7 @@ func ValidateAndConfigure(uri *url.URL, iden string, insecureIsMachineConnection
 			}
 		}
 	}
-	var authMethods []ssh.AuthMethod // now we validate and check for the authorization methods, most notaibly public key authorization
+	var authMethods []ssh.AuthMethod // now we validate and check for the authorization methods, most notably public key authorization
 	if len(signers) > 0 {
 		dedup := make(map[string]ssh.Signer)
 		for _, s := range signers {

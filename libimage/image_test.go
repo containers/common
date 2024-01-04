@@ -70,7 +70,7 @@ func TestImageFunctions(t *testing.T) {
 	// manifest list we chose it from.
 	digests := image.Digests()
 	require.Len(t, digests, 2)
-	require.Equal(t, origDigest.String(), digests[0].String(), "first recoreded digest should be the one of the image")
+	require.Equal(t, origDigest.String(), digests[0].String(), "first recorded digest should be the one of the image")
 
 	// containers/podman/issues/12729: make sure manifest lookup returns
 	// the correct error for both digests.
@@ -384,7 +384,7 @@ func TestUntag(t *testing.T) {
 			require.EqualError(t, err, test.expectError, "untag should have failed: %v", test)
 			continue
 		}
-		require.NoError(t, err, "untag should have succeedded: %v", test)
+		require.NoError(t, err, "untag should have succeeded: %v", test)
 		_, resolvedName, err := runtime.LookupImage(test.tag, nil)
 		require.Error(t, err, "image should not resolve after untag anymore (%s): %v", resolvedName, test)
 	}
