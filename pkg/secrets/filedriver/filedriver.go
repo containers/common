@@ -10,6 +10,7 @@ import (
 	"sort"
 
 	"github.com/containers/storage/pkg/lockfile"
+	"golang.org/x/exp/maps"
 )
 
 // secretsDataFile is the file where secrets data/payload will be stored
@@ -56,10 +57,7 @@ func (d *Driver) List() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	allID := make([]string, 0, len(secretData))
-	for k := range secretData {
-		allID = append(allID, k)
-	}
+	allID := maps.Keys(secretData)
 	sort.Strings(allID)
 	return allID, err
 }

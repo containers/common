@@ -13,12 +13,12 @@ import (
 	"github.com/containers/common/internal/attributedstring"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/capabilities"
-	"github.com/containers/common/pkg/util"
 	"github.com/containers/storage/pkg/ioutils"
 	"github.com/containers/storage/pkg/unshare"
 	units "github.com/docker/go-units"
 	selinux "github.com/opencontainers/selinux/go-selinux"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -1228,7 +1228,7 @@ func ValidateImageVolumeMode(mode string) error {
 	if mode == "" {
 		return nil
 	}
-	if util.StringInSlice(mode, validImageVolumeModes) {
+	if slices.Contains(validImageVolumeModes, mode) {
 		return nil
 	}
 

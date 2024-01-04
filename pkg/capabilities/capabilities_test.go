@@ -69,8 +69,8 @@ func TestMergeCapabilitiesAddAll(t *testing.T) {
 	caps, err = MergeCapabilities(base, adds, drops)
 	require.Nil(t, err)
 	assert.NotEqual(t, caps, allCaps)
-	assert.False(t, stringInSlice("CAP_SETUID", caps))
-	assert.False(t, stringInSlice("CAP_CHOWN", caps))
+	assert.NotContains(t, caps, "CAP_SETUID")
+	assert.NotContains(t, caps, "CAP_CHOWN")
 }
 
 func TestMergeCapabilitiesAddAllDropAll(t *testing.T) {

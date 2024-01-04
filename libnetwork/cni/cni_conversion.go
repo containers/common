@@ -17,8 +17,8 @@ import (
 	internalutil "github.com/containers/common/libnetwork/internal/util"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/libnetwork/util"
-	pkgutil "github.com/containers/common/pkg/util"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sys/unix"
 )
 
@@ -358,7 +358,7 @@ func convertSpecgenPortsToCNIPorts(ports []types.PortMapping) ([]cniPortMapEntry
 		protocols := strings.Split(port.Protocol, ",")
 
 		for _, protocol := range protocols {
-			if !pkgutil.StringInSlice(protocol, []string{"tcp", "udp", "sctp"}) {
+			if !slices.Contains([]string{"tcp", "udp", "sctp"}, protocol) {
 				return nil, fmt.Errorf("unknown port protocol %s", protocol)
 			}
 			cniPort := cniPortMapEntry{
@@ -420,11 +420,11 @@ func parseOptions(networkOptions map[string]string, networkDriver string) (*opti
 		case types.ModeOption:
 			switch networkDriver {
 			case types.MacVLANNetworkDriver:
-				if !pkgutil.StringInSlice(v, types.ValidMacVLANModes) {
+				if !slices.Contains(types.ValidMacVLANModes, v) {
 					return nil, fmt.Errorf("unknown macvlan mode %q", v)
 				}
 			case types.IPVLANNetworkDriver:
-				if !pkgutil.StringInSlice(v, types.ValidIPVLANModes) {
+				if !slices.Contains(types.ValidIPVLANModes, v) {
 					return nil, fmt.Errorf("unknown ipvlan mode %q", v)
 				}
 			default:
