@@ -188,7 +188,7 @@ image_copy_tmp_dir="storage"`
 			// prior to reading local config, shows hard coded defaults
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(true))
 
-			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig)
+			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig, false)
 
 			crunWasm := "crun-wasm"
 			PlatformToOCIRuntimeMap := map[string]string{
@@ -351,7 +351,7 @@ image_copy_tmp_dir="storage"`
 			// Given
 			// When
 			conf := Config{}
-			err := readConfigFromFile("testdata/containers_comment.conf", &conf)
+			err := readConfigFromFile("testdata/containers_comment.conf", &conf, false)
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
@@ -361,7 +361,7 @@ image_copy_tmp_dir="storage"`
 			// Given
 			// When
 			conf := Config{}
-			err := readConfigFromFile("/invalid/file", &conf)
+			err := readConfigFromFile("/invalid/file", &conf, false)
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
@@ -371,7 +371,7 @@ image_copy_tmp_dir="storage"`
 			// Given
 			// When
 			conf := Config{}
-			err := readConfigFromFile("config.go", &conf)
+			err := readConfigFromFile("config.go", &conf, false)
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
@@ -760,7 +760,7 @@ image_copy_tmp_dir="storage"`
 			content := bytes.NewBufferString("")
 			logrus.SetOutput(content)
 			logrus.SetLevel(logrus.DebugLevel)
-			err := readConfigFromFile("testdata/containers_broken.conf", &conf)
+			err := readConfigFromFile("testdata/containers_broken.conf", &conf, false)
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(conf.Containers.NetNS).To(gomega.Equal("bridge"))
 			gomega.Expect(conf.Containers.Umask).To(gomega.Equal("0002"))
@@ -772,7 +772,7 @@ image_copy_tmp_dir="storage"`
 			conf := Config{}
 			content := bytes.NewBufferString("")
 			logrus.SetOutput(content)
-			err := readConfigFromFile("containers.conf", &conf)
+			err := readConfigFromFile("containers.conf", &conf, false)
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(content.String()).To(gomega.Equal(""))
 			logrus.SetOutput(os.Stderr)

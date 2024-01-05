@@ -1041,14 +1041,8 @@ func ReadCustomConfig() (*Config, error) {
 		return nil, err
 	}
 	newConfig := &Config{}
-	if _, err := os.Stat(path); err == nil {
-		if err := readConfigFromFile(path, newConfig); err != nil {
-			return nil, err
-		}
-	} else {
-		if !errors.Is(err, os.ErrNotExist) {
-			return nil, err
-		}
+	if err := readConfigFromFile(path, newConfig, true); err != nil {
+		return nil, err
 	}
 	// Let's always initialize the farm list so it is never nil
 	if newConfig.Farms.List == nil {

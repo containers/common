@@ -82,7 +82,7 @@ func newLocked(options *Options) (*Config, error) {
 		// Merge changes in later configs with the previous configs.
 		// Each config file that specified fields, will override the
 		// previous fields.
-		if err = readConfigFromFile(path, config); err != nil {
+		if err = readConfigFromFile(path, config, true); err != nil {
 			return nil, fmt.Errorf("reading system config %q: %w", path, err)
 		}
 		logrus.Debugf("Merged system config %q", path)
@@ -114,7 +114,7 @@ func newLocked(options *Options) (*Config, error) {
 		}
 		// readConfigFromFile reads in container config in the specified
 		// file and then merge changes with the current default.
-		if err := readConfigFromFile(add, config); err != nil {
+		if err := readConfigFromFile(add, config, false); err != nil {
 			return nil, fmt.Errorf("reading additional config %q: %w", add, err)
 		}
 		logrus.Debugf("Merged additional config %q", add)
@@ -156,12 +156,8 @@ func systemConfigs() (configs []string, finalErr error) {
 		}
 		return append(configs, path), nil
 	}
-	if _, err := os.Stat(DefaultContainersConfig); err == nil {
-		configs = append(configs, DefaultContainersConfig)
-	}
-	if _, err := os.Stat(OverrideContainersConfig); err == nil {
-		configs = append(configs, OverrideContainersConfig)
-	}
+	configs = append(configs, DefaultContainersConfig)
+	configs = append(configs, OverrideContainersConfig)
 
 	var err error
 	configs, err = addConfigs(OverrideContainersConfig+".d", configs)
@@ -174,9 +170,7 @@ func systemConfigs() (configs []string, finalErr error) {
 		return nil, err
 	}
 	if path != "" {
-		if _, err := os.Stat(path); err == nil {
-			configs = append(configs, path)
-		}
+		configs = append(configs, path)
 		configs, err = addConfigs(path+".d", configs)
 		if err != nil {
 			return nil, err
@@ -224,10 +218,13 @@ func addConfigs(dirPath string, configs []string) ([]string, error) {
 // unmarshal its content into a Config. The config param specifies the previous
 // default config. If the path, only specifies a few fields in the Toml file
 // the defaults from the config parameter will be used for all other fields.
-func readConfigFromFile(path string, config *Config) error {
+func readConfigFromFile(path string, config *Config, ignoreErrNotExist bool) error {
 	logrus.Tracef("Reading configuration file %q", path)
 	meta, err := toml.DecodeFile(path, config)
 	if err != nil {
+		if ignoreErrNotExist && errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
 		return fmt.Errorf("decode configuration %v: %w", path, err)
 	}
 	keys := meta.Undecoded()
