@@ -27,7 +27,7 @@ func selinuxEnabled() bool {
 }
 
 func customConfigFile() (string, error) {
-	if path, found := os.LookupEnv("CONTAINERS_CONF"); found {
+	if path, found := os.LookupEnv(containersConfEnv); found {
 		return path, nil
 	}
 	if unshare.GetRootlessUID() > 0 {

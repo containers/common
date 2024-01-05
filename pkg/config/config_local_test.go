@@ -365,17 +365,17 @@ var _ = Describe("Config Local", func() {
 			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		}
 		// Given we do
-		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-		os.Setenv("CONTAINERS_CONF", "/dev/null")
+		oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+		os.Setenv(containersConfEnv, "/dev/null")
 
 		// When
 		config, err := Default()
 
 		// Undo that
 		if envSet {
-			os.Setenv("CONTAINERS_CONF", oldContainersConf)
+			os.Setenv(containersConfEnv, oldContainersConf)
 		} else {
-			os.Unsetenv("CONTAINERS_CONF")
+			os.Unsetenv(containersConfEnv)
 		}
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -396,13 +396,13 @@ var _ = Describe("Config Local", func() {
 
 	It("write", func() {
 		tmpfile := "containers.conf.test"
-		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-		os.Setenv("CONTAINERS_CONF", tmpfile)
+		oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+		os.Setenv(containersConfEnv, tmpfile)
 		defer func() {
 			if envSet {
-				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+				os.Setenv(containersConfEnv, oldContainersConf)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 		}()
 

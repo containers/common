@@ -21,7 +21,6 @@ var (
 )
 
 const (
-	// FIXME: update code base and tests to use the two constants below.
 	containersConfEnv         = "CONTAINERS_CONF"
 	containersConfOverrideEnv = containersConfEnv + "_OVERRIDE"
 )

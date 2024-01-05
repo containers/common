@@ -422,15 +422,15 @@ image_copy_tmp_dir="storage"`
 			}
 
 			// Given we do
-			oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", "/dev/null")
+			oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, "/dev/null")
 			// When
 			config, err := NewConfig("")
 			// Undo that
 			if envSet {
-				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+				os.Setenv(containersConfEnv, oldContainersConf)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
@@ -489,15 +489,15 @@ image_copy_tmp_dir="storage"`
 
 		It("contents of passed-in file should override others", func() {
 			// Given we do
-			oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", "containers.conf")
+			oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, "containers.conf")
 			// When
 			config, err := NewConfig("testdata/containers_override.conf")
 			// Undo that
 			if envSet {
-				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+				os.Setenv(containersConfEnv, oldContainersConf)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 
 			crunWasm := "crun-wasm"
@@ -664,17 +664,17 @@ image_copy_tmp_dir="storage"`
 		}{}
 
 		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
+			ConfPath.Value, ConfPath.IsSet = os.LookupEnv(containersConfEnv)
 			conf, _ := os.CreateTemp("", "containersconf")
-			os.Setenv("CONTAINERS_CONF", conf.Name())
+			os.Setenv(containersConfEnv, conf.Name())
 		})
 
 		AfterEach(func() {
-			os.Remove(os.Getenv("CONTAINERS_CONF"))
+			os.Remove(os.Getenv(containersConfEnv))
 			if ConfPath.IsSet {
-				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
+				os.Setenv(containersConfEnv, ConfPath.Value)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 		})
 
@@ -786,17 +786,17 @@ image_copy_tmp_dir="storage"`
 		}{}
 
 		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
+			ConfPath.Value, ConfPath.IsSet = os.LookupEnv(containersConfEnv)
 			conf, _ := os.CreateTemp("", "containersconf")
-			os.Setenv("CONTAINERS_CONF", conf.Name())
+			os.Setenv(containersConfEnv, conf.Name())
 		})
 
 		AfterEach(func() {
-			os.Remove(os.Getenv("CONTAINERS_CONF"))
+			os.Remove(os.Getenv(containersConfEnv))
 			if ConfPath.IsSet {
-				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
+				os.Setenv(containersConfEnv, ConfPath.Value)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 		})
 
@@ -844,14 +844,14 @@ image_copy_tmp_dir="storage"`
 		It("test new config from reload", func() {
 			// Default configuration
 			defaultTestFile := "testdata/containers_default.conf"
-			oldEnv, set := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", defaultTestFile)
+			oldEnv, set := os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, defaultTestFile)
 			cfg, err := Default()
 			gomega.Expect(err).To(gomega.BeNil())
 			if set {
-				os.Setenv("CONTAINERS_CONF", oldEnv)
+				os.Setenv(containersConfEnv, oldEnv)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 
 			// Reload from new configuration file
@@ -861,16 +861,16 @@ env=["foo=bar"]`
 			err = os.WriteFile(testFile, []byte(content), os.ModePerm)
 			defer os.Remove(testFile)
 			gomega.Expect(err).To(gomega.BeNil())
-			oldEnv, set = os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", testFile)
+			oldEnv, set = os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, testFile)
 			_, err = Reload()
 			gomega.Expect(err).To(gomega.BeNil())
 			newCfg, err := Default()
 			gomega.Expect(err).To(gomega.BeNil())
 			if set {
-				os.Setenv("CONTAINERS_CONF", oldEnv)
+				os.Setenv(containersConfEnv, oldEnv)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 
 			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
@@ -884,8 +884,8 @@ env=["foo=bar"]`
 	})
 
 	It("write default config should be empty", func() {
-		defer os.Unsetenv("CONTAINERS_CONF")
-		os.Setenv("CONTAINERS_CONF", "/dev/null")
+		defer os.Unsetenv(containersConfEnv)
+		os.Setenv(containersConfEnv, "/dev/null")
 		conf, err := ReadCustomConfig()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
@@ -893,7 +893,7 @@ env=["foo=bar"]`
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		defer f.Close()
 		defer os.Remove(f.Name())
-		os.Setenv("CONTAINERS_CONF", f.Name())
+		os.Setenv(containersConfEnv, f.Name())
 		err = conf.Write()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		b, err := os.ReadFile(f.Name())
@@ -920,8 +920,8 @@ env=["foo=bar"]`
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 
 		// Make sure that _OVERRIDE is loaded even when CONTAINERS_CONF is set.
-		os.Setenv("CONTAINERS_CONF", "testdata/containers_default.conf")
-		defer os.Unsetenv("CONTAINERS_CONF")
+		os.Setenv(containersConfEnv, "testdata/containers_default.conf")
+		defer os.Unsetenv(containersConfEnv)
 		config, err = NewConfig("")
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))

@@ -1021,7 +1021,7 @@ func rootlessConfigPath() (string, error) {
 }
 
 func Path() string {
-	if path := os.Getenv("CONTAINERS_CONF"); path != "" {
+	if path := os.Getenv(containersConfEnv); path != "" {
 		return path
 	}
 	if unshare.IsRootless() {
