@@ -21,6 +21,7 @@ import (
 	"github.com/opencontainers/runc/libcontainer/cgroups/fs2"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -491,10 +492,7 @@ func (c *CgroupControl) AddPid(pid int) error {
 		return fs2.CreateCgroupPath(path, c.config)
 	}
 
-	names := make([]string, 0, len(handlers))
-	for n := range handlers {
-		names = append(names, n)
-	}
+	names := maps.Keys(handlers)
 
 	for _, c := range c.additionalControllers {
 		if !c.symlink {
