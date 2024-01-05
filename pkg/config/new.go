@@ -165,16 +165,14 @@ func systemConfigs() (configs []string, finalErr error) {
 		return nil, err
 	}
 
-	path, err := ifRootlessConfigPath()
+	path, err := userConfigPath()
 	if err != nil {
 		return nil, err
 	}
-	if path != "" {
-		configs = append(configs, path)
-		configs, err = addConfigs(path+".d", configs)
-		if err != nil {
-			return nil, err
-		}
+	configs = append(configs, path)
+	configs, err = addConfigs(path+".d", configs)
+	if err != nil {
+		return nil, err
 	}
 	return configs, nil
 }

@@ -11,10 +11,9 @@ a TOML format that can be easily modified and versioned.
 
 Container engines read the __/usr/share/containers/containers.conf__,
 __/etc/containers/containers.conf__, and __/etc/containers/containers.conf.d/\*.conf__
-files if they exist.
-When running in rootless mode, they also read
-__$HOME/.config/containers/containers.conf__ and
-__$HOME/.config/containers/containers.conf.d/\*.conf__ files.
+for global configuration that effects all users.
+For user specific configuration it reads __\$XDG_CONFIG_HOME/containers/containers.conf__ and
+__\$XDG_CONFIG_HOME/containers/containers.conf.d/\*.conf__ files. When `$XDG_CONFIG_HOME` is not set it falls back to using `$HOME/.config` instead.
 
 Fields specified in containers conf override the default options, as well as
 options in previously read containers.conf files.
@@ -42,13 +41,13 @@ instance, `CONTAINERS_CONF=/tmp/my_containers.conf`.
 
 ## MODULES
 A module is a containers.conf file located directly in or a sub-directory of the following three directories:
- - __$HOME/.config/containers/containers.conf.modules__
+ - __\$XDG_CONFIG_HOME/containers/containers.conf.modules__ or  __\$HOME/.config/containers/containers.conf.modules__ if `$XDG_CONFIG_HOME` is not set.
  - __/etc/containers/containers.conf.modules__
  - __/usr/share/containers/containers.conf.modules__
 
 Files in those locations are not loaded by default but only on-demand.  They are loaded after all system and user configuration files but before `CONTAINERS_CONF_OVERRIDE` hence allowing for overriding system and user configs.
 
-Modules are currently supported by podman(1).  The `podman --module` flag allows for loading a module and can be specified multiple times.  If the specified value is an absolute path, the config file will be loaded directly.  Relative paths are resolved relative to the three module directories mentioned above and in the specified order such that modules in `$HOME` allow for overriding those in `/etc` and `/usr/share`.  Modules in `$HOME` (or `$XDG_CONFIG_HOME` if specified) are only used for rootless users.
+Modules are currently supported by podman(1).  The `podman --module` flag allows for loading a module and can be specified multiple times.  If the specified value is an absolute path, the config file will be loaded directly.  Relative paths are resolved relative to the three module directories mentioned above and in the specified order such that modules in `$XDG_CONFIG_HOME/$HOME` allow for overriding those in `/etc` and `/usr/share`.
 
 ## APPENDING TO STRING ARRAYS
 
@@ -459,7 +458,7 @@ and "$graphroot/networks" as rootless.
 **firewall_driver**=""
 
 The firewall driver to be used by netavark.
-The default is empty which means netavark will pick one accordingly. Current supported 
+The default is empty which means netavark will pick one accordingly. Current supported
 drivers are "iptables", "none" (no firewall rules will be created) and "firewalld" (firewalld is
 experimental at the moment and not recommend outside of testing). In the future we are
 planning to add support for a "nftables" driver.
@@ -952,8 +951,8 @@ provide a default configuration. Administrators can override fields in this
 file by creating __/etc/containers/containers.conf__ to specify their own
 configuration. They may also drop `.conf` files in
 __/etc/containers/containers.conf.d__ which will be loaded in alphanumeric order.
-Rootless users can further override fields in the config by creating a config
-file stored in the __$HOME/.config/containers/containers.conf__ file or __.conf__ files in __$HOME/.config/containers/containers.conf.d__.
+For user specific configuration it reads __\$XDG_CONFIG_HOME/containers/containers.conf__ and
+__\$XDG_CONFIG_HOME/containers/containers.conf.d/\*.conf__ files. When `$XDG_CONFIG_HOME` is not set it falls back to using `$HOME/.config` instead.
 
 Fields specified in a containers.conf file override the default options, as
 well as options in previously loaded containers.conf files.

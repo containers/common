@@ -1008,16 +1008,11 @@ func IsValidDeviceMode(mode string) bool {
 	return true
 }
 
-func rootlessConfigPath() (string, error) {
-	if configHome := os.Getenv("XDG_CONFIG_HOME"); configHome != "" {
-		return filepath.Join(configHome, _configPath), nil
+func customConfigFile() (string, error) {
+	if path, found := os.LookupEnv(containersConfEnv); found {
+		return path, nil
 	}
-	home, err := unshare.HomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(home, UserOverrideContainersConfig), nil
+	return userConfigPath()
 }
 
 // ReadCustomConfig reads the custom config and only generates a config based on it
