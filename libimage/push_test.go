@@ -16,8 +16,7 @@ import (
 )
 
 func TestPush(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	// Prefetch alpine.
@@ -29,9 +28,7 @@ func TestPush(t *testing.T) {
 	pushOptions := &PushOptions{}
 	pushOptions.Writer = os.Stdout
 
-	workdir, err := os.MkdirTemp("", "libimagepush")
-	require.NoError(t, err)
-	defer os.RemoveAll(workdir)
+	workdir := t.TempDir()
 
 	for _, test := range []struct {
 		source      string
@@ -77,8 +74,7 @@ func TestPush(t *testing.T) {
 }
 
 func TestPushOtherPlatform(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	// Prefetch alpine.
@@ -104,8 +100,7 @@ func TestPushOtherPlatform(t *testing.T) {
 }
 
 func TestPushWithForceCompression(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	// Prefetch alpine.

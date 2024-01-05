@@ -11,8 +11,7 @@ import (
 )
 
 func TestImport(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	importOptions := &ImportOptions{}

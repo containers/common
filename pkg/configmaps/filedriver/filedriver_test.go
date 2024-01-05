@@ -1,24 +1,14 @@
 package filedriver
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func setup() (*Driver, error) {
-	tmppath, err := os.MkdirTemp("", "configmapsdata")
-	if err != nil {
-		return nil, err
-	}
-	return NewDriver(tmppath)
-}
-
 func TestStoreAndLookupConfigMapData(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.configMapsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)
@@ -29,9 +19,8 @@ func TestStoreAndLookupConfigMapData(t *testing.T) {
 }
 
 func TestStoreDupID(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.configMapsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)
@@ -41,18 +30,16 @@ func TestStoreDupID(t *testing.T) {
 }
 
 func TestLookupBogus(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.configMapsDataFilePath)
 
 	_, err = tstdriver.Lookup("bogus")
 	require.Error(t, err)
 }
 
 func TestDeleteConfigMapData(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.configMapsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)
@@ -64,18 +51,16 @@ func TestDeleteConfigMapData(t *testing.T) {
 }
 
 func TestDeleteConfigMapDataNotExist(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.configMapsDataFilePath)
 
 	err = tstdriver.Delete("bogus")
 	require.Error(t, err)
 }
 
 func TestList(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.configMapsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)

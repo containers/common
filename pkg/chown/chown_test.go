@@ -14,13 +14,6 @@ func TestDangerousHostPath(t *testing.T) {
 		t.Skip("Current paths are supported only by Linux")
 	}
 
-	// Create a temp dir that is not dangerous
-	td, err := os.MkdirTemp("/tmp", "validDir")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(td)
-
 	tests := []struct {
 		Path             string
 		Expected         bool
@@ -34,7 +27,7 @@ func TestDangerousHostPath(t *testing.T) {
 			"",
 		},
 		{
-			td,
+			t.TempDir(), // Create a temp dir that is not dangerous
 			false,
 			false,
 			"",
@@ -65,11 +58,7 @@ func TestChangeHostPathOwnership(t *testing.T) {
 	}
 
 	// Create a temp dir that is not dangerous
-	td, err := os.MkdirTemp("/tmp", "validDir")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(td)
+	td := t.TempDir()
 
 	// Get host path info
 	f, err := os.Lstat(td)

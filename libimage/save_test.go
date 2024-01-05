@@ -13,8 +13,7 @@ import (
 )
 
 func TestSave(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	// Prefetch alpine, busybox.
@@ -73,9 +72,7 @@ func TestSave(t *testing.T) {
 		_, err = runtime.Load(ctx, imageCache.Name(), loadOptions)
 		require.NoError(t, err)
 
-		tmp, err := os.MkdirTemp("", "libimagesavetest")
-		require.NoError(t, err)
-		defer os.RemoveAll(tmp)
+		tmp := t.TempDir()
 		if !test.isDir {
 			tmp += "/archive.tar"
 		}

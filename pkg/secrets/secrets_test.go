@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,26 +9,15 @@ import (
 
 var drivertype = "file"
 
-var opts map[string]string
-
-func setup() (*SecretsManager, string, error) {
-	testpath, err := os.MkdirTemp("", "secretsdata")
-	if err != nil {
-		return nil, "", err
-	}
+func setup(t *testing.T) (manager *SecretsManager, opts map[string]string) {
+	testpath := t.TempDir()
 	manager, err := NewManager(testpath)
-	opts = map[string]string{"path": testpath}
-	return manager, testpath, err
-}
-
-func cleanup(testpath string) {
-	os.RemoveAll(testpath)
+	require.NoError(t, err)
+	return manager, map[string]string{"path": testpath}
 }
 
 func TestAddSecretAndLookupData(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	metaData := make(map[string]string)
 	metaData["immutable"] = "true"
@@ -92,9 +80,7 @@ func TestAddSecretAndLookupData(t *testing.T) {
 }
 
 func TestAddSecretName(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
@@ -104,7 +90,7 @@ func TestAddSecretName(t *testing.T) {
 
 	for _, value := range []string{"a", "user@mail.com", longstring[:253]} {
 		// test one char secret name
-		_, err = manager.Store(value, []byte("mydata"), drivertype, storeOpts)
+		_, err := manager.Store(value, []byte("mydata"), drivertype, storeOpts)
 		require.NoError(t, err)
 
 		_, err = manager.lookupSecret(value)
@@ -112,15 +98,13 @@ func TestAddSecretName(t *testing.T) {
 	}
 
 	for _, value := range []string{"", "chocolate,vanilla", "file/path", "foo=bar", "bad\000Null", longstring[:254]} {
-		_, err = manager.Store(value, []byte("mydata"), drivertype, storeOpts)
+		_, err := manager.Store(value, []byte("mydata"), drivertype, storeOpts)
 		require.Error(t, err)
 	}
 }
 
 func TestAddMultipleSecrets(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
@@ -156,15 +140,13 @@ func TestAddMultipleSecrets(t *testing.T) {
 }
 
 func TestAddSecretDupName(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
 	}
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	_, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
 	require.NoError(t, err)
 
 	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
@@ -172,9 +154,7 @@ func TestAddSecretDupName(t *testing.T) {
 }
 
 func TestAddSecretPrefix(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
@@ -190,15 +170,13 @@ func TestAddSecretPrefix(t *testing.T) {
 }
 
 func TestRemoveSecret(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
 	}
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	_, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupSecret("mysecret")
@@ -215,18 +193,14 @@ func TestRemoveSecret(t *testing.T) {
 }
 
 func TestRemoveSecretNoExist(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, _ := setup(t)
 
-	_, err = manager.Delete("mysecret")
+	_, err := manager.Delete("mysecret")
 	require.Error(t, err)
 }
 
 func TestLookupAllSecrets(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
@@ -242,9 +216,7 @@ func TestLookupAllSecrets(t *testing.T) {
 }
 
 func TestInspectSecretId(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
@@ -269,24 +241,20 @@ func TestInspectSecretId(t *testing.T) {
 }
 
 func TestInspectSecretBogus(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, _ := setup(t)
 
-	_, err = manager.Lookup("bogus")
+	_, err := manager.Lookup("bogus")
 	require.Error(t, err)
 }
 
 func TestSecretList(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
 	}
 
-	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	_, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
 	require.NoError(t, err)
 	_, err = manager.Store("mysecret2", []byte("mydata2"), drivertype, storeOpts)
 	require.NoError(t, err)

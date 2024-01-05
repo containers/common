@@ -1,24 +1,14 @@
 package filedriver
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func setup() (*Driver, error) {
-	tmppath, err := os.MkdirTemp("", "secretsdata")
-	if err != nil {
-		return nil, err
-	}
-	return NewDriver(tmppath)
-}
-
 func TestStoreAndLookupSecretData(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.secretsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)
@@ -29,9 +19,8 @@ func TestStoreAndLookupSecretData(t *testing.T) {
 }
 
 func TestStoreDupID(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.secretsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)
@@ -41,18 +30,16 @@ func TestStoreDupID(t *testing.T) {
 }
 
 func TestLookupBogus(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.secretsDataFilePath)
 
 	_, err = tstdriver.Lookup("bogus")
 	require.Error(t, err)
 }
 
 func TestDeleteSecretData(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.secretsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)
@@ -64,18 +51,16 @@ func TestDeleteSecretData(t *testing.T) {
 }
 
 func TestDeleteSecretDataNotExist(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.secretsDataFilePath)
 
 	err = tstdriver.Delete("bogus")
 	require.Error(t, err)
 }
 
 func TestList(t *testing.T) {
-	tstdriver, err := setup()
+	tstdriver, err := NewDriver(t.TempDir())
 	require.NoError(t, err)
-	defer os.Remove(tstdriver.secretsDataFilePath)
 
 	err = tstdriver.Store("unique_id", []byte("somedata"))
 	require.NoError(t, err)

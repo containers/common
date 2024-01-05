@@ -15,8 +15,7 @@ import (
 )
 
 func TestPull(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
@@ -81,8 +80,8 @@ func TestPull(t *testing.T) {
 }
 
 func TestPullPlatforms(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
+
 	ctx := context.Background()
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
@@ -141,8 +140,7 @@ func TestPullPlatforms(t *testing.T) {
 }
 
 func TestPullPlatformsWithEmptyRegistriesConf(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t, testNewRuntimeOptions{registriesConfPath: "/dev/null"})
-	defer cleanup()
+	runtime := testNewRuntime(t, testNewRuntimeOptions{registriesConfPath: "/dev/null"})
 	ctx := context.Background()
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
@@ -171,8 +169,7 @@ func TestPullPlatformsWithEmptyRegistriesConf(t *testing.T) {
 }
 
 func TestPullPolicy(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 	pullOptions := &PullOptions{}
 
@@ -191,8 +188,7 @@ func TestPullPolicy(t *testing.T) {
 
 func TestShortNameAndIDconflict(t *testing.T) {
 	// Regression test for https://github.com/containers/podman/issues/12761
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
@@ -228,8 +224,7 @@ func TestPullOCINoReference(t *testing.T) {
 	// specified reference is preserved in the image name.
 
 	busybox := "docker.io/library/busybox:latest"
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout

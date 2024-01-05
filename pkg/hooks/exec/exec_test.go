@@ -147,10 +147,7 @@ func TestRunCwd(t *testing.T) {
 		Path: path,
 		Args: []string{"sh", "-c", "pwd"},
 	}
-	cwd, err := os.MkdirTemp("", "userdata")
-	if err != nil {
-		t.Fatal(err)
-	}
+	cwd := t.TempDir()
 	var stderr, stdout bytes.Buffer
 	hookErr, err := RunWithOptions(ctx, RunOptions{Hook: hook, Dir: cwd, State: []byte("{}"), Stdout: &stdout, Stderr: &stderr, PostKillTimeout: DefaultPostKillTimeout})
 	if err != nil {

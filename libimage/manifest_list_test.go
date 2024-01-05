@@ -13,8 +13,7 @@ import (
 )
 
 func TestCreateManifestList(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	list, err := runtime.CreateManifestList("mylist")
@@ -44,8 +43,7 @@ func TestCreateManifestList(t *testing.T) {
 // Inspect must contain both formats i.e OCIv1 and docker
 func TestInspectManifestListWithAnnotations(t *testing.T) {
 	listName := "testinspect"
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	list, err := runtime.CreateManifestList(listName)
@@ -84,8 +82,7 @@ func TestInspectManifestListWithAnnotations(t *testing.T) {
 func TestCreateAndTagManifestList(t *testing.T) {
 	tagName := "testlisttagged"
 	listName := "testlist"
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	list, err := runtime.CreateManifestList(listName)
@@ -121,8 +118,7 @@ func TestCreateAndTagManifestList(t *testing.T) {
 func TestCreateAndRemoveManifestList(t *testing.T) {
 	tagName := "manifestlisttagged"
 	listName := "manifestlist"
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	list, err := runtime.CreateManifestList(listName)

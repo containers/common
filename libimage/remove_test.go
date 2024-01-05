@@ -16,8 +16,7 @@ func TestRemoveImages(t *testing.T) {
 	// testdata/registries.conf).
 	busyboxLatest := "docker.io/library/busybox:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
