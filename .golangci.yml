@@ -33,7 +33,6 @@ linters:
     - godox
     - lll
     - nestif
-    - contextcheck
     - cyclop
     - depguard
     - errchkjson
@@ -84,3 +83,8 @@ issues:
     - path: _test\.go
       linters:
         - dupl
+    # Exclude "should pass the context parameter" for libimage.LookupImage because of backward compatibility.
+    - path: "libimage"
+      text: "LookupImage"
+      linters:
+        - contextcheck

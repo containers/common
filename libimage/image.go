@@ -84,7 +84,7 @@ func (i *Image) reload() error {
 }
 
 // isCorrupted returns an error if the image may be corrupted.
-func (i *Image) isCorrupted(name string) error {
+func (i *Image) isCorrupted(ctx context.Context, name string) error {
 	// If it's a manifest list, we're good for now.
 	if _, err := i.getManifestList(); err == nil {
 		return nil
@@ -95,7 +95,7 @@ func (i *Image) isCorrupted(name string) error {
 		return err
 	}
 
-	img, err := ref.NewImage(context.Background(), nil)
+	img, err := ref.NewImage(ctx, nil)
 	if err != nil {
 		if name == "" {
 			name = i.ID()[:12]
@@ -257,7 +257,7 @@ func (i *Image) TopLayer() string {
 
 // Parent returns the parent image or nil if there is none
 func (i *Image) Parent(ctx context.Context) (*Image, error) {
-	tree, err := i.runtime.layerTree(nil)
+	tree, err := i.runtime.layerTree(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +291,7 @@ func (i *Image) Children(ctx context.Context) ([]*Image, error) {
 // created for this invocation only.
 func (i *Image) getChildren(ctx context.Context, all bool, tree *layerTree) ([]*Image, error) {
 	if tree == nil {
-		t, err := i.runtime.layerTree(nil)
+		t, err := i.runtime.layerTree(ctx, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -1030,7 +1030,7 @@ func getImageID(ctx context.Context, src types.ImageReference, sys *types.System
 //   - 2) a bool indicating whether architecture, os or variant were set (some callers need that to decide whether they need to throw an error)
 //   - 3) a fatal error that occurred prior to check for matches (e.g., storage errors etc.)
 func (i *Image) matchesPlatform(ctx context.Context, os, arch, variant string) (error, bool, error) {
-	if err := i.isCorrupted(""); err != nil {
+	if err := i.isCorrupted(ctx, ""); err != nil {
 		return err, false, nil
 	}
 	inspectInfo, err := i.inspectInfo(ctx)

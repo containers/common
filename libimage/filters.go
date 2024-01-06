@@ -21,7 +21,7 @@ import (
 type filterFunc func(*Image) (bool, error)
 
 // Apply the specified filters.  At least one filter of each key must apply.
-func (i *Image) applyFilters(filters map[string][]filterFunc) (bool, error) {
+func (i *Image) applyFilters(ctx context.Context, filters map[string][]filterFunc) (bool, error) {
 	matches := false
 	for key := range filters { // and
 		matches = false
@@ -32,7 +32,7 @@ func (i *Image) applyFilters(filters map[string][]filterFunc) (bool, error) {
 				// Some images may have been corrupted in the
 				// meantime, so do an extra check and make the
 				// error non-fatal (see containers/podman/issues/12582).
-				if errCorrupted := i.isCorrupted(""); errCorrupted != nil {
+				if errCorrupted := i.isCorrupted(ctx, ""); errCorrupted != nil {
 					logrus.Errorf(errCorrupted.Error())
 					return false, nil
 				}
@@ -62,7 +62,7 @@ func (r *Runtime) filterImages(ctx context.Context, images []*Image, options *Li
 	}
 	result := []*Image{}
 	for i := range images {
-		match, err := images[i].applyFilters(filters)
+		match, err := images[i].applyFilters(ctx, filters)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +83,7 @@ func (r *Runtime) compileImageFilters(ctx context.Context, options *ListImagesOp
 	var tree *layerTree
 	getTree := func() (*layerTree, error) {
 		if tree == nil {
-			t, err := r.layerTree(nil)
+			t, err := r.layerTree(ctx, nil)
 			if err != nil {
 				return nil, err
 			}
