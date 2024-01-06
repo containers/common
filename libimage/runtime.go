@@ -234,8 +234,12 @@ func (r *Runtime) LookupImage(name string, options *LookupImageOptions) (*Image,
 		if storageRef.Transport().Name() != storageTransport.Transport.Name() {
 			return nil, "", fmt.Errorf("unsupported transport %q for looking up local images", storageRef.Transport().Name())
 		}
-		img, err := storageTransport.Transport.GetStoreImage(r.store, storageRef)
+		_, img, err := storageTransport.ResolveReference(storageRef)
 		if err != nil {
+			if errors.Is(err, storageTransport.ErrNoSuchImage) {
+				// backward compatibility
+				return nil, "", storage.ErrImageUnknown
+			}
 			return nil, "", err
 		}
 		logrus.Debugf("Found image %q in local containers storage (%s)", name, storageRef.StringWithinTransport())
@@ -346,9 +350,9 @@ func (r *Runtime) lookupImageInLocalStorage(name, candidate string, namedCandida
 		if err != nil {
 			return nil, err
 		}
-		img, err = storageTransport.Transport.GetStoreImage(r.store, ref)
+		_, img, err = storageTransport.ResolveReference(ref)
 		if err != nil {
-			if errors.Is(err, storage.ErrImageUnknown) {
+			if errors.Is(err, storageTransport.ErrNoSuchImage) {
 				return nil, nil
 			}
 			return nil, err

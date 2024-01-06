@@ -40,7 +40,6 @@ jobs:
       uses: golangci/golangci-lint-action@v3
       with:
         version: "${{ env.LINT_VERSION }}"
-        only-new-issues: true
         args: --verbose
     # Extra linters, only checking new code from a pull request.
     - name: Extra golangci-lint config. switcharoo
