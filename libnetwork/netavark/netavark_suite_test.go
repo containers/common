@@ -67,7 +67,7 @@ type equalSubnetMatcher struct {
 	expected *net.IPNet
 }
 
-func (m *equalSubnetMatcher) Match(actual interface{}) (bool, error) {
+func (m *equalSubnetMatcher) Match(actual any) (bool, error) {
 	util.NormalizeIP(&m.expected.IP)
 
 	subnet, ok := actual.(*net.IPNet)
@@ -79,10 +79,10 @@ func (m *equalSubnetMatcher) Match(actual interface{}) (bool, error) {
 	return reflect.DeepEqual(subnet, m.expected), nil
 }
 
-func (m *equalSubnetMatcher) FailureMessage(actual interface{}) string {
+func (m *equalSubnetMatcher) FailureMessage(actual any) string {
 	return fmt.Sprintf("Expected subnet %#v to equal subnet %#v", actual, m.expected)
 }
 
-func (m *equalSubnetMatcher) NegatedFailureMessage(actual interface{}) string {
+func (m *equalSubnetMatcher) NegatedFailureMessage(actual any) string {
 	return fmt.Sprintf("Expected subnet %#v not to equal subnet %#v", actual, m.expected)
 }

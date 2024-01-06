@@ -31,13 +31,13 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 		IPAMOptions: map[string]string{},
 	}
 
-	cniJSON := make(map[string]interface{})
+	cniJSON := make(map[string]any)
 	err := json.Unmarshal(conf.Bytes, &cniJSON)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal network config %s: %w", conf.Name, err)
 	}
 	if args, ok := cniJSON["args"]; ok {
-		if key, ok := args.(map[string]interface{}); ok {
+		if key, ok := args.(map[string]any); ok {
 			// read network labels and options from the conf file
 			network.Labels = getNetworkArgsFromConfList(key, podmanLabelKey)
 			network.Options = getNetworkArgsFromConfList(key, podmanOptionsKey)
@@ -214,9 +214,9 @@ func convertIPAMConfToNetwork(network *types.Network, ipam *ipamConfig, confPath
 }
 
 // getNetworkArgsFromConfList returns the map of args in a conflist, argType should be labels or options
-func getNetworkArgsFromConfList(args map[string]interface{}, argType string) map[string]string {
+func getNetworkArgsFromConfList(args map[string]any, argType string) map[string]string {
 	if args, ok := args[argType]; ok {
-		if labels, ok := args.(map[string]interface{}); ok {
+		if labels, ok := args.(map[string]any); ok {
 			result := make(map[string]string, len(labels))
 			for k, v := range labels {
 				if v, ok := v.(string); ok {
@@ -298,7 +298,7 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 	// the dnsname plugin also needs to be updated for 1.0.0
 	// TODO change to 1.0.0 when most distros support it
 	ncList := newNcList(network.Name, "0.4.0", network.Labels, network.Options)
-	var plugins []interface{}
+	var plugins []any
 
 	switch network.Driver {
 	case types.BridgeNetworkDriver:

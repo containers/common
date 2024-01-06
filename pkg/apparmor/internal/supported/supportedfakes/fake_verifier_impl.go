@@ -53,7 +53,7 @@ type FakeVerifierImpl struct {
 	unshareIsRootlessReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	invocations      map[string][][]interface{}
+	invocations      map[string][][]any
 	invocationsMutex sync.RWMutex
 }
 
@@ -63,7 +63,7 @@ func (fake *FakeVerifierImpl) ExecLookPath(arg1 string) (string, error) {
 	fake.execLookPathArgsForCall = append(fake.execLookPathArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("ExecLookPath", []interface{}{arg1})
+	fake.recordInvocation("ExecLookPath", []any{arg1})
 	fake.execLookPathMutex.Unlock()
 	if fake.ExecLookPathStub != nil {
 		return fake.ExecLookPathStub(arg1)
@@ -126,7 +126,7 @@ func (fake *FakeVerifierImpl) OsStat(arg1 string) (os.FileInfo, error) {
 	fake.osStatArgsForCall = append(fake.osStatArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("OsStat", []interface{}{arg1})
+	fake.recordInvocation("OsStat", []any{arg1})
 	fake.osStatMutex.Unlock()
 	if fake.OsStatStub != nil {
 		return fake.OsStatStub(arg1)
@@ -188,7 +188,7 @@ func (fake *FakeVerifierImpl) RuncIsEnabled() bool {
 	ret, specificReturn := fake.runcIsEnabledReturnsOnCall[len(fake.runcIsEnabledArgsForCall)]
 	fake.runcIsEnabledArgsForCall = append(fake.runcIsEnabledArgsForCall, struct {
 	}{})
-	fake.recordInvocation("RuncIsEnabled", []interface{}{})
+	fake.recordInvocation("RuncIsEnabled", []any{})
 	fake.runcIsEnabledMutex.Unlock()
 	if fake.RuncIsEnabledStub != nil {
 		return fake.RuncIsEnabledStub()
@@ -240,7 +240,7 @@ func (fake *FakeVerifierImpl) UnshareIsRootless() bool {
 	ret, specificReturn := fake.unshareIsRootlessReturnsOnCall[len(fake.unshareIsRootlessArgsForCall)]
 	fake.unshareIsRootlessArgsForCall = append(fake.unshareIsRootlessArgsForCall, struct {
 	}{})
-	fake.recordInvocation("UnshareIsRootless", []interface{}{})
+	fake.recordInvocation("UnshareIsRootless", []any{})
 	fake.unshareIsRootlessMutex.Unlock()
 	if fake.UnshareIsRootlessStub != nil {
 		return fake.UnshareIsRootlessStub()
@@ -287,7 +287,7 @@ func (fake *FakeVerifierImpl) UnshareIsRootlessReturnsOnCall(i int, result1 bool
 	}{result1}
 }
 
-func (fake *FakeVerifierImpl) Invocations() map[string][][]interface{} {
+func (fake *FakeVerifierImpl) Invocations() map[string][][]any {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.execLookPathMutex.RLock()
@@ -298,21 +298,21 @@ func (fake *FakeVerifierImpl) Invocations() map[string][][]interface{} {
 	defer fake.runcIsEnabledMutex.RUnlock()
 	fake.unshareIsRootlessMutex.RLock()
 	defer fake.unshareIsRootlessMutex.RUnlock()
-	copiedInvocations := map[string][][]interface{}{}
+	copiedInvocations := map[string][][]any{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
 	}
 	return copiedInvocations
 }
 
-func (fake *FakeVerifierImpl) recordInvocation(key string, args []interface{}) {
+func (fake *FakeVerifierImpl) recordInvocation(key string, args []any) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
-		fake.invocations = map[string][][]interface{}{}
+		fake.invocations = map[string][][]any{}
 	}
 	if fake.invocations[key] == nil {
-		fake.invocations[key] = [][]interface{}{}
+		fake.invocations[key] = [][]any{}
 	}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }

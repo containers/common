@@ -115,7 +115,7 @@ type dnsNameConfig struct {
 }
 
 // ncList describes a generic map
-type ncList map[string]interface{}
+type ncList map[string]any
 
 // newNcList creates a generic map of values with string
 // keys and adds in version and network name

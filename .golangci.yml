@@ -76,6 +76,10 @@ linters-settings:
     check-type-assertions: true
   gocyclo:
     min-complexity: 35
+  gofmt:
+    rewrite-rules:
+      - pattern: 'interface{}'
+        replacement: 'any'
 
 issues:
     # Excluding configuration per-path, per-linter, per-text and per-source
