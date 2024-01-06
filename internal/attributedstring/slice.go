@@ -88,9 +88,8 @@ func (a *Slice) MarshalTOML() ([]byte, error) {
 	}
 
 	if a.Attributes.Append != nil {
-		Attributes := make(map[string]any)
-		Attributes["append"] = *a.Attributes.Append
-		iFaceSlice = append(iFaceSlice, Attributes)
+		attributes := map[string]any{"append": *a.Attributes.Append}
+		iFaceSlice = append(iFaceSlice, attributes)
 	}
 
 	buf := new(bytes.Buffer)

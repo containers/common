@@ -31,17 +31,13 @@ func TestAddSecretAndLookupData(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup(testpath)
 
-	metaData := make(map[string]string)
-	metaData["immutable"] = "true"
-
-	labels := make(map[string]string)
-	labels["foo"] = "bar"
-	labels["another"] = "label"
-
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
-		Metadata:   metaData,
-		Labels:     labels,
+		Metadata:   map[string]string{"immutable": "true"},
+		Labels: map[string]string{
+			"foo":     "bar",
+			"another": "label",
+		},
 	}
 
 	id1, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)

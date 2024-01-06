@@ -73,12 +73,13 @@ const (
 var handlers map[string]controllerHandler
 
 func init() {
-	handlers = make(map[string]controllerHandler)
-	handlers[CPU] = getCPUHandler()
-	handlers[CPUset] = getCpusetHandler()
-	handlers[Memory] = getMemoryHandler()
-	handlers[Pids] = getPidsHandler()
-	handlers[Blkio] = getBlkioHandler()
+	handlers = map[string]controllerHandler{
+		CPU:    getCPUHandler(),
+		CPUset: getCpusetHandler(),
+		Memory: getMemoryHandler(),
+		Pids:   getPidsHandler(),
+		Blkio:  getBlkioHandler(),
+	}
 }
 
 // getAvailableControllers get the available controllers

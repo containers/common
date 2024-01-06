@@ -66,8 +66,7 @@ func TestInspectManifestListWithAnnotations(t *testing.T) {
 	require.NoError(t, err)
 
 	annotateOptions := ManifestListAnnotateOptions{}
-	annotations := make(map[string]string)
-	annotations["hello"] = "world"
+	annotations := map[string]string{"hello": "world"}
 	annotateOptions.Annotations = annotations
 
 	err = list.AnnotateInstance(digest, &annotateOptions)

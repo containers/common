@@ -69,8 +69,9 @@ func (n *cniNetwork) Setup(namespacePath string, options types.SetupOptions) (ma
 			// If we have more than one static ip we need parse the ips via runtime config,
 			// make sure to add the ips capability to the first plugin otherwise it doesn't get the ips
 			if len(netOpts.StaticIPs) > 0 && !network.cniNet.Plugins[0].Network.Capabilities["ips"] {
-				caps := make(map[string]interface{})
-				caps["capabilities"] = map[string]bool{"ips": true}
+				caps := map[string]interface{}{
+					"capabilities": map[string]bool{"ips": true},
+				}
 				network.cniNet.Plugins[0], retErr = libcni.InjectConf(network.cniNet.Plugins[0], caps)
 				if retErr != nil {
 					return retErr
