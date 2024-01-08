@@ -17,8 +17,7 @@ func TestFilterReference(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -93,8 +92,7 @@ func TestFilterDigest(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -136,8 +134,7 @@ func TestFilterID(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -175,8 +172,7 @@ func TestFilterManifest(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -229,8 +225,7 @@ func TestFilterAfterSinceBeforeUntil(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -282,8 +277,7 @@ func TestFilterIdLabel(t *testing.T) {
 	busyboxLatest := "quay.io/libpod/busybox:latest"
 	alpineLatest := "quay.io/libpod/alpine:latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}

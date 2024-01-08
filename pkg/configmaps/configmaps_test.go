@@ -2,7 +2,6 @@ package configmaps
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,28 +9,17 @@ import (
 
 var drivertype = "file"
 
-var opts map[string]string
-
-func setup() (*ConfigMapManager, string, error) {
-	testpath, err := os.MkdirTemp("", "cmdata")
-	if err != nil {
-		return nil, "", err
-	}
+func setup(t *testing.T) (manager *ConfigMapManager, opts map[string]string) {
+	testpath := t.TempDir()
 	manager, err := NewManager(testpath)
-	opts = map[string]string{"path": testpath}
-	return manager, testpath, err
-}
-
-func cleanup(testpath string) {
-	os.RemoveAll(testpath)
+	require.NoError(t, err)
+	return manager, map[string]string{"path": testpath}
 }
 
 func TestAddSecretAndLookupData(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
-	_, err = manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
+	_, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupConfigMap("myconfigmap")
@@ -45,12 +33,10 @@ func TestAddSecretAndLookupData(t *testing.T) {
 }
 
 func TestAddConfigMapName(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	// test one char configmap name
-	_, err = manager.Store("a", []byte("mydata"), drivertype, opts)
+	_, err := manager.Store("a", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupConfigMap("a")
@@ -82,9 +68,7 @@ func TestAddConfigMapName(t *testing.T) {
 }
 
 func TestAddMultipleConfigMaps(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	id, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
@@ -116,11 +100,9 @@ func TestAddMultipleConfigMaps(t *testing.T) {
 }
 
 func TestAddConfigMapDupName(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
-	_, err = manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
+	_, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
@@ -128,9 +110,7 @@ func TestAddConfigMapDupName(t *testing.T) {
 }
 
 func TestAddConfigMapPrefix(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	// If the randomly generated configmap id is something like "abcdeiuoergnadufigh"
 	// we should still allow someone to store a configmap with the name "abcd" or "a"
@@ -142,11 +122,9 @@ func TestAddConfigMapPrefix(t *testing.T) {
 }
 
 func TestRemoveConfigMap(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
-	_, err = manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
+	_, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
 
 	_, err = manager.lookupConfigMap("myconfigmap")
@@ -163,18 +141,14 @@ func TestRemoveConfigMap(t *testing.T) {
 }
 
 func TestRemoveConfigMapNoExist(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, _ := setup(t)
 
-	_, err = manager.Delete("myconfigmap")
+	_, err := manager.Delete("myconfigmap")
 	require.Error(t, err)
 }
 
 func TestLookupAllConfigMaps(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	id, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
@@ -186,9 +160,7 @@ func TestLookupAllConfigMaps(t *testing.T) {
 }
 
 func TestInspectConfigMapId(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
 	id, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
@@ -209,20 +181,16 @@ func TestInspectConfigMapId(t *testing.T) {
 }
 
 func TestInspectConfigMapBogus(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, _ := setup(t)
 
-	_, err = manager.Lookup("bogus")
+	_, err := manager.Lookup("bogus")
 	require.Error(t, err)
 }
 
 func TestConfigMapList(t *testing.T) {
-	manager, testpath, err := setup()
-	require.NoError(t, err)
-	defer cleanup(testpath)
+	manager, opts := setup(t)
 
-	_, err = manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
+	_, err := manager.Store("myconfigmap", []byte("mydata"), drivertype, opts)
 	require.NoError(t, err)
 	_, err = manager.Store("myconfigmap2", []byte("mydata2"), drivertype, opts)
 	require.NoError(t, err)

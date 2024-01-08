@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -50,10 +49,7 @@ func TestSaveLoad(t *testing.T) {
 		t.Skip("Test can only run as root")
 	}
 
-	dir, err := os.MkdirTemp("", "manifests")
-	assert.Nilf(t, err, "error creating temporary directory")
-	defer os.RemoveAll(dir)
-
+	dir := t.TempDir()
 	storeOptions := storage.StoreOptions{
 		GraphRoot:       filepath.Join(dir, "root"),
 		RunRoot:         filepath.Join(dir, "runroot"),
@@ -168,10 +164,7 @@ func TestReference(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	dir, err := os.MkdirTemp("", "manifests")
-	assert.Nilf(t, err, "error creating temporary directory")
-	defer os.RemoveAll(dir)
-
+	dir := t.TempDir()
 	storeOptions := storage.StoreOptions{
 		GraphRoot:       filepath.Join(dir, "root"),
 		RunRoot:         filepath.Join(dir, "runroot"),
@@ -268,10 +261,7 @@ func TestPushManifest(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	dir, err := os.MkdirTemp("", "manifests")
-	assert.Nilf(t, err, "error creating temporary directory")
-	defer os.RemoveAll(dir)
-
+	dir := t.TempDir()
 	storeOptions := storage.StoreOptions{
 		GraphRoot:       filepath.Join(dir, "root"),
 		RunRoot:         filepath.Join(dir, "runroot"),
@@ -288,11 +278,7 @@ func TestPushManifest(t *testing.T) {
 		}
 	}()
 
-	dest, err := os.MkdirTemp("", "manifests")
-	assert.Nilf(t, err, "error creating temporary directory")
-	defer os.RemoveAll(dest)
-
-	destRef, err := alltransports.ParseImageName(fmt.Sprintf("dir:%s", dest))
+	destRef, err := alltransports.ParseImageName(fmt.Sprintf("dir:%s", t.TempDir()))
 	assert.Nilf(t, err, "ParseImageName()")
 
 	ref, err := alltransports.ParseImageName(otherListImage)

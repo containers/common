@@ -2,23 +2,21 @@ package shelldriver
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
-	base, err := os.MkdirTemp(os.TempDir(), "external-driver-test")
-	require.NoError(t, err)
-	driver, err = NewDriver(map[string]string{
+func setupDriver(t *testing.T) *Driver {
+	base := t.TempDir()
+	driver, err := NewDriver(map[string]string{
 		"delete": fmt.Sprintf("rm %s/${SECRET_ID}", base),
 		"list":   fmt.Sprintf("ls %s", base),
 		"lookup": fmt.Sprintf("cat %s/${SECRET_ID} ", base),
 		"store":  fmt.Sprintf("cat - > %s/${SECRET_ID}", base),
 	})
 	require.NoError(t, err)
-	return driver, func() { os.RemoveAll(base) }
+	return driver
 }
 
 func TestStoreAndLookup(t *testing.T) {
@@ -55,8 +53,7 @@ func TestStoreAndLookup(t *testing.T) {
 	for _, tc := range cases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			driver, cleanup := setupDriver(t)
-			defer cleanup()
+			driver := setupDriver(t)
 			err := driver.Store(tc.key, tc.value)
 			if tc.expStoreErr != nil {
 				require.Error(t, err)
@@ -77,8 +74,7 @@ func TestStoreAndLookup(t *testing.T) {
 }
 
 func TestLookup(t *testing.T) {
-	driver, cleanup := setupDriver(t)
-	defer cleanup()
+	driver := setupDriver(t)
 
 	// prepare a valid lookup target
 	err := driver.Store("valid", []byte("abc"))
@@ -121,8 +117,7 @@ func TestLookup(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	driver, cleanup := setupDriver(t)
-	defer cleanup()
+	driver := setupDriver(t)
 	require.NoError(t, driver.Store("a", []byte("abc")))
 	require.NoError(t, driver.Store("b", []byte("abc")))
 	require.NoError(t, driver.Store("c", []byte("abc")))
@@ -133,8 +128,7 @@ func TestList(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	driver, cleanup := setupDriver(t)
-	defer cleanup()
+	driver := setupDriver(t)
 	require.NoError(t, driver.Store("a", []byte("abc")))
 
 	cases := []struct {

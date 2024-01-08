@@ -11,8 +11,7 @@ import (
 )
 
 func TestHistory(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	name := "quay.io/libpod/alpine:3.10.2"

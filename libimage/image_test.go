@@ -22,8 +22,7 @@ func TestImageFunctions(t *testing.T) {
 	busyboxLatest := busybox + ":latest"
 	busyboxDigest := busybox + "@"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	// Looking up image by invalid sha.
@@ -190,8 +189,7 @@ func TestLookupImage(t *testing.T) {
 	alpineNoTag := "quay.io/libpod/alpine"
 	alpineLatest := alpineNoTag + ":latest"
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -245,8 +243,7 @@ func TestLookupImage(t *testing.T) {
 }
 
 func TestInspectHealthcheck(t *testing.T) {
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	imageName := "quay.io/libpod/healthcheck:config-only"
@@ -265,8 +262,7 @@ func TestInspectHealthcheck(t *testing.T) {
 }
 
 func TestTag(t *testing.T) {
-	runtime, image, cleanup := getImageAndRuntime(t)
-	defer cleanup()
+	runtime, image := getImageAndRuntime(t)
 
 	digest := "sha256:adab3844f497ab9171f070d4cae4114b5aec565ac772e2f2579405b78be67c96"
 
@@ -303,8 +299,7 @@ func TestTag(t *testing.T) {
 }
 
 func TestTagAndUntagParallel(t *testing.T) {
-	runtime, image, cleanup := getImageAndRuntime(t)
-	defer cleanup()
+	runtime, image := getImageAndRuntime(t)
 
 	tagCount := 10
 	wg := sync.WaitGroup{}
@@ -354,8 +349,7 @@ func TestTagAndUntagParallel(t *testing.T) {
 }
 
 func TestUntag(t *testing.T) {
-	runtime, image, cleanup := getImageAndRuntime(t)
-	defer cleanup()
+	runtime, image := getImageAndRuntime(t)
 
 	digest := "sha256:adab3844f497ab9171f070d4cae4114b5aec565ac772e2f2579405b78be67c96"
 
@@ -394,12 +388,12 @@ func TestUntag(t *testing.T) {
 	require.ErrorIs(t, err, errUntagDigest, "check for specific digest error")
 }
 
-func getImageAndRuntime(t *testing.T) (*Runtime, *Image, func()) {
+func getImageAndRuntime(t *testing.T) (*Runtime, *Image) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
 	busyboxLatest := "docker.io/library/busybox:latest"
 
-	runtime, cleanup := testNewRuntime(t)
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
 	pullOptions := &PullOptions{}
@@ -410,5 +404,5 @@ func getImageAndRuntime(t *testing.T) (*Runtime, *Image, func()) {
 
 	image := pulledImages[0]
 
-	return runtime, image, cleanup
+	return runtime, image
 }

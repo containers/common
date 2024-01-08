@@ -22,8 +22,7 @@ func TestLoad(t *testing.T) {
 		os.Unsetenv("TMPDIR")
 	}()
 
-	runtime, cleanup := testNewRuntime(t)
-	defer cleanup()
+	runtime := testNewRuntime(t)
 	ctx := context.Background()
 	loadOptions := &LoadOptions{}
 	loadOptions.Writer = os.Stdout

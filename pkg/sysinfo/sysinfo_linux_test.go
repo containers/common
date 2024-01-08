@@ -12,12 +12,10 @@ import (
 )
 
 func TestReadProcBool(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "test-sysinfo-proc")
-	require.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	tmpDir := t.TempDir()
 
 	procFile := filepath.Join(tmpDir, "read-proc-bool")
-	err = os.WriteFile(procFile, []byte("1"), 0o644)
+	err := os.WriteFile(procFile, []byte("1"), 0o644)
 	require.NoError(t, err)
 
 	if !readProcBool(procFile) {
@@ -37,15 +35,13 @@ func TestReadProcBool(t *testing.T) {
 }
 
 func TestCgroupEnabled(t *testing.T) {
-	cgroupDir, err := os.MkdirTemp("", "cgroup-test")
-	require.NoError(t, err)
-	defer os.RemoveAll(cgroupDir)
+	cgroupDir := t.TempDir()
 
 	if cgroupEnabled(cgroupDir, "test") {
 		t.Fatal("cgroupEnabled should be false")
 	}
 
-	err = os.WriteFile(path.Join(cgroupDir, "test"), []byte{}, 0o644)
+	err := os.WriteFile(path.Join(cgroupDir, "test"), []byte{}, 0o644)
 	require.NoError(t, err)
 
 	if !cgroupEnabled(cgroupDir, "test") {

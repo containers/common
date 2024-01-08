@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"testing"
 	"time"
@@ -103,11 +102,10 @@ func makeManifest(layer, config []byte) v1.Manifest {
 	}
 }
 
-func makeImage(t *testing.T, arch, osStr string) (ref types.ImageReference, dir string, layer, config, manifest []byte) {
+func makeImage(t *testing.T, arch, osStr string) (ref types.ImageReference, layer, config, manifest []byte) {
 	ctx := context.TODO()
 
-	dir, err := os.MkdirTemp("", "supplemented")
-	assert.Nilf(t, err, "error creating temporary directory")
+	dir := t.TempDir()
 
 	layerBytes := makeLayer(t)
 	cb := makeConfig(arch, osStr, layer)
@@ -141,7 +139,7 @@ func makeImage(t *testing.T, arch, osStr string) (ref types.ImageReference, dir 
 	err = dest.Commit(ctx, nil)
 	assert.Nilf(t, err, "error committing image to 'dir:%s'", dir)
 
-	return ref, dir, layerBytes, configBytes, manifestBytes
+	return ref, layerBytes, configBytes, manifestBytes
 }
 
 func TestSupplemented(t *testing.T) {
@@ -157,28 +155,17 @@ func TestSupplemented(t *testing.T) {
 	policyContext, err := signature.NewPolicyContext(defaultPolicy)
 	assert.Nilf(t, err, "error obtaining policy context")
 
-	ref1, dir1, layer1, config1, manifest1 := makeImage(t, runtime.GOARCH, runtime.GOOS)
-	defer os.RemoveAll(dir1)
+	ref1, layer1, config1, manifest1 := makeImage(t, runtime.GOARCH, runtime.GOOS)
 	digest1, err := manifest.Digest(manifest1)
 	assert.Nilf(t, err, "error digesting manifest")
 
-	ref2, dir2, layer2, config2, manifest2 := makeImage(t, arch2, runtime.GOOS)
-	defer os.RemoveAll(dir2)
+	ref2, layer2, config2, manifest2 := makeImage(t, arch2, runtime.GOOS)
 	digest2, err := manifest.Digest(manifest2)
 	assert.Nilf(t, err, "error digesting manifest")
 
-	ref3, dir3, layer3, config3, manifest3 := makeImage(t, arch3, runtime.GOOS)
-	defer os.RemoveAll(dir3)
+	ref3, layer3, config3, manifest3 := makeImage(t, arch3, runtime.GOOS)
 	digest3, err := manifest.Digest(manifest3)
 	assert.Nilf(t, err, "error digesting manifest")
-
-	multidir, err := os.MkdirTemp("", "supplemented")
-	assert.Nilf(t, err, "error creating temporary directory")
-	defer os.RemoveAll(multidir)
-
-	destDir, err := os.MkdirTemp("", "supplemented")
-	assert.Nilf(t, err, "error creating temporary directory")
-	defer os.RemoveAll(destDir)
 
 	index := v1.Index{
 		Versioned: specs.Versioned{
@@ -220,9 +207,11 @@ func TestSupplemented(t *testing.T) {
 	indexDigest, err := manifest.Digest(indexBytes)
 	assert.Nilf(t, err, "error digesting image index")
 
+	destDir := t.TempDir()
 	destRef, err := alltransports.ParseImageName(fmt.Sprintf("dir:%s", destDir))
 	assert.Nilf(t, err, "error parsing reference 'dir:%s'", destDir)
 
+	multidir := t.TempDir()
 	multiRef, err := alltransports.ParseImageName(fmt.Sprintf("dir:%s", multidir))
 	assert.Nilf(t, err, "error parsing reference 'dir:%s'", multidir)
 	destImg, err := multiRef.NewImageDestination(ctx, sys)

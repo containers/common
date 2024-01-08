@@ -3,7 +3,6 @@ package passdriver
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,13 +10,11 @@ import (
 
 const gpgTestID = "testing@passdriver"
 
-func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
-	base, err := os.MkdirTemp(os.TempDir(), "pass-test")
-	require.NoError(t, err)
-	gpghomedir, err := os.MkdirTemp(os.TempDir(), "gpg-dir")
-	require.NoError(t, err)
+func setupDriver(t *testing.T) *Driver {
+	base := t.TempDir()
+	gpghomedir := t.TempDir()
 
-	driver, err = NewDriver(map[string]string{
+	driver, err := NewDriver(map[string]string{
 		"root":       base,
 		"key":        gpgTestID,
 		"gpghomedir": gpghomedir,
@@ -27,10 +24,7 @@ func setupDriver(t *testing.T) (driver *Driver, cleanup func()) {
 	err = driver.gpg(context.TODO(), nil, nil, "--batch", "--passphrase", "--quick-generate-key", "testing@passdriver")
 	require.NoError(t, err)
 
-	return driver, func() {
-		os.RemoveAll(base)
-		os.RemoveAll(gpghomedir)
-	}
+	return driver
 }
 
 func TestStoreAndLookup(t *testing.T) {
@@ -67,8 +61,7 @@ func TestStoreAndLookup(t *testing.T) {
 	for _, tc := range cases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			driver, cleanup := setupDriver(t)
-			defer cleanup()
+			driver := setupDriver(t)
 			err := driver.Store(tc.key, tc.value)
 			if tc.expStoreErr != nil {
 				require.Error(t, err)
@@ -89,8 +82,7 @@ func TestStoreAndLookup(t *testing.T) {
 }
 
 func TestLookup(t *testing.T) {
-	driver, cleanup := setupDriver(t)
-	defer cleanup()
+	driver := setupDriver(t)
 
 	// prepare a valid lookup target
 	err := driver.Store("valid", []byte("abc"))
@@ -133,8 +125,7 @@ func TestLookup(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	driver, cleanup := setupDriver(t)
-	defer cleanup()
+	driver := setupDriver(t)
 	require.NoError(t, driver.Store("a", []byte("abc")))
 	require.NoError(t, driver.Store("b", []byte("abc")))
 	require.NoError(t, driver.Store("c", []byte("abc")))
@@ -145,8 +136,7 @@ func TestList(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	driver, cleanup := setupDriver(t)
-	defer cleanup()
+	driver := setupDriver(t)
 	require.NoError(t, driver.Store("a", []byte("abc")))
 
 	cases := []struct {

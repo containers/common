@@ -24,12 +24,9 @@ type testNewRuntimeOptions struct {
 	registriesConfPath string
 }
 
-// Create a new Runtime that can be used for testing.  The second return value
-// is a clean-up function that should be called by users to make sure all
-// temporary test data gets removed.
-func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Runtime, cleanup func()) {
-	workdir, err := os.MkdirTemp("", "testStorageRuntime")
-	require.NoError(t, err)
+// Create a new Runtime that can be used for testing.
+func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) *Runtime {
+	workdir := t.TempDir()
 	storeOptions := &storage.StoreOptions{
 		RunRoot:         workdir,
 		GraphRoot:       workdir,
@@ -46,20 +43,17 @@ func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) (runtime *Ru
 		systemContext.SystemRegistriesConfPath = options[0].registriesConfPath
 	}
 
-	runtime, err = RuntimeFromStoreOptions(&RuntimeOptions{SystemContext: systemContext}, storeOptions)
+	runtime, err := RuntimeFromStoreOptions(&RuntimeOptions{SystemContext: systemContext}, storeOptions)
 	require.NoError(t, err)
 	tmpd, err := tmpdir()
 	require.NoError(t, err)
 	require.Equal(t, runtime.systemContext.BigFilesTemporaryDir, tmpd)
 
-	cleanup = func() {
-		_ = runtime.Shutdown(true)
-		_ = os.RemoveAll(workdir)
-	}
+	t.Cleanup(func() { _ = runtime.Shutdown(true) })
 
 	sys := runtime.SystemContext()
 	require.NotNil(t, sys)
-	return runtime, cleanup
+	return runtime
 }
 
 func TestTmpdir(t *testing.T) {
