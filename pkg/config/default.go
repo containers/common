@@ -295,9 +295,8 @@ func defaultMachineConfig() MachineConfig {
 
 // defaultFarmConfig returns the default farms configuration.
 func defaultFarmConfig() FarmConfig {
-	emptyList := make(map[string][]string)
 	return FarmConfig{
-		List: emptyList,
+		List: map[string][]string{},
 	}
 }
 

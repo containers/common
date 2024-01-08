@@ -19,17 +19,13 @@ func setup(t *testing.T) (manager *SecretsManager, opts map[string]string) {
 func TestAddSecretAndLookupData(t *testing.T) {
 	manager, opts := setup(t)
 
-	metaData := make(map[string]string)
-	metaData["immutable"] = "true"
-
-	labels := make(map[string]string)
-	labels["foo"] = "bar"
-	labels["another"] = "label"
-
 	storeOpts := StoreOptions{
 		DriverOpts: opts,
-		Metadata:   metaData,
-		Labels:     labels,
+		Metadata:   map[string]string{"immutable": "true"},
+		Labels: map[string]string{
+			"foo":     "bar",
+			"another": "label",
+		},
 	}
 
 	id1, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
