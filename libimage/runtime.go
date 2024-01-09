@@ -171,7 +171,7 @@ func (r *Runtime) Exists(name string) (bool, error) {
 	if image == nil {
 		return false, nil
 	}
-	if err := image.isCorrupted(name); err != nil {
+	if err := image.isCorrupted(context.Background(), name); err != nil {
 		logrus.Error(err)
 		return false, nil
 	}
@@ -608,7 +608,7 @@ func (r *Runtime) ListImages(ctx context.Context, names []string, options *ListI
 	// as the layer tree will computed once for all instead of once for
 	// each individual image (see containers/podman/issues/17828).
 
-	tree, err := r.layerTree(images)
+	tree, err := r.layerTree(ctx, images)
 	if err != nil {
 		return nil, err
 	}

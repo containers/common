@@ -68,7 +68,7 @@ func TestCorruptedLayers(t *testing.T) {
 	_, err = image.Inspect(ctx, nil)
 	require.Error(t, err, "inspecting corrupted image should fail")
 
-	err = image.isCorrupted(imageName)
+	err = image.isCorrupted(ctx, imageName)
 	require.Error(t, err, "image is corrupted")
 
 	exists, err = runtime.Exists(imageName)
