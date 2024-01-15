@@ -1,7 +1,12 @@
 package filters
 
 import (
+	"net/http"
+	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMatchLabelFilters(t *testing.T) {
@@ -184,4 +189,21 @@ func TestComputeUntilTimestamp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFiltersFromRequest(t *testing.T) {
+	// simulate https request
+	req := http.Request{
+		URL: &url.URL{
+			RawQuery: "all=false&filters=%7B%22label%22%3A%5B%22xyz%3Dbar%22%2C%22abc%22%5D%2C%22reference%22%3A%5B%22test%22%5D%7D",
+		},
+	}
+	// call req.ParseForm so it can parse the RawQuery data
+	err := req.ParseForm()
+	require.NoError(t, err)
+
+	expectedLibpodFilters := []string{"label=xyz=bar", "label=abc", "reference=test"}
+	got, err := FiltersFromRequest(&req)
+	require.NoError(t, err)
+	assert.Equal(t, expectedLibpodFilters, got)
 }
