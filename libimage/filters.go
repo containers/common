@@ -20,14 +20,11 @@ import (
 // indicates that the image matches the criteria.
 type filterFunc func(*Image) (bool, error)
 
-// Apply the specified filters.  At least one filter of each key must apply.
+// Apply the specified filters.  All filters of each key must apply.
 func (i *Image) applyFilters(ctx context.Context, filters map[string][]filterFunc) (bool, error) {
-	matches := false
-	for key := range filters { // and
-		matches = false
-		for _, filter := range filters[key] { // or
-			var err error
-			matches, err = filter(i)
+	for key := range filters {
+		for _, filter := range filters[key] {
+			matches, err := filter(i)
 			if err != nil {
 				// Some images may have been corrupted in the
 				// meantime, so do an extra check and make the
@@ -38,15 +35,13 @@ func (i *Image) applyFilters(ctx context.Context, filters map[string][]filterFun
 				}
 				return false, err
 			}
-			if matches {
-				break
+			// If any filter within a group doesn't match, return false
+			if !matches {
+				return false, nil
 			}
 		}
-		if !matches {
-			return false, nil
-		}
 	}
-	return matches, nil
+	return true, nil
 }
 
 // filterImages returns a slice of images which are passing all specified
