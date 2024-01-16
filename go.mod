@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/containerd/containerd v1.7.11
+	github.com/containerd/containerd v1.7.12
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.4.0
 	github.com/containers/image/v5 v5.29.1-0.20231221164234-1b221d4a9c28
