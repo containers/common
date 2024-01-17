@@ -5,6 +5,7 @@ package libimage
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -41,50 +42,64 @@ func TestFilterReference(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, test := range []struct {
-		filter  string
+		filters []string
 		matches int
 	}{
-		{"image", 2},
-		{"*mage*", 2},
-		{"image:*", 2},
-		{"image:tag", 1},
-		{"image:another-tag", 1},
-		{"localhost/image", 1},
-		{"localhost/image:tag", 1},
-		{"library/image", 1},
-		{"docker.io/library/image*", 1},
-		{"docker.io/library/image:*", 1},
-		{"docker.io/library/image:another-tag", 1},
-		{"localhost/*", 2},
-		{"localhost/image:*tag", 1},
-		{"localhost/*mage:*ag", 2},
-		{"quay.io/libpod/busybox", 1},
-		{"quay.io/libpod/alpine", 1},
-		{"quay.io/libpod", 0},
-		{"quay.io/libpod/*", 2},
-		{"busybox", 1},
-		{"alpine", 1},
-		{"alpine@" + alpine.Digest().String(), 1},
-		{"alpine:latest@" + alpine.Digest().String(), 1},
-		{"quay.io/libpod/alpine@" + alpine.Digest().String(), 1},
-		{"quay.io/libpod/alpine:latest@" + alpine.Digest().String(), 1},
+		{[]string{"image"}, 2},
+		{[]string{"*mage*"}, 2},
+		{[]string{"image:*"}, 2},
+		{[]string{"image:tag"}, 1},
+		{[]string{"image:another-tag"}, 1},
+		{[]string{"localhost/image"}, 1},
+		{[]string{"localhost/image:tag"}, 1},
+		{[]string{"library/image"}, 1},
+		{[]string{"docker.io/library/image*"}, 1},
+		{[]string{"docker.io/library/image:*"}, 1},
+		{[]string{"docker.io/library/image:another-tag"}, 1},
+		{[]string{"localhost/*"}, 2},
+		{[]string{"localhost/image:*tag"}, 1},
+		{[]string{"localhost/*mage:*ag"}, 2},
+		{[]string{"quay.io/libpod/busybox"}, 1},
+		{[]string{"quay.io/libpod/alpine"}, 1},
+		{[]string{"quay.io/libpod"}, 0},
+		{[]string{"quay.io/libpod/*"}, 2},
+		{[]string{"busybox"}, 1},
+		{[]string{"alpine"}, 1},
+		{[]string{"alpine@" + alpine.Digest().String()}, 1},
+		{[]string{"alpine:latest@" + alpine.Digest().String()}, 1},
+		{[]string{"quay.io/libpod/alpine@" + alpine.Digest().String()}, 1},
+		{[]string{"quay.io/libpod/alpine:latest@" + alpine.Digest().String()}, 1},
+		// Make sure negate works as expected
+		{[]string{"!alpine"}, 1},
+		{[]string{"!alpine", "!busybox"}, 0},
+		{[]string{"!alpine", "busybox"}, 1},
+		{[]string{"alpine", "busybox"}, 2},
+		{[]string{"*test", "!*box"}, 1},
 		// Make sure that tags are ignored
-		{"alpine:ignoreme@" + alpine.Digest().String(), 1},
-		{"alpine:123@" + alpine.Digest().String(), 1},
-		{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String(), 1},
-		{"quay.io/libpod/alpine:456@" + alpine.Digest().String(), 1},
+		{[]string{"alpine:ignoreme@" + alpine.Digest().String()}, 1},
+		{[]string{"alpine:123@" + alpine.Digest().String()}, 1},
+		{[]string{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String()}, 1},
+		{[]string{"quay.io/libpod/alpine:456@" + alpine.Digest().String()}, 1},
 		// Make sure that repo and digest must match
-		{"alpine:busyboxdigest@" + busybox.Digest().String(), 0},
-		{"alpine:busyboxdigest@" + busybox.Digest().String(), 0},
-		{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String(), 0},
-		{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String(), 0},
+		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
+		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
+		{[]string{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
+		{[]string{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
 	} {
+		var filters []string
+		for _, filter := range test.filters {
+			if strings.HasPrefix(filter, "!") {
+				filters = append(filters, "reference!="+filter[1:])
+			} else {
+				filters = append(filters, "reference="+filter)
+			}
+		}
 		listOptions := &ListImagesOptions{
-			Filters: []string{"reference=" + test.filter},
+			Filters: filters,
 		}
 		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
 		require.NoError(t, err, "%v", test)
-		require.Len(t, listedImages, test.matches, "%s -> %v", test.filter, listedImages)
+		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
 	}
 }
 
