@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "artifactType": "application/x-containers-auth+json",
+  "config": {
+    "mediaType": "application/x-containers-auth+json",
+    "digest": "sha256:dc8ab52a31e3b88154b692c409188c53b7c2204b7d076ed220d5b25d8971e132",
+    "size": 506
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.oci.empty.v1+json",
+      "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "size": 2
+    }
+  ]
+}

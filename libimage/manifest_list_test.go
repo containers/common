@@ -5,6 +5,7 @@ package libimage
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"testing"
 
 	"github.com/containers/common/pkg/config"
@@ -146,4 +147,33 @@ func TestCreateAndRemoveManifestList(t *testing.T) {
 	// output should contain log of untagging the original manifestlist
 	require.True(t, rmReports[0].Removed)
 	require.Equal(t, []string{"localhost/manifestlist:latest"}, rmReports[0].Untagged)
+}
+
+// TestAddArtifacts ensures that we don't fail to add artifact manifests to a
+// manifest list, even (or especially) when their config blobs aren't valid OCI
+// or Docker config blobs.
+func TestAddArtifacts(t *testing.T) {
+	listName := "manifestlist"
+	runtime := testNewRuntime(t)
+	ctx := context.Background()
+
+	list, err := runtime.CreateManifestList(listName)
+	require.NoError(t, err)
+	require.NotNil(t, list)
+
+	manifestListOpts := &ManifestListAddOptions{All: true}
+	absPath, err := filepath.Abs(filepath.Join("..", "pkg", "manifests", "testdata", "artifacts", "blobs-only"))
+	require.NoError(t, err)
+	_, err = list.Add(ctx, "oci:"+absPath, manifestListOpts)
+	require.NoError(t, err)
+
+	absPath, err = filepath.Abs(filepath.Join("..", "pkg", "manifests", "testdata", "artifacts", "config-only"))
+	require.NoError(t, err)
+	_, err = list.Add(ctx, "oci:"+absPath, manifestListOpts)
+	require.NoError(t, err)
+
+	absPath, err = filepath.Abs(filepath.Join("..", "pkg", "manifests", "testdata", "artifacts", "no-blobs"))
+	require.NoError(t, err)
+	_, err = list.Add(ctx, "oci:"+absPath, manifestListOpts)
+	require.NoError(t, err)
 }

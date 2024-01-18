@@ -1,0 +1,13 @@
+{
+  "auths": {
+    "my-registry.local/foo/bar/image": {
+      "auth": "…"
+    },
+    "my-registry.local/foo": {
+      "auth": "…"
+    },
+    "my-registry.local": {
+      "auth": "…"
+    }
+  }
+}

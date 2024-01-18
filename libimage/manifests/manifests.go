@@ -27,6 +27,7 @@ import (
 	digest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -331,6 +332,8 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 		OS, Architecture, OSVersion, Variant string
 		Features, OSFeatures, Annotations    []string
 		Size                                 int64
+		ConfigInfo                           types.BlobInfo
+		ArtifactType                         string
 	}
 	var instanceInfos []instanceInfo
 	var manifestDigest digest.Digest
@@ -361,6 +364,7 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 					Features:       append([]string{}, lists.Docker().Manifests[i].Platform.Features...),
 					OSFeatures:     append([]string{}, platform.OSFeatures...),
 					Size:           instance.Size,
+					ArtifactType:   instance.ArtifactType,
 				}
 				instanceInfos = append(instanceInfos, instanceInfo)
 			}
@@ -391,6 +395,7 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 					Features:       append([]string{}, lists.Docker().Manifests[i].Platform.Features...),
 					OSFeatures:     append([]string{}, platform.OSFeatures...),
 					Size:           instance.Size,
+					ArtifactType:   instance.ArtifactType,
 				}
 				instanceInfos = append(instanceInfos, instanceInfo)
 				added = true
@@ -406,11 +411,28 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 		instanceInfo := instanceInfo{
 			instanceDigest: nil,
 		}
+		if primaryManifestType == v1.MediaTypeImageManifest {
+			if m, err := manifest.OCI1FromManifest(primaryManifestBytes); err == nil {
+				instanceInfo.ArtifactType = m.ArtifactType
+			}
+		}
 		instanceInfos = append(instanceInfos, instanceInfo)
 	}
 
+	knownConfigTypes := []string{manifest.DockerV2Schema2ConfigMediaType, v1.MediaTypeImageConfig}
 	for _, instanceInfo := range instanceInfos {
-		if instanceInfo.OS == "" || instanceInfo.Architecture == "" {
+		manifestBytes, manifestType, err := src.GetManifest(ctx, instanceInfo.instanceDigest)
+		if err != nil {
+			return "", fmt.Errorf("reading manifest from %q, instance %q: %w", transports.ImageName(ref), instanceInfo.instanceDigest, err)
+		}
+		instanceManifest, err := manifest.FromBlob(manifestBytes, manifestType)
+		if err != nil {
+			return "", fmt.Errorf("parsing manifest from %q, instance %q: %w", transports.ImageName(ref), instanceInfo.instanceDigest, err)
+		}
+		instanceInfo.ConfigInfo = instanceManifest.ConfigInfo()
+		hasPlatformConfig := instanceInfo.ArtifactType == "" && slices.Contains(knownConfigTypes, instanceInfo.ConfigInfo.MediaType)
+		needToParsePlatformConfig := (instanceInfo.OS == "" || instanceInfo.Architecture == "")
+		if hasPlatformConfig && needToParsePlatformConfig {
 			img, err := image.FromUnparsedImage(ctx, sys, image.UnparsedInstance(src, instanceInfo.instanceDigest))
 			if err != nil {
 				return "", fmt.Errorf("reading configuration blob from %q: %w", transports.ImageName(ref), err)
@@ -422,16 +444,14 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 			if instanceInfo.OS == "" {
 				instanceInfo.OS = config.OS
 				instanceInfo.OSVersion = config.OSVersion
-				instanceInfo.OSFeatures = config.OSFeatures
+				if config.OSFeatures != nil {
+					instanceInfo.OSFeatures = slices.Clone(config.OSFeatures)
+				}
 			}
 			if instanceInfo.Architecture == "" {
 				instanceInfo.Architecture = config.Architecture
 				instanceInfo.Variant = config.Variant
 			}
-		}
-		manifestBytes, manifestType, err := src.GetManifest(ctx, instanceInfo.instanceDigest)
-		if err != nil {
-			return "", fmt.Errorf("reading manifest from %q, instance %q: %w", transports.ImageName(ref), instanceInfo.instanceDigest, err)
 		}
 		if instanceInfo.instanceDigest == nil {
 			manifestDigest, err = manifest.Digest(manifestBytes)
