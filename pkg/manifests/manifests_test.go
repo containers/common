@@ -9,6 +9,7 @@ import (
 	"github.com/containers/storage/pkg/reexec"
 	digest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -92,6 +93,20 @@ func TestAddInstance(t *testing.T) {
 		}
 		if o, err := list.findOCIv1(manifestDigest); o == nil || err != nil {
 			t.Fatalf("adding an instance failed in %s: %v", version, err)
+		}
+
+		if list, err = FromBlob(bytes); err != nil {
+			t.Fatalf("error parsing %s: %v", version, err)
+		}
+		if err = list.AddInstance(manifestDigest, int64(len(manifestBytes)), manifestType, "", "", "", nil, "", nil, nil); err != nil {
+			t.Fatalf("adding an instance without platform info failed in %s: %v", version, err)
+		}
+		o, err := list.findOCIv1(manifestDigest)
+		if o == nil || err != nil {
+			t.Fatalf("adding an instance failed in %s: %v", version, err)
+		}
+		if o.Platform != nil {
+			t.Fatalf("added a Platform field (%+v) where none was expected: %v", o.Platform, err)
 		}
 	}
 }
@@ -185,13 +200,13 @@ func testStringSlice(t *testing.T, values [][]string, set func(List, digest.Dige
 		if err != nil {
 			t.Fatalf("error retrieving value %v: %v", testSlice, err)
 		}
-		if !reflect.DeepEqual(values, testSlice) {
+		if !reflect.DeepEqual(values, testSlice) && (len(values) != len(testSlice) || len(testSlice) != 0) {
 			t.Fatalf("expected values %v, got %v: %v", testSlice, values, err)
 		}
 	}
 }
 
-func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Digest, map[string]string) error, get func(List, *digest.Digest) (map[string]string, error)) {
+func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Digest, map[string]string) error, clear func(List, *digest.Digest) error, get func(List, *digest.Digest) (map[string]string, error)) {
 	bytes, err := os.ReadFile(ociFixture)
 	if err != nil {
 		t.Fatalf("error loading blob: %v", err)
@@ -203,6 +218,9 @@ func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Di
 	instance := expectedInstance
 	for _, instanceDigest := range []*digest.Digest{nil, &instance} {
 		for _, testMap := range values {
+			if err = clear(list, instanceDigest); err != nil {
+				t.Fatalf("error clearing %v: %v", testMap, err)
+			}
 			if err = set(list, instanceDigest, testMap); err != nil {
 				t.Fatalf("error setting %v: %v", testMap, err)
 			}
@@ -226,6 +244,16 @@ func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Di
 					t.Fatalf("expected map value %q=%q, got %q", k, v, values[k])
 				}
 			}
+			if err = clear(list, instanceDigest); err != nil {
+				t.Fatalf("error clearing %v: %v", testMap, err)
+			}
+			values, err = get(list, instanceDigest)
+			if err != nil {
+				t.Fatalf("error retrieving value %v: %v", testMap, err)
+			}
+			if len(values) != 0 {
+				t.Fatalf("expected %d map entries, got %d", 0, len(values))
+			}
 		}
 	}
 }
@@ -236,6 +264,9 @@ func TestAnnotations(t *testing.T) {
 		func(l List, i *digest.Digest, m map[string]string) error {
 			return l.SetAnnotations(i, m)
 		},
+		func(l List, i *digest.Digest) error {
+			return l.ClearAnnotations(i)
+		},
 		func(l List, i *digest.Digest) (map[string]string, error) {
 			return l.Annotations(i)
 		},
@@ -244,7 +275,7 @@ func TestAnnotations(t *testing.T) {
 
 func TestArchitecture(t *testing.T) {
 	testString(t,
-		[]string{"abacus", "sliderule"},
+		[]string{"", "abacus", "sliderule"},
 		func(l List, i digest.Digest, s string) error {
 			return l.SetArchitecture(i, s)
 		},
@@ -256,7 +287,7 @@ func TestArchitecture(t *testing.T) {
 
 func TestFeatures(t *testing.T) {
 	testStringSlice(t,
-		[][]string{{"chrome", "hubcaps"}, {"climate", "control"}},
+		[][]string{nil, {"chrome", "hubcaps"}, {"climate", "control"}},
 		func(l List, i digest.Digest, s []string) error {
 			return l.SetFeatures(i, s)
 		},
@@ -268,7 +299,7 @@ func TestFeatures(t *testing.T) {
 
 func TestOS(t *testing.T) {
 	testString(t,
-		[]string{"linux", "darwin"},
+		[]string{"", "linux", "darwin"},
 		func(l List, i digest.Digest, s string) error {
 			return l.SetOS(i, s)
 		},
@@ -280,7 +311,7 @@ func TestOS(t *testing.T) {
 
 func TestOSFeatures(t *testing.T) {
 	testStringSlice(t,
-		[][]string{{"ipv6", "containers"}, {"nested", "virtualization"}},
+		[][]string{nil, {"ipv6", "containers"}, {"nested", "virtualization"}},
 		func(l List, i digest.Digest, s []string) error {
 			return l.SetOSFeatures(i, s)
 		},
@@ -316,7 +347,7 @@ func TestURLs(t *testing.T) {
 
 func TestVariant(t *testing.T) {
 	testString(t,
-		[]string{"workstation", "cloud", "server"},
+		[]string{"", "workstation", "cloud", "server"},
 		func(l List, i digest.Digest, s string) error {
 			return l.SetVariant(i, s)
 		},
@@ -387,4 +418,47 @@ func TestArtifactType(t *testing.T) {
 			return l.ArtifactType(i)
 		},
 	)
+}
+
+func TestPlatform(t *testing.T) {
+	bytes, err := os.ReadFile(ociFixture)
+	if err != nil {
+		t.Fatalf("error loading blob: %v", err)
+	}
+	list, err := FromBlob(bytes)
+	if err != nil {
+		t.Fatalf("error parsing blob: %v", err)
+	}
+	instanceDigest, err := digest.Parse("sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a")
+	if err != nil {
+		t.Fatalf("error parsing digest: %v", err)
+	}
+	// we only want to be dealing with one manifest, so ensure that there
+	// aren't going to be any yet
+	for len(list.OCIv1().Manifests) > 0 {
+		assert.NoError(t, list.Remove(list.OCIv1().Manifests[0].Digest))
+	}
+	// add an instance without platform info
+	assert.NoError(t, list.AddInstance(instanceDigest, 2, v1.MediaTypeImageManifest, "", "", "", nil, "", nil, nil))
+	assert.Nil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be nil")
+
+	assert.NoError(t, list.SetOS(instanceDigest, "os"))
+	assert.NotNil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be set")
+	assert.NoError(t, list.SetOS(instanceDigest, ""))
+	assert.Nil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be nil")
+
+	assert.NoError(t, list.SetArchitecture(instanceDigest, "archy"))
+	assert.NotNil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be set")
+	assert.NoError(t, list.SetArchitecture(instanceDigest, ""))
+	assert.Nil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be nil")
+
+	assert.NoError(t, list.SetVariant(instanceDigest, "very"))
+	assert.NotNil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be set")
+	assert.NoError(t, list.SetVariant(instanceDigest, ""))
+	assert.Nil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be nil")
+
+	assert.NoError(t, list.SetOSFeatures(instanceDigest, []string{"so", "featureful"}))
+	assert.NotNil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be set")
+	assert.NoError(t, list.SetOSFeatures(instanceDigest, []string{}))
+	assert.Nil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be nil")
 }
