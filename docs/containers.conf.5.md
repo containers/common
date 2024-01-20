@@ -227,6 +227,13 @@ Path to the container-init binary, which forwards signals and reaps processes
 within containers. Note that the container-init binary will only be used when
 the `--init` for podman-create and podman-run is set.
 
+**interface_name**=""
+
+Default way to set interface names inside containers. Defaults to legacy pattern
+of ethX, where X is an integer, when left undefined.
+Options are:
+  `device`   Uses the network_interface name from the network config as interface name. Falls back to the ethX pattern if the network_interface is not set.
+
 **ipcns**="shareable"
 
 Default way to to create a IPC namespace for the container.
