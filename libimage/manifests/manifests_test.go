@@ -56,13 +56,13 @@ func TestSaveLoad(t *testing.T) {
 		GraphDriverName: "vfs",
 	}
 	store, err := storage.GetStore(storeOptions)
-	assert.Nilf(t, err, "error opening store")
+	assert.NoError(t, err, "error opening store")
 	if store == nil {
 		return
 	}
 	defer func() {
 		if _, err := store.Shutdown(true); err != nil {
-			assert.Nilf(t, err, "error closing store")
+			assert.NoError(t, err, "error closing store")
 		}
 	}()
 
@@ -70,22 +70,22 @@ func TestSaveLoad(t *testing.T) {
 	assert.NotNil(t, list, "Create() returned nil?")
 
 	image, err := list.SaveToImage(store, "", []string{listImageName}, manifest.DockerV2ListMediaType)
-	assert.Nilf(t, err, "SaveToImage(1)")
+	assert.NoError(t, err, "SaveToImage(1)")
 	locker, err := LockerForImage(store, image)
-	assert.Nilf(t, err, "LockerForImage()")
+	assert.NoError(t, err, "LockerForImage()")
 	locker.Lock()
 	defer locker.Unlock()
 	imageReused, err := list.SaveToImage(store, image, nil, manifest.DockerV2ListMediaType)
-	assert.Nilf(t, err, "SaveToImage(2)")
+	assert.NoError(t, err, "SaveToImage(2)")
 
 	_, list, err = LoadFromImage(store, image)
-	assert.Nilf(t, err, "LoadFromImage(1)")
+	assert.NoError(t, err, "LoadFromImage(1)")
 	assert.NotNilf(t, list, "LoadFromImage(1)")
 	_, list, err = LoadFromImage(store, imageReused)
-	assert.Nilf(t, err, "LoadFromImage(2)")
+	assert.NoError(t, err, "LoadFromImage(2)")
 	assert.NotNilf(t, list, "LoadFromImage(2)")
 	_, list, err = LoadFromImage(store, listImageName)
-	assert.Nilf(t, err, "LoadFromImage(3)")
+	assert.NoError(t, err, "LoadFromImage(3)")
 	assert.NotNilf(t, list, "LoadFromImage(3)")
 }
 
@@ -96,65 +96,65 @@ func TestAddRemove(t *testing.T) {
 	ctx := context.Background()
 
 	ref, err := alltransports.ParseImageName(otherListImage)
-	assert.Nilf(t, err, "ParseImageName(%q)", otherListImage)
+	assert.NoError(t, err, "ParseImageName(%q)", otherListImage)
 	src, err := ref.NewImageSource(ctx, sys)
-	assert.Nilf(t, err, "NewImageSource(%q)", otherListImage)
-	defer assert.Nilf(t, src.Close(), "ImageSource.Close()")
+	assert.NoError(t, err, "NewImageSource(%q)", otherListImage)
+	defer assert.NoError(t, src.Close(), "ImageSource.Close()")
 	m, _, err := src.GetManifest(ctx, nil)
-	assert.Nilf(t, err, "ImageSource.GetManifest()")
-	assert.Nilf(t, src.Close(), "ImageSource.GetManifest()")
+	assert.NoError(t, err, "ImageSource.GetManifest()")
+	assert.NoError(t, src.Close(), "ImageSource.GetManifest()")
 	listDigest, err := manifest.Digest(m)
-	assert.Nilf(t, err, "manifest.Digest()")
+	assert.NoError(t, err, "manifest.Digest()")
 	assert.Equalf(t, listDigest.String(), otherListDigest, "digest for image %q changed?", otherListImage)
 
 	l, err := manifests.FromBlob(m)
-	assert.Nilf(t, err, "manifests.FromBlob()")
+	assert.NoError(t, err, "manifests.FromBlob()")
 	assert.NotNilf(t, l, "manifests.FromBlob()")
 	assert.Equalf(t, len(l.Instances()), 5, "image %q had an arch added?", otherListImage)
 
 	list := Create()
 	instanceDigest, err := list.Add(ctx, amd64sys, ref, false)
-	assert.Nilf(t, err, "list.Add(all=false)")
+	assert.NoError(t, err, "list.Add(all=false)")
 	assert.Equal(t, instanceDigest.String(), otherListAmd64Digest)
 	assert.Equalf(t, len(list.Instances()), 1, "too many instances added")
 
 	list = Create()
 	instanceDigest, err = list.Add(ctx, arm64sys, ref, false)
-	assert.Nilf(t, err, "list.Add(all=false)")
+	assert.NoError(t, err, "list.Add(all=false)")
 	assert.Equal(t, instanceDigest.String(), otherListArm64Digest)
 	assert.Equalf(t, len(list.Instances()), 1, "too many instances added")
 
 	list = Create()
 	instanceDigest, err = list.Add(ctx, ppc64sys, ref, false)
-	assert.Nilf(t, err, "list.Add(all=false)")
+	assert.NoError(t, err, "list.Add(all=false)")
 	assert.Equal(t, instanceDigest.String(), otherListPpc64Digest)
 	assert.Equalf(t, len(list.Instances()), 1, "too many instances added")
 
 	_, err = list.Add(ctx, sys, ref, true)
-	assert.Nilf(t, err, "list.Add(all=true)")
+	assert.NoError(t, err, "list.Add(all=true)")
 	assert.Equalf(t, len(list.Instances()), 5, "too many instances added")
 
 	list = Create()
 	_, err = list.Add(ctx, sys, ref, true)
-	assert.Nilf(t, err, "list.Add(all=true)")
+	assert.NoError(t, err, "list.Add(all=true)")
 	assert.Equalf(t, len(list.Instances()), 5, "too many instances added", otherListImage)
 
 	for _, instance := range list.Instances() {
-		assert.Nilf(t, list.Remove(instance), "error removing instance %q", instance)
+		assert.NoErrorf(t, list.Remove(instance), "error removing instance %q", instance)
 	}
 	assert.Equalf(t, len(list.Instances()), 0, "should have removed all instances")
 
 	ref, err = alltransports.ParseImageName(otherListInstanceDigest)
-	assert.Nilf(t, err, "ParseImageName(%q)", otherListInstanceDigest)
+	assert.NoError(t, err, "ParseImageName(%q)", otherListInstanceDigest)
 
 	list = Create()
 	_, err = list.Add(ctx, sys, ref, false)
-	assert.Nilf(t, err, "list.Add(all=false)")
+	assert.NoError(t, err, "list.Add(all=false)")
 	assert.Equalf(t, len(list.Instances()), 1, "too many instances added", otherListInstanceDigest)
 
 	list = Create()
 	_, err = list.Add(ctx, sys, ref, true)
-	assert.Nilf(t, err, "list.Add(all=true)")
+	assert.NoError(t, err, "list.Add(all=true)")
 	assert.Equalf(t, len(list.Instances()), 1, "too many instances added", otherListInstanceDigest)
 }
 
@@ -171,87 +171,87 @@ func TestReference(t *testing.T) {
 		GraphDriverName: "vfs",
 	}
 	store, err := storage.GetStore(storeOptions)
-	assert.Nilf(t, err, "error opening store")
+	assert.NoError(t, err, "error opening store")
 	if store == nil {
 		return
 	}
 	defer func() {
 		if _, err := store.Shutdown(true); err != nil {
-			assert.Nilf(t, err, "error closing store")
+			assert.NoError(t, err, "error closing store")
 		}
 	}()
 
 	ref, err := alltransports.ParseImageName(otherListImage)
-	assert.Nilf(t, err, "ParseImageName(%q)", otherListImage)
+	assert.NoError(t, err, "ParseImageName(%q)", otherListImage)
 
 	list := Create()
 	_, err = list.Add(ctx, ppc64sys, ref, false)
-	assert.Nilf(t, err, "list.Add(all=false)")
+	assert.NoError(t, err, "list.Add(all=false)")
 
 	listRef, err := list.Reference(store, cp.CopyAllImages, nil)
-	assert.NotNilf(t, err, "list.Reference(never saved)")
+	assert.Error(t, err, "list.Reference(never saved)")
 	assert.Nilf(t, listRef, "list.Reference(never saved)")
 
 	listRef, err = list.Reference(store, cp.CopyAllImages, nil)
-	assert.NotNilf(t, err, "list.Reference(never saved)")
+	assert.Error(t, err, "list.Reference(never saved)")
 	assert.Nilf(t, listRef, "list.Reference(never saved)")
 
 	listRef, err = list.Reference(store, cp.CopySystemImage, nil)
-	assert.NotNilf(t, err, "list.Reference(never saved)")
+	assert.Error(t, err, "list.Reference(never saved)")
 	assert.Nilf(t, listRef, "list.Reference(never saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest})
-	assert.NotNilf(t, err, "list.Reference(never saved)")
+	assert.Error(t, err, "list.Reference(never saved)")
 	assert.Nilf(t, listRef, "list.Reference(never saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest})
-	assert.NotNilf(t, err, "list.Reference(never saved)")
+	assert.Error(t, err, "list.Reference(never saved)")
 	assert.Nilf(t, listRef, "list.Reference(never saved)")
 
 	_, err = list.SaveToImage(store, "", []string{listImageName}, "")
-	assert.Nilf(t, err, "SaveToImage")
+	assert.NoError(t, err, "SaveToImage")
 
 	listRef, err = list.Reference(store, cp.CopyAllImages, nil)
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySystemImage, nil)
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, nil)
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest})
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest})
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	_, err = list.Add(ctx, sys, ref, true)
-	assert.Nilf(t, err, "list.Add(all=true)")
+	assert.NoError(t, err, "list.Add(all=true)")
 
 	listRef, err = list.Reference(store, cp.CopyAllImages, nil)
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySystemImage, nil)
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, nil)
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest})
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest})
-	assert.Nilf(t, err, "list.Reference(saved)")
+	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 }
 
@@ -268,28 +268,28 @@ func TestPushManifest(t *testing.T) {
 		GraphDriverName: "vfs",
 	}
 	store, err := storage.GetStore(storeOptions)
-	assert.Nilf(t, err, "error opening store")
+	assert.NoError(t, err, "error opening store")
 	if store == nil {
 		return
 	}
 	defer func() {
 		if _, err := store.Shutdown(true); err != nil {
-			assert.Nilf(t, err, "error closing store")
+			assert.NoError(t, err, "error closing store")
 		}
 	}()
 
 	destRef, err := alltransports.ParseImageName(fmt.Sprintf("dir:%s", t.TempDir()))
-	assert.Nilf(t, err, "ParseImageName()")
+	assert.NoError(t, err, "ParseImageName()")
 
 	ref, err := alltransports.ParseImageName(otherListImage)
-	assert.Nilf(t, err, "ParseImageName(%q)", otherListImage)
+	assert.NoError(t, err, "ParseImageName(%q)", otherListImage)
 
 	list := Create()
 	_, err = list.Add(ctx, sys, ref, true)
-	assert.Nilf(t, err, "list.Add(all=true)")
+	assert.NoError(t, err, "list.Add(all=true)")
 
 	_, err = list.SaveToImage(store, "", []string{listImageName}, "")
-	assert.Nilf(t, err, "SaveToImage")
+	assert.NoError(t, err, "SaveToImage")
 
 	options := PushOptions{
 		Store:              store,
@@ -298,31 +298,31 @@ func TestPushManifest(t *testing.T) {
 		Instances:          nil,
 	}
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(all)")
+	assert.NoError(t, err, "list.Push(all)")
 
 	options.ImageListSelection = cp.CopySystemImage
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(local)")
+	assert.NoError(t, err, "list.Push(local)")
 
 	options.ImageListSelection = cp.CopySpecificImages
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(none specified)")
+	assert.NoError(t, err, "list.Push(none specified)")
 
 	options.Instances = []digest.Digest{otherListAmd64Digest}
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(one specified)")
+	assert.NoError(t, err, "list.Push(one specified)")
 
 	options.Instances = append(options.Instances, otherListArm64Digest)
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(two specified)")
+	assert.NoError(t, err, "list.Push(two specified)")
 
 	options.Instances = append(options.Instances, otherListPpc64Digest)
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(three specified)")
+	assert.NoError(t, err, "list.Push(three specified)")
 
 	options.Instances = append(options.Instances, otherListDigest)
 	_, _, err = list.Push(ctx, destRef, options)
-	assert.Nilf(t, err, "list.Push(four specified)")
+	assert.NoError(t, err, "list.Push(four specified)")
 
 	bogusDestRef, err := alltransports.ParseImageName("docker://localhost/bogus/dest:latest")
 	assert.NoErrorf(t, err, "ParseImageName()")
