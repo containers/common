@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"time"
 
 	"github.com/containers/common/pkg/manifests"
@@ -34,7 +35,10 @@ const (
 	defaultMaxRetries = 3
 )
 
-const instancesData = "instances.json"
+const (
+	instancesData = "instances.json"
+	artifactsData = "artifacts.json"
+)
 
 // LookupReferenceFunc return an image reference based on the specified one.
 // The returned reference can return custom ImageSource or ImageDestination
@@ -46,9 +50,19 @@ type LookupReferenceFunc func(ref types.ImageReference) (types.ImageReference, e
 // for a List that has not yet been saved to an image.
 var ErrListImageUnknown = errors.New("unable to determine which image holds the manifest list")
 
+type artifactsDetails struct {
+	Manifests map[digest.Digest]string          `json:"manifests,omitempty"` // artifact (and other?) manifest digests ￫ manifest contents
+	Files     map[digest.Digest][]string        `json:"files,omitempty"`     // artifact (and other?) manifest digests ￫ file paths (mainly for display)
+	Configs   map[digest.Digest]digest.Digest   `json:"config,omitempty"`    // artifact (and other?) manifest digests ￫ referenced config digests
+	Layers    map[digest.Digest][]digest.Digest `json:"layers,omitempty"`    // artifact (and other?) manifest digests ￫ referenced layer digests
+	Detached  map[digest.Digest]string          `json:"detached,omitempty"`  // "config" and "layer" (and other?) digests in (usually artifact) manifests ￫ file paths
+	Blobs     map[digest.Digest][]byte          `json:"blobs,omitempty"`     // "config" and "layer" (and other?) manifest digests ￫ inlined blob contents
+}
+
 type list struct {
 	manifests.List
-	instances map[digest.Digest]string
+	instances map[digest.Digest]string // instance manifest digests ￫ image references
+	artifacts artifactsDetails
 }
 
 // List is a manifest list or image index, either created using Create(), or
@@ -94,6 +108,14 @@ func Create() List {
 	return &list{
 		List:      manifests.Create(),
 		instances: make(map[digest.Digest]string),
+		artifacts: artifactsDetails{
+			Manifests: make(map[digest.Digest]string),
+			Files:     make(map[digest.Digest][]string),
+			Configs:   make(map[digest.Digest]digest.Digest),
+			Layers:    make(map[digest.Digest][]digest.Digest),
+			Detached:  make(map[digest.Digest]string),
+			Blobs:     make(map[digest.Digest][]byte),
+		},
 	}
 }
 
@@ -116,6 +138,14 @@ func LoadFromImage(store storage.Store, image string) (string, List, error) {
 	list := &list{
 		List:      manifestList,
 		instances: make(map[digest.Digest]string),
+		artifacts: artifactsDetails{
+			Manifests: make(map[digest.Digest]string),
+			Files:     make(map[digest.Digest][]string),
+			Configs:   make(map[digest.Digest]digest.Digest),
+			Layers:    make(map[digest.Digest][]digest.Digest),
+			Detached:  make(map[digest.Digest]string),
+			Blobs:     make(map[digest.Digest][]byte),
+		},
 	}
 	instancesBytes, err := store.ImageBigData(img.ID, instancesData)
 	if err != nil {
@@ -123,6 +153,16 @@ func LoadFromImage(store storage.Store, image string) (string, List, error) {
 	}
 	if err := json.Unmarshal(instancesBytes, &list.instances); err != nil {
 		return "", nil, fmt.Errorf("decoding instance list for image %q: %w", image, err)
+	}
+	artifactsBytes, err := store.ImageBigData(img.ID, artifactsData)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return "", nil, fmt.Errorf("locating image %q for loading instance list: %w", image, err)
+		}
+		artifactsBytes = []byte("{}")
+	}
+	if err := json.Unmarshal(artifactsBytes, &list.artifacts); err != nil {
+		return "", nil, fmt.Errorf("decoding artifact list for image %q: %w", image, err)
 	}
 	list.instances[""] = img.ID
 	return img.ID, list, err
@@ -138,6 +178,10 @@ func (l *list) SaveToImage(store storage.Store, imageID string, names []string, 
 		return "", err
 	}
 	instancesBytes, err := json.Marshal(&l.instances)
+	if err != nil {
+		return "", err
+	}
+	artifactsBytes, err := json.Marshal(&l.artifacts)
 	if err != nil {
 		return "", err
 	}
@@ -165,6 +209,15 @@ func (l *list) SaveToImage(store storage.Store, imageID string, names []string, 
 				}
 			}
 			return "", fmt.Errorf("saving instance list to image %q: %w", imageID, err)
+		}
+		err = store.SetImageBigData(imageID, artifactsData, artifactsBytes, nil)
+		if err != nil {
+			if created {
+				if _, err2 := store.DeleteImage(img.ID, true); err2 != nil {
+					logrus.Errorf("Deleting image %q after failing to save artifact locations for it", img.ID)
+				}
+			}
+			return "", fmt.Errorf("saving artifact list to image %q: %w", imageID, err)
 		}
 		return imageID, nil
 	}

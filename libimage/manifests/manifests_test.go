@@ -33,6 +33,8 @@ var (
 	ppc64sys = &types.SystemContext{ArchitectureChoice: "ppc64le"}
 )
 
+type listPtr = *list
+
 const (
 	listImageName = "foo"
 
@@ -67,6 +69,7 @@ func TestSaveLoad(t *testing.T) {
 	}()
 
 	list := Create()
+	list.(listPtr).artifacts.Detached[otherListDigest] = "relative-path-names-are-messy" // set to check that this data is recorded
 	assert.NotNil(t, list, "Create() returned nil?")
 
 	image, err := list.SaveToImage(store, "", []string{listImageName}, manifest.DockerV2ListMediaType)
@@ -87,6 +90,8 @@ func TestSaveLoad(t *testing.T) {
 	_, list, err = LoadFromImage(store, listImageName)
 	assert.NoError(t, err, "LoadFromImage(3)")
 	assert.NotNilf(t, list, "LoadFromImage(3)")
+
+	assert.Equal(t, list.(listPtr).artifacts.Detached[otherListDigest], "relative-path-names-are-messy") // check that this data is loaded
 }
 
 func TestAddRemove(t *testing.T) {
