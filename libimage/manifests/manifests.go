@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/containers/common/pkg/manifests"
@@ -185,43 +186,36 @@ func (l *list) SaveToImage(store storage.Store, imageID string, names []string, 
 	if err != nil {
 		return "", err
 	}
-	img, err := store.CreateImage(imageID, names, "", "", &storage.ImageOptions{})
-	if err == nil || errors.Is(err, storage.ErrDuplicateID) {
-		created := (err == nil)
-		if created {
-			imageID = img.ID
-			l.instances[""] = img.ID
-		}
-		err := store.SetImageBigData(imageID, storage.ImageDigestManifestBigDataNamePrefix, manifestBytes, manifest.Digest)
-		if err != nil {
-			if created {
-				if _, err2 := store.DeleteImage(img.ID, true); err2 != nil {
-					logrus.Errorf("Deleting image %q after failing to save manifest for it", img.ID)
-				}
-			}
-			return "", fmt.Errorf("saving manifest list to image %q: %w", imageID, err)
-		}
-		err = store.SetImageBigData(imageID, instancesData, instancesBytes, nil)
-		if err != nil {
-			if created {
-				if _, err2 := store.DeleteImage(img.ID, true); err2 != nil {
-					logrus.Errorf("Deleting image %q after failing to save instance locations for it", img.ID)
-				}
-			}
-			return "", fmt.Errorf("saving instance list to image %q: %w", imageID, err)
-		}
-		err = store.SetImageBigData(imageID, artifactsData, artifactsBytes, nil)
-		if err != nil {
-			if created {
-				if _, err2 := store.DeleteImage(img.ID, true); err2 != nil {
-					logrus.Errorf("Deleting image %q after failing to save artifact locations for it", img.ID)
-				}
-			}
-			return "", fmt.Errorf("saving artifact list to image %q: %w", imageID, err)
-		}
-		return imageID, nil
+	manifestDigest, err := manifest.Digest(manifestBytes)
+	if err != nil {
+		return "", err
 	}
-	return "", fmt.Errorf("creating image to hold manifest list: %w", err)
+	imageOptions := &storage.ImageOptions{
+		BigData: []storage.ImageBigDataOption{
+			{Key: storage.ImageDigestManifestBigDataNamePrefix, Data: manifestBytes, Digest: manifestDigest},
+			{Key: instancesData, Data: instancesBytes},
+			{Key: artifactsData, Data: artifactsBytes},
+		},
+	}
+	img, err := store.CreateImage(imageID, names, "", "", imageOptions)
+	if err != nil {
+		if imageID != "" && errors.Is(err, storage.ErrDuplicateID) {
+			for _, bd := range imageOptions.BigData {
+				digester := manifest.Digest
+				if !strings.HasPrefix(bd.Key, storage.ImageDigestManifestBigDataNamePrefix) {
+					digester = nil
+				}
+				err := store.SetImageBigData(imageID, bd.Key, bd.Data, digester)
+				if err != nil {
+					return "", fmt.Errorf("saving manifest list to image %q: %w", imageID, err)
+				}
+			}
+			return imageID, nil
+		}
+		return "", err
+	}
+	l.instances[""] = img.ID
+	return img.ID, nil
 }
 
 // Reference returns an image reference for the composite image being built
