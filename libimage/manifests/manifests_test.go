@@ -675,3 +675,73 @@ func TestPushManifest(t *testing.T) {
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.NoError(t, err, "list.Push(with ForceCompressionFormat: true)")
 }
+
+func TestInstanceByImageAndFiles(t *testing.T) {
+	if unshare.IsRootless() {
+		t.Skip("Test can only run as root")
+	}
+	ctx := context.Background()
+
+	dir := t.TempDir()
+	storeOptions := storage.StoreOptions{
+		GraphRoot:       filepath.Join(dir, "root"),
+		RunRoot:         filepath.Join(dir, "runroot"),
+		GraphDriverName: "vfs",
+	}
+	store, err := storage.GetStore(storeOptions)
+	assert.NoError(t, err, "error opening store")
+	if store == nil {
+		return
+	}
+	defer func() {
+		if _, err := store.Shutdown(true); err != nil {
+			assert.NoError(t, err, "error closing store")
+		}
+	}()
+
+	cconfig := filepath.Join("..", "testdata", "containers.conf")
+	absCconfig, err := filepath.Abs(cconfig)
+	assert.NoError(t, err)
+	gzipped := filepath.Join("..", "testdata", "oci-name-only.tar.gz")
+	absGzipped, err := filepath.Abs(gzipped)
+	assert.NoError(t, err)
+	pngfile := filepath.Join("..", "..", "logos", "containers.png")
+	absPngfile, err := filepath.Abs(pngfile)
+	assert.NoError(t, err)
+
+	list := Create()
+	options := AddArtifactOptions{}
+	firstInstanceDigest, err := list.AddArtifact(ctx, sys, options, cconfig, gzipped)
+	assert.NoError(t, err)
+	secondInstanceDigest, err := list.AddArtifact(ctx, sys, options, pngfile)
+	assert.NoError(t, err)
+
+	candidate, err := list.InstanceByFile(cconfig)
+	assert.NoError(t, err)
+	assert.Equal(t, firstInstanceDigest, candidate)
+	candidate, err = list.InstanceByFile(gzipped)
+	assert.NoError(t, err)
+	assert.Equal(t, firstInstanceDigest, candidate)
+
+	firstFiles, err := list.Files(firstInstanceDigest)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{absCconfig, absGzipped}, firstFiles)
+
+	candidate, err = list.InstanceByFile(pngfile)
+	assert.NoError(t, err)
+	assert.Equal(t, secondInstanceDigest, candidate)
+
+	secondFiles, err := list.Files(secondInstanceDigest)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{absPngfile}, secondFiles)
+
+	_, err = list.InstanceByFile("ha ha, fooled you")
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, os.ErrNotExist)
+
+	otherDigest, err := digest.Parse(otherListDigest)
+	assert.NoError(t, err)
+	noFiles, err := list.Files(otherDigest)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{}, noFiles)
+}

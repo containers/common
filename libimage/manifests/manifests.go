@@ -85,6 +85,8 @@ type List interface {
 	Push(ctx context.Context, dest types.ImageReference, options PushOptions) (reference.Canonical, digest.Digest, error)
 	Add(ctx context.Context, sys *types.SystemContext, ref types.ImageReference, all bool) (digest.Digest, error)
 	AddArtifact(ctx context.Context, sys *types.SystemContext, options AddArtifactOptions, files ...string) (digest.Digest, error)
+	InstanceByFile(file string) (digest.Digest, error)
+	Files(instanceDigest digest.Digest) ([]string, error)
 }
 
 // PushOptions includes various settings which are needed for pushing the
@@ -227,6 +229,38 @@ func (l *list) SaveToImage(store storage.Store, imageID string, names []string, 
 	}
 	l.instances[""] = img.ID
 	return img.ID, nil
+}
+
+// Files returns the list of files associated with a particular artifact
+// instance in the image index, primarily for display purposes.
+func (l *list) Files(instanceDigest digest.Digest) ([]string, error) {
+	filesList, ok := l.artifacts.Files[instanceDigest]
+	if ok {
+		return slices.Clone(filesList), nil
+	}
+	return nil, nil
+}
+
+// instanceByFile returns the instanceDigest of the first manifest in the index
+// which refers to the named file.  The name will be passed to filepath.Abs()
+// before searching for an instance which references it.
+func (l *list) InstanceByFile(file string) (digest.Digest, error) {
+	if parsedDigest, err := digest.Parse(file); err == nil {
+		// nice try, but that's already a digest!
+		return parsedDigest, nil
+	}
+	abs, err := filepath.Abs(file)
+	if err != nil {
+		return "", err
+	}
+	for instanceDigest, files := range l.artifacts.Files {
+		for _, file := range files {
+			if file == abs {
+				return instanceDigest, nil
+			}
+		}
+	}
+	return "", os.ErrNotExist
 }
 
 // Reference returns an image reference for the composite image being built
