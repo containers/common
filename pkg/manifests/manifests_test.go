@@ -364,3 +364,27 @@ func TestSerialize(t *testing.T) {
 		}
 	}
 }
+
+func TestMediaType(t *testing.T) {
+	testString(t,
+		[]string{v1.MediaTypeImageManifest, manifest.DockerV2Schema2MediaType},
+		func(l List, i digest.Digest, s string) error {
+			return l.SetMediaType(i, s)
+		},
+		func(l List, i digest.Digest) (string, error) {
+			return l.MediaType(i)
+		},
+	)
+}
+
+func TestArtifactType(t *testing.T) {
+	testString(t,
+		[]string{"text/plain", "application/octet-stream"},
+		func(l List, i digest.Digest, s string) error {
+			return l.SetArtifactType(i, s)
+		},
+		func(l List, i digest.Digest) (string, error) {
+			return l.ArtifactType(i)
+		},
+	)
+}

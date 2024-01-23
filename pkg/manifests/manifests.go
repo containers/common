@@ -33,6 +33,10 @@ type List interface {
 	Features(instanceDigest digest.Digest) ([]string, error)
 	SetOSFeatures(instanceDigest digest.Digest, osFeatures []string) error
 	OSFeatures(instanceDigest digest.Digest) ([]string, error)
+	SetMediaType(instanceDigest digest.Digest, mediaType string) error
+	MediaType(instanceDigest digest.Digest) (string, error)
+	SetArtifactType(instanceDigest digest.Digest, artifactType string) error
+	ArtifactType(instanceDigest digest.Digest) (string, error)
 	Serialize(mimeType string) ([]byte, error)
 	Instances() []digest.Digest
 	OCIv1() *v1.Index
@@ -355,6 +359,44 @@ func (l *list) OSFeatures(instanceDigest digest.Digest) ([]string, error) {
 		return nil, err
 	}
 	return append([]string{}, oci.Platform.OSFeatures...), nil
+}
+
+// SetMediaType sets the MediaType field in the instance with the specified digest.
+func (l *list) SetMediaType(instanceDigest digest.Digest, mediaType string) error {
+	oci, err := l.findOCIv1(instanceDigest)
+	if err != nil {
+		return err
+	}
+	oci.MediaType = mediaType
+	return nil
+}
+
+// MediaType retrieves the MediaType field in the instance with the specified digest.
+func (l *list) MediaType(instanceDigest digest.Digest) (string, error) {
+	oci, err := l.findOCIv1(instanceDigest)
+	if err != nil {
+		return "", err
+	}
+	return oci.MediaType, nil
+}
+
+// SetArtifactType sets the ArtifactType field in the instance with the specified digest.
+func (l *list) SetArtifactType(instanceDigest digest.Digest, artifactType string) error {
+	oci, err := l.findOCIv1(instanceDigest)
+	if err != nil {
+		return err
+	}
+	oci.ArtifactType = artifactType
+	return nil
+}
+
+// ArtifactType retrieves the ArtifactType field in the instance with the specified digest.
+func (l *list) ArtifactType(instanceDigest digest.Digest) (string, error) {
+	oci, err := l.findOCIv1(instanceDigest)
+	if err != nil {
+		return "", err
+	}
+	return oci.ArtifactType, nil
 }
 
 // FromBlob builds a list from an encoded manifest list or image index.
