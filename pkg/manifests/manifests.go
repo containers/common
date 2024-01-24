@@ -10,6 +10,7 @@ import (
 	digest "github.com/opencontainers/go-digest"
 	imgspec "github.com/opencontainers/image-spec/specs-go"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"golang.org/x/exp/slices"
 )
 
 // List is a generic interface for manipulating a manifest list or an image
@@ -530,11 +531,19 @@ func FromBlob(manifestBytes []byte) (List, error) {
 			if platform == nil {
 				platform = &v1.Platform{}
 			}
+			if m.Platform != nil && m.Platform.OSFeatures != nil {
+				platform.OSFeatures = slices.Clone(m.Platform.OSFeatures)
+			}
+			var urls []string
+			if m.URLs != nil {
+				urls = slices.Clone(m.URLs)
+			}
 			list.docker.Manifests = append(list.docker.Manifests, manifest.Schema2ManifestDescriptor{
 				Schema2Descriptor: manifest.Schema2Descriptor{
 					MediaType: m.MediaType,
 					Size:      m.Size,
 					Digest:    m.Digest,
+					URLs:      urls,
 				},
 				Platform: manifest.Schema2PlatformSpec{
 					Architecture: platform.Architecture,
@@ -555,6 +564,9 @@ func (l *list) preferOCI() bool {
 		return true
 	}
 	if l.oci.Subject != nil {
+		return true
+	}
+	if len(l.oci.Annotations) > 0 {
 		return true
 	}
 	for _, m := range l.oci.Manifests {
