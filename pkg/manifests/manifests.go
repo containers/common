@@ -469,6 +469,9 @@ func (l *list) preferOCI() bool {
 	if l.oci.Subject != nil {
 		return true
 	}
+	if len(l.oci.Annotations) > 0 {
+		return true
+	}
 	for _, m := range l.oci.Manifests {
 		if m.ArtifactType != "" {
 			return true
