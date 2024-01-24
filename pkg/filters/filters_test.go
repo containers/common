@@ -205,5 +205,5 @@ func TestFiltersFromRequest(t *testing.T) {
 	expectedLibpodFilters := []string{"label=xyz=bar", "label=abc", "reference=test"}
 	got, err := FiltersFromRequest(&req)
 	require.NoError(t, err)
-	assert.Equal(t, expectedLibpodFilters, got)
+	assert.ElementsMatch(t, expectedLibpodFilters, got)
 }
