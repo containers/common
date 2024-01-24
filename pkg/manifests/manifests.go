@@ -463,11 +463,20 @@ func FromBlob(manifestBytes []byte) (List, error) {
 
 func (l *list) preferOCI() bool {
 	// If we have any data that's only in the OCI format, use that.
+	if l.oci.ArtifactType != "" {
+		return true
+	}
+	if l.oci.Subject != nil {
+		return true
+	}
 	for _, m := range l.oci.Manifests {
-		if len(m.URLs) > 0 {
+		if m.ArtifactType != "" {
 			return true
 		}
 		if len(m.Annotations) > 0 {
+			return true
+		}
+		if len(m.Data) > 0 {
 			return true
 		}
 	}
