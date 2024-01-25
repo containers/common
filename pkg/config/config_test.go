@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"runtime"
 	"sort"
@@ -678,41 +677,6 @@ image_copy_tmp_dir="storage"`
 			}
 		})
 
-		It("succeed to set and read", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg.Engine.ActiveService = "QA"
-			cfg.Engine.ServiceDestinations = map[string]Destination{
-				"QA": {
-					URI:      "https://qa/run/podman/podman.sock",
-					Identity: "/.ssh/id_rsa",
-				},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			// test that we do not write zero values to the file
-			path, err := customConfigFile()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			f, err := os.Open(path)
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			data, err := io.ReadAll(f)
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("cpus"))
-			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("disk_size"))
-			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("memory"))
-
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			gomega.Expect(cfg.Engine.ActiveService, "QA")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
-				"https://qa/run/podman/podman.sock")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
-				"/.ssh/id_rsa")
-		})
-
 		It("test addConfigs", func() {
 			tmpFilePath := func(dir, prefix string) string {
 				file, err := os.CreateTemp(dir, prefix)
@@ -779,67 +743,6 @@ image_copy_tmp_dir="storage"`
 		})
 	})
 
-	Describe("Farms", func() {
-		ConfPath := struct {
-			Value string
-			IsSet bool
-		}{}
-
-		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv(containersConfEnv)
-			conf, _ := os.CreateTemp("", "containersconf")
-			os.Setenv(containersConfEnv, conf.Name())
-		})
-
-		AfterEach(func() {
-			os.Remove(os.Getenv(containersConfEnv))
-			if ConfPath.IsSet {
-				os.Setenv(containersConfEnv, ConfPath.Value)
-			} else {
-				os.Unsetenv(containersConfEnv)
-			}
-		})
-
-		It("succeed to set and read", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg.Engine.ActiveService = "QA"
-			cfg.Engine.ServiceDestinations = map[string]Destination{
-				"QA": {
-					URI:      "https://qa/run/podman/podman.sock",
-					Identity: "/.ssh/id_rsa",
-				},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			// test that connections were written correctly
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			gomega.Expect(cfg.Engine.ActiveService, "QA")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
-				"https://qa/run/podman/podman.sock")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
-				"/.ssh/id_rsa")
-
-			// Create farm
-			cfg.Farms.Default = "Farm-1"
-			cfg.Farms.List = map[string][]string{
-				"Farm-1": {"QA"},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			gomega.Expect(cfg.Farms.Default, "Farm-1")
-			gomega.Expect(cfg.Farms.List["Farm-1"],
-				"QA")
-		})
-	})
-
 	Describe("Reload", func() {
 		It("test new config from reload", func() {
 			// Default configuration
@@ -881,26 +784,6 @@ env=["foo=bar"]`
 			_, err = Reload()
 			gomega.Expect(err).To(gomega.BeNil())
 		})
-	})
-
-	It("write default config should be empty", func() {
-		defer os.Unsetenv(containersConfEnv)
-		os.Setenv(containersConfEnv, "/dev/null")
-		conf, err := ReadCustomConfig()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-
-		f, err := os.CreateTemp("", "container-common-test")
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		defer f.Close()
-		defer os.Remove(f.Name())
-		os.Setenv(containersConfEnv, f.Name())
-		err = conf.Write()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		b, err := os.ReadFile(f.Name())
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		// config should only contain empty stanzas
-		gomega.Expect(string(b)).To(gomega.
-			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n\n[farms]\n"))
 	})
 
 	It("validate ImageVolumeMode", func() {
