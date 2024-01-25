@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/containers/common/internal"
 	"github.com/containers/image/v5/manifest"
 	digest "github.com/opencontainers/go-digest"
 	imgspec "github.com/opencontainers/image-spec/specs-go"
@@ -39,6 +40,8 @@ type List interface {
 	MediaType(instanceDigest digest.Digest) (string, error)
 	SetArtifactType(instanceDigest digest.Digest, artifactType string) error
 	ArtifactType(instanceDigest digest.Digest) (string, error)
+	SetSubject(subject *v1.Descriptor) error
+	Subject() (*v1.Descriptor, error)
 	Serialize(mimeType string) ([]byte, error)
 	Instances() []digest.Digest
 	OCIv1() *v1.Index
@@ -486,6 +489,26 @@ func (l *list) ArtifactType(instanceDigest digest.Digest) (string, error) {
 		return "", err
 	}
 	return oci.ArtifactType, nil
+}
+
+// SetSubject sets the image index's subject.
+// The field is specific to the OCI image index format, and is not present in Docker manifest lists.
+func (l *list) SetSubject(subject *v1.Descriptor) error {
+	if subject != nil {
+		subject = internal.DeepCopyDescriptor(subject)
+	}
+	l.oci.Subject = subject
+	return nil
+}
+
+// Subject retrieves the subject which might have been set on the image index.
+// The field is specific to the OCI image index format, and is not present in Docker manifest lists.
+func (l *list) Subject() (*v1.Descriptor, error) {
+	s := l.oci.Subject
+	if s != nil {
+		s = internal.DeepCopyDescriptor(s)
+	}
+	return s, nil
 }
 
 // FromBlob builds a list from an encoded manifest list or image index.

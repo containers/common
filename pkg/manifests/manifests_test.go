@@ -462,3 +462,43 @@ func TestPlatform(t *testing.T) {
 	assert.NoError(t, list.SetOSFeatures(instanceDigest, []string{}))
 	assert.Nil(t, list.OCIv1().Manifests[0].Platform, "expected platform to be nil")
 }
+
+func TestSubject(t *testing.T) {
+	bytes, err := os.ReadFile(ociFixture)
+	if err != nil {
+		t.Fatalf("error loading blob: %v", err)
+	}
+	list, err := FromBlob(bytes)
+	if err != nil {
+		t.Fatalf("error parsing blob: %v", err)
+	}
+	for _, wrote := range []*v1.Descriptor{
+		nil,
+		{},
+		{
+			MediaType: v1.MediaTypeImageManifest,
+			Digest:    expectedInstance,
+			Size:      1234,
+		},
+	} {
+		err := list.SetSubject(wrote)
+		if err != nil {
+			t.Fatalf("error setting subject: %v", err)
+		}
+		b, err := list.Serialize("")
+		if err != nil {
+			t.Fatalf("error serializing list: %v", err)
+		}
+		list, err = FromBlob(b)
+		if err != nil {
+			t.Fatalf("error parsing list: %v", err)
+		}
+		read, err := list.Subject()
+		if err != nil {
+			t.Fatalf("error retrieving subject: %v", err)
+		}
+		if !reflect.DeepEqual(read, wrote) {
+			t.Fatalf("expected subject %v, got %v", wrote, read)
+		}
+	}
+}
