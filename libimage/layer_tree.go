@@ -148,7 +148,7 @@ func (r *Runtime) layerTree(ctx context.Context, images []*Image) (*layerTree, e
 func (t *layerTree) layersOf(image *Image) []*storage.Layer {
 	var layers []*storage.Layer
 	node := t.node(image.TopLayer())
-	for node != nil {
+	for node != nil && node.layer != nil {
 		layers = append(layers, node.layer)
 		node = node.parent
 	}
