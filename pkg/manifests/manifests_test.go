@@ -412,10 +412,19 @@ func TestArtifactType(t *testing.T) {
 	testString(t,
 		[]string{"text/plain", "application/octet-stream"},
 		func(l List, i digest.Digest, s string) error {
-			return l.SetArtifactType(i, s)
+			return l.SetArtifactType(&i, s)
 		},
 		func(l List, i digest.Digest) (string, error) {
-			return l.ArtifactType(i)
+			return l.ArtifactType(&i)
+		},
+	)
+	testString(t,
+		[]string{"text/plain", "application/octet-stream"},
+		func(l List, i digest.Digest, s string) error {
+			return l.SetArtifactType(nil, s)
+		},
+		func(l List, i digest.Digest) (string, error) {
+			return l.ArtifactType(nil)
 		},
 	)
 }

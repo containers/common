@@ -38,8 +38,8 @@ type List interface {
 	OSFeatures(instanceDigest digest.Digest) ([]string, error)
 	SetMediaType(instanceDigest digest.Digest, mediaType string) error
 	MediaType(instanceDigest digest.Digest) (string, error)
-	SetArtifactType(instanceDigest digest.Digest, artifactType string) error
-	ArtifactType(instanceDigest digest.Digest) (string, error)
+	SetArtifactType(instanceDigest *digest.Digest, artifactType string) error
+	ArtifactType(instanceDigest *digest.Digest) (string, error)
 	SetSubject(subject *v1.Descriptor) error
 	Subject() (*v1.Descriptor, error)
 	Serialize(mimeType string) ([]byte, error)
@@ -473,22 +473,30 @@ func (l *list) MediaType(instanceDigest digest.Digest) (string, error) {
 }
 
 // SetArtifactType sets the ArtifactType field in the instance with the specified digest.
-func (l *list) SetArtifactType(instanceDigest digest.Digest, artifactType string) error {
-	oci, err := l.findOCIv1(instanceDigest)
-	if err != nil {
-		return err
+func (l *list) SetArtifactType(instanceDigest *digest.Digest, artifactType string) error {
+	artifactTypePtr := &l.oci.ArtifactType
+	if instanceDigest != nil {
+		oci, err := l.findOCIv1(*instanceDigest)
+		if err != nil {
+			return err
+		}
+		artifactTypePtr = &oci.ArtifactType
 	}
-	oci.ArtifactType = artifactType
+	*artifactTypePtr = artifactType
 	return nil
 }
 
 // ArtifactType retrieves the ArtifactType field in the instance with the specified digest.
-func (l *list) ArtifactType(instanceDigest digest.Digest) (string, error) {
-	oci, err := l.findOCIv1(instanceDigest)
-	if err != nil {
-		return "", err
+func (l *list) ArtifactType(instanceDigest *digest.Digest) (string, error) {
+	artifactTypePtr := &l.oci.ArtifactType
+	if instanceDigest != nil {
+		oci, err := l.findOCIv1(*instanceDigest)
+		if err != nil {
+			return "", err
+		}
+		artifactTypePtr = &oci.ArtifactType
 	}
-	return oci.ArtifactType, nil
+	return *artifactTypePtr, nil
 }
 
 // SetSubject sets the image index's subject.
