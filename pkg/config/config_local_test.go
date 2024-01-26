@@ -234,6 +234,51 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
+	It("should fail on invalid interface_name", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+		// Given
+		defConf.Containers.InterfaceName = "random"
+
+		// When
+		err = defConf.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).NotTo(gomega.BeNil())
+	})
+
+	It("should succeed on good interface_name", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+		// Given
+		defConf.Containers.InterfaceName = "device"
+
+		// When
+		err = defConf.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+	})
+
+	It("should succeed on default interface_name", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+		// Given
+		defConf.Containers.InterfaceName = ""
+
+		// When
+		err = defConf.Containers.Validate()
+
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+	})
+
 	It("should fail on bad timezone", func() {
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())

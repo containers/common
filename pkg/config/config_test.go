@@ -28,6 +28,7 @@ var _ = Describe("Config", func() {
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(defaultConfig.Containers.BaseHostsFile).To(gomega.Equal(""))
+			gomega.Expect(defaultConfig.Containers.InterfaceName).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Containers.Privileged).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Containers.ReadOnly).To(gomega.BeFalse())
