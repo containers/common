@@ -31,7 +31,7 @@ const (
 	bindirPrefix = "$BINDIR"
 )
 
-var validImageVolumeModes = []string{_typeBind, "tmpfs", "ignore"}
+var validImageVolumeModes = []string{"anonymous", "tmpfs", "ignore"}
 
 // ProxyEnv is a list of Proxy Environment variables
 var ProxyEnv = []string{
