@@ -9,7 +9,7 @@ require (
 	github.com/containernetworking/plugins v1.4.0
 	github.com/containers/image/v5 v5.29.1-0.20231221164234-1b221d4a9c28
 	github.com/containers/ocicrypt v1.1.9
-	github.com/containers/storage v1.51.1-0.20231221151421-1020ab61b4e5
+	github.com/containers/storage v1.52.1-0.20240129173630-7a525ce0e2bc
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.4
 	github.com/davecgh/go-spew v1.1.1
@@ -92,7 +92,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.4 // indirect
+	github.com/klauspost/compress v1.17.5 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20230907030200-6d76a0f91e1e // indirect

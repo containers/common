@@ -179,8 +179,8 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.51.1-0.20231221151421-1020ab61b4e5
-## explicit; go 1.19
+# github.com/containers/storage v1.52.1-0.20240129173630-7a525ce0e2bc
+## explicit; go 1.20
 github.com/containers/storage
 github.com/containers/storage/drivers
 github.com/containers/storage/drivers/aufs
@@ -207,6 +207,7 @@ github.com/containers/storage/pkg/directory
 github.com/containers/storage/pkg/dmesg
 github.com/containers/storage/pkg/fileutils
 github.com/containers/storage/pkg/fsutils
+github.com/containers/storage/pkg/fsverity
 github.com/containers/storage/pkg/homedir
 github.com/containers/storage/pkg/idmap
 github.com/containers/storage/pkg/idtools
@@ -397,7 +398,7 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/klauspost/compress v1.17.4
+# github.com/klauspost/compress v1.17.5
 ## explicit; go 1.19
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
