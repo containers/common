@@ -16,6 +16,7 @@ import (
 
 	systemdDbus "github.com/coreos/go-systemd/v22/dbus"
 	"github.com/godbus/dbus/v5"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
 
@@ -28,11 +29,15 @@ var (
 // IsCgroup2UnifiedMode returns whether we are running in cgroup 2 cgroup2 mode.
 func IsCgroup2UnifiedMode() (bool, error) {
 	isUnifiedOnce.Do(func() {
+		// Do something here
 		var st syscall.Statfs_t
 		if err := syscall.Statfs("/sys/fs/cgroup", &st); err != nil {
 			isUnified, isUnifiedErr = false, err
 		} else {
 			isUnified, isUnifiedErr = st.Type == unix.CGROUP2_SUPER_MAGIC, nil
+			if !isUnified {
+				logrus.Warnf("WARNING! You are currently using cgroups-v1 which is not supported with Podman 5. Consider switching to cgroups-v2.")
+			}
 		}
 	})
 	return isUnified, isUnifiedErr
