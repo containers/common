@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"runtime"
 	"sort"
@@ -184,7 +183,7 @@ image_copy_tmp_dir="storage"`
 			// prior to reading local config, shows hard coded defaults
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(true))
 
-			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig)
+			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig, false)
 
 			crunWasm := "crun-wasm"
 			PlatformToOCIRuntimeMap := map[string]string{
@@ -347,7 +346,7 @@ image_copy_tmp_dir="storage"`
 			// Given
 			// When
 			conf := Config{}
-			err := readConfigFromFile("testdata/containers_comment.conf", &conf)
+			err := readConfigFromFile("testdata/containers_comment.conf", &conf, false)
 
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
@@ -357,7 +356,7 @@ image_copy_tmp_dir="storage"`
 			// Given
 			// When
 			conf := Config{}
-			err := readConfigFromFile("/invalid/file", &conf)
+			err := readConfigFromFile("/invalid/file", &conf, false)
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
@@ -367,7 +366,7 @@ image_copy_tmp_dir="storage"`
 			// Given
 			// When
 			conf := Config{}
-			err := readConfigFromFile("config.go", &conf)
+			err := readConfigFromFile("config.go", &conf, false)
 
 			// Then
 			gomega.Expect(err).NotTo(gomega.BeNil())
@@ -418,15 +417,15 @@ image_copy_tmp_dir="storage"`
 			}
 
 			// Given we do
-			oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", "/dev/null")
+			oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, "/dev/null")
 			// When
 			config, err := NewConfig("")
 			// Undo that
 			if envSet {
-				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+				os.Setenv(containersConfEnv, oldContainersConf)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 			// Then
 			gomega.Expect(err).To(gomega.BeNil())
@@ -485,15 +484,15 @@ image_copy_tmp_dir="storage"`
 
 		It("contents of passed-in file should override others", func() {
 			// Given we do
-			oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", "containers.conf")
+			oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, "containers.conf")
 			// When
 			config, err := NewConfig("testdata/containers_override.conf")
 			// Undo that
 			if envSet {
-				os.Setenv("CONTAINERS_CONF", oldContainersConf)
+				os.Setenv(containersConfEnv, oldContainersConf)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 
 			crunWasm := "crun-wasm"
@@ -660,53 +659,18 @@ image_copy_tmp_dir="storage"`
 		}{}
 
 		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
+			ConfPath.Value, ConfPath.IsSet = os.LookupEnv(containersConfEnv)
 			conf, _ := os.CreateTemp("", "containersconf")
-			os.Setenv("CONTAINERS_CONF", conf.Name())
+			os.Setenv(containersConfEnv, conf.Name())
 		})
 
 		AfterEach(func() {
-			os.Remove(os.Getenv("CONTAINERS_CONF"))
+			os.Remove(os.Getenv(containersConfEnv))
 			if ConfPath.IsSet {
-				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
+				os.Setenv(containersConfEnv, ConfPath.Value)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
-		})
-
-		It("succeed to set and read", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg.Engine.ActiveService = "QA"
-			cfg.Engine.ServiceDestinations = map[string]Destination{
-				"QA": {
-					URI:      "https://qa/run/podman/podman.sock",
-					Identity: "/.ssh/id_rsa",
-				},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			// test that we do not write zero values to the file
-			path, err := customConfigFile()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			f, err := os.Open(path)
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			data, err := io.ReadAll(f)
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("cpus"))
-			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("disk_size"))
-			gomega.Expect(string(data)).ShouldNot(gomega.ContainSubstring("memory"))
-
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			gomega.Expect(cfg.Engine.ActiveService, "QA")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
-				"https://qa/run/podman/podman.sock")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
-				"/.ssh/id_rsa")
 		})
 
 		It("test addConfigs", func() {
@@ -756,7 +720,7 @@ image_copy_tmp_dir="storage"`
 			content := bytes.NewBufferString("")
 			logrus.SetOutput(content)
 			logrus.SetLevel(logrus.DebugLevel)
-			err := readConfigFromFile("testdata/containers_broken.conf", &conf)
+			err := readConfigFromFile("testdata/containers_broken.conf", &conf, false)
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(conf.Containers.NetNS).To(gomega.Equal("bridge"))
 			gomega.Expect(conf.Containers.Umask).To(gomega.Equal("0002"))
@@ -768,71 +732,10 @@ image_copy_tmp_dir="storage"`
 			conf := Config{}
 			content := bytes.NewBufferString("")
 			logrus.SetOutput(content)
-			err := readConfigFromFile("containers.conf", &conf)
+			err := readConfigFromFile("containers.conf", &conf, false)
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(content.String()).To(gomega.Equal(""))
 			logrus.SetOutput(os.Stderr)
-		})
-	})
-
-	Describe("Farms", func() {
-		ConfPath := struct {
-			Value string
-			IsSet bool
-		}{}
-
-		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv("CONTAINERS_CONF")
-			conf, _ := os.CreateTemp("", "containersconf")
-			os.Setenv("CONTAINERS_CONF", conf.Name())
-		})
-
-		AfterEach(func() {
-			os.Remove(os.Getenv("CONTAINERS_CONF"))
-			if ConfPath.IsSet {
-				os.Setenv("CONTAINERS_CONF", ConfPath.Value)
-			} else {
-				os.Unsetenv("CONTAINERS_CONF")
-			}
-		})
-
-		It("succeed to set and read", func() {
-			cfg, err := ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg.Engine.ActiveService = "QA"
-			cfg.Engine.ServiceDestinations = map[string]Destination{
-				"QA": {
-					URI:      "https://qa/run/podman/podman.sock",
-					Identity: "/.ssh/id_rsa",
-				},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			// test that connections were written correctly
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			gomega.Expect(cfg.Engine.ActiveService, "QA")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].URI,
-				"https://qa/run/podman/podman.sock")
-			gomega.Expect(cfg.Engine.ServiceDestinations["QA"].Identity,
-				"/.ssh/id_rsa")
-
-			// Create farm
-			cfg.Farms.Default = "Farm-1"
-			cfg.Farms.List = map[string][]string{
-				"Farm-1": {"QA"},
-			}
-			err = cfg.Write()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			cfg, err = ReadCustomConfig()
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-
-			gomega.Expect(cfg.Farms.Default, "Farm-1")
-			gomega.Expect(cfg.Farms.List["Farm-1"],
-				"QA")
 		})
 	})
 
@@ -840,14 +743,14 @@ image_copy_tmp_dir="storage"`
 		It("test new config from reload", func() {
 			// Default configuration
 			defaultTestFile := "testdata/containers_default.conf"
-			oldEnv, set := os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", defaultTestFile)
+			oldEnv, set := os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, defaultTestFile)
 			cfg, err := Default()
 			gomega.Expect(err).To(gomega.BeNil())
 			if set {
-				os.Setenv("CONTAINERS_CONF", oldEnv)
+				os.Setenv(containersConfEnv, oldEnv)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 
 			// Reload from new configuration file
@@ -857,16 +760,16 @@ env=["foo=bar"]`
 			err = os.WriteFile(testFile, []byte(content), os.ModePerm)
 			defer os.Remove(testFile)
 			gomega.Expect(err).To(gomega.BeNil())
-			oldEnv, set = os.LookupEnv("CONTAINERS_CONF")
-			os.Setenv("CONTAINERS_CONF", testFile)
+			oldEnv, set = os.LookupEnv(containersConfEnv)
+			os.Setenv(containersConfEnv, testFile)
 			_, err = Reload()
 			gomega.Expect(err).To(gomega.BeNil())
 			newCfg, err := Default()
 			gomega.Expect(err).To(gomega.BeNil())
 			if set {
-				os.Setenv("CONTAINERS_CONF", oldEnv)
+				os.Setenv(containersConfEnv, oldEnv)
 			} else {
-				os.Unsetenv("CONTAINERS_CONF")
+				os.Unsetenv(containersConfEnv)
 			}
 
 			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
@@ -877,26 +780,6 @@ env=["foo=bar"]`
 			_, err = Reload()
 			gomega.Expect(err).To(gomega.BeNil())
 		})
-	})
-
-	It("write default config should be empty", func() {
-		defer os.Unsetenv("CONTAINERS_CONF")
-		os.Setenv("CONTAINERS_CONF", "/dev/null")
-		conf, err := ReadCustomConfig()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-
-		f, err := os.CreateTemp("", "container-common-test")
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		defer f.Close()
-		defer os.Remove(f.Name())
-		os.Setenv("CONTAINERS_CONF", f.Name())
-		err = conf.Write()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		b, err := os.ReadFile(f.Name())
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		// config should only contain empty stanzas
-		gomega.Expect(string(b)).To(gomega.
-			Equal("[containers]\n\n[engine]\n\n[machine]\n\n[network]\n\n[secrets]\n\n[configmaps]\n\n[farms]\n"))
 	})
 
 	It("validate ImageVolumeMode", func() {
@@ -916,8 +799,8 @@ env=["foo=bar"]`
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 
 		// Make sure that _OVERRIDE is loaded even when CONTAINERS_CONF is set.
-		os.Setenv("CONTAINERS_CONF", "testdata/containers_default.conf")
-		defer os.Unsetenv("CONTAINERS_CONF")
+		os.Setenv(containersConfEnv, "testdata/containers_default.conf")
+		defer os.Unsetenv(containersConfEnv)
 		config, err = NewConfig("")
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))

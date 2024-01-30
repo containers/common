@@ -365,17 +365,17 @@ var _ = Describe("Config Local", func() {
 			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		}
 		// Given we do
-		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-		os.Setenv("CONTAINERS_CONF", "/dev/null")
+		oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
+		os.Setenv(containersConfEnv, "/dev/null")
 
 		// When
 		config, err := Default()
 
 		// Undo that
 		if envSet {
-			os.Setenv("CONTAINERS_CONF", oldContainersConf)
+			os.Setenv(containersConfEnv, oldContainersConf)
 		} else {
-			os.Unsetenv("CONTAINERS_CONF")
+			os.Unsetenv(containersConfEnv)
 		}
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
@@ -394,46 +394,6 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(envString).To(gomega.ContainSubstring("HTTP_PROXY=localhost"))
 	})
 
-	It("write", func() {
-		tmpfile := "containers.conf.test"
-		oldContainersConf, envSet := os.LookupEnv("CONTAINERS_CONF")
-		os.Setenv("CONTAINERS_CONF", tmpfile)
-		defer func() {
-			if envSet {
-				os.Setenv("CONTAINERS_CONF", oldContainersConf)
-			} else {
-				os.Unsetenv("CONTAINERS_CONF")
-			}
-		}()
-
-		config, err := ReadCustomConfig()
-		gomega.Expect(err).To(gomega.BeNil())
-		config.Containers.Devices.Set([]string{
-			"/dev/null:/dev/null:rw",
-			"/dev/sdc/",
-			"/dev/sdc:/dev/xvdc",
-			"/dev/sdc:rm",
-		})
-		boolTrue := true
-		config.Containers.Env.Set([]string{"A", "B", "C"})
-		config.Containers.Env.Attributes.Append = &boolTrue
-
-		err = config.Write()
-		gomega.Expect(err).To(gomega.BeNil())
-
-		fi, err := os.Stat(tmpfile)
-		gomega.Expect(err).To(gomega.BeNil())
-		perm := int(fi.Mode().Perm())
-		// 436 decimal = 644 octal
-		gomega.Expect(perm).To(gomega.Equal(420))
-		defer os.Remove(tmpfile)
-
-		writtenConfig, err := ReadCustomConfig()
-		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(writtenConfig.Containers.Devices).To(gomega.BeEquivalentTo(config.Containers.Devices))
-		gomega.Expect(writtenConfig.Containers.Env).To(gomega.BeEquivalentTo(config.Containers.Env))
-		gomega.Expect(writtenConfig.Containers.Env.Attributes.Append).To(gomega.BeEquivalentTo(&boolTrue))
-	})
 	It("Default Umask", func() {
 		// Given
 		// When
