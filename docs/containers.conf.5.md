@@ -644,6 +644,10 @@ The default path on Windows is:
 
 Path to the OCI hooks directories for automatically executed hooks.
 
+**cdi_spec_dirs**=["/etc/cdi", ...]
+
+Directories to scan for CDI Spec files.
+
 **image_default_format**="oci"|"v2s2"|"v2s1"
 
 Manifest Type (oci, v2s2, or v2s1) to use when pulling, pushing, building
