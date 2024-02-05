@@ -309,16 +309,6 @@ func TestAddArtifact(t *testing.T) {
 				assert.Equal(t, configFileSize, m.Config.Size, "did not record expected size for config with file")
 			case configDescriptor != nil:
 				assert.Equal(t, configDescriptor.MediaType, m.Config.MediaType, "did not record expected mediaType for empty config")
-				if false {
-					d := configDescriptor.Digest
-					s := configDescriptor.Size
-					if d.Validate() != nil {
-						s = 0
-						d = digest.Canonical.FromString("")
-					}
-					assert.Equal(t, d, m.Config.Digest, "did not record expected digest for empty config")
-					assert.Equal(t, s, m.Config.Size, "did not record expected digest for empty config")
-				}
 				assert.Equal(t, configDescriptor.Digest, m.Config.Digest, "did not record expected digest for empty config")
 				assert.Equal(t, configDescriptor.Size, m.Config.Size, "did not record expected digest for empty config")
 			default:
@@ -412,12 +402,13 @@ func TestAddArtifact(t *testing.T) {
 		}
 		for _, configDescriptor := range []*v1.Descriptor{
 			nil,
+			{MediaType: "application/x-config", Size: 0, Digest: digest.Canonical.FromString("")},
 			{MediaType: v1.MediaTypeImageConfig, Size: 0, Digest: digest.Canonical.FromString("")},
 			&v1.DescriptorEmptyJSON,
 		} {
 			for _, configFile := range []string{
 				"",
-				configFile,
+				emptyConfigFile,
 			} {
 				testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
 			}
