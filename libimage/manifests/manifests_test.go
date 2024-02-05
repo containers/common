@@ -3,22 +3,32 @@ package manifests
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/containerd/containerd/platforms"
 	"github.com/containers/common/pkg/manifests"
 	cp "github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/pkg/compression"
+	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/unshare"
 	digest "github.com/opencontainers/go-digest"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -32,6 +42,8 @@ var (
 	arm64sys = &types.SystemContext{ArchitectureChoice: "arm64"}
 	ppc64sys = &types.SystemContext{ArchitectureChoice: "ppc64le"}
 )
+
+type listPtr = *list
 
 const (
 	listImageName = "foo"
@@ -67,6 +79,7 @@ func TestSaveLoad(t *testing.T) {
 	}()
 
 	list := Create()
+	list.(listPtr).artifacts.Detached[otherListDigest] = "relative-path-names-are-messy" // set to check that this data is recorded
 	assert.NotNil(t, list, "Create() returned nil?")
 
 	image, err := list.SaveToImage(store, "", []string{listImageName}, manifest.DockerV2ListMediaType)
@@ -87,6 +100,8 @@ func TestSaveLoad(t *testing.T) {
 	_, list, err = LoadFromImage(store, listImageName)
 	assert.NoError(t, err, "LoadFromImage(3)")
 	assert.NotNilf(t, list, "LoadFromImage(3)")
+
+	assert.Equal(t, list.(listPtr).artifacts.Detached[otherListDigest], "relative-path-names-are-messy") // check that this data is loaded
 }
 
 func TestAddRemove(t *testing.T) {
@@ -158,6 +173,290 @@ func TestAddRemove(t *testing.T) {
 	assert.Equalf(t, len(list.Instances()), 1, "too many instances added", otherListInstanceDigest)
 }
 
+func TestAddArtifact(t *testing.T) {
+	if unshare.IsRootless() {
+		t.Skip("Test can only run as root")
+	}
+	ctx := context.Background()
+	dir := t.TempDir()
+	storeOptions := storage.StoreOptions{
+		GraphRoot:       filepath.Join(dir, "root"),
+		RunRoot:         filepath.Join(dir, "runroot"),
+		GraphDriverName: "vfs",
+	}
+	emptyConfigFile := filepath.Join(dir, "empty.json")
+	err := os.WriteFile(emptyConfigFile, []byte("{}"), 0o600)
+	assert.NoError(t, err, "error creating a mostly-empty file")
+	store, err := storage.GetStore(storeOptions)
+	assert.NoError(t, err, "error opening store")
+	if store == nil {
+		return
+	}
+	defer func() {
+		if _, err := store.Shutdown(true); err != nil {
+			assert.NoError(t, err, "error closing store")
+		}
+	}()
+	subjectImageName := "oci-archive:" + filepath.Join("..", "testdata", "oci-name-only.tar.gz")
+	subjectReference, err := alltransports.ParseImageName(subjectImageName)
+	require.NoError(t, err)
+	testCombination := func(t *testing.T, file, fileMediaType string, manifestArtifactType *string, platform v1.Platform, configDescriptor *v1.Descriptor, configFile string, layerMediaType *string, annotations map[string]string, subjectReference types.ImageReference, excludeTitles bool) {
+		subjectName := "<nil>"
+		if subjectReference != nil {
+			subjectName = transports.ImageName(subjectReference)
+		}
+		configMediaType := "<nil>"
+		if configDescriptor != nil {
+			configMediaType = configDescriptor.MediaType
+		}
+		var platformStr string
+		if platform.OS != "" && platform.Architecture != "" {
+			platformStr = platforms.Format(platform)
+		}
+		manifestArtifactTypeStr := "<nil>"
+		if manifestArtifactType != nil {
+			manifestArtifactTypeStr = *manifestArtifactType
+		}
+		layerMediaTypeStr := "<nil>"
+		if layerMediaType != nil {
+			layerMediaTypeStr = *layerMediaType
+		}
+		annotationsStr := "<nil>"
+		if annotations != nil {
+			var annotationsSlice []string
+			for k, v := range annotations {
+				annotationsSlice = append(annotationsSlice, fmt.Sprintf("%q=%q", k, v))
+			}
+			sort.Strings(annotationsSlice)
+			annotationsStr = "{" + strings.Join(annotationsSlice, ",") + "}"
+		}
+		fileBasename := ""
+		if file != "" {
+			fileBasename = filepath.Base(file)
+		}
+		desc := fmt.Sprint("file=", fileBasename, ",fileMediaType=", fileMediaType, ",manifestArtifactType=", manifestArtifactTypeStr, ",platform=", platformStr, ",configMediaType=", configMediaType, ",configFile=", configFile, ",layerMediaType=", layerMediaTypeStr, ",annotations=", annotationsStr, ",subject=", subjectName, ",excludeTitles=", excludeTitles)
+		t.Run(desc, func(t *testing.T) {
+			// create the new index and add the file to it
+			options := AddArtifactOptions{
+				ManifestArtifactType: manifestArtifactType,
+				Platform:             platform,
+				ConfigDescriptor:     configDescriptor,
+				ConfigFile:           configFile,
+				LayerMediaType:       layerMediaType,
+				Annotations:          annotations,
+				SubjectReference:     subjectReference,
+				ExcludeTitles:        excludeTitles,
+			}
+			list := Create()
+			var instanceDigest digest.Digest
+			if file != "" {
+				instanceDigest, err = list.AddArtifact(ctx, sys, options, file)
+			} else {
+				instanceDigest, err = list.AddArtifact(ctx, sys, options)
+			}
+			assert.NoErrorf(t, err, "list.AddArtifact(%#v)", options)
+			assert.Equal(t, 1, len(list.Instances()), "too many instances added")
+			// have to save it before we can create a reference to it
+			_, err = list.SaveToImage(store, "", nil, "")
+			require.NoError(t, err)
+			// get ready to copy it, sort of
+			ref, err := list.Reference(store, cp.CopyAllImages, nil)
+			require.NoError(t, err)
+			// fetch the manifest for the artifact that we just added to the index
+			src, err := ref.NewImageSource(ctx, &types.SystemContext{})
+			require.NoError(t, err)
+			defer src.Close()
+			manifestBytes, manifestType, err := src.GetManifest(ctx, &instanceDigest)
+			require.NoError(t, err)
+			// decode the artifact manifest
+			var m v1.Manifest
+			if annotations != nil {
+				m.Annotations = make(map[string]string)
+			}
+			err = json.Unmarshal(manifestBytes, &m)
+			require.NoError(t, err)
+			// check that the artifact manifest looks right
+			assert.Equal(t, v1.MediaTypeImageManifest, manifestType)
+			assert.Equal(t, v1.MediaTypeImageManifest, m.MediaType)
+			expectedManifestArtifactType := "application/vnd.unknown.artifact.v1"
+			if manifestArtifactType != nil {
+				expectedManifestArtifactType = *manifestArtifactType
+			}
+			assert.Equal(t, expectedManifestArtifactType, m.ArtifactType)
+			// check the config blob info
+			configFileSize := v1.DescriptorEmptyJSON.Size
+			configFileDigest := v1.DescriptorEmptyJSON.Digest
+			if configFile != "" {
+				f, err := os.Open(configFile)
+				require.NoError(t, err)
+				t.Cleanup(func() { assert.NoError(t, f.Close()) })
+				st, err := f.Stat()
+				require.NoError(t, err)
+				configFileSize = st.Size()
+				digester := digest.Canonical.Digester()
+				_, err = io.Copy(digester.Hash(), f)
+				require.NoError(t, err)
+				configFileDigest = digester.Digest()
+			}
+			switch {
+			case configDescriptor != nil && configFile != "":
+				assert.Equal(t, configDescriptor.MediaType, m.Config.MediaType, "did not record expected media type for config with file")
+				assert.Equal(t, configFileDigest, m.Config.Digest, "did not record expected digest for config with file")
+				assert.Equal(t, configFileSize, m.Config.Size, "did not record expected size for config with file")
+			case configFile != "":
+				assert.Equal(t, v1.MediaTypeImageConfig, m.Config.MediaType, "did not record expected media type for config file")
+				assert.Equal(t, configFileDigest, m.Config.Digest, "did not record expected digest for config with file")
+				assert.Equal(t, configFileSize, m.Config.Size, "did not record expected size for config with file")
+			case configDescriptor != nil:
+				assert.Equal(t, configDescriptor.MediaType, m.Config.MediaType, "did not record expected mediaType for empty config")
+				if false {
+					d := configDescriptor.Digest
+					s := configDescriptor.Size
+					if d.Validate() != nil {
+						s = 0
+						d = digest.Canonical.FromString("")
+					}
+					assert.Equal(t, d, m.Config.Digest, "did not record expected digest for empty config")
+					assert.Equal(t, s, m.Config.Size, "did not record expected digest for empty config")
+				}
+				assert.Equal(t, configDescriptor.Digest, m.Config.Digest, "did not record expected digest for empty config")
+				assert.Equal(t, configDescriptor.Size, m.Config.Size, "did not record expected digest for empty config")
+			default:
+				assert.Equal(t, v1.DescriptorEmptyJSON.MediaType, m.Config.MediaType, "did not record expected mediaType for empty config and no config file")
+				assert.Equal(t, v1.DescriptorEmptyJSON.Digest, m.Config.Digest, "did not record expected digest for empty config and no config file")
+				assert.Equal(t, v1.DescriptorEmptyJSON.Size, m.Config.Size, "did not record expected digest for empty config and no config file")
+			}
+			// if we had a file, it should be there as the "layer", otherwise it should be the empty descriptor
+			assert.Equal(t, 1, len(m.Layers), "expected only one layer")
+			if file == "" {
+				assert.Equal(t, v1.DescriptorEmptyJSON.MediaType, m.Layers[0].MediaType, "did not record empty JSON as layer")
+				assert.Equal(t, v1.DescriptorEmptyJSON.Digest, m.Layers[0].Digest, "did not record empty JSON as layer")
+				assert.Equal(t, v1.DescriptorEmptyJSON.Size, m.Layers[0].Size, "did not record empty JSON as layer")
+			} else {
+				// we need to have preserved its size
+				st, err := os.Stat(file)
+				require.NoError(t, err)
+				assert.Equal(t, st.Size(), m.Layers[0].Size, "did not record size of file")
+				// did we set the type correctly?
+				expectedLayerMediaType := fileMediaType
+				if layerMediaType != nil {
+					expectedLayerMediaType = *layerMediaType
+				}
+				assert.Equal(t, expectedLayerMediaType, m.Layers[0].MediaType, "recorded MediaType for layer was wrong")
+				// did we set the digest correctly?
+				f, err := os.Open(file)
+				require.NoError(t, err)
+				defer f.Close()
+				digester := m.Layers[0].Digest.Algorithm().Digester()
+				_, err = io.Copy(digester.Hash(), f)
+				require.NoError(t, err)
+				assert.Equal(t, digester.Digest().String(), m.Layers[0].Digest.String(), "recorded digest was wrong")
+				// did we add that annotation?
+				if excludeTitles && file != "" {
+					assert.Nil(t, m.Layers[0].Annotations, "expected no layer annotations")
+				} else {
+					assert.Equal(t, 1, len(m.Layers[0].Annotations), "expected a layer annotation")
+					assert.Equal(t, fileBasename, m.Layers[0].Annotations[v1.AnnotationTitle], "expected a title annotation")
+				}
+			}
+			// did we set the annotations?
+			assert.EqualValues(t, annotations, m.Annotations, "recorded annotations were wrong")
+			if subjectReference != nil {
+				// did we set the subject right?
+				subject, err := subjectReference.NewImageSource(ctx, &types.SystemContext{})
+				require.NoError(t, err)
+				defer subject.Close()
+				subjectManifestBytes, subjectManifestType, err := subject.GetManifest(ctx, nil)
+				require.NoError(t, err)
+				subjectManifestDigest, err := manifest.Digest(subjectManifestBytes)
+				require.NoError(t, err)
+				var s v1.Manifest
+				err = json.Unmarshal(subjectManifestBytes, &s)
+				require.NoError(t, err)
+				assert.Equal(t, m.Subject.Digest, subjectManifestDigest)
+				assert.Equal(t, m.Subject.MediaType, subjectManifestType)
+				assert.Equal(t, int64(len(subjectManifestBytes)), m.Subject.Size)
+			}
+		})
+	}
+	for file, fileMediaType := range map[string]string{
+		"": v1.DescriptorEmptyJSON.MediaType,
+		filepath.Join("..", "testdata", "containers.conf"):      "text/plain",
+		filepath.Join("..", "testdata", "oci-name-only.tar.gz"): "application/gzip",
+		filepath.Join("..", "..", "logos", "containers.png"):    "image/png",
+	} {
+		defaultManifestArtifactType := "application/vnd.unknown.artifact.v1"
+		manifestArtifactType := &defaultManifestArtifactType
+		platform := v1.Platform{OS: runtime.GOOS, Architecture: runtime.GOARCH}
+		configDescriptor := &v1.DescriptorEmptyJSON
+		configFile := ""
+		emptyString := ""
+		layerMediaType := &emptyString
+		annotations := make(map[string]string)
+		excludeTitles := false
+		for _, manifestArtifactType := range []string{"(nil)", "", "application/vnd.unknown.artifact.v1"} {
+			manifestArtifactType := &manifestArtifactType
+			if *manifestArtifactType == "(nil)" {
+				manifestArtifactType = nil
+			}
+			testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+		}
+		for _, platform := range []v1.Platform{
+			{},
+			{
+				OS:           runtime.GOOS,
+				Architecture: runtime.GOARCH,
+			},
+		} {
+			testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+		}
+		for _, configDescriptor := range []*v1.Descriptor{
+			nil,
+			{MediaType: v1.MediaTypeImageConfig, Size: 0, Digest: digest.Canonical.FromString("")},
+			&v1.DescriptorEmptyJSON,
+		} {
+			for _, configFile := range []string{
+				"",
+				configFile,
+			} {
+				testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+			}
+		}
+		for _, layerMediaType := range []string{"(nil)", "", "text/plain", "application/octet-stream"} {
+			layerMediaType := &layerMediaType
+			if *layerMediaType == "(nil)" {
+				layerMediaType = nil
+			}
+			testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+		}
+		for _, annotations := range []map[string]string{
+			nil,
+			{},
+			{
+				"annotationA": "valueA",
+			},
+			{
+				"annotationB": "valueB",
+				"annotationC": "valueC",
+			},
+		} {
+			testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+		}
+		for _, subjectName := range []string{"", subjectImageName} {
+			var subjectReference types.ImageReference
+			if subjectName != "" {
+				var err error
+				subjectReference, err = alltransports.ParseImageName(subjectName)
+				require.NoError(t, err)
+			}
+			testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+		}
+		for _, excludeTitles := range []bool{false, true} {
+			testCombination(t, file, fileMediaType, manifestArtifactType, platform, configDescriptor, configFile, layerMediaType, annotations, subjectReference, excludeTitles)
+		}
+	}
+}
+
 func TestReference(t *testing.T) {
 	if unshare.IsRootless() {
 		t.Skip("Test can only run as root")
@@ -182,11 +481,28 @@ func TestReference(t *testing.T) {
 	}()
 
 	ref, err := alltransports.ParseImageName(otherListImage)
-	assert.NoError(t, err, "ParseImageName(%q)", otherListImage)
+	assert.NoErrorf(t, err, "ParseImageName(%q)", otherListImage)
 
 	list := Create()
 	_, err = list.Add(ctx, ppc64sys, ref, false)
 	assert.NoError(t, err, "list.Add(all=false)")
+
+	emptyJSON := filepath.Join(dir, "empty.json")
+	err = os.WriteFile(emptyJSON, []byte(""), 0o600)
+	assert.NoError(t, err)
+	artifactOptions := AddArtifactOptions{
+		ConfigFile: emptyJSON,
+	}
+	_, err = list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions)
+	assert.NoErrorf(t, err, "list.AddArtifact(file=%s)", emptyJSON)
+	artifactOptions = AddArtifactOptions{
+		ConfigDescriptor: &v1.DescriptorEmptyJSON,
+	}
+	_, err = list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions)
+	assert.NoError(t, err, "list.AddArtifact(empty descriptor)")
+	artifactOptions = AddArtifactOptions{}
+	_, err = list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions)
+	assert.NoError(t, err, "list.AddArtifact(no descriptor, no file)")
 
 	listRef, err := list.Reference(store, cp.CopyAllImages, nil)
 	assert.Error(t, err, "list.Reference(never saved)")
@@ -282,7 +598,7 @@ func TestPushManifest(t *testing.T) {
 	assert.NoError(t, err, "ParseImageName()")
 
 	ref, err := alltransports.ParseImageName(otherListImage)
-	assert.NoError(t, err, "ParseImageName(%q)", otherListImage)
+	assert.NoErrorf(t, err, "ParseImageName(%q)", otherListImage)
 
 	list := Create()
 	_, err = list.Add(ctx, sys, ref, true)
@@ -358,4 +674,74 @@ func TestPushManifest(t *testing.T) {
 	options.SystemContext.CompressionFormat = &compression.Gzip
 	_, _, err = list.Push(ctx, destRef, options)
 	assert.NoError(t, err, "list.Push(with ForceCompressionFormat: true)")
+}
+
+func TestInstanceByImageAndFiles(t *testing.T) {
+	if unshare.IsRootless() {
+		t.Skip("Test can only run as root")
+	}
+	ctx := context.Background()
+
+	dir := t.TempDir()
+	storeOptions := storage.StoreOptions{
+		GraphRoot:       filepath.Join(dir, "root"),
+		RunRoot:         filepath.Join(dir, "runroot"),
+		GraphDriverName: "vfs",
+	}
+	store, err := storage.GetStore(storeOptions)
+	assert.NoError(t, err, "error opening store")
+	if store == nil {
+		return
+	}
+	defer func() {
+		if _, err := store.Shutdown(true); err != nil {
+			assert.NoError(t, err, "error closing store")
+		}
+	}()
+
+	cconfig := filepath.Join("..", "testdata", "containers.conf")
+	absCconfig, err := filepath.Abs(cconfig)
+	assert.NoError(t, err)
+	gzipped := filepath.Join("..", "testdata", "oci-name-only.tar.gz")
+	absGzipped, err := filepath.Abs(gzipped)
+	assert.NoError(t, err)
+	pngfile := filepath.Join("..", "..", "logos", "containers.png")
+	absPngfile, err := filepath.Abs(pngfile)
+	assert.NoError(t, err)
+
+	list := Create()
+	options := AddArtifactOptions{}
+	firstInstanceDigest, err := list.AddArtifact(ctx, sys, options, cconfig, gzipped)
+	assert.NoError(t, err)
+	secondInstanceDigest, err := list.AddArtifact(ctx, sys, options, pngfile)
+	assert.NoError(t, err)
+
+	candidate, err := list.InstanceByFile(cconfig)
+	assert.NoError(t, err)
+	assert.Equal(t, firstInstanceDigest, candidate)
+	candidate, err = list.InstanceByFile(gzipped)
+	assert.NoError(t, err)
+	assert.Equal(t, firstInstanceDigest, candidate)
+
+	firstFiles, err := list.Files(firstInstanceDigest)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{absCconfig, absGzipped}, firstFiles)
+
+	candidate, err = list.InstanceByFile(pngfile)
+	assert.NoError(t, err)
+	assert.Equal(t, secondInstanceDigest, candidate)
+
+	secondFiles, err := list.Files(secondInstanceDigest)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{absPngfile}, secondFiles)
+
+	_, err = list.InstanceByFile("ha ha, fooled you")
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, os.ErrNotExist)
+
+	otherDigest, err := digest.Parse(otherListDigest)
+	assert.NoError(t, err)
+	noFiles, err := list.Files(otherDigest)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{}, noFiles)
 }

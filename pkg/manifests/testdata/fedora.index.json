@@ -38,8 +38,5 @@
             "size": 529
         }
     ],
-    "schemaVersion": 2,
-    "annotations": {
-      "foo": "bar"
-    }
+    "schemaVersion": 2
 }
