@@ -811,12 +811,14 @@ func (l *list) AddArtifact(ctx context.Context, sys *types.SystemContext, option
 	configDescriptor := internal.DeepCopyDescriptor(&v1.DescriptorEmptyJSON)
 	if options.ConfigDescriptor != nil {
 		configDescriptor = internal.DeepCopyDescriptor(options.ConfigDescriptor)
-	} else if options.ConfigFile != "" {
-		configDescriptor = &v1.Descriptor{
-			MediaType: v1.MediaTypeImageConfig,
-			Digest:    "", // to be figured out below
-			Size:      -1, // to be figured out below
+	}
+	if options.ConfigFile != "" {
+		if options.ConfigDescriptor == nil { // i.e., we assigned the default mediatype
+			configDescriptor.MediaType = v1.MediaTypeImageConfig
 		}
+		configDescriptor.Data = nil
+		configDescriptor.Digest = "" // to be figured out below
+		configDescriptor.Size = -1   // to be figured out below
 	}
 	configFilePath := ""
 	if configDescriptor.Size != 0 {
