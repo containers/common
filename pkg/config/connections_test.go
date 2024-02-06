@@ -16,7 +16,7 @@ var _ = Describe("Connections conf", func() {
 
 	BeforeEach(func() {
 		dir := GinkgoT().TempDir()
-		connectionsConfFile = filepath.Join(dir, "connections.conf")
+		connectionsConfFile = filepath.Join(dir, "connections.json")
 		err := os.Setenv("PODMAN_CONNECTIONS_CONF", connectionsConfFile)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		containersConfFile = filepath.Join(dir, "containers.conf")
