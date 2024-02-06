@@ -179,7 +179,7 @@ func LoadFromImage(store storage.Store, image string) (string, List, error) {
 		return "", nil, fmt.Errorf("decoding artifact list for image %q: %w", image, err)
 	}
 	list.instances[""] = img.ID
-	return img.ID, list, err
+	return img.ID, list, nil
 }
 
 // SaveToImage saves the manifest list or image index as the manifest of an
