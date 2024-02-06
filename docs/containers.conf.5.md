@@ -442,10 +442,10 @@ default_subnet_pools = [
 ]
 ```
 
-**default_rootless_network_cmd**="slirp4netns"
+**default_rootless_network_cmd**="pasta"
 
 Configure which rootless network program to use by default. Valid options are
-`slirp4netns` (default) and `pasta`.
+`slirp4netns` and `pasta` (default).
 
 **network_config_dir**="/etc/cni/net.d/"
 
@@ -770,7 +770,7 @@ Number of times to retry pulling/pushing images in case of failure.
 
 **retry_delay** = ""
 
-Delay between retries in case pulling/pushing image fails. If set, container engines will retry at the set interval, otherwise they delay 2 seconds and then exponentially back off.  
+Delay between retries in case pulling/pushing image fails. If set, container engines will retry at the set interval, otherwise they delay 2 seconds and then exponentially back off.
 
 **runtime**=""
 
