@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -17,8 +18,10 @@ import (
 	"github.com/containerd/containerd/platforms"
 	"github.com/containers/common/pkg/manifests"
 	cp "github.com/containers/image/v5/copy"
+	"github.com/containers/image/v5/directory"
 	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/pkg/compression"
+	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
@@ -471,6 +474,26 @@ func TestReference(t *testing.T) {
 		}
 	}()
 
+	policy, err := signature.NewPolicyFromFile(sys.SignaturePolicyPath)
+	assert.NoErrorf(t, err, "NewPolicyFromFile()")
+	policyContext, err := signature.NewPolicyContext(policy)
+	assert.NoErrorf(t, err, "NewPolicyContext()")
+	destRef, err := directory.NewReference(filepath.Join(dir, "directory"))
+	assert.NoErrorf(t, err, "NewReference()")
+	checkCopy := func(ref types.ImageReference, selection cp.ImageListSelection, instances []digest.Digest) error {
+		if ref == nil {
+			return errors.New("no reference")
+		}
+		copyOptions := &cp.Options{
+			ImageListSelection: selection,
+			SourceCtx:          sys,
+			DestinationCtx:     sys,
+			Instances:          instances,
+		}
+		// t.Helper()
+		_, err := cp.Image(ctx, policyContext, destRef, ref, copyOptions)
+		return err
+	}
 	ref, err := alltransports.ParseImageName(otherListImage)
 	assert.NoErrorf(t, err, "ParseImageName(%q)", otherListImage)
 
@@ -478,22 +501,33 @@ func TestReference(t *testing.T) {
 	_, err = list.Add(ctx, ppc64sys, ref, false)
 	assert.NoError(t, err, "list.Add(all=false)")
 
+	smallJSON := filepath.Join(dir, "small.json")
+	err = os.WriteFile(smallJSON, []byte(`{"slice":[1, 2, 3]}`), 0o600)
+	assert.NoError(t, err)
+
+	minimumJSON := filepath.Join(dir, "minimum.json")
+	err = os.WriteFile(minimumJSON, []byte("{}"), 0o600)
+	assert.NoError(t, err)
+
 	emptyJSON := filepath.Join(dir, "empty.json")
 	err = os.WriteFile(emptyJSON, []byte(""), 0o600)
 	assert.NoError(t, err)
+
 	artifactOptions := AddArtifactOptions{
 		ConfigFile: emptyJSON,
 	}
 	_, err = list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions)
 	assert.NoErrorf(t, err, "list.AddArtifact(file=%s)", emptyJSON)
+
 	artifactOptions = AddArtifactOptions{
 		ConfigDescriptor: &v1.DescriptorEmptyJSON,
 	}
-	_, err = list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions)
-	assert.NoError(t, err, "list.AddArtifact(empty descriptor)")
+	minimumArtifactDigest, err := list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions, minimumJSON)
+	assert.NoError(t, err, "list.AddArtifact(file=%s)", minimumJSON)
+
 	artifactOptions = AddArtifactOptions{}
-	_, err = list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions)
-	assert.NoError(t, err, "list.AddArtifact(no descriptor, no file)")
+	smallArtifactDigest, err := list.AddArtifact(ctx, &types.SystemContext{}, artifactOptions, smallJSON)
+	assert.NoError(t, err, "list.AddArtifact(file=%s)", smallJSON)
 
 	listRef, err := list.Reference(store, cp.CopyAllImages, nil)
 	assert.Error(t, err, "list.Reference(never saved)")
@@ -514,6 +548,18 @@ func TestReference(t *testing.T) {
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest})
 	assert.Error(t, err, "list.Reference(never saved)")
 	assert.Nilf(t, listRef, "list.Reference(never saved)")
+
+	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest})
+	assert.Error(t, err, "list.Reference(never saved)")
+	assert.Nilf(t, listRef, "list.Reference(never saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{minimumArtifactDigest})
+	assert.Error(t, err, "list.Reference(saved)")
+
+	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest, smallArtifactDigest})
+	assert.Error(t, err, "list.Reference(never saved)")
+	assert.Nilf(t, listRef, "list.Reference(never saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{minimumArtifactDigest, smallArtifactDigest})
+	assert.Error(t, err, "list.Reference(saved)")
 
 	_, err = list.SaveToImage(store, "", []string{listImageName}, "")
 	assert.NoError(t, err, "SaveToImage")
@@ -538,28 +584,62 @@ func TestReference(t *testing.T) {
 	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
 
+	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{minimumArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+
+	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest, smallArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{minimumArtifactDigest, smallArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+
 	_, err = list.Add(ctx, sys, ref, true)
 	assert.NoError(t, err, "list.Add(all=true)")
 
 	listRef, err = list.Reference(store, cp.CopyAllImages, nil)
 	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopyAllImages, nil)
+	assert.NoError(t, err, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySystemImage, nil)
 	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySystemImage, nil)
+	assert.NoError(t, err, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, nil)
 	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, nil)
+	assert.NoError(t, err, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest})
 	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest})
+	assert.NoError(t, err, "list.Reference(saved)")
 
 	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest})
 	assert.NoError(t, err, "list.Reference(saved)")
 	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest})
+	assert.NoError(t, err, "list.Reference(saved)")
+
+	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+
+	listRef, err = list.Reference(store, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest, smallArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
+	assert.NotNilf(t, listRef, "list.Reference(saved)")
+	err = checkCopy(listRef, cp.CopySpecificImages, []digest.Digest{otherListAmd64Digest, otherListArm64Digest, minimumArtifactDigest, smallArtifactDigest})
+	assert.NoError(t, err, "list.Reference(saved)")
 }
 
 func TestPushManifest(t *testing.T) {
