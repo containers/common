@@ -48,6 +48,26 @@ func TestExec(t *testing.T) {
 	require.Error(t, err, "failed to connect: ssh: handshake failed: ssh: disconnect, reason 2: Too many authentication failures")
 }
 
+func TestExecWithInput(t *testing.T) {
+	options := ConnectionExecOptions{
+		Port: 22,
+		Host: "localhost",
+		Args: []string{"md5sum"},
+	}
+
+	input, err := os.Open("/etc/fstab")
+	require.NoError(t, err)
+	defer input.Close()
+
+	_, err = ExecWithInput(&options, NativeMode, input)
+	// exit status 255 is what you get when ssh is not enabled or the connection failed
+	// this means up to that point, everything worked
+	require.Error(t, err, "exit status 255")
+
+	_, err = ExecWithInput(&options, GolangMode, input)
+	require.Error(t, err, "failed to connect: ssh: handshake failed: ssh: disconnect, reason 2: Too many authentication failures")
+}
+
 func TestDial(t *testing.T) {
 	options := ConnectionDialOptions{
 		Port: 22,
