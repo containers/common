@@ -465,11 +465,11 @@ default_sysctls = [
 #
 #namespace = ""
 
-# Path to the slirp4netns binary
+# Path to the slirp4netns or pasta binary
 #
 #network_cmd_path = ""
 
-# Default options to pass to the slirp4netns binary.
+# Default options to pass to the network binary.
 # Valid options values are:
 #
 # - allow_host_loopback=true|false: Allow the slirp4netns to reach the host loopback IP (`10.0.2.2`).

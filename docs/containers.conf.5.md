@@ -442,10 +442,10 @@ default_subnet_pools = [
 ]
 ```
 
-**default_rootless_network_cmd**="slirp4netns"
+**default_rootless_network_cmd**="pasta"
 
 Configure which rootless network program to use by default. Valid options are
-`slirp4netns` (default) and `pasta`.
+`slirp4netns` and `pasta` (default).
 
 **network_config_dir**="/etc/cni/net.d/"
 
@@ -710,11 +710,11 @@ and pods are visible.
 
 **network_cmd_path**=""
 
-Path to the slirp4netns binary.
+Path to the slirp4netns or pasta binary.
 
 **network_cmd_options**=[]
 
-Default options to pass to the slirp4netns binary.
+Default options to pass to the network binary.
 
 Valid options values are:
 

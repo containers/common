@@ -388,10 +388,10 @@ type EngineConfig struct {
 	// containers and pods will be visible. The default namespace is "".
 	Namespace string `toml:"namespace,omitempty"`
 
-	// NetworkCmdPath is the path to the slirp4netns binary.
+	// NetworkCmdPath is the path to the slirp4netns or pasta binary.
 	NetworkCmdPath string `toml:"network_cmd_path,omitempty"`
 
-	// NetworkCmdOptions is the default options to pass to the slirp4netns binary.
+	// NetworkCmdOptions is the default options to pass to the network binary.
 	// For example "allow_host_loopback=true"
 	NetworkCmdOptions attributedstring.Slice `toml:"network_cmd_options,omitempty"`
 

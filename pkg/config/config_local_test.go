@@ -151,7 +151,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := NewConfig("")
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("slirp4netns"))
+		gomega.Expect(config.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("pasta"))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
