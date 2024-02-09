@@ -736,10 +736,11 @@ Whether to use chroot instead of pivot_root in the runtime.
 
 **num_locks**=2048
 
-Number of locks available for containers and pods. Each created container or
-pod consumes one lock. The default number available is 2048. If this is
-changed, a lock renumbering must be performed, using the
-`podman system renumber` command.
+Number of locks available for containers, pods, and volumes.
+Each created container, pod, or volume consumes one lock.
+Locks are recycled and can be reused after the associated container, pod, or volume is removed.
+The default number available is 2048.
+If this is changed, a lock renumbering must be performed, using the `podman system renumber` command.
 
 **pod_exit_policy**="continue"
 
