@@ -58,7 +58,7 @@ Consider the following example:
 modules1.conf: env=["1=true"]
 modules2.conf: env=["2=true"]
 modules3.conf: env=["3=true", {append=true}]
-modules3.conf: env=["4=true"]
+modules4.conf: env=["4=true"]
 ```
 
 After loading the files in the given order, the final contents are `env=["2=true", "3=true", "4=true"]`.  If modules4.conf would set `{append=false}`, the final contents would be `env=["4=true"]`.
