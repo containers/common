@@ -46,7 +46,7 @@ func TestMonitorOneDirGood(t *testing.T) {
 		}
 
 		assert.Equal(t, &rspec.Hooks{
-			Prestart: []rspec.Hook{
+			CreateRuntime: []rspec.Hook{
 				{
 					Path: path,
 				},
@@ -128,7 +128,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	fallbackPath := filepath.Join(fallbackDir, "a.json")
 	fallbackJSON := []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\"}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}", path))
 	fallbackInjected := &rspec.Hooks{
-		Prestart: []rspec.Hook{
+		CreateRuntime: []rspec.Hook{
 			{
 				Path: path,
 			},
@@ -156,7 +156,7 @@ func TestMonitorTwoDirGood(t *testing.T) {
 	primaryJSON := []byte(fmt.Sprintf("{\"version\": \"1.0.0\", \"hook\": {\"path\": \"%s\", \"timeout\": 1}, \"when\": {\"always\": true}, \"stages\": [\"prestart\"]}", path))
 	one := 1
 	primaryInjected := &rspec.Hooks{
-		Prestart: []rspec.Hook{
+		CreateRuntime: []rspec.Hook{
 			{
 				Path:    path,
 				Timeout: &one,

@@ -52,7 +52,7 @@ func TestGoodNew(t *testing.T) {
 	two := 2
 	three := 3
 	assert.Equal(t, &rspec.Hooks{
-		Prestart: []rspec.Hook{
+		CreateRuntime: []rspec.Hook{
 			{
 				Path:    path,
 				Timeout: &one,
@@ -183,7 +183,7 @@ func TestExtensionStage(t *testing.T) {
 	}
 
 	assert.Equal(t, &rspec.Hooks{
-		Prestart: []rspec.Hook{
+		CreateRuntime: []rspec.Hook{
 			{
 				Path: "/a/b/c",
 			},
