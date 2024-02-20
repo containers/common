@@ -47,6 +47,8 @@ var _ = Describe("Config", func() {
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
+			gomega.Expect(defaultConfig.Engine.Retry).To(gomega.BeEquivalentTo(3))
+			gomega.Expect(defaultConfig.Engine.RetryDelay).To(gomega.Equal(""))
 		})
 
 		It("should succeed with devices", func() {
@@ -312,6 +314,8 @@ image_copy_tmp_dir="storage"`
 				gomega.Expect(err).To(gomega.BeNil())
 				gomega.Expect(newV).To(gomega.BeEquivalentTo(newVolumes))
 			}
+			gomega.Expect(defaultConfig.Engine.Retry).To(gomega.BeEquivalentTo(5))
+			gomega.Expect(defaultConfig.Engine.RetryDelay).To(gomega.Equal("10s"))
 		})
 
 		It("test GetDefaultEnvEx", func() {
