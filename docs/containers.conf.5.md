@@ -764,6 +764,14 @@ Pull image before running or creating a container. The default is **missing**.
 Indicates whether the application should be running in remote mode. This flag modifies the
 --remote option on container engines. Setting the flag to true will default `podman --remote=true` for access to the remote Podman service.
 
+**retry** = 3
+
+Number of times to retry pulling/pushing images in case of failure.
+
+**retry_delay** = ""
+
+Delay between retries in case pulling/pushing image fails. If set, container engines will retry at the set interval, otherwise they delay 2 seconds and then exponentially back off.  
+
 **runtime**=""
 
 Default OCI specific runtime in runtimes that will be used by default. Must
