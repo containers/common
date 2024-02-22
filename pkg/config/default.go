@@ -480,7 +480,6 @@ func defaultEngineConfig() (*EngineConfig, error) {
 	// TODO - ideally we should expose a `type LockType string` along with
 	// constants.
 	c.LockType = getDefaultLockType()
-	c.MachineEnabled = false
 	c.ChownCopiedFiles = true
 
 	c.PodExitPolicy = defaultPodExitPolicy
@@ -647,11 +646,6 @@ func (c *Config) Umask() string {
 // currently k8s-file or journald.
 func (c *Config) LogDriver() string {
 	return c.Containers.LogDriver
-}
-
-// MachineEnabled returns if podman is running inside a VM or not.
-func (c *Config) MachineEnabled() bool {
-	return c.Engine.MachineEnabled
 }
 
 // MachineVolumes returns volumes to mount into the VM.
