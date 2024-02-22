@@ -837,7 +837,10 @@ the primary uid/gid of the container.
 
 **compression_format**="gzip"
 
-Specifies the compression format to use when pushing an image. Supported values are: `gzip`, `zstd` and `zstd:chunked`.
+Specifies the compression format to use when pushing an image. Supported values
+are: `gzip`, `zstd` and `zstd:chunked`. This field is ignored when pushing
+images to the docker-daemon and docker-archive formats. It is also ignored
+when the manifest format is set to v2s2.
 
 **compression_level**="5"
 

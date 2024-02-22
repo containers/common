@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/containers/common/pkg/config"
+	dockerDaemonTransport "github.com/containers/image/v5/docker"
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/reference"
+	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/sirupsen/logrus"
 )
@@ -82,6 +84,14 @@ func (r *Runtime) Push(ctx context.Context, source, destination string, options 
 			return nil, err
 		}
 		destRef = dockerRef
+	}
+
+	// docker-archive and only DockerV2Schema2MediaType support Gzip compression
+	if options.CompressionFormat != nil &&
+		(destRef.Transport().Name() == dockerArchiveTransport.Transport.Name() ||
+			destRef.Transport().Name() == dockerDaemonTransport.Transport.Name() ||
+			options.ManifestMIMEType == manifest.DockerV2Schema2MediaType) {
+		options.CompressionFormat = nil
 	}
 
 	if r.eventChannel != nil {
