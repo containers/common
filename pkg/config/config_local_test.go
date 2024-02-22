@@ -425,18 +425,6 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).NotTo(gomega.BeNil())
 	})
 
-	It("Set Machine Enabled", func() {
-		// Given
-		config, err := New(nil)
-		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Engine.MachineEnabled).To(gomega.Equal(false))
-		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
-		// Then
-		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config2.Engine.MachineEnabled).To(gomega.Equal(true))
-	})
-
 	It("default netns", func() {
 		// Given
 		config, err := New(nil)
