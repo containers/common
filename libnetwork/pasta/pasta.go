@@ -121,19 +121,28 @@ func Setup(opts *SetupOptions) error {
 		cmdArgs = append(cmdArgs, "--no-map-gw")
 	}
 
-	cmdArgs = append(cmdArgs, "--netns", opts.Netns)
+	// always pass --quiet to silence the info output from pasta
+	cmdArgs = append(cmdArgs, "--quiet", "--netns", opts.Netns)
 
 	logrus.Debugf("pasta arguments: %s", strings.Join(cmdArgs, " "))
 
 	// pasta forks once ready, and quits once we delete the target namespace
-	_, err = exec.Command(path, cmdArgs...).Output()
+	out, err := exec.Command(path, cmdArgs...).CombinedOutput()
 	if err != nil {
 		exitErr := &exec.ExitError{}
 		if errors.As(err, &exitErr) {
 			return fmt.Errorf("pasta failed with exit code %d:\n%s",
-				exitErr.ExitCode(), exitErr.Stderr)
+				exitErr.ExitCode(), string(out))
 		}
 		return fmt.Errorf("failed to start pasta: %w", err)
+	}
+
+	if len(out) > 0 {
+		// TODO: This should be warning but right now pasta still prints
+		// things with --quiet that we do not care about.
+		// For now info is fine and we can bump it up later, it is only a
+		// nice to have.
+		logrus.Infof("pasta logged warnings: %q", string(out))
 	}
 
 	return nil
