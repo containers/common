@@ -465,7 +465,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config, err := New(nil)
 		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(config.Machine.Image).To(gomega.Equal("testing"))
+		gomega.Expect(config.Machine.Image).To(gomega.Equal(""))
 		// When
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then

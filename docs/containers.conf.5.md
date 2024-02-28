@@ -770,7 +770,7 @@ Number of times to retry pulling/pushing images in case of failure.
 
 **retry_delay** = ""
 
-Delay between retries in case pulling/pushing image fails. If set, container engines will retry at the set interval, otherwise they delay 2 seconds and then exponentially back off.  
+Delay between retries in case pulling/pushing image fails. If set, container engines will retry at the set interval, otherwise they delay 2 seconds and then exponentially back off.
 
 **runtime**=""
 
@@ -909,13 +909,13 @@ The size of the disk in GB created when init-ing a podman-machine VM
 
 **image**=""
 
-Default image URI when creating a new VM using `podman machine init`.
-Options: On Linux/Mac, `testing`, `stable`, `next`. On Windows, the major
-version of the OS (e.g `36`) for Fedora 36. For all platforms you can
-alternatively specify a custom download URL to an image. Container engines
-translate URIs $OS and $ARCH to the native OS and ARCH. URI "https://example.com/$OS/$ARCH/foobar.ami" would become "https://example.com/linux/amd64/foobar.ami" on a Linux AMD machine.
-The default value
-is `testing` on Linux/Mac, and on Windows.
+Image used when creating a new VM using `podman machine init`.
+Can be specified as a registry with a bootable OCI artifact, download URL, or a local path.
+Registry target must be in the form of `docker://registry/repo/image:version`.
+Container engines translate URIs $OS and $ARCH to the native OS and ARCH.
+URI "https://example.com/$OS/$ARCH/foobar.ami" would become
+"https://example.com/linux/amd64/foobar.ami" on a Linux AMD machine.
+If unspecified, the default Podman machine image will be used.
 
 **memory**=2048
 
