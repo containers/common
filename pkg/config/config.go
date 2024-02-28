@@ -663,6 +663,8 @@ type MachineConfig struct {
 	Volumes attributedstring.Slice `toml:"volumes,omitempty"`
 	// Provider is the virtualization provider used to run podman-machine VM
 	Provider string `toml:"provider,omitempty"`
+	// Rosetta is the flag to enable Rosetta in the podman-machine VM on Apple Silicon
+	Rosetta bool `toml:"rosetta,omitempty"`
 }
 
 // FarmConfig represents the "farm" TOML config tables

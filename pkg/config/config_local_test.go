@@ -562,4 +562,15 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config2.Machine.Memory).To(gomega.Equal(uint64(1024)))
 	})
+	It("Get Rosetta value", func() {
+		// Given
+		config, err := New(nil)
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config.Machine.Rosetta).To(gomega.BeTrue())
+		// When
+		config2, err := NewConfig("testdata/containers_default.conf")
+		// Then
+		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(config2.Machine.Rosetta).To(gomega.BeFalse())
+	})
 })
