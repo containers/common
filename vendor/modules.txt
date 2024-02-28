@@ -97,7 +97,7 @@ github.com/containernetworking/cni/pkg/version
 # github.com/containernetworking/plugins v1.4.0
 ## explicit; go 1.20
 github.com/containernetworking/plugins/pkg/ns
-# github.com/containers/image/v5 v5.29.3-0.20240215171532-36cc6a1a006f
+# github.com/containers/image/v5 v5.29.3-0.20240227090231-5bef5e1e1506
 ## explicit; go 1.19
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory
@@ -182,7 +182,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.52.1-0.20240215002116-8a099ece355e
+# github.com/containers/storage v1.52.1-0.20240227215008-a083950a778f
 ## explicit; go 1.20
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -410,8 +410,8 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/klauspost/compress v1.17.6
-## explicit; go 1.19
+# github.com/klauspost/compress v1.17.7
+## explicit; go 1.20
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
