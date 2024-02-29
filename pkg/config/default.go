@@ -293,6 +293,7 @@ func defaultMachineConfig() MachineConfig {
 		Memory:  2048,
 		User:    getDefaultMachineUser(),
 		Volumes: attributedstring.NewSlice(getDefaultMachineVolumes()),
+		Rosetta: true,
 	}
 }
 

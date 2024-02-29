@@ -943,6 +943,11 @@ Virtualization provider to be used for running a podman-machine VM. Empty value
 is interpreted as the default provider for the current host OS. On Linux/Mac
 default is `QEMU` and on Windows it is `WSL`.
 
+**rosetta**="true"
+
+Rosetta supports running x86_64 Linux binaries on a Podman machine on Apple silicon.
+The default value is `true`. Supported on AppleHV(arm64) machines only.
+
 ## FARMS TABLE
 The `farms` table contains configuration options used to group up remote connections into farms that will be used when sending out builds to different machines in a farm via `podman buildfarm`.
 
