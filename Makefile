@@ -34,6 +34,8 @@ build-cross:
 	$(call go-build,darwin,amd64,${BUILDTAGS})
 	$(call go-build,windows,amd64,${BUILDTAGS})
 	$(call go-build,windows,386,${BUILDTAGS})
+	$(call go-build,freebsd,amd64,${BUILDTAGS})
+	$(call go-build,freebsd,386,${BUILDTAGS})
 
 .PHONY: all
 all: build-amd64 build-386 build-amd64-cni
