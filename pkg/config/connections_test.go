@@ -32,18 +32,22 @@ var _ = Describe("Connections conf", func() {
 	})
 
 	It("read non existent file", func() {
-		conf, path, err := readConnectionConf()
+		path, err := connectionsConfigFile()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(path).To(gomega.Equal(connectionsConfFile))
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(conf).To(gomega.Equal(&ConnectionsFile{}))
 	})
 
 	It("read empty file", func() {
 		err := os.WriteFile(connectionsConfFile, []byte("{}"), os.ModePerm)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		conf, path, err := readConnectionConf()
+		path, err := connectionsConfigFile()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(path).To(gomega.Equal(connectionsConfFile))
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(conf).To(gomega.Equal(&ConnectionsFile{}))
 	})
 
@@ -61,9 +65,11 @@ var _ = Describe("Connections conf", func() {
 		}}
 		err := writeConnectionConf(connectionsConfFile, orgConf)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		conf, path, err := readConnectionConf()
+		path, err := connectionsConfigFile()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(path).To(gomega.Equal(connectionsConfFile))
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(conf).To(gomega.Equal(orgConf))
 	})
 
