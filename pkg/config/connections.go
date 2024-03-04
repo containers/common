@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/containers/storage/pkg/ioutils"
+	"github.com/containers/storage/pkg/lockfile"
 )
 
 const connectionsFile = "podman-connections.json"
@@ -113,6 +114,15 @@ func EditConnectionConfig(callback func(cfg *ConnectionsFile) error) error {
 	if err != nil {
 		return err
 	}
+
+	lockPath := path + ".lock"
+	lock, err := lockfile.GetLockFile(lockPath)
+	if err != nil {
+		return fmt.Errorf("obtain lock file: %w", err)
+	}
+	lock.Lock()
+	defer lock.Unlock()
+
 	conf, err := readConnectionConf(path)
 	if err != nil {
 		return fmt.Errorf("read connections file: %w", err)
