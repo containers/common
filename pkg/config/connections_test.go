@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync"
 
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -32,18 +34,22 @@ var _ = Describe("Connections conf", func() {
 	})
 
 	It("read non existent file", func() {
-		conf, path, err := readConnectionConf()
+		path, err := connectionsConfigFile()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(path).To(gomega.Equal(connectionsConfFile))
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(conf).To(gomega.Equal(&ConnectionsFile{}))
 	})
 
 	It("read empty file", func() {
 		err := os.WriteFile(connectionsConfFile, []byte("{}"), os.ModePerm)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		conf, path, err := readConnectionConf()
+		path, err := connectionsConfigFile()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(path).To(gomega.Equal(connectionsConfFile))
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(conf).To(gomega.Equal(&ConnectionsFile{}))
 	})
 
@@ -61,10 +67,49 @@ var _ = Describe("Connections conf", func() {
 		}}
 		err := writeConnectionConf(connectionsConfFile, orgConf)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		conf, path, err := readConnectionConf()
+		path, err := connectionsConfigFile()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(path).To(gomega.Equal(connectionsConfFile))
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(conf).To(gomega.Equal(orgConf))
+	})
+
+	It("parallel EditConnectionConfig", func() {
+		// race test for EditConnectionConfig
+		// Basic idea spawn a bunch of goroutines and call EditConnectionConfig at the same time.
+		// We read a int from one field and then +1 one it each time so at the end we must have
+		// the number in the filed for how many times we called EditConnectionConfig. If it is
+		// less than it is racy.
+		count := 50
+		wg := sync.WaitGroup{}
+		wg.Add(count)
+		for i := 0; i < count; i++ {
+			go func() {
+				defer wg.Done()
+				err := EditConnectionConfig(func(cfg *ConnectionsFile) error {
+					if cfg.Connection.Default == "" {
+						cfg.Connection.Default = "1"
+						return nil
+					}
+					// basic idea just add 1
+					i, err := strconv.Atoi(cfg.Connection.Default)
+					if err != nil {
+						return err
+					}
+					i++
+					cfg.Connection.Default = strconv.Itoa(i)
+					return nil
+				})
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			}()
+		}
+		wg.Wait()
+		path, err := connectionsConfigFile()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		conf, err := readConnectionConf(path)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(conf.Connection.Default).To(gomega.Equal("50"))
 	})
 
 	Context("GetConnection/Farm", func() {
