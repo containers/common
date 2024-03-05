@@ -44,7 +44,7 @@ var headerFunctions = template.FuncMap{
 	"upper": func(v string) string {
 		return v
 	},
-	"truncate": func(v string, l int) string {
+	"truncate": func(v string, _ int) string {
 		return v
 	},
 }
