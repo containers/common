@@ -71,6 +71,8 @@ linters:
     - interfacebloat
     - forcetypeassert
     - gomoddirectives
+    - testifylint # way to many issues to fix right now, however it is a great linter for better test errors
+    - inamedparam # opinionated style
 linters-settings:
   errcheck:
     check-type-assertions: true
@@ -80,6 +82,10 @@ linters-settings:
     rewrite-rules:
       - pattern: 'interface{}'
         replacement: 'any'
+  revive:
+    rules:
+      - name: dot-imports
+        disabled: true
 
 issues:
     # Excluding configuration per-path, per-linter, per-text and per-source
@@ -88,6 +94,7 @@ issues:
     - path: _test\.go
       linters:
         - dupl
+        - perfsprint
     # Exclude "should pass the context parameter" for libimage.LookupImage because of backward compatibility.
     - path: "libimage"
       text: "LookupImage"

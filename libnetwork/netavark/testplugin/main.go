@@ -32,7 +32,7 @@ func main() {
 	case "setup", "teardown":
 		// this is executed and tested in netavark so we not need it here
 	default:
-		errAndExit(fmt.Sprintf("unknown argument: %s", os.Args[1]))
+		errAndExit("unknown argument: " + os.Args[1])
 	}
 }
 

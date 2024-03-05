@@ -46,7 +46,7 @@ func TestMkdirAllIgnoreUmask(t *testing.T) {
 		{
 			name:    "success no dir to create",
 			prepare: os.TempDir,
-			assert: func(dir string, err error) {
+			assert: func(_ string, err error) {
 				assert.NoError(t, err)
 			},
 		},
@@ -99,7 +99,7 @@ func TestWriteFileIgnoreUmask(t *testing.T) {
 				require.NoError(t, os.RemoveAll(path))
 				return filepath.Join(path, "foo")
 			},
-			assert: func(path string, err error) {
+			assert: func(_ string, err error) {
 				assert.Error(t, err)
 			},
 		},
