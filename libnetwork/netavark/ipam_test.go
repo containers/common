@@ -45,7 +45,7 @@ var _ = Describe("IPAM", func() {
 		networkInterface = libpodNet.(*netavarkNetwork) //nolint:errcheck // It is always *netavarkNetwork here.
 		// run network list to force a network load
 		_, err = networkInterface.NetworkList()
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	AfterEach(func() {
@@ -440,12 +440,12 @@ var _ = Describe("IPAM", func() {
 		err = networkInterface.allocIPs(opts)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(opts.Networks).To(HaveKey(netName))
-		Expect(opts.Networks[netName].StaticIPs).To(HaveLen(0))
+		Expect(opts.Networks[netName].StaticIPs).To(BeEmpty())
 
 		err = networkInterface.getAssignedIPs(opts)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(opts.Networks).To(HaveKey(netName))
-		Expect(opts.Networks[netName].StaticIPs).To(HaveLen(0))
+		Expect(opts.Networks[netName].StaticIPs).To(BeEmpty())
 
 		// dealloc the ip
 		err = networkInterface.deallocIPs(opts)

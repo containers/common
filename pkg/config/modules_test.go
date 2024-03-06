@@ -42,7 +42,7 @@ func testSetModulePaths() (func(), error) {
 var _ = Describe("Config Modules", func() {
 	It("module directories", func() {
 		dirs, err := ModuleDirectories()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(dirs).NotTo(gomega.BeNil())
 
 		if unshare.IsRootless() {
@@ -56,11 +56,11 @@ var _ = Describe("Config Modules", func() {
 		// This test makes sure that the correct module is being
 		// returned.
 		cleanUp, err := testSetModulePaths()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		defer cleanUp()
 
 		dirs, err := ModuleDirectories()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		if unshare.IsRootless() {
 			gomega.Expect(dirs).To(gomega.HaveLen(3))
@@ -97,36 +97,36 @@ var _ = Describe("Config Modules", func() {
 			}
 			result, err := resolveModule(test.input, dirs)
 			if test.mustFail {
-				gomega.Expect(err).NotTo(gomega.BeNil())
+				gomega.Expect(err).To(gomega.HaveOccurred())
 				continue
 			}
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(result).To(gomega.HaveSuffix(filepath.Join(test.expectedDir, moduleSubdir, test.input)))
 		}
 	})
 
 	It("new config with modules", func() {
 		cleanUp, err := testSetModulePaths()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		defer cleanUp()
 
 		wd, err := os.Getwd()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		options := &Options{Modules: []string{"none.conf"}}
 		_, err = New(options)
-		gomega.Expect(err).NotTo(gomega.BeNil()) // must error out
+		gomega.Expect(err).To(gomega.HaveOccurred()) // must error out
 
 		options = &Options{}
 		c, err := New(options)
-		gomega.Expect(err).To(gomega.BeNil())
-		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(0)) // no module is getting loaded!
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(options.additionalConfigs).To(gomega.BeEmpty()) // no module is getting loaded!
 		gomega.Expect(c).NotTo(gomega.BeNil())
-		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(0))
+		gomega.Expect(c.LoadedModules()).To(gomega.BeEmpty())
 
 		options = &Options{Modules: []string{"fourth.conf"}}
 		c, err = New(options)
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
@@ -135,14 +135,14 @@ var _ = Describe("Config Modules", func() {
 
 		options = &Options{Modules: []string{"fourth.conf"}}
 		c, err = New(options)
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
 
 		options = &Options{Modules: []string{"fourth.conf", "sub/share-only.conf", "sub/etc-only.conf"}}
 		c, err = New(options)
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(3)) // 3 modules are getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.Containers.Env.Get()).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only"}))
@@ -151,7 +151,7 @@ var _ = Describe("Config Modules", func() {
 
 		options = &Options{Modules: []string{"third.conf"}}
 		c, err = New(options)
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
 		if unshare.IsRootless() {
@@ -163,7 +163,7 @@ var _ = Describe("Config Modules", func() {
 
 	It("new config with modules and env variables", func() {
 		cleanUp, err := testSetModulePaths()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		defer cleanUp()
 
 		oldOverride := os.Getenv(containersConfOverrideEnv)
@@ -172,16 +172,16 @@ var _ = Describe("Config Modules", func() {
 		}()
 
 		err = os.Setenv(containersConfOverrideEnv, "testdata/modules/override.conf")
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		// Also make sure that absolute paths are loaded as is.
 		wd, err := os.Getwd()
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		absConf := filepath.Join(wd, "testdata/modules/home/.config/containers/containers.conf.modules/second.conf")
 
 		options := &Options{Modules: []string{"fourth.conf", "sub/share-only.conf", absConf}}
 		c, err := New(options)
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(4)) // 2 modules + abs path + override conf are getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.Containers.Env.Get()).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only", "override conf always wins"}))

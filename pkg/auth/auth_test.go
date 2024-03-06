@@ -49,19 +49,19 @@ var _ = Describe("Config", func() {
 		// When			// When
 		err := CheckAuthFile("")
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		conf, _ := os.CreateTemp("", "authfile")
 		defer os.Remove(conf.Name())
 		// When			// When
 		err = CheckAuthFile(conf.Name())
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		// When			// When
 		err = CheckAuthFile(conf.Name() + "missing")
 		// Then
-		gomega.Expect(err).ShouldNot(gomega.BeNil())
+		gomega.Expect(err).Should(gomega.HaveOccurred())
 	})
 })
 

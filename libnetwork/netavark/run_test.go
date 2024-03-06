@@ -48,9 +48,9 @@ var _ = Describe("run netavark", func() {
 			defer GinkgoRecover()
 			// we have to setup the loopback adapter in this netns to use port forwarding
 			link, err := netlink.LinkByName("lo")
-			Expect(err).To(BeNil(), "Failed to get loopback adapter")
+			Expect(err).ToNot(HaveOccurred(), "Failed to get loopback adapter")
 			err = netlink.LinkSetUp(link)
-			Expect(err).To(BeNil(), "Failed to set loopback adapter up")
+			Expect(err).ToNot(HaveOccurred(), "Failed to set loopback adapter up")
 			run()
 			return nil
 		})
@@ -154,11 +154,11 @@ var _ = Describe("run netavark", func() {
 			err = netNSContainer.Do(func(_ ns.NetNS) error {
 				defer GinkgoRecover()
 				i, err := net.InterfaceByName(intName)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(i.Name).To(Equal(intName))
 				Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macAddress)))
 				addrs, err := i.Addrs()
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				subnet := &net.IPNet{
 					IP:   ip,
 					Mask: net.CIDRMask(16, 32),
@@ -167,13 +167,13 @@ var _ = Describe("run netavark", func() {
 
 				// check loopback adapter
 				i, err = net.InterfaceByName("lo")
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(i.Name).To(Equal("lo"))
 				Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 				Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 				return nil
 			})
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 
 			// default bridge name
 			bridgeName := "podman0"
@@ -201,9 +201,9 @@ var _ = Describe("run netavark", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			conn, err := net.Dial("tcp", ip.String()+":5000")
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			_, err = conn.Write([]byte(expected))
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			conn.Close()
 
 			err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(opts))
@@ -243,12 +243,12 @@ var _ = Describe("run netavark", func() {
 			err = netNSContainer.Do(func(_ ns.NetNS) error {
 				defer GinkgoRecover()
 				i, err := net.InterfaceByName(intName)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(i.Name).To(Equal(intName))
 				Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macAddress)))
 				return nil
 			})
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
@@ -533,7 +533,7 @@ var _ = Describe("run netavark", func() {
 					},
 				}
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(defNet))
 				Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -551,19 +551,19 @@ var _ = Describe("run netavark", func() {
 					runNetListener(&wg, protocol, "0.0.0.0", 5000, testdata)
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				conn, err := net.Dial(protocol, "127.0.0.1:5000")
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				_, err = conn.Write([]byte(testdata))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				conn.Close()
 
 				// wait for the listener to finish
 				wg.Wait()
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -587,7 +587,7 @@ var _ = Describe("run netavark", func() {
 					},
 				}
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(defNet))
 				Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -611,12 +611,12 @@ var _ = Describe("run netavark", func() {
 						runNetListener(&wg, protocol, containerIP, port-1, testdata)
 						return nil
 					})
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 
 					conn, err := net.Dial(protocol, net.JoinHostPort("127.0.0.1", strconv.Itoa(port)))
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					_, err = conn.Write([]byte(testdata))
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					conn.Close()
 
 					// wait for the listener to finish
@@ -624,7 +624,7 @@ var _ = Describe("run netavark", func() {
 				}
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	}
@@ -716,7 +716,7 @@ var _ = Describe("run netavark", func() {
 				DNSEnabled: true,
 			}
 			network1, err := libpodNet.NetworkCreate(network, nil)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 
 			intName1 := "eth0"
 			netName1 := network1.Name
@@ -733,12 +733,12 @@ var _ = Describe("run netavark", func() {
 			}
 
 			res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(HaveLen(1))
 
 			Expect(res).To(HaveKey(netName1))
 			Expect(res[netName1].Interfaces).To(HaveKey(intName1))
-			Expect(res[netName1].Interfaces[intName1].Subnets).To(HaveLen(0))
+			Expect(res[netName1].Interfaces[intName1].Subnets).To(BeEmpty())
 			macInt1 := res[netName1].Interfaces[intName1].MacAddress
 			Expect(macInt1).To(HaveLen(6))
 
@@ -746,11 +746,11 @@ var _ = Describe("run netavark", func() {
 			err = netNSContainer.Do(func(_ ns.NetNS) error {
 				defer GinkgoRecover()
 				i, err := net.InterfaceByName(intName1)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(i.Name).To(Equal(intName1))
 				Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
 				addrs, err := i.Addrs()
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				// we still have the ipv6 link local address
 				Expect(addrs).To(HaveLen(1))
 				addr, ok := addrs[0].(*net.IPNet)
@@ -760,16 +760,16 @@ var _ = Describe("run netavark", func() {
 
 				// check loopback adapter
 				i, err = net.InterfaceByName("lo")
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(i.Name).To(Equal("lo"))
 				Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 				Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 				return nil
 			})
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 
 			err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 
 			// check in the container namespace that the interface is removed
 			err = netNSContainer.Do(func(_ ns.NetNS) error {
@@ -779,7 +779,7 @@ var _ = Describe("run netavark", func() {
 
 				// check that only the loopback adapter is left
 				ints, err := net.Interfaces()
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(ints).To(HaveLen(1))
 				Expect(ints[0].Name).To(Equal("lo"))
 				Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
@@ -787,7 +787,7 @@ var _ = Describe("run netavark", func() {
 
 				return nil
 			})
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 })
@@ -796,19 +796,19 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 	switch protocol {
 	case "tcp":
 		ln, err := net.Listen(protocol, net.JoinHostPort(ip, strconv.Itoa(port)))
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		// make sure to read in a separate goroutine to not block
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()
 			defer ln.Close()
 			conn, err := ln.Accept()
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			defer conn.Close()
 			err = conn.SetDeadline(time.Now().Add(1 * time.Second))
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			data, err := io.ReadAll(conn)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(data)).To(Equal(expectedData))
 		}()
 	case "udp":
@@ -816,16 +816,16 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			IP:   net.ParseIP(ip),
 			Port: port,
 		})
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		err = conn.SetDeadline(time.Now().Add(1 * time.Second))
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()
 			defer conn.Close()
 			data := make([]byte, len(expectedData))
 			i, err := conn.Read(data)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(i).To(Equal(len(expectedData)))
 			Expect(string(data)).To(Equal(expectedData))
 		}()
