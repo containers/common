@@ -57,7 +57,7 @@ func TestOptionalBoolSet(t *testing.T) {
 	OptionalBoolFlag(app.PersistentFlags(), &globalOB, "global-OB", "")
 	cmd := &cobra.Command{
 		Use: "cmd",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			assert.False(t, globalOB.Present())
 			assert.False(t, commandOB.Present())
 			actionRun = true
@@ -110,7 +110,7 @@ func TestOptionalBoolIsBoolFlag(t *testing.T) {
 		app := &cobra.Command{Use: "app"}
 		cmd := &cobra.Command{
 			Use: "cmd",
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(_ *cobra.Command, args []string) error {
 				assert.Equal(t, c.expectedOB, ob)     // nolint
 				assert.Equal(t, c.expectedArgs, args) //nolint
 				actionRun = true
@@ -149,7 +149,7 @@ func TestOptionalStringSet(t *testing.T) {
 	app.PersistentFlags().Var(NewOptionalStringValue(&globalOS), "global-OS", "")
 	cmd := &cobra.Command{
 		Use: "cmd",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			assert.False(t, globalOS.Present())
 			assert.False(t, commandOS.Present())
 			actionRun = true
