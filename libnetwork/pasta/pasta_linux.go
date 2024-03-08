@@ -13,16 +13,14 @@ package pasta
 import (
 	"errors"
 	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 
+	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/config"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	BinaryName = "pasta"
 )
 
 type SetupOptions struct {
@@ -37,11 +35,16 @@ type SetupOptions struct {
 	ExtraOptions []string
 }
 
-// Setup start the pasta process for the given netns.
-// The pasta binary is looked up in the HelperBinariesDir and $PATH.
-// Note that there is no need any special cleanup logic, the pasta process will
-// automatically exit when the netns path is deleted.
 func Setup(opts *SetupOptions) error {
+	_, err := Setup2(opts)
+	return err
+}
+
+// Setup2 start the pasta process for the given netns.
+// The pasta binary is looked up in the HelperBinariesDir and $PATH.
+// Note that there is no need for any special cleanup logic, the pasta
+// process will automatically exit when the netns path is deleted.
+func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	NoTCPInitPorts := true
 	NoUDPInitPorts := true
 	NoTCPNamespacePorts := true
@@ -51,7 +54,7 @@ func Setup(opts *SetupOptions) error {
 
 	path, err := opts.Config.FindHelperBinary(BinaryName, true)
 	if err != nil {
-		return fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
+		return nil, fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
 	}
 
 	cmdArgs := []string{}
@@ -72,7 +75,7 @@ func Setup(opts *SetupOptions) error {
 			case "udp":
 				cmdArgs = append(cmdArgs, "-u")
 			default:
-				return fmt.Errorf("can't forward protocol: %s", protocol)
+				return nil, fmt.Errorf("can't forward protocol: %s", protocol)
 			}
 
 			arg := fmt.Sprintf("%s%d-%d:%d-%d", addr,
@@ -140,10 +143,10 @@ func Setup(opts *SetupOptions) error {
 	if err != nil {
 		exitErr := &exec.ExitError{}
 		if errors.As(err, &exitErr) {
-			return fmt.Errorf("pasta failed with exit code %d:\n%s",
+			return nil, fmt.Errorf("pasta failed with exit code %d:\n%s",
 				exitErr.ExitCode(), string(out))
 		}
-		return fmt.Errorf("failed to start pasta: %w", err)
+		return nil, fmt.Errorf("failed to start pasta: %w", err)
 	}
 
 	if len(out) > 0 {
@@ -154,5 +157,22 @@ func Setup(opts *SetupOptions) error {
 		logrus.Infof("pasta logged warnings: %q", string(out))
 	}
 
-	return nil
+	result := &SetupResult{}
+	err = ns.WithNetNSPath(opts.Netns, func(_ ns.NetNS) error {
+		addrs, err := net.InterfaceAddrs()
+		if err != nil {
+			return err
+		}
+		for _, addr := range addrs {
+			// make sure to skip localhost and other special addresses
+			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
+				result.IPAddresses = append(result.IPAddresses, ipnet.IP)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
