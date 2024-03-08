@@ -50,7 +50,6 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	NoTCPNamespacePorts := true
 	NoUDPNamespacePorts := true
 	NoMapGW := true
-	NoDNS := true
 
 	path, err := opts.Config.FindHelperBinary(BinaryName, true)
 	if err != nil {
@@ -106,8 +105,6 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 			NoMapGW = false
 			// not an actual pasta(1) option
 			cmdArgs = append(cmdArgs[:i], cmdArgs[i+1:]...)
-		case "-D", "--dns", "--dns-forward":
-			NoDNS = false
 		}
 	}
 
@@ -125,12 +122,6 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	}
 	if NoMapGW {
 		cmdArgs = append(cmdArgs, "--no-map-gw")
-	}
-	if NoDNS {
-		// disable pasta reading from /etc/resolv.conf which hides the
-		// "Couldn't get any nameserver address" warning when only
-		// localhost resolvers are configured.
-		cmdArgs = append(cmdArgs, "--dns", "none")
 	}
 
 	// always pass --quiet to silence the info output from pasta
