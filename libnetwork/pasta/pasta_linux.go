@@ -19,8 +19,17 @@ import (
 
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/containers/common/libnetwork/types"
+	"github.com/containers/common/libnetwork/util"
 	"github.com/containers/common/pkg/config"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	dnsForwardOpt = "--dns-forward"
+
+	// dnsForwardIpv4 static ip used as nameserver address inside the netns,
+	// given this is a "link local" ip it should be very unlikely that it causes conflicts
+	dnsForwardIpv4 = "169.254.0.1"
 )
 
 type SetupOptions struct {
@@ -91,6 +100,7 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	// then append the ones that were set on the cli
 	cmdArgs = append(cmdArgs, opts.ExtraOptions...)
 
+	var dnsForwardIPs []string
 	for i, opt := range cmdArgs {
 		switch opt {
 		case "-t", "--tcp-ports":
@@ -105,7 +115,18 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 			NoMapGW = false
 			// not an actual pasta(1) option
 			cmdArgs = append(cmdArgs[:i], cmdArgs[i+1:]...)
+		case dnsForwardOpt:
+			// if there is no arg after it pasta will likely error out anyway due invalid cli args
+			if len(cmdArgs) > i+1 {
+				dnsForwardIPs = append(dnsForwardIPs, cmdArgs[i+1])
+			}
 		}
+	}
+
+	if len(dnsForwardIPs) == 0 {
+		// the user did not request custom --dns-forward so add our own.
+		cmdArgs = append(cmdArgs, dnsForwardOpt, dnsForwardIpv4)
+		dnsForwardIPs = append(dnsForwardIPs, dnsForwardIpv4)
 	}
 
 	if NoTCPInitPorts {
@@ -148,6 +169,7 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 		logrus.Infof("pasta logged warnings: %q", string(out))
 	}
 
+	var ipv4, ipv6 bool
 	result := &SetupResult{}
 	err = ns.WithNetNSPath(opts.Netns, func(_ ns.NetNS) error {
 		addrs, err := net.InterfaceAddrs()
@@ -158,6 +180,12 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 			// make sure to skip localhost and other special addresses
 			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
 				result.IPAddresses = append(result.IPAddresses, ipnet.IP)
+				if !ipv4 && util.IsIPv4(ipnet.IP) {
+					ipv4 = true
+				}
+				if !ipv6 && util.IsIPv6(ipnet.IP) {
+					ipv6 = true
+				}
 			}
 		}
 		return nil
@@ -165,5 +193,15 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	result.IPv6 = ipv6
+	for _, ip := range dnsForwardIPs {
+		ipp := net.ParseIP(ip)
+		// add the namesever ip only if the address family matches
+		if ipv4 && util.IsIPv4(ipp) || ipv6 && util.IsIPv6(ipp) {
+			result.DNSForwardIPs = append(result.DNSForwardIPs, ip)
+		}
+	}
+
 	return result, nil
 }
