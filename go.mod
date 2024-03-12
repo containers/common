@@ -8,7 +8,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/containerd/containerd v1.7.14
 	github.com/containernetworking/cni v1.1.2
-	github.com/containernetworking/plugins v1.4.0
+	github.com/containernetworking/plugins v1.4.1
 	github.com/containers/image/v5 v5.30.0
 	github.com/containers/ocicrypt v1.1.10
 	github.com/containers/storage v1.53.0
@@ -25,7 +25,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo/v2 v2.16.0
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/gomega v1.31.1
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/runc v1.1.12
@@ -55,7 +55,7 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/Microsoft/hcsshim v0.12.0-rc.3 // indirect
+	github.com/Microsoft/hcsshim v0.12.0 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -142,9 +142,9 @@ require (
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.18.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
-	google.golang.org/grpc v1.59.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
+	google.golang.org/grpc v1.62.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
