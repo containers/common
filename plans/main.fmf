@@ -1,0 +1,12 @@
+prepare:
+    - how: shell
+      script: ./plans/prepare.sh
+    - how: install
+      package:
+        - git
+
+/podman_build_test:
+    summary: Run Podman build test
+    execute:
+        how: tmt
+        script: ./plans/podman_build.sh

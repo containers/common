@@ -1,0 +1,34 @@
+---
+# See the documentation for more information:
+# https://packit.dev/docs/configuration/
+
+jobs:
+  # All tests specified in the `/plans/` subdir
+  # Podman build test for Fedora and CentOS Stream
+  - job: tests
+    trigger: pull_request
+      #notifications:
+      #failure_comment:
+      #  message: "podman e2e tests failed. @containers/packit-build please check."
+    targets: &pr_test_targets
+      - fedora-all
+      - epel-9
+      - epel-8
+    identifier: podman_build_test
+    skip_build: true
+    tmt_plan: "/plans/podman_build_test"
+
+  # Podman build test for RHEL
+  #- job: tests
+  # trigger: pull_request
+  # use_internal_tf: true
+  #   #  notifications:
+  #   #failure_comment:
+  #   #  message: "podman e2e tests failed on RHEL. @containers/packit-build please check."
+  # targets: &pr_test_targets_rhel
+  #   epel-9-x86_64:
+  #      distros: [RHEL-9.2.0-Nightly]
+  #    epel-8-x86_64:
+  #      distros: [RHEL-8.10.0-Nightly]
+  #  identifier: podman_e2e_test_internal
+  #  tmt_plan: "/plans/podman_e2e_test"
