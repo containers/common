@@ -6,6 +6,8 @@ toolchain go1.22.1
 
 require (
 	github.com/BurntSushi/toml v1.3.2
+	github.com/checkpoint-restore/checkpointctl v1.1.0
+	github.com/checkpoint-restore/go-criu/v7 v7.0.0
 	github.com/containerd/containerd v1.7.14
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.4.0

@@ -52,6 +52,12 @@ github.com/acarl005/stripansi
 # github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
+# github.com/checkpoint-restore/checkpointctl v1.1.0
+## explicit; go 1.18
+github.com/checkpoint-restore/checkpointctl/lib
+# github.com/checkpoint-restore/go-criu/v7 v7.0.0
+## explicit; go 1.18
+github.com/checkpoint-restore/go-criu/v7/stats
 # github.com/chzyer/readline v1.5.1
 ## explicit; go 1.15
 github.com/chzyer/readline
