@@ -1,16 +1,14 @@
 module github.com/containers/common
 
-go 1.21
-
-toolchain go1.22.1
+go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/checkpoint-restore/checkpointctl v1.1.0
 	github.com/checkpoint-restore/go-criu/v7 v7.0.0
-	github.com/containerd/containerd v1.7.14
+	github.com/containerd/containerd v1.7.13
 	github.com/containernetworking/cni v1.1.2
-	github.com/containernetworking/plugins v1.4.1
+	github.com/containernetworking/plugins v1.4.0
 	github.com/containers/image/v5 v5.30.0
 	github.com/containers/ocicrypt v1.1.10
 	github.com/containers/storage v1.53.0
@@ -57,7 +55,7 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/Microsoft/hcsshim v0.12.0 // indirect
+	github.com/Microsoft/hcsshim v0.12.0-rc.3 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
