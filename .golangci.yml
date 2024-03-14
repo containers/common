@@ -41,7 +41,6 @@ linters:
     - errorlint
     - exhaustive
     - exhaustivestruct
-    - ginkgolinter
     - gochecknoglobals
     - goerr113
     - gomnd

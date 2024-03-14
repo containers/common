@@ -47,7 +47,7 @@ var _ = Describe("Plugins", func() {
 	It("create plugin network", func() {
 		network := types.Network{Driver: pluginName}
 		network1, err := libpodNet.NetworkCreate(network, nil)
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(network1.Name).ToNot(BeEmpty())
 		Expect(network1.ID).ToNot(BeEmpty())
 		Expect(filepath.Join(networkConfDir, network1.Name+".json")).To(BeARegularFile())
@@ -57,7 +57,7 @@ var _ = Describe("Plugins", func() {
 		name := "test123"
 		network := types.Network{Driver: pluginName, Name: name}
 		network1, err := libpodNet.NetworkCreate(network, nil)
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(network1.Name).To(Equal(name))
 		Expect(network1.ID).ToNot(BeEmpty())
 		Expect(filepath.Join(networkConfDir, network1.Name+".json")).To(BeARegularFile())
