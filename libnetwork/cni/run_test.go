@@ -51,18 +51,18 @@ var _ = Describe("run CNI", func() {
 		_ = netNSTest.Do(func(_ ns.NetNS) error {
 			defer GinkgoRecover()
 			err := os.MkdirAll(cniVarDir, 0o755)
-			Expect(err).To(BeNil(), "Failed to create cniVarDir")
+			Expect(err).ToNot(HaveOccurred(), "Failed to create cniVarDir")
 			err = unix.Unshare(unix.CLONE_NEWNS)
-			Expect(err).To(BeNil(), "Failed to create new mounts")
+			Expect(err).ToNot(HaveOccurred(), "Failed to create new mounts")
 			err = unix.Mount("tmpfs", cniVarDir, "tmpfs", unix.MS_NOEXEC|unix.MS_NOSUID|unix.MS_NODEV, "")
-			Expect(err).To(BeNil(), "Failed to mount tmpfs for cniVarDir")
+			Expect(err).ToNot(HaveOccurred(), "Failed to mount tmpfs for cniVarDir")
 			defer unix.Unmount(cniVarDir, 0) //nolint:errcheck
 
 			// we have to setup the loopback adapter in this netns to use port forwarding
 			link, err := netlink.LinkByName("lo")
-			Expect(err).To(BeNil(), "Failed to get loopback adapter")
+			Expect(err).ToNot(HaveOccurred(), "Failed to get loopback adapter")
 			err = netlink.LinkSetUp(link)
-			Expect(err).To(BeNil(), "Failed to set loopback adapter up")
+			Expect(err).ToNot(HaveOccurred(), "Failed to set loopback adapter up")
 			run()
 			return nil
 		})
@@ -129,7 +129,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(defNet))
 				Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -142,10 +142,10 @@ var _ = Describe("run CNI", func() {
 
 				// reload the interface so the networks are reload from disk
 				libpodNet, err := getNetworkInterface(cniConfDir)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -166,7 +166,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(defNet))
 				Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -178,7 +178,7 @@ var _ = Describe("run CNI", func() {
 				Expect(res[defNet].DNSSearchDomains).To(BeEmpty())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -205,7 +205,7 @@ var _ = Describe("run CNI", func() {
 						},
 					}
 					res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(res).To(HaveLen(1))
 					Expect(res).To(HaveKey(defNet))
 					Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -223,19 +223,19 @@ var _ = Describe("run CNI", func() {
 						runNetListener(&wg, protocol, "0.0.0.0", 5000, testdata)
 						return nil
 					})
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 
 					conn, err := net.Dial(protocol, "127.0.0.1:5000")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					_, err = conn.Write([]byte(testdata))
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					conn.Close()
 
 					// wait for the listener to finish
 					wg.Wait()
 
 					err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 
@@ -259,7 +259,7 @@ var _ = Describe("run CNI", func() {
 						},
 					}
 					res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(res).To(HaveLen(1))
 					Expect(res).To(HaveKey(defNet))
 					Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -283,12 +283,12 @@ var _ = Describe("run CNI", func() {
 							runNetListener(&wg, protocol, containerIP, port-1, testdata)
 							return nil
 						})
-						Expect(err).To(BeNil())
+						Expect(err).ToNot(HaveOccurred())
 
 						conn, err := net.Dial(protocol, net.JoinHostPort("127.0.0.1", strconv.Itoa(port)))
-						Expect(err).To(BeNil())
+						Expect(err).ToNot(HaveOccurred())
 						_, err = conn.Write([]byte(testdata))
-						Expect(err).To(BeNil())
+						Expect(err).ToNot(HaveOccurred())
 						conn.Close()
 
 						// wait for the listener to finish
@@ -296,7 +296,7 @@ var _ = Describe("run CNI", func() {
 					}
 
 					err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		}
@@ -320,7 +320,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(defNet))
 				Expect(res[defNet].Interfaces).To(HaveKey(intName))
@@ -341,12 +341,12 @@ var _ = Describe("run CNI", func() {
 						runNetListener(&wg, protocol, "0.0.0.0", 5000, testdata)
 						return nil
 					})
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 
 					conn, err := net.Dial(protocol, "127.0.0.1:5000")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					_, err = conn.Write([]byte(testdata))
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					conn.Close()
 
 					// wait for the listener to finish
@@ -354,7 +354,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -362,7 +362,7 @@ var _ = Describe("run CNI", func() {
 			runTest(func() {
 				network := types.Network{}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				intName1 := "eth0"
 				netName1 := network1.Name
@@ -381,7 +381,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 
 				Expect(res).To(HaveKey(netName1))
@@ -396,11 +396,11 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(intName1)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName1))
 					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet := &net.IPNet{
 						IP:   ipInt1,
 						Mask: net.CIDRMask(24, 32),
@@ -409,17 +409,17 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				network = types.Network{}
 				network2, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				intName2 := "eth1"
 				netName2 := network2.Name
@@ -431,7 +431,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				res, err = libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 
 				Expect(res).To(HaveKey(netName2))
@@ -446,11 +446,11 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(intName1)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName1))
 					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet := &net.IPNet{
 						IP:   ipInt1,
 						Mask: net.CIDRMask(24, 32),
@@ -458,11 +458,11 @@ var _ = Describe("run CNI", func() {
 					Expect(addrs).To(ContainElements(subnet))
 
 					i, err = net.InterfaceByName(intName2)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName2))
 					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt2)))
 					addrs, err = i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet = &net.IPNet{
 						IP:   ipInt2,
 						Mask: net.CIDRMask(24, 32),
@@ -471,13 +471,13 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				teatdownOpts := types.TeardownOptions{
 					NetworkOptions: types.NetworkOptions{
@@ -494,7 +494,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				err = libpodNet.Teardown(netNSContainer.Path(), teatdownOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				logString := logBuffer.String()
 				Expect(logString).To(BeEmpty())
 
@@ -508,7 +508,7 @@ var _ = Describe("run CNI", func() {
 
 					// check that only the loopback adapter is left
 					ints, err := net.Interfaces()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(ints).To(HaveLen(1))
 					Expect(ints[0].Name).To(Equal("lo"))
 					Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
@@ -516,12 +516,12 @@ var _ = Describe("run CNI", func() {
 
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = libpodNet.NetworkRemove(netName1)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				err = libpodNet.NetworkRemove(netName2)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				// check that the interfaces are removed in the host ns
 				_, err = net.InterfaceByName(network1.NetworkInterface)
@@ -541,7 +541,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				network = types.Network{
 					Subnets: []types.Subnet{
@@ -549,7 +549,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				network2, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				intName1 := "eth0"
 				intName2 := "eth1"
@@ -571,7 +571,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(2))
 
 				Expect(res).To(HaveKey(netName1))
@@ -598,11 +598,11 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(intName1)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName1))
 					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet := &net.IPNet{
 						IP:   ipInt1,
 						Mask: net.CIDRMask(24, 32),
@@ -610,11 +610,11 @@ var _ = Describe("run CNI", func() {
 					Expect(addrs).To(ContainElements(subnet))
 
 					i, err = net.InterfaceByName(intName2)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName2))
 					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt2)))
 					addrs, err = i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet = &net.IPNet{
 						IP:   ipInt2,
 						Mask: net.CIDRMask(24, 32),
@@ -623,16 +623,16 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				logString := logBuffer.String()
 				Expect(logString).To(BeEmpty())
 
@@ -646,7 +646,7 @@ var _ = Describe("run CNI", func() {
 
 					// check that only the loopback adapter is left
 					ints, err := net.Interfaces()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(ints).To(HaveLen(1))
 					Expect(ints[0].Name).To(Equal("lo"))
 					Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
@@ -654,7 +654,7 @@ var _ = Describe("run CNI", func() {
 
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -672,7 +672,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				mac, _ := net.ParseMAC("40:15:2f:d8:42:36")
 				interfaceName := "eth0"
@@ -696,7 +696,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(netName))
 				Expect(res[netName].Interfaces).To(HaveKey(interfaceName))
@@ -716,11 +716,11 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(interfaceName)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(interfaceName))
 					Expect(i.HardwareAddr).To(Equal(mac))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet1 := &net.IPNet{
 						IP:   ip1,
 						Mask: net.CIDRMask(24, 32),
@@ -733,16 +733,16 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				logString := logBuffer.String()
 				Expect(logString).To(BeEmpty())
 
@@ -754,7 +754,7 @@ var _ = Describe("run CNI", func() {
 
 					// check that only the loopback adapter is left
 					ints, err := net.Interfaces()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(ints).To(HaveLen(1))
 					Expect(ints[0].Name).To(Equal("lo"))
 					Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
@@ -762,7 +762,7 @@ var _ = Describe("run CNI", func() {
 
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -776,7 +776,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				netName := network1.Name
 				intName := "eth0"
 				setupOpts := types.SetupOptions{
@@ -794,7 +794,7 @@ var _ = Describe("run CNI", func() {
 				defer os.Unsetenv("CNI_ARGS")
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(netName))
 				Expect(res[netName].Interfaces).To(HaveKey(intName))
@@ -806,10 +806,10 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(intName)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet := &net.IPNet{
 						IP:   net.ParseIP(ip),
 						Mask: net.CIDRMask(24, 32),
@@ -818,13 +818,13 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -837,7 +837,7 @@ var _ = Describe("run CNI", func() {
 					DNSEnabled: true,
 				}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				intName1 := "eth0"
 				netName1 := network1.Name
@@ -854,12 +854,12 @@ var _ = Describe("run CNI", func() {
 				}
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 
 				Expect(res).To(HaveKey(netName1))
 				Expect(res[netName1].Interfaces).To(HaveKey(intName1))
-				Expect(res[netName1].Interfaces[intName1].Subnets).To(HaveLen(0))
+				Expect(res[netName1].Interfaces[intName1].Subnets).To(BeEmpty())
 				macInt1 := res[netName1].Interfaces[intName1].MacAddress
 				Expect(macInt1).To(HaveLen(6))
 
@@ -867,11 +867,11 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(intName1)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(intName1))
 					Expect(i.HardwareAddr).To(Equal(net.HardwareAddr(macInt1)))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					// we still have the ipv6 link local address
 					Expect(addrs).To(HaveLen(1))
 					addr, ok := addrs[0].(*net.IPNet)
@@ -881,16 +881,16 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				logString := logBuffer.String()
 				Expect(logString).To(BeEmpty())
 
@@ -902,7 +902,7 @@ var _ = Describe("run CNI", func() {
 
 					// check that only the loopback adapter is left
 					ints, err := net.Interfaces()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(ints).To(HaveLen(1))
 					Expect(ints[0].Name).To(Equal("lo"))
 					Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
@@ -910,7 +910,7 @@ var _ = Describe("run CNI", func() {
 
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})
@@ -966,7 +966,7 @@ var _ = Describe("run CNI", func() {
 				}
 
 				network, err := libpodNet.NetworkInspect(netName)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(network.Name).To(Equal(netName))
 				Expect(network.DNSEnabled).To(BeTrue())
 				Expect(network.Subnets).To(HaveLen(2))
@@ -982,7 +982,7 @@ var _ = Describe("run CNI", func() {
 				// because this net has dns we should always teardown otherwise we leak a dnsmasq process
 				defer libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts)) //nolint:errcheck
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(res).To(HaveLen(1))
 				Expect(res).To(HaveKey(netName))
 				Expect(res[netName].Interfaces).To(HaveKey(interfaceName))
@@ -1000,10 +1000,10 @@ var _ = Describe("run CNI", func() {
 				err = netNSContainer.Do(func(_ ns.NetNS) error {
 					defer GinkgoRecover()
 					i, err := net.InterfaceByName(interfaceName)
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal(interfaceName))
 					addrs, err := i.Addrs()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					subnet1 := &net.IPNet{
 						IP:   ip1,
 						Mask: net.CIDRMask(64, 128),
@@ -1016,17 +1016,17 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err = net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				err = libpodNet.Teardown(netNSContainer.Path(), types.TeardownOptions(setupOpts))
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				logString := logBuffer.String()
 				Expect(logString).To(BeEmpty())
 
@@ -1038,7 +1038,7 @@ var _ = Describe("run CNI", func() {
 
 					// check that only the loopback adapter is left
 					ints, err := net.Interfaces()
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(ints).To(HaveLen(1))
 					Expect(ints[0].Name).To(Equal("lo"))
 					Expect(ints[0].Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
@@ -1046,7 +1046,7 @@ var _ = Describe("run CNI", func() {
 
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -1195,7 +1195,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				subnet2, _ := types.ParseCIDR("192.168.1.0/31")
 				network = types.Network{
@@ -1204,7 +1204,7 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 				network2, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				intName1 := "eth0"
 				intName2 := "eth1"
@@ -1242,13 +1242,13 @@ var _ = Describe("run CNI", func() {
 
 					// check loopback adapter
 					i, err := net.InterfaceByName("lo")
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(i.Name).To(Equal("lo"))
 					Expect(i.Flags & net.FlagLoopback).To(Equal(net.FlagLoopback))
 					Expect(i.Flags&net.FlagUp).To(Equal(net.FlagUp), "Loopback adapter should be up")
 					return nil
 				})
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -1345,7 +1345,7 @@ var _ = Describe("run CNI", func() {
 			runTest(func() {
 				network := types.Network{}
 				network1, err := libpodNet.NetworkCreate(network, nil)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 
 				interfaceName := "eth0"
 				netName := network1.Name
@@ -1362,7 +1362,7 @@ var _ = Describe("run CNI", func() {
 
 				// Most CNI plugins do not error on teardown when there is nothing to do.
 				err = libpodNet.Teardown(netNSContainer.Path(), teardownOpts)
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				logString := logBuffer.String()
 				Expect(logString).To(ContainSubstring("Failed to load cached network config"))
 			})
@@ -1374,17 +1374,17 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 	switch protocol {
 	case "tcp":
 		ln, err := net.Listen(protocol, net.JoinHostPort(ip, strconv.Itoa(port)))
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		// make sure to read in a separate goroutine to not block
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()
 			conn, err := ln.Accept()
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			err = conn.SetDeadline(time.Now().Add(1 * time.Second))
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			data, err := io.ReadAll(conn)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(string(data)).To(Equal(expectedData))
 			conn.Close()
 			ln.Close()
@@ -1394,15 +1394,15 @@ func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedD
 			IP:   net.ParseIP(ip),
 			Port: port,
 		})
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		err = conn.SetDeadline(time.Now().Add(1 * time.Second))
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()
 			data := make([]byte, len(expectedData))
 			i, err := conn.Read(data)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(i).To(Equal(len(expectedData)))
 			Expect(string(data)).To(Equal(expectedData))
 			conn.Close()

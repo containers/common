@@ -24,7 +24,7 @@ var _ = Describe("Config", func() {
 			defaultConfig, err := NewConfig("")
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defaultConfig.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(defaultConfig.Containers.BaseHostsFile).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Containers.InterfaceName).To(gomega.Equal(""))
@@ -42,10 +42,10 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.EventsContainerCreateInspectData).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
-			gomega.Expect(defaultConfig.Engine.AddCompression.Get()).To(gomega.HaveLen(0))
+			gomega.Expect(defaultConfig.Engine.AddCompression.Get()).To(gomega.BeEmpty())
 
 			path, err := defaultConfig.ImageCopyTmpDir()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp"))
 			gomega.Expect(defaultConfig.Engine.Retry).To(gomega.BeEquivalentTo(3))
 			gomega.Expect(defaultConfig.Engine.RetryDelay).To(gomega.Equal(""))
@@ -53,7 +53,7 @@ var _ = Describe("Config", func() {
 
 		It("should succeed with devices", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
@@ -68,12 +68,12 @@ var _ = Describe("Config", func() {
 			err = defConf.Containers.Validate()
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 
 		It("should fail wrong max log size", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
@@ -83,12 +83,12 @@ var _ = Describe("Config", func() {
 			err = defConf.Validate()
 
 			// Then
-			gomega.Expect(err).NotTo(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
 
 		It("should succeed with valid shm size", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
@@ -98,7 +98,7 @@ var _ = Describe("Config", func() {
 			err = defConf.Validate()
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 			// Given
 			defConf.Containers.ShmSize = "64m"
@@ -107,12 +107,12 @@ var _ = Describe("Config", func() {
 			err = defConf.Validate()
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 
 		It("should fail wrong shm size", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
@@ -122,7 +122,7 @@ var _ = Describe("Config", func() {
 			err = defConf.Validate()
 
 			// Then
-			gomega.Expect(err).NotTo(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
 
 		It("Check SELinux settings", func() {
@@ -136,7 +136,7 @@ var _ = Describe("Config", func() {
 	Describe("ValidateNetworkConfig", func() {
 		It("should succeed with default config", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			// Given
@@ -144,7 +144,7 @@ var _ = Describe("Config", func() {
 			err = defConf.Network.Validate()
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 	})
 
@@ -156,18 +156,18 @@ var _ = Describe("Config", func() {
 image_copy_tmp_dir="storage"`
 			err := os.WriteFile(testFile, []byte(content), os.ModePerm)
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			defer os.Remove(testFile)
 
 			config, _ := NewConfig(testFile)
 			path, err := config.ImageCopyTmpDir()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.ContainSubstring("containers/storage/tmp"))
 			// Given we do
 			oldTMPDIR, set := os.LookupEnv("TMPDIR")
 			os.Setenv("TMPDIR", "/var/tmp/foobar")
 			path, err = config.ImageCopyTmpDir()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp/foobar"))
 			if set {
 				os.Setenv("TMPDIR", oldTMPDIR)
@@ -183,7 +183,7 @@ image_copy_tmp_dir="storage"`
 			// When
 			defaultConfig, _ := defaultConfig()
 			// prior to reading local config, shows hard coded defaults
-			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(true))
+			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.BeTrue())
 
 			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig, false)
 
@@ -289,7 +289,7 @@ image_copy_tmp_dir="storage"`
 			}
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defaultConfig.Engine.CgroupManager).To(gomega.Equal("systemd"))
 			gomega.Expect(defaultConfig.Containers.Env.Get()).To(gomega.BeEquivalentTo(envs))
 			gomega.Expect(defaultConfig.Containers.Mounts.Get()).To(gomega.BeEquivalentTo(mounts))
@@ -299,8 +299,8 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
 			gomega.Expect(defaultConfig.Engine.PlatformToOCIRuntime).To(gomega.Equal(PlatformToOCIRuntimeMap))
-			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.Equal(false))
-			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions.Get()).To(gomega.HaveLen(0))
+			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.BeFalse())
+			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions.Get()).To(gomega.BeEmpty())
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir.Get()).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
@@ -311,7 +311,7 @@ image_copy_tmp_dir="storage"`
 				// $HOME is not set
 				gomega.Expect(err).To(gomega.HaveOccurred())
 			} else {
-				gomega.Expect(err).To(gomega.BeNil())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				gomega.Expect(newV).To(gomega.BeEquivalentTo(newVolumes))
 			}
 			gomega.Expect(defaultConfig.Engine.Retry).To(gomega.BeEquivalentTo(5))
@@ -353,7 +353,7 @@ image_copy_tmp_dir="storage"`
 			err := readConfigFromFile("testdata/containers_comment.conf", &conf, false)
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 
 		It("should fail when file does not exist", func() {
@@ -363,7 +363,7 @@ image_copy_tmp_dir="storage"`
 			err := readConfigFromFile("/invalid/file", &conf, false)
 
 			// Then
-			gomega.Expect(err).NotTo(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
 
 		It("should fail when toml decode fails", func() {
@@ -373,7 +373,7 @@ image_copy_tmp_dir="storage"`
 			err := readConfigFromFile("config.go", &conf, false)
 
 			// Then
-			gomega.Expect(err).NotTo(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
 	})
 
@@ -432,7 +432,7 @@ image_copy_tmp_dir="storage"`
 				os.Unsetenv(containersConfEnv)
 			}
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Containers.Env.Get()).To(gomega.BeEquivalentTo(envs))
@@ -441,7 +441,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Network.NetavarkPluginDirs.Get()).To(gomega.Equal(DefaultNetavarkPluginDirs))
 			gomega.Expect(config.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
-			gomega.Expect(config.Containers.CgroupConf.Get()).To(gomega.HaveLen(0))
+			gomega.Expect(config.Containers.CgroupConf.Get()).To(gomega.BeEmpty())
 
 			caps, _ := config.Capabilities("", nil, nil)
 			gomega.Expect(caps).Should(gomega.Equal(defCaps))
@@ -472,7 +472,7 @@ image_copy_tmp_dir="storage"`
 			cgroupConf := []string{
 				"memory.high=1073741824",
 			}
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("container-default"))
 			gomega.Expect(config.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(config.Containers.BaseHostsFile).To(gomega.BeEquivalentTo("/etc/hosts2"))
@@ -512,7 +512,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(runtimes).To(gomega.Equal(crunWasm))
 
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(config).ToNot(gomega.BeNil())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 			gomega.Expect(config.Containers.LogDriver).To(gomega.Equal("journald"))
@@ -527,7 +527,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.EventsLogFilePath).To(gomega.BeEquivalentTo("/tmp/events.log"))
 			gomega.Expect(config.Engine.EventsContainerCreateInspectData).To(gomega.BeTrue())
 			path, err := config.ImageCopyTmpDir()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/tmp/foobar"))
 			gomega.Expect(uint64(config.Engine.EventsLogFileMaxSize)).To(gomega.Equal(uint64(500)))
 			gomega.Expect(config.Engine.PodExitPolicy).To(gomega.BeEquivalentTo(PodExitPolicyStop))
@@ -538,7 +538,7 @@ image_copy_tmp_dir="storage"`
 			// When
 			config, err := NewConfig("testdata/containers_invalid.conf")
 			// Then
-			gomega.Expect(err).ToNot(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 			gomega.Expect(config).To(gomega.BeNil())
 		})
 
@@ -550,10 +550,10 @@ image_copy_tmp_dir="storage"`
 			// When
 			config, err := NewConfig("")
 			// Then
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			var addcaps, dropcaps []string
 			caps, err := config.Capabilities("0", addcaps, dropcaps)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			sort.Strings(caps)
 			defaultCaps := config.Containers.DefaultCapabilities.Get()
 			sort.Strings(defaultCaps)
@@ -562,16 +562,16 @@ image_copy_tmp_dir="storage"`
 			// Add all caps
 			addcaps = []string{"all"}
 			caps, err = config.Capabilities("root", addcaps, dropcaps)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			sort.Strings(caps)
 			boundingSet, err := capabilities.BoundingSet()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(caps).To(gomega.BeEquivalentTo(boundingSet))
 
 			// Drop all caps
 			dropcaps = []string{"all"}
 			caps, err = config.Capabilities("", boundingSet, dropcaps)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			sort.Strings(caps)
 			gomega.Expect(caps).ToNot(gomega.BeEquivalentTo([]string{}))
 
@@ -593,61 +593,61 @@ image_copy_tmp_dir="storage"`
 			addcaps = []string{"CAP_NET_ADMIN", "CAP_SYS_ADMIN"}
 			dropcaps = []string{"CAP_FOWNER", "CAP_CHOWN"}
 			caps, err = config.Capabilities("", addcaps, dropcaps)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			sort.Strings(caps)
 			gomega.Expect(caps).To(gomega.BeEquivalentTo(expectedCaps))
 
 			addcaps = []string{"NET_ADMIN", "cap_sys_admin"}
 			dropcaps = []string{"FOWNER", "chown"}
 			caps, err = config.Capabilities("", addcaps, dropcaps)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			sort.Strings(caps)
 			gomega.Expect(caps).To(gomega.BeEquivalentTo(expectedCaps))
 
 			expectedCaps = []string{"CAP_NET_ADMIN", "CAP_SYS_ADMIN"}
 			caps, err = config.Capabilities("notroot", addcaps, dropcaps)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			sort.Strings(caps)
 			gomega.Expect(caps).To(gomega.BeEquivalentTo(expectedCaps))
 		})
 
 		It("should succeed with default pull_policy", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			err = defConf.Engine.Validate()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf.Engine.PullPolicy).To(gomega.Equal("missing"))
 
 			defConf.Engine.PullPolicy = DefaultPullPolicy
 			err = defConf.Engine.Validate()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 
 		It("should succeed case-insensitive", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			defConf.Engine.PullPolicy = "NeVer"
 			err = defConf.Engine.Validate()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 
 		It("should fail with invalid pull_policy", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			defConf.Engine.PullPolicy = "invalidPullPolicy"
 			err = defConf.Engine.Validate()
-			gomega.Expect(err).ToNot(gomega.BeNil())
+			gomega.Expect(err).To(gomega.HaveOccurred())
 		})
 
 		It("should fail with invalid database_backend", func() {
 			defConf, err := defaultConfig()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defConf).NotTo(gomega.BeNil())
 
 			defConf.Engine.DBBackend = "blah"
@@ -725,7 +725,7 @@ image_copy_tmp_dir="storage"`
 			logrus.SetOutput(content)
 			logrus.SetLevel(logrus.DebugLevel)
 			err := readConfigFromFile("testdata/containers_broken.conf", &conf, false)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(conf.Containers.NetNS).To(gomega.Equal("bridge"))
 			gomega.Expect(conf.Containers.Umask).To(gomega.Equal("0002"))
 			gomega.Expect(content).To(gomega.ContainSubstring("Failed to decode the keys [\\\"foo\\\" \\\"containers.image_default_transport\\\"] from \\\"testdata/containers_broken.conf\\\""))
@@ -737,7 +737,7 @@ image_copy_tmp_dir="storage"`
 			content := bytes.NewBufferString("")
 			logrus.SetOutput(content)
 			err := readConfigFromFile("containers.conf", &conf, false)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(content.String()).To(gomega.Equal(""))
 			logrus.SetOutput(os.Stderr)
 		})
@@ -750,7 +750,7 @@ image_copy_tmp_dir="storage"`
 			oldEnv, set := os.LookupEnv(containersConfEnv)
 			os.Setenv(containersConfEnv, defaultTestFile)
 			cfg, err := Default()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			if set {
 				os.Setenv(containersConfEnv, oldEnv)
 			} else {
@@ -763,13 +763,13 @@ image_copy_tmp_dir="storage"`
 env=["foo=bar"]`
 			err = os.WriteFile(testFile, []byte(content), os.ModePerm)
 			defer os.Remove(testFile)
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			oldEnv, set = os.LookupEnv(containersConfEnv)
 			os.Setenv(containersConfEnv, testFile)
 			_, err = Reload()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			newCfg, err := Default()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			if set {
 				os.Setenv(containersConfEnv, oldEnv)
 			} else {
@@ -782,7 +782,7 @@ env=["foo=bar"]`
 			gomega.Expect(newCfg.Containers.Env.Get()).To(gomega.Equal(expectNewEnv))
 			// Reload change back to default global configuration
 			_, err = Reload()
-			gomega.Expect(err).To(gomega.BeNil())
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 	})
 
