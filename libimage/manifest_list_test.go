@@ -98,7 +98,8 @@ func TestInspectManifestListWithAnnotations(t *testing.T) {
 	inspectReport, err = list.Inspect()
 	require.NoError(t, err)
 	// verify annotation
-	require.Equal(t, inspectReport.Manifests[0].Annotations, annotations)
+	require.Contains(t, inspectReport.Manifests[0].Annotations, "hello")
+	require.Equal(t, inspectReport.Manifests[0].Annotations["hello"], annotations["hello"])
 	require.Equal(t, inspectReport.Annotations, indexAnnotations)
 	require.Equal(t, inspectReport.Subject.MediaType, imgspecv1.MediaTypeImageManifest)
 }
