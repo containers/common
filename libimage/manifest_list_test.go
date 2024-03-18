@@ -115,8 +115,20 @@ func TestCreateAndTagManifestList(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, list)
 
+	_, err = runtime.Load(ctx, "testdata/oci-unnamed.tar.gz", nil)
+	require.NoError(t, err)
+
+	// add a remote reference
 	manifestListOpts := &ManifestListAddOptions{All: true}
 	_, err = list.Add(ctx, "docker://busybox", manifestListOpts)
+	require.NoError(t, err)
+
+	// add a remote reference where we have to figure out that it's remote
+	_, err = list.Add(ctx, "busybox", manifestListOpts)
+	require.NoError(t, err)
+
+	// add using a local image's ID
+	_, err = list.Add(ctx, "5c8aca8137ac47e84c69ae93ce650ce967917cc001ba7aad5494073fac75b8b6", manifestListOpts)
 	require.NoError(t, err)
 
 	list, err = runtime.LookupManifestList(listName)
