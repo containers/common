@@ -24,16 +24,26 @@ func queryPackageVersion(cmdArg ...string) string {
 		cmd := exec.Command(cmdArg[0], cmdArg[1:]...)
 		if outp, err := cmd.Output(); err == nil {
 			output = string(outp)
-			deb := false
 			if cmdArg[0] == "/usr/bin/dlocate" {
 				// can return multiple matches
 				l := strings.Split(output, "\n")
 				output = l[0]
-				deb = true
+				r := strings.Split(output, ": ")
+				regexpFormat := `^..\s` + r[0] + `\s`
+				cmd = exec.Command(cmdArg[0], "-P", regexpFormat, "-l")
+				cmd.Env = []string{"COLUMNS=160"} // show entire value
+				// dlocate always returns exit code 1 for list command
+				if outp, _ = cmd.Output(); len(outp) > 0 {
+					lines := strings.Split(string(outp), "\n")
+					if len(lines) > 1 {
+						line := lines[len(lines)-2] // trailing newline
+						f := strings.Fields(line)
+						if len(f) >= 2 {
+							return f[1] + "_" + f[2]
+						}
+					}
+				}
 			} else if cmdArg[0] == "/usr/bin/dpkg" {
-				deb = true
-			}
-			if deb {
 				r := strings.Split(output, ": ")
 				queryFormat := `${Package}_${Version}_${Architecture}`
 				cmd = exec.Command("/usr/bin/dpkg-query", "-f", queryFormat, "-W", r[0])
