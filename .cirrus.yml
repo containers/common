@@ -19,7 +19,7 @@ env:
     #### image names to test with (double-quotes around names are critical)
     ####
     FEDORA_NAME: "fedora-39"
-    IMAGE_SUFFIX: "c20240125t184057z-f39f38d13"
+    IMAGE_SUFFIX: "c20240320t153921z-f39f38d13"
     FEDORA_CACHE_IMAGE_NAME: "fedora-${IMAGE_SUFFIX}"
     FEDORA_CONTAINER_FQIN: "quay.io/libpod/fedora_podman:${IMAGE_SUFFIX}"
 
@@ -47,7 +47,8 @@ testing_task:
   env:
     NETAVARK_BINARY: "/usr/libexec/podman/netavark"
   test_script:
-    - dnf install -y /var/cache/download/podman-plugins*.rpm
+    # FIXME: 2024-03-21: remove this when bumping VM to fc40
+    - dnf install -y podman-plugins
     - mkdir "$GOLANGCI_LINT_CACHE"
     - export PATH="$PATH:$GOPATH/bin"
     - gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
