@@ -223,6 +223,14 @@ image_copy_tmp_dir="storage"`
 					"/usr/bin/crun",
 					"/usr/local/bin/crun",
 				},
+				"crun-vm": {
+					"/usr/bin/crun-vm",
+					"/usr/local/bin/crun-vm",
+					"/usr/local/sbin/crun-vm",
+					"/sbin/crun-vm",
+					"/bin/crun-vm",
+					"/run/current-system/sw/bin/crun-vm",
+				},
 				"crun-wasm": {
 					"/usr/bin/crun-wasm",
 					"/usr/sbin/crun-wasm",
