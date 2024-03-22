@@ -811,4 +811,77 @@ env=["foo=bar"]`
 		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))
 		gomega.Expect(config.Containers.EnableLabeledUsers).To(gomega.BeTrue())
 	})
+
+	It("ParsePullPolicy", func() {
+		for _, test := range []struct {
+			value  string
+			policy PullPolicy
+			fail   bool
+		}{
+			{
+				value:  "always",
+				policy: PullPolicyAlways,
+			},
+			{
+				value:  "alWays",
+				policy: PullPolicyAlways,
+			},
+			{
+				value:  "ALWAYS",
+				policy: PullPolicyAlways,
+			},
+			{
+				value:  "never",
+				policy: PullPolicyNever,
+			},
+			{
+				value:  "NEVER",
+				policy: PullPolicyNever,
+			},
+			{
+				value:  "newer",
+				policy: PullPolicyNewer,
+			},
+			{
+				value:  "ifnewer",
+				policy: PullPolicyNewer,
+			},
+			{
+				value:  "NEWER",
+				policy: PullPolicyNewer,
+			},
+			{
+				value:  "",
+				policy: PullPolicyMissing,
+			},
+			{
+				value:  "missing",
+				policy: PullPolicyMissing,
+			},
+			{
+				value:  "MISSING",
+				policy: PullPolicyMissing,
+			},
+			{
+				value:  "IFMISSING",
+				policy: PullPolicyMissing,
+			},
+			{
+				value:  "ifnotpresent",
+				policy: PullPolicyMissing,
+			},
+			{
+				value: "bogus",
+				fail:  true,
+			},
+		} {
+			p, err := ParsePullPolicy(test.value)
+			if test.fail {
+				gomega.Expect(err.Error()).To(gomega.Equal(fmt.Sprintf("unsupported pull policy %q", test.value)))
+			} else {
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(p).To(gomega.Equal(test.policy))
+			}
+		}
+	})
 })
