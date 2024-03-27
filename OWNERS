@@ -1,22 +1,16 @@
 approvers:
-  - mheon
-  - baude
   - mrunalp
-  - rhatdan
-  - TomSweeneyRedHat
+  - nalind
   - giuseppe
-  - vrothberg
-  - jwhonce
-  - edsantiago
-  - Luap99
+  - umohnani8
+  - saschagrunert
+  - haircommander
+  - fidencio
+  - kolyshkin
 reviewers:
-  - mheon
-  - baude
-  - mrunalp
-  - rhatdan
-  - TomSweeneyRedHat
-  - giuseppe
-  - vrothberg
-  - jwhonce
-  - edsantiago
-  - Luap99
+  - wgahnagl
+  - QiWang19
+  - klihub
+  - sohankunkerkar
+  - hasan4791
+  - kwilczynski
