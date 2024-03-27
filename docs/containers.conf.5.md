@@ -776,7 +776,7 @@ Delay between retries in case pulling/pushing image fails. If set, container eng
 
 Default OCI specific runtime in runtimes that will be used by default. Must
 refer to a member of the runtimes table. Default runtime will be searched for
-on the system using the priority: "crun", "crun-vm", "runc", "kata".
+on the system using the priority: "crun", "runc", "runj", "kata", "runsc", "ocijail"
 
 **runtime_supports_json**=["crun", "crun-vm", "runc", "kata", "runsc", "youki", "krun"]
 
