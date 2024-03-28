@@ -10,6 +10,7 @@ import (
 	digest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -85,14 +86,16 @@ func TestAddInstance(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error parsing %s: %v", version, err)
 		}
-		if err = list.AddInstance(manifestDigest, int64(len(manifestBytes)), manifestType, "linux", "amd64", "", nil, "", nil, nil); err != nil {
+		annotations := []string{"A=B", "C=D"}
+		expectedAnnotations := map[string]string{"A": "B", "C": "D"}
+		if err = list.AddInstance(manifestDigest, int64(len(manifestBytes)), manifestType, "linux", "amd64", "", nil, "", nil, annotations); err != nil {
 			t.Fatalf("adding an instance failed in %s: %v", version, err)
 		}
 		if d, err := list.findDocker(manifestDigest); d == nil || err != nil {
 			t.Fatalf("adding an instance failed in %s: %v", version, err)
 		}
-		if o, err := list.findOCIv1(manifestDigest); o == nil || err != nil {
-			t.Fatalf("adding an instance failed in %s: %v", version, err)
+		if o, err := list.findOCIv1(manifestDigest); o == nil || err != nil || !maps.Equal(o.Annotations, expectedAnnotations) {
+			t.Fatalf("adding an instance failed in %s (annotations=%#v): %v", version, o.Annotations, err)
 		}
 
 		if list, err = FromBlob(bytes); err != nil {
