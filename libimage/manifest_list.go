@@ -325,8 +325,19 @@ func (m *ManifestList) Add(ctx context.Context, name string, options *ManifestLi
 	if err != nil {
 		withDocker := fmt.Sprintf("%s://%s", docker.Transport.Name(), name)
 		ref, err = alltransports.ParseImageName(withDocker)
+		if err == nil {
+			var src types.ImageSource
+			src, err = ref.NewImageSource(ctx, nil)
+			if err == nil {
+				src.Close()
+			}
+		}
 		if err != nil {
-			return "", err
+			image, _, lookupErr := m.image.runtime.LookupImage(name, &LookupImageOptions{ManifestList: false})
+			if lookupErr != nil {
+				return "", fmt.Errorf("locating image to add to manifest list: %q: %w; %q: %w", withDocker, err, name, lookupErr)
+			}
+			ref = image.storageReference
 		}
 	}
 
@@ -432,10 +443,17 @@ func (m *ManifestList) AddArtifact(ctx context.Context, options *ManifestListAdd
 		if err != nil {
 			withDocker := fmt.Sprintf("%s://%s", docker.Transport.Name(), options.Subject)
 			ref, err = alltransports.ParseImageName(withDocker)
+			if err == nil {
+				var src types.ImageSource
+				src, err = ref.NewImageSource(ctx, nil)
+				if err == nil {
+					src.Close()
+				}
+			}
 			if err != nil {
-				image, _, err := m.image.runtime.LookupImage(options.Subject, &LookupImageOptions{ManifestList: true})
-				if err != nil {
-					return "", fmt.Errorf("locating subject for artifact manifest: %w", err)
+				image, _, lookupErr := m.image.runtime.LookupImage(options.Subject, &LookupImageOptions{ManifestList: true})
+				if lookupErr != nil {
+					return "", fmt.Errorf("locating subject for artifact manifest: %q: %w; %q: %w", withDocker, err, options.Subject, lookupErr)
 				}
 				ref = image.storageReference
 			}
@@ -545,10 +563,17 @@ func (m *ManifestList) AnnotateInstance(d digest.Digest, options *ManifestListAn
 		if err != nil {
 			withDocker := fmt.Sprintf("%s://%s", docker.Transport.Name(), options.Subject)
 			ref, err = alltransports.ParseImageName(withDocker)
+			if err == nil {
+				var src types.ImageSource
+				src, err = ref.NewImageSource(ctx, nil)
+				if err == nil {
+					src.Close()
+				}
+			}
 			if err != nil {
-				image, _, err := m.image.runtime.LookupImage(options.Subject, &LookupImageOptions{ManifestList: true})
-				if err != nil {
-					return fmt.Errorf("locating subject for image index: %w", err)
+				image, _, lookupErr := m.image.runtime.LookupImage(options.Subject, &LookupImageOptions{ManifestList: true})
+				if lookupErr != nil {
+					return fmt.Errorf("locating subject for image index: %q: %w; %q: %w", withDocker, err, options.Subject, lookupErr)
 				}
 				ref = image.storageReference
 			}
