@@ -1,0 +1,12 @@
+prepare:
+    - how: install
+      package:
+        - git-core
+        - golang
+        - rpmdevtools
+
+/podman_build_test:
+    summary: Build Podman
+    execute:
+        how: tmt
+        script: bash ./contrib/tmtplans/podman_build_test.sh

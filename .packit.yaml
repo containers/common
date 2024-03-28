@@ -1,0 +1,14 @@
+jobs:
+  # All tests specified in the `/plans/` subdir
+  - job: tests
+    trigger: pull_request
+      #notifications:
+      #failure_comment:
+      #  message: "podman build test failed. @containers/packit-build please check."
+    targets:
+      - fedora-rawhide-x86_64
+      - fedora-rawhide-aarch64
+    skip_build: true
+    enable_net: true
+    identifier: podman_build
+    tmt_plan: "/contrib/tmtplans/podman_build_test"
