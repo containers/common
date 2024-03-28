@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/containers/common/pkg/secrets/define"
 	"github.com/containers/storage/pkg/lockfile"
 	"golang.org/x/exp/maps"
 )
@@ -74,7 +75,7 @@ func (d *Driver) Lookup(id string) ([]byte, error) {
 	if data, ok := secretData[id]; ok {
 		return data, nil
 	}
-	return nil, fmt.Errorf("%s: %w", id, errNoSecretData)
+	return nil, fmt.Errorf("%s: %w", id, define.ErrNoSuchSecret)
 }
 
 // Store stores the bytes associated with an ID. An error is returned if the ID already exists
@@ -87,7 +88,7 @@ func (d *Driver) Store(id string, data []byte) error {
 		return err
 	}
 	if _, ok := secretData[id]; ok {
-		return fmt.Errorf("%s: %w", id, errSecretIDExists)
+		return fmt.Errorf("%s: %w", id, define.ErrSecretIDExists)
 	}
 	secretData[id] = data
 	marshalled, err := json.MarshalIndent(secretData, "", "  ")
@@ -112,7 +113,7 @@ func (d *Driver) Delete(id string) error {
 	if _, ok := secretData[id]; ok {
 		delete(secretData, id)
 	} else {
-		return fmt.Errorf("%s: %w", id, errNoSecretData)
+		return fmt.Errorf("%s: %w", id, define.ErrNoSuchSecret)
 	}
 	marshalled, err := json.MarshalIndent(secretData, "", "  ")
 	if err != nil {
