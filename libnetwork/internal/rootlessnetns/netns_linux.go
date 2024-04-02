@@ -315,6 +315,13 @@ func (n *Netns) setupMounts() error {
 		return wrapError("create new mount namespace", err)
 	}
 
+	// Ensure we mount private in our mountns to prevent accidentally
+	// overwriting the host mounts in case the default propagation is shared.
+	err = unix.Mount("", "/", "", unix.MS_PRIVATE|unix.MS_REC, "")
+	if err != nil {
+		return wrapError("make tree private in new mount namespace", err)
+	}
+
 	xdgRuntimeDir, err := homedir.GetRuntimeDir()
 	if err != nil {
 		return fmt.Errorf("could not get runtime directory: %w", err)
@@ -322,7 +329,7 @@ func (n *Netns) setupMounts() error {
 	newXDGRuntimeDir := n.getPath(xdgRuntimeDir)
 	// 1. Mount the netns into the new run to keep them accessible.
 	// Otherwise cni setup will fail because it cannot access the netns files.
-	err = mountAndMkdirDest(xdgRuntimeDir, newXDGRuntimeDir, none, unix.MS_BIND|unix.MS_SHARED|unix.MS_REC)
+	err = mountAndMkdirDest(xdgRuntimeDir, newXDGRuntimeDir, none, unix.MS_BIND|unix.MS_REC)
 	if err != nil {
 		return err
 	}
