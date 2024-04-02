@@ -355,25 +355,25 @@ var _ = Describe("Config Local", func() {
 		// Given
 		config1, err := New(nil)
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config1.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi"}))
 
 		// Given default just get default
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi"}))
 
 		// Given override just get override
 		config3, err := NewConfig("testdata/containers_override.conf")
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config3.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/somepath"}))
 
 		// Given override just get override
 		config4, err := NewConfig("testdata/containers_override2.conf")
 		// Then
-		gomega.Expect(err).To(gomega.BeNil())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config4.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/somepath", "/some_other_path"}))
 	})
 
