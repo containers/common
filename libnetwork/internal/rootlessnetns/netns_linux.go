@@ -175,11 +175,7 @@ func (n *Netns) setupPasta(nsPath string) error {
 
 	if systemd.RunsOnSystemd() {
 		// Treat these as fatal - if pasta failed to write a PID file something is probably wrong.
-		pidfile, err := os.ReadFile(pidPath)
-		if err != nil {
-			return fmt.Errorf("unable to open pasta PID file: %w", err)
-		}
-		pid, err := strconv.Atoi(strings.TrimSpace(string(pidfile)))
+		pid, err := readPidFile(pidPath)
 		if err != nil {
 			return fmt.Errorf("unable to decode pasta PID: %w", err)
 		}
@@ -255,16 +251,12 @@ func (n *Netns) setupSlirp4netns(nsPath string) error {
 
 func (n *Netns) cleanupRootlessNetns() error {
 	pidFile := n.getPath(rootlessNetNsConnPidFile)
-	b, err := os.ReadFile(pidFile)
+	pid, err := readPidFile(pidFile)
 	if err == nil {
-		var i int
-		i, err = strconv.Atoi(strings.TrimSpace(string(b)))
-		if err == nil {
-			// kill the slirp process so we do not leak it
-			err = unix.Kill(i, unix.SIGTERM)
-			if err == unix.ESRCH {
-				err = nil
-			}
+		// kill the slirp/pasta process so we do not leak it
+		err = unix.Kill(pid, unix.SIGTERM)
+		if err == unix.ESRCH {
+			err = nil
 		}
 	}
 	return err
@@ -608,4 +600,12 @@ func refCount(dir string, inc int) (int, error) {
 	}
 
 	return currentCount, nil
+}
+
+func readPidFile(path string) (int, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(strings.TrimSpace(string(b)))
 }
