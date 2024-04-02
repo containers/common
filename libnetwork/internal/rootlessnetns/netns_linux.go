@@ -100,18 +100,37 @@ func (n *Netns) getOrCreateNetns() (ns.NetNS, bool, error) {
 	nsPath := n.getPath(rootlessNetnsDir)
 	nsRef, err := ns.GetNS(nsPath)
 	if err == nil {
-		// TODO check if pasta/slirp4netns is alive
-		return nsRef, false, nil
-	}
-	logrus.Debugf("Creating rootless network namespace at %q", nsPath)
-	// We have to create the netns dir again here because it is possible
-	// that cleanup() removed it.
-	if err := os.MkdirAll(n.dir, 0o700); err != nil {
-		return nil, false, wrapError("", err)
-	}
-	nsRef, err = netns.NewNSAtPath(nsPath)
-	if err != nil {
-		return nil, false, wrapError("create netns", err)
+		pidPath := n.getPath(rootlessNetNsConnPidFile)
+		pid, err := readPidFile(pidPath)
+		if err == nil {
+			// quick check if pasta/slirp4netns are still running
+			err := unix.Kill(pid, 0)
+			if err == nil {
+				// All good, return the netns.
+				return nsRef, false, nil
+			}
+			// Print warnings in case things went wrong, we might be able to recover
+			// but maybe not so make sure to leave some hints so we can figure out what went wrong.
+			if errors.Is(err, unix.ESRCH) {
+				logrus.Warn("rootless netns program no longer running, trying to start it again")
+			} else {
+				logrus.Warnf("failed to check if rootless netns program is running: %v, trying to start it again", err)
+			}
+		} else {
+			logrus.Warnf("failed to read rootless netns program pid: %v", err)
+		}
+		// In case of errors continue and setup the network cmd again.
+	} else {
+		logrus.Debugf("Creating rootless network namespace at %q", nsPath)
+		// We have to create the netns dir again here because it is possible
+		// that cleanup() removed it.
+		if err := os.MkdirAll(n.dir, 0o700); err != nil {
+			return nil, false, wrapError("", err)
+		}
+		nsRef, err = netns.NewNSAtPath(nsPath)
+		if err != nil {
+			return nil, false, wrapError("create netns", err)
+		}
 	}
 	switch strings.ToLower(n.config.Network.DefaultRootlessNetworkCmd) {
 	case "", slirp4netns.BinaryName:
