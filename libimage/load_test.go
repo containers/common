@@ -7,10 +7,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoad(t *testing.T) {
+func TestLoadByPath(t *testing.T) {
 	// Make sure that loading images does not leave any artifacts in TMPDIR
 	// behind (containers/podman/issues/14287).
 	tmpdir := t.TempDir()
@@ -79,4 +80,77 @@ func TestLoad(t *testing.T) {
 			require.Equal(t, names[i], report.Untagged, test.input)
 		}
 	}
+}
+
+func TestLoadReference(t *testing.T) {
+	// Make sure that loading images does not leave any artifacts in TMPDIR
+	// behind (containers/podman/issues/14287).
+	tmpdir := t.TempDir()
+	t.Setenv("TMPDIR", tmpdir)
+
+	runtime := testNewRuntime(t)
+	ctx := context.Background()
+	loadOptions := &LoadOptions{}
+	loadOptions.Writer = os.Stdout
+
+	for _, test := range []struct {
+		input       string
+		expectError bool
+		numImages   int
+		names       []string
+	}{
+		// DOCKER ARCHIVE
+		{"docker-archive:testdata/docker-name-only.tar.xz", false, 1, []string{"localhost/pretty-empty:latest"}},
+		{"docker-archive:testdata/docker-registry-name.tar.xz", false, 1, []string{"example.com/empty:latest"}},
+		{"docker-archive:testdata/docker-two-names.tar.xz", false, 1, []string{"localhost/pretty-empty:latest", "example.com/empty:latest"}},
+		{"docker-archive:testdata/docker-two-images.tar.xz", false, 2, []string{"example.com/empty:latest", "example.com/empty/but:different"}},
+		{"docker-archive:testdata/docker-unnamed.tar.xz", false, 1, []string{"sha256:ec9293436c2e66da44edb9efb8d41f6b13baf62283ebe846468bc992d76d7951"}},
+		{"docker-archive:testdata/buildkit-docker.tar", false, 1, []string{"github.com/buildkit/archive:docker"}},
+
+		// OCI ARCHIVE
+		{"oci-archive:testdata/oci-name-only.tar.gz", false, 1, []string{"localhost/pretty-empty:latest"}},
+		{"oci-archive:testdata/oci-non-docker-name.tar.gz", true, 0, nil},
+		{"oci-archive:testdata/oci-registry-name.tar.gz", false, 1, []string{"example.com/empty:latest"}},
+		{"oci-archive:testdata/oci-unnamed.tar.gz", false, 1, []string{"sha256:5c8aca8137ac47e84c69ae93ce650ce967917cc001ba7aad5494073fac75b8b6"}},
+		{"oci-archive:testdata/buildkit-oci.tar", false, 1, []string{"github.com/buildkit/archive:oci"}},
+
+		{"docker://quay.io/libpod/alpine_nginx", false, 1, []string{"quay.io/libpod/alpine_nginx:latest"}},
+	} {
+		ref, err := alltransports.ParseImageName(test.input)
+		require.NoError(t, err, test.input)
+		loadedImages, err := runtime.LoadReference(ctx, ref, loadOptions)
+		if test.expectError {
+			require.Error(t, err, test.input)
+			continue
+		}
+		require.NoError(t, err, test.input)
+		require.Equal(t, test.names, loadedImages, test.input)
+
+		// Make sure that all returned names exist as images in the
+		// local containers storage.
+		ids := []string{} // later used for image removal
+		names := [][]string{}
+		for _, name := range loadedImages {
+			image, resolvedName, err := runtime.LookupImage(name, nil)
+			require.NoError(t, err, test.input)
+			require.Equal(t, name, resolvedName, test.input)
+			ids = append(ids, image.ID())
+			names = append(names, image.Names())
+		}
+
+		// Now remove the image.
+		rmReports, rmErrors := runtime.RemoveImages(ctx, ids, &RemoveImagesOptions{Force: true})
+		require.Len(t, rmErrors, 0)
+		require.Len(t, rmReports, test.numImages)
+
+		// Now inspect the removal reports.
+		for i, report := range rmReports {
+			require.Equal(t, ids[i], report.ID, test.input)
+			require.Equal(t, names[i], report.Untagged, test.input)
+		}
+	}
+
+	dir, err := os.ReadDir(tmpdir)
+	require.NoError(t, err)
+	require.Len(t, dir, 0)
 }
