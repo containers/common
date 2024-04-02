@@ -100,7 +100,7 @@ func (n *Netns) getOrCreateNetns() (ns.NetNS, bool, error) {
 	nsPath := n.getPath(rootlessNetnsDir)
 	nsRef, err := ns.GetNS(nsPath)
 	if err == nil {
-		// TODO check if slirp4netns is alive
+		// TODO check if pasta/slirp4netns is alive
 		return nsRef, false, nil
 	}
 	logrus.Debugf("Creating rootless network namespace at %q", nsPath)
@@ -109,7 +109,7 @@ func (n *Netns) getOrCreateNetns() (ns.NetNS, bool, error) {
 	if err := os.MkdirAll(n.dir, 0o700); err != nil {
 		return nil, false, wrapError("", err)
 	}
-	netns, err := netns.NewNSAtPath(nsPath)
+	nsRef, err = netns.NewNSAtPath(nsPath)
 	if err != nil {
 		return nil, false, wrapError("create netns", err)
 	}
@@ -121,7 +121,17 @@ func (n *Netns) getOrCreateNetns() (ns.NetNS, bool, error) {
 	default:
 		err = fmt.Errorf("invalid rootless network command %q", n.config.Network.DefaultRootlessNetworkCmd)
 	}
-	return netns, true, err
+	// If pasta or slirp4netns fail here we need to get rid of the netns again to not leak it,
+	// otherwise the next command thinks the netns was successfully setup.
+	if err != nil {
+		if nerr := netns.UnmountNS(nsPath); nerr != nil {
+			logrus.Error(nerr)
+		}
+		_ = nsRef.Close()
+		return nil, false, err
+	}
+
+	return nsRef, true, nil
 }
 
 func (n *Netns) cleanup() error {
