@@ -584,15 +584,12 @@ func (n *Netns) Run(lock *lockfile.LockFile, toRun func() error) error {
 		logrus.Errorf("Failed to decrement ref count: %v", err)
 		return inErr
 	}
-	if count == 0 {
+	// runInner() already cleans up the netns when it created a new one on errors
+	// so we only need to do that if there was no error.
+	if inErr == nil && count == 0 {
 		err = n.cleanup()
 		if err != nil {
-			err = wrapError("cleanup", err)
-			if inErr == nil {
-				return err
-			}
-			logrus.Errorf("Failed to cleanup rootless netns: %v", err)
-			return inErr
+			return wrapError("cleanup", err)
 		}
 	}
 
