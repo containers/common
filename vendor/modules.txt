@@ -895,6 +895,6 @@ gopkg.in/yaml.v3
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
-# tags.cncf.io/container-device-interface v0.6.2
-## explicit; go 1.19
+# tags.cncf.io/container-device-interface v0.7.0
+## explicit; go 1.20
 tags.cncf.io/container-device-interface/pkg/parser
