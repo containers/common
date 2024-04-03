@@ -498,4 +498,72 @@ var _ = Describe("IPAM", func() {
 			}
 		})
 	}
+
+	It("ipam delete network then recreate with different LeaseRange", func() {
+		s, _ := types.ParseCIDR("10.0.0.0/26")
+		network, err := networkInterface.NetworkCreate(
+			types.Network{
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+					},
+				},
+			},
+			nil,
+		)
+		Expect(err).ToNot(HaveOccurred())
+
+		netName := network.Name
+
+		opts := &types.NetworkOptions{
+			ContainerID: "someContainerID",
+			Networks: map[string]types.PerNetworkOptions{
+				netName: {},
+			},
+		}
+
+		err = networkInterface.allocIPs(opts)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(opts.Networks).To(HaveKey(netName))
+		Expect(opts.Networks[netName].StaticIPs).To(HaveLen(1))
+		Expect(opts.Networks[netName].StaticIPs[0]).To(Equal(net.ParseIP("10.0.0.2").To4()))
+
+		// dealloc the ip
+		err = networkInterface.deallocIPs(opts)
+		Expect(err).ToNot(HaveOccurred())
+
+		// delete the network
+		err = networkInterface.NetworkRemove(netName)
+		Expect(err).ToNot(HaveOccurred())
+
+		network, err = networkInterface.NetworkCreate(
+			types.Network{
+				Name: netName,
+				Subnets: []types.Subnet{
+					{
+						Subnet: s,
+						LeaseRange: &types.LeaseRange{
+							StartIP: net.ParseIP("10.0.0.10"),
+							EndIP:   net.ParseIP("10.0.0.20"),
+						},
+					},
+				},
+			},
+			nil,
+		)
+		Expect(err).ToNot(HaveOccurred())
+
+		opts = &types.NetworkOptions{
+			ContainerID: "someContainerID",
+			Networks: map[string]types.PerNetworkOptions{
+				netName: {},
+			},
+		}
+
+		err = networkInterface.allocIPs(opts)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(opts.Networks).To(HaveKey(netName))
+		Expect(opts.Networks[netName].StaticIPs).To(HaveLen(1))
+		Expect(opts.Networks[netName].StaticIPs[0]).To(Equal(net.ParseIP("10.0.0.10").To4()))
+	})
 })
