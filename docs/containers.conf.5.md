@@ -753,9 +753,9 @@ Indicates whether the application should be running in remote mode. This flag mo
 
 Default OCI specific runtime in runtimes that will be used by default. Must
 refer to a member of the runtimes table. Default runtime will be searched for
-on the system using the priority: "crun", "runc", "kata".
+on the system using the priority: "crun", "runc", "runj", "kata", "runsc", "ocijail"
 
-**runtime_supports_json**=["crun", "runc", "kata", "runsc", "youki", "krun"]
+**runtime_supports_json**=["crun", "crun-vm", "runc", "kata", "runsc", "youki", "krun"]
 
 The list of the OCI runtimes that support `--format=json`.
 
@@ -763,7 +763,7 @@ The list of the OCI runtimes that support `--format=json`.
 
 The list of OCI runtimes that support running containers with KVM separation.
 
-**runtime_supports_nocgroups**=["crun", "krun"]
+**runtime_supports_nocgroups**=["crun", "crun-vm", "krun"]
 
 The list of OCI runtimes that support running containers without CGroups.
 
