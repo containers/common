@@ -644,5 +644,5 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 sigs.k8s.io/yaml v1.4.0 h1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=
 sigs.k8s.io/yaml v1.4.0/go.mod h1:Ejl7/uTz7PSA4eKMyQCUTnhZYNmLIl+5c2lQPGR2BPY=
-tags.cncf.io/container-device-interface v0.7.0 h1:9z94b0DPipEWShy5nct34ZRx5QnDxHXxhSTdkTr+k1c=
-tags.cncf.io/container-device-interface v0.7.0/go.mod h1:PZsuvtfPi0YOYD1hvulncIT7R7YoiZY7eOsrsllQPe4=
+tags.cncf.io/container-device-interface v0.7.1 h1:MATNCbAD1su9U6zwQe5BrQ2vGGp1GBayD70bYaxYCNE=
+tags.cncf.io/container-device-interface v0.7.1/go.mod h1:h1JVuOqTQVORp8DziaWKUCDNzAmN+zeCbqbqD30D0ZQ=
