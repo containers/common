@@ -44,7 +44,7 @@ require (
 	go.etcd.io/bbolt v1.3.9
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.7.0
 	golang.org/x/sys v0.18.0
 	golang.org/x/term v0.18.0
 	sigs.k8s.io/yaml v1.4.0
