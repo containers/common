@@ -99,7 +99,7 @@ func TestUnknownHookPath(t *testing.T) {
 	if err == nil {
 		t.Fatal("unexpected success")
 	}
-	assert.Regexp(t, "^stat does/not/exist: no such file or directory$", err.Error())
+	assert.Regexp(t, "^(faccessat|stat) does/not/exist: no such file or directory$", err.Error())
 	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("opaque wrapping for not-exist errors")
 	}
