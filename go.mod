@@ -11,7 +11,7 @@ require (
 	github.com/containernetworking/plugins v1.4.0
 	github.com/containers/image/v5 v5.30.0
 	github.com/containers/ocicrypt v1.1.10
-	github.com/containers/storage v1.53.0
+	github.com/containers/storage v1.53.1-0.20240410101114-dfdc6bf225fa
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.4
 	github.com/davecgh/go-spew v1.1.1
@@ -97,7 +97,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.7 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20230907030200-6d76a0f91e1e // indirect
@@ -127,7 +127,7 @@ require (
 	github.com/sylabs/sif/v2 v2.15.1 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
-	github.com/ulikunitz/xz v0.5.11 // indirect
+	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/vbatts/tar-split v0.11.5 // indirect
 	github.com/vbauerster/mpb/v8 v8.7.2 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect

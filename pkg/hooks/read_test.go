@@ -190,5 +190,5 @@ func TestHookExecutableDoesNotExit(t *testing.T) {
 	if err == nil {
 		t.Fatal("unexpected success")
 	}
-	assert.Regexp(t, "^stat /does/not/exist: no such file or directory$", err.Error())
+	assert.Regexp(t, "^(faccessat|stat) /does/not/exist: no such file or directory$", err.Error())
 }
