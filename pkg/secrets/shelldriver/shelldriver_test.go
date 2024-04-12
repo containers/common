@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/containers/common/pkg/secrets/define"
 	"github.com/stretchr/testify/require"
 )
 
@@ -46,7 +47,7 @@ func TestStoreAndLookup(t *testing.T) {
 			name:        "storing into a sneaky key fails",
 			key:         "../../../sneaky",
 			value:       []byte("abc"),
-			expStoreErr: errInvalidKey,
+			expStoreErr: define.ErrInvalidKey,
 		},
 	}
 
@@ -94,12 +95,12 @@ func TestLookup(t *testing.T) {
 		{
 			name:   "lookup of a non-existing key fails",
 			key:    "invalid",
-			expErr: fmt.Errorf("invalid: %w", errNoSecretData),
+			expErr: fmt.Errorf("invalid: %w", define.ErrNoSuchSecret),
 		},
 		{
 			name:   "lookup of a sneaky key fails",
 			key:    "../../../etc/shadow",
-			expErr: errInvalidKey,
+			expErr: define.ErrInvalidKey,
 		},
 	}
 
@@ -143,12 +144,12 @@ func TestDelete(t *testing.T) {
 		{
 			name:   "deleting an non-existing item fails",
 			key:    "wrong",
-			expErr: fmt.Errorf("wrong: %w", errNoSecretData),
+			expErr: fmt.Errorf("wrong: %w", define.ErrNoSuchSecret),
 		},
 		{
 			name:   "using a sneaky path fails",
 			key:    "../../../etc/shadow",
-			expErr: errInvalidKey,
+			expErr: define.ErrInvalidKey,
 		},
 	}
 
