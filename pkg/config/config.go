@@ -253,8 +253,6 @@ type EngineConfig struct {
 	// and "systemd".
 	CgroupManager string `toml:"cgroup_manager,omitempty"`
 
-	// NOTE: when changing this struct, make sure to update (*Config).Merge().
-
 	// ConmonEnvVars are environment variables to pass to the Conmon binary
 	// when it is launched.
 	ConmonEnvVars attributedstring.Slice `toml:"conmon_env_vars,omitempty"`
