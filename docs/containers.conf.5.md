@@ -603,6 +603,17 @@ Valid values are: `file`, `journald`, and `none`.
 Creates a more verbose container-create event which includes a JSON payload
 with detailed information about the container.  Set to false by default.
 
+**healthcheck_events**=true|false
+
+Whenever Podman should log healthcheck events.
+With many running healthcheck on short interval Podman will spam the event
+log a lot as it generates a event for each single healthcheck run. Because
+this event is optional and only useful to external consumers that may want
+to know when a healthcheck is run or failed allow users to turn it off by
+setting it to false.
+
+Default is true.
+
 **helper_binaries_dir**=["/usr/libexec/podman", ...]
 
 A is a list of directories which are used to search for helper binaries.

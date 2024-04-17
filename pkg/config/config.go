@@ -318,6 +318,13 @@ type EngineConfig struct {
 	// graphRoot internal stores the location of the graphroot
 	graphRoot string
 
+	// HealthcheckEvents is set to indicate whenever podman should log healthcheck events.
+	// With many running healthcheck on short interval Podman will spam the event log a lot.
+	// Because this event is optional and only useful to external consumers that may want to
+	// know when a healthcheck is run or failed allow users to turn it off by setting it to false.
+	// Default is true.
+	HealthcheckEvents bool `toml:"healthcheck_events,omitempty"`
+
 	// HelperBinariesDir is a list of directories which are used to search for
 	// helper binaries.
 	HelperBinariesDir attributedstring.Slice `toml:"helper_binaries_dir,omitempty"`

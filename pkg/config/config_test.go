@@ -184,6 +184,7 @@ image_copy_tmp_dir="storage"`
 			defaultConfig, _ := defaultConfig()
 			// prior to reading local config, shows hard coded defaults
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.BeTrue())
+			gomega.Expect(defaultConfig.Engine.HealthcheckEvents).To(gomega.BeTrue())
 
 			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig, false)
 
@@ -306,6 +307,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
 			gomega.Expect(defaultConfig.Machine.Volumes.Get()).To(gomega.BeEquivalentTo(volumes))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(300))
+			gomega.Expect(defaultConfig.Engine.HealthcheckEvents).To(gomega.BeFalse())
 			newV, err := defaultConfig.MachineVolumes()
 			if newVolumes[0] == ":" {
 				// $HOME is not set
