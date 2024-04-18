@@ -1093,10 +1093,10 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error) 
 		return exec.LookPath(name)
 	}
 	configHint := "To resolve this error, set the helper_binaries_dir key in the `[engine]` section of containers.conf to the directory containing your helper binaries."
-	if len(c.Engine.HelperBinariesDir.Get()) == 0 {
+	if len(dirList) == 0 {
 		return "", fmt.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
 	}
-	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, c.Engine.HelperBinariesDir, configHint)
+	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, dirList, configHint)
 }
 
 // ImageCopyTmpDir default directory to store temporary image files during copy
