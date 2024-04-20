@@ -147,6 +147,25 @@ func TestAddSecretDupName(t *testing.T) {
 
 	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
 	require.Error(t, err)
+
+	storeOpts.Replace = true
+	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	require.NoError(t, err)
+}
+
+func TestAddReplaceSecretName(t *testing.T) {
+	manager, opts := setup(t)
+
+	storeOpts := StoreOptions{
+		DriverOpts: opts,
+		Replace:    true,
+	}
+
+	_, err := manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	require.NoError(t, err)
+
+	_, err = manager.Store("mysecret", []byte("mydata.diff"), drivertype, storeOpts)
+	require.NoError(t, err)
 }
 
 func TestAddSecretPrefix(t *testing.T) {
