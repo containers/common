@@ -128,7 +128,7 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	noUDPInitPorts := true
 	noTCPNamespacePorts := true
 	noUDPNamespacePorts := true
-	noMapGW := true
+	noMapGWIndex := -1
 
 	cmdArgs := []string{"--config-net"}
 
@@ -176,9 +176,7 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 		case "-U", "--udp-ns":
 			noUDPNamespacePorts = false
 		case "--map-gw":
-			noMapGW = false
-			// not an actual pasta(1) option
-			cmdArgs = append(cmdArgs[:i], cmdArgs[i+1:]...)
+			noMapGWIndex = i
 		case dnsForwardOpt:
 			// if there is no arg after it pasta will likely error out anyway due invalid cli args
 			if len(cmdArgs) > i+1 {
@@ -205,8 +203,11 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	if noUDPNamespacePorts {
 		cmdArgs = append(cmdArgs, "-U", "none")
 	}
-	if noMapGW {
+	if noMapGWIndex < 0 {
 		cmdArgs = append(cmdArgs, "--no-map-gw")
+	} else {
+		// not an actual pasta(1) option so we have to trim it out
+		cmdArgs = append(cmdArgs[:noMapGWIndex], cmdArgs[noMapGWIndex+1:]...)
 	}
 
 	// always pass --quiet to silence the info output from pasta

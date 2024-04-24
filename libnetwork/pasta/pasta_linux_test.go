@@ -187,6 +187,19 @@ func Test_createPastaArgs(t *testing.T) {
 			wantDnsForward: []string{dnsForwardIpv4},
 		},
 		{
+			// https://github.com/containers/podman/issues/22477
+			name: "--map-gw with port directly after",
+			input: makeSetupOptions(nil,
+				[]string{"--map-gw", "-T", "80"},
+				nil,
+			),
+			wantArgs: []string{
+				"--config-net", "-T", "80", "--dns-forward", dnsForwardIpv4,
+				"-t", "none", "-u", "none", "-U", "none", "--quiet", "--netns", "netns123",
+			},
+			wantDnsForward: []string{dnsForwardIpv4},
+		},
+		{
 			name: "--dns-forward option",
 			input: makeSetupOptions(
 				nil,
