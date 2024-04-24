@@ -124,11 +124,11 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 
 // createPastaArgs creates the pasta arguments, it returns the args to be passed to pasta(1) and as second arg the dns forward ips used.
 func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
-	NoTCPInitPorts := true
-	NoUDPInitPorts := true
-	NoTCPNamespacePorts := true
-	NoUDPNamespacePorts := true
-	NoMapGW := true
+	noTCPInitPorts := true
+	noUDPInitPorts := true
+	noTCPNamespacePorts := true
+	noUDPNamespacePorts := true
+	noMapGW := true
 
 	cmdArgs := []string{"--config-net"}
 
@@ -168,15 +168,15 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	for i, opt := range cmdArgs {
 		switch opt {
 		case "-t", "--tcp-ports":
-			NoTCPInitPorts = false
+			noTCPInitPorts = false
 		case "-u", "--udp-ports":
-			NoUDPInitPorts = false
+			noUDPInitPorts = false
 		case "-T", "--tcp-ns":
-			NoTCPNamespacePorts = false
+			noTCPNamespacePorts = false
 		case "-U", "--udp-ns":
-			NoUDPNamespacePorts = false
+			noUDPNamespacePorts = false
 		case "--map-gw":
-			NoMapGW = false
+			noMapGW = false
 			// not an actual pasta(1) option
 			cmdArgs = append(cmdArgs[:i], cmdArgs[i+1:]...)
 		case dnsForwardOpt:
@@ -193,19 +193,19 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 		dnsForwardIPs = append(dnsForwardIPs, dnsForwardIpv4)
 	}
 
-	if NoTCPInitPorts {
+	if noTCPInitPorts {
 		cmdArgs = append(cmdArgs, "-t", "none")
 	}
-	if NoUDPInitPorts {
+	if noUDPInitPorts {
 		cmdArgs = append(cmdArgs, "-u", "none")
 	}
-	if NoTCPNamespacePorts {
+	if noTCPNamespacePorts {
 		cmdArgs = append(cmdArgs, "-T", "none")
 	}
-	if NoUDPNamespacePorts {
+	if noUDPNamespacePorts {
 		cmdArgs = append(cmdArgs, "-U", "none")
 	}
-	if NoMapGW {
+	if noMapGW {
 		cmdArgs = append(cmdArgs, "--no-map-gw")
 	}
 
