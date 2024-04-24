@@ -35,7 +35,7 @@ jobs:
     - name: install deps
       run: |
         sudo apt-get -qq update
-        sudo apt-get -qq install libseccomp-dev libdevmapper-dev
+        sudo apt-get -qq install libseccomp-dev
     - name: lint
       uses: golangci/golangci-lint-action@v4
       with:
