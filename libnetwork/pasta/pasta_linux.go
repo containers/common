@@ -54,19 +54,83 @@ func Setup(opts *SetupOptions) error {
 // Note that there is no need for any special cleanup logic, the pasta
 // process will automatically exit when the netns path is deleted.
 func Setup2(opts *SetupOptions) (*SetupResult, error) {
+	path, err := opts.Config.FindHelperBinary(BinaryName, true)
+	if err != nil {
+		return nil, fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
+	}
+
+	cmdArgs, dnsForwardIPs, err := createPastaArgs(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.Debugf("pasta arguments: %s", strings.Join(cmdArgs, " "))
+
+	// pasta forks once ready, and quits once we delete the target namespace
+	out, err := exec.Command(path, cmdArgs...).CombinedOutput()
+	if err != nil {
+		exitErr := &exec.ExitError{}
+		if errors.As(err, &exitErr) {
+			return nil, fmt.Errorf("pasta failed with exit code %d:\n%s",
+				exitErr.ExitCode(), string(out))
+		}
+		return nil, fmt.Errorf("failed to start pasta: %w", err)
+	}
+
+	if len(out) > 0 {
+		// TODO: This should be warning but right now pasta still prints
+		// things with --quiet that we do not care about.
+		// For now info is fine and we can bump it up later, it is only a
+		// nice to have.
+		logrus.Infof("pasta logged warnings: %q", string(out))
+	}
+
+	var ipv4, ipv6 bool
+	result := &SetupResult{}
+	err = ns.WithNetNSPath(opts.Netns, func(_ ns.NetNS) error {
+		addrs, err := net.InterfaceAddrs()
+		if err != nil {
+			return err
+		}
+		for _, addr := range addrs {
+			// make sure to skip localhost and other special addresses
+			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
+				result.IPAddresses = append(result.IPAddresses, ipnet.IP)
+				if !ipv4 && util.IsIPv4(ipnet.IP) {
+					ipv4 = true
+				}
+				if !ipv6 && util.IsIPv6(ipnet.IP) {
+					ipv6 = true
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result.IPv6 = ipv6
+	for _, ip := range dnsForwardIPs {
+		ipp := net.ParseIP(ip)
+		// add the namesever ip only if the address family matches
+		if ipv4 && util.IsIPv4(ipp) || ipv6 && util.IsIPv6(ipp) {
+			result.DNSForwardIPs = append(result.DNSForwardIPs, ip)
+		}
+	}
+
+	return result, nil
+}
+
+// createPastaArgs creates the pasta arguments, it returns the args to be passed to pasta(1) and as second arg the dns forward ips used.
+func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	NoTCPInitPorts := true
 	NoUDPInitPorts := true
 	NoTCPNamespacePorts := true
 	NoUDPNamespacePorts := true
 	NoMapGW := true
 
-	path, err := opts.Config.FindHelperBinary(BinaryName, true)
-	if err != nil {
-		return nil, fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
-	}
-
-	cmdArgs := []string{}
-	cmdArgs = append(cmdArgs, "--config-net")
+	cmdArgs := []string{"--config-net"}
 
 	for _, i := range opts.Ports {
 		protocols := strings.Split(i.Protocol, ",")
@@ -83,7 +147,7 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 			case "udp":
 				cmdArgs = append(cmdArgs, "-u")
 			default:
-				return nil, fmt.Errorf("can't forward protocol: %s", protocol)
+				return nil, nil, fmt.Errorf("can't forward protocol: %s", protocol)
 			}
 
 			arg := fmt.Sprintf("%s%d-%d:%d-%d", addr,
@@ -148,60 +212,5 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	// always pass --quiet to silence the info output from pasta
 	cmdArgs = append(cmdArgs, "--quiet", "--netns", opts.Netns)
 
-	logrus.Debugf("pasta arguments: %s", strings.Join(cmdArgs, " "))
-
-	// pasta forks once ready, and quits once we delete the target namespace
-	out, err := exec.Command(path, cmdArgs...).CombinedOutput()
-	if err != nil {
-		exitErr := &exec.ExitError{}
-		if errors.As(err, &exitErr) {
-			return nil, fmt.Errorf("pasta failed with exit code %d:\n%s",
-				exitErr.ExitCode(), string(out))
-		}
-		return nil, fmt.Errorf("failed to start pasta: %w", err)
-	}
-
-	if len(out) > 0 {
-		// TODO: This should be warning but right now pasta still prints
-		// things with --quiet that we do not care about.
-		// For now info is fine and we can bump it up later, it is only a
-		// nice to have.
-		logrus.Infof("pasta logged warnings: %q", string(out))
-	}
-
-	var ipv4, ipv6 bool
-	result := &SetupResult{}
-	err = ns.WithNetNSPath(opts.Netns, func(_ ns.NetNS) error {
-		addrs, err := net.InterfaceAddrs()
-		if err != nil {
-			return err
-		}
-		for _, addr := range addrs {
-			// make sure to skip localhost and other special addresses
-			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.IsGlobalUnicast() {
-				result.IPAddresses = append(result.IPAddresses, ipnet.IP)
-				if !ipv4 && util.IsIPv4(ipnet.IP) {
-					ipv4 = true
-				}
-				if !ipv6 && util.IsIPv6(ipnet.IP) {
-					ipv6 = true
-				}
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	result.IPv6 = ipv6
-	for _, ip := range dnsForwardIPs {
-		ipp := net.ParseIP(ip)
-		// add the namesever ip only if the address family matches
-		if ipv4 && util.IsIPv4(ipp) || ipv6 && util.IsIPv6(ipp) {
-			result.DNSForwardIPs = append(result.DNSForwardIPs, ip)
-		}
-	}
-
-	return result, nil
+	return cmdArgs, dnsForwardIPs, nil
 }
