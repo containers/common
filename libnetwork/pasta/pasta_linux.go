@@ -131,34 +131,6 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	noMapGWIndex := -1
 
 	cmdArgs := []string{"--config-net"}
-
-	for _, i := range opts.Ports {
-		protocols := strings.Split(i.Protocol, ",")
-		for _, protocol := range protocols {
-			var addr string
-
-			if i.HostIP != "" {
-				addr = i.HostIP + "/"
-			}
-
-			switch protocol {
-			case "tcp":
-				cmdArgs = append(cmdArgs, "-t")
-			case "udp":
-				cmdArgs = append(cmdArgs, "-u")
-			default:
-				return nil, nil, fmt.Errorf("can't forward protocol: %s", protocol)
-			}
-
-			arg := fmt.Sprintf("%s%d-%d:%d-%d", addr,
-				i.HostPort,
-				i.HostPort+i.Range-1,
-				i.ContainerPort,
-				i.ContainerPort+i.Range-1)
-			cmdArgs = append(cmdArgs, arg)
-		}
-	}
-
 	// first append options set in the config
 	cmdArgs = append(cmdArgs, opts.Config.Network.PastaOptions.Get()...)
 	// then append the ones that were set on the cli
@@ -182,6 +154,35 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 			if len(cmdArgs) > i+1 {
 				dnsForwardIPs = append(dnsForwardIPs, cmdArgs[i+1])
 			}
+		}
+	}
+
+	for _, i := range opts.Ports {
+		protocols := strings.Split(i.Protocol, ",")
+		for _, protocol := range protocols {
+			var addr string
+
+			if i.HostIP != "" {
+				addr = i.HostIP + "/"
+			}
+
+			switch protocol {
+			case "tcp":
+				noTCPInitPorts = false
+				cmdArgs = append(cmdArgs, "-t")
+			case "udp":
+				noUDPInitPorts = false
+				cmdArgs = append(cmdArgs, "-u")
+			default:
+				return nil, nil, fmt.Errorf("can't forward protocol: %s", protocol)
+			}
+
+			arg := fmt.Sprintf("%s%d-%d:%d-%d", addr,
+				i.HostPort,
+				i.HostPort+i.Range-1,
+				i.ContainerPort,
+				i.ContainerPort+i.Range-1)
+			cmdArgs = append(cmdArgs, arg)
 		}
 	}
 

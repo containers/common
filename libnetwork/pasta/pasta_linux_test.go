@@ -225,6 +225,19 @@ func Test_createPastaArgs(t *testing.T) {
 			},
 			wantDnsForward: []string{"192.168.255.255", "::1"},
 		},
+		{
+			name: "port and custom opt",
+			input: makeSetupOptions(
+				nil,
+				[]string{"-i", "eth0"},
+				[]types.PortMapping{{HostPort: 80, ContainerPort: 80, Protocol: "tcp", Range: 1}},
+			),
+			wantArgs: []string{
+				"--config-net", "-i", "eth0", "-t", "80-80:80-80", "--dns-forward", dnsForwardIpv4,
+				"-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+			},
+			wantDnsForward: []string{dnsForwardIpv4},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
