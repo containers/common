@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"slices"
 	"strings"
 
 	"github.com/containernetworking/plugins/pkg/ns"
@@ -128,13 +129,23 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	noUDPInitPorts := true
 	noTCPNamespacePorts := true
 	noUDPNamespacePorts := true
-	noMapGWIndex := -1
+	noMapGW := true
 
 	cmdArgs := []string{"--config-net"}
 	// first append options set in the config
 	cmdArgs = append(cmdArgs, opts.Config.Network.PastaOptions.Get()...)
 	// then append the ones that were set on the cli
 	cmdArgs = append(cmdArgs, opts.ExtraOptions...)
+
+	cmdArgs = slices.DeleteFunc(cmdArgs, func(s string) bool {
+		// --map-gw is not a real pasta(1) option so we must remove it
+		// and not add --no-map-gw below
+		if s == "--map-gw" {
+			noMapGW = false
+			return true
+		}
+		return false
+	})
 
 	var dnsForwardIPs []string
 	for i, opt := range cmdArgs {
@@ -147,8 +158,6 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 			noTCPNamespacePorts = false
 		case "-U", "--udp-ns":
 			noUDPNamespacePorts = false
-		case "--map-gw":
-			noMapGWIndex = i
 		case dnsForwardOpt:
 			// if there is no arg after it pasta will likely error out anyway due invalid cli args
 			if len(cmdArgs) > i+1 {
@@ -204,11 +213,8 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	if noUDPNamespacePorts {
 		cmdArgs = append(cmdArgs, "-U", "none")
 	}
-	if noMapGWIndex < 0 {
+	if noMapGW {
 		cmdArgs = append(cmdArgs, "--no-map-gw")
-	} else {
-		// not an actual pasta(1) option so we have to trim it out
-		cmdArgs = append(cmdArgs[:noMapGWIndex], cmdArgs[noMapGWIndex+1:]...)
 	}
 
 	// always pass --quiet to silence the info output from pasta

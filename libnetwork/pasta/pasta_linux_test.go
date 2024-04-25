@@ -200,6 +200,19 @@ func Test_createPastaArgs(t *testing.T) {
 			wantDnsForward: []string{dnsForwardIpv4},
 		},
 		{
+			name: "two --map-gw",
+			input: makeSetupOptions(
+				[]string{"--map-gw", "-T", "80"},
+				[]string{"--map-gw"},
+				nil,
+			),
+			wantArgs: []string{
+				"--config-net", "-T", "80", "--dns-forward", dnsForwardIpv4,
+				"-t", "none", "-u", "none", "-U", "none", "--quiet", "--netns", "netns123",
+			},
+			wantDnsForward: []string{dnsForwardIpv4},
+		},
+		{
 			name: "--dns-forward option",
 			input: makeSetupOptions(
 				nil,
