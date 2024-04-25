@@ -13,6 +13,7 @@ run:
     - selinux
     - systemd
     - exclude_graphdriver_btrfs
+    - exclude_graphdriver_devicemapper
     - containers_image_openpgp
   concurrency: 6
   deadline: 5m
