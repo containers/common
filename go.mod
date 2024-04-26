@@ -9,7 +9,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/checkpoint-restore/checkpointctl v1.1.0
 	github.com/checkpoint-restore/go-criu/v7 v7.1.0
-	github.com/containerd/containerd v1.7.15
+	github.com/containerd/containerd v1.7.16
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.4.1
 	github.com/containers/image/v5 v5.30.0
