@@ -48,10 +48,10 @@ jobs:
     trigger: commit
     notifications:
       failure_comment:
-        message: "containers-common-next COPR build failed. @containers/packit-build please check."
+        message: "podman-next COPR build failed. @containers/packit-build please check."
     branch: main
     owner: rhcontainerbot
-    project: containers-common-next
+    project: podman-next
     enable_net: true
 
   - job: propose_downstream
