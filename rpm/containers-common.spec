@@ -180,8 +180,8 @@ ln -s ../../../..%{_sysconfdir}/yum.repos.d/redhat.repo %{buildroot}%{_datadir}/
 %{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 %endif
 %config(noreplace) %{_sysconfdir}/containers/registries.d/default.yaml
-%{_sysconfdir}/containers/registries.d/registry.redhat.io.yaml
-%{_sysconfdir}/containers/registries.d/registry.access.redhat.com.yaml
+%config(noreplace) %{_sysconfdir}/containers/registries.d/registry.redhat.io.yaml
+%config(noreplace) %{_sysconfdir}/containers/registries.d/registry.access.redhat.com.yaml
 %ghost %{_sysconfdir}/containers/storage.conf
 %ghost %{_sysconfdir}/containers/containers.conf
 %dir %{_sharedstatedir}/containers/sigstore
