@@ -864,10 +864,6 @@ depend on the compression format used. For gzip, valid options are
 1-9, with a default of 5. For zstd, valid options are 1-20, with a
 default of 3.
 
-**podmansh_timeout**=30
-
-Number of seconds to wait for podmansh logins.
-
 ## SERVICE DESTINATION TABLE
 The `engine.service_destinations` table contains configuration options used to set up remote connections to the podman service for the podman API.
 
@@ -973,6 +969,25 @@ The default farm to use when farming out builds.
 **[farms.list]**
 
 Map of farms created where the key is the farm name and the value is the list of system connections.
+
+## PODMANSH TABLE
+The `podmansh` table contains configuration options used by podmansh.
+
+**shell**="/bin/sh"
+
+The shell to spawn in the container.
+The default value is `/bin/sh`.
+
+**container**="podmansh"
+
+Name of the container that podmansh joins.
+The default value is `podmansh`.
+
+**timeout**=0
+
+Number of seconds to wait for podmansh logins. This value if favoured over the deprecated field `engine.podmansh_timeout` if set.
+The default value is 30.
+
 
 # FILES
 

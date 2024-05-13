@@ -43,6 +43,9 @@ var _ = Describe("Config", func() {
 			gomega.Expect(defaultConfig.Engine.DBBackend).To(gomega.Equal(""))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(30))
 			gomega.Expect(defaultConfig.Engine.AddCompression.Get()).To(gomega.BeEmpty())
+			gomega.Expect(defaultConfig.Podmansh.Container).To(gomega.Equal("podmansh"))
+			gomega.Expect(defaultConfig.Podmansh.Shell).To(gomega.Equal("/bin/sh"))
+			gomega.Expect(defaultConfig.Podmansh.Timeout).To(gomega.BeEquivalentTo(0))
 
 			path, err := defaultConfig.ImageCopyTmpDir()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -130,6 +133,33 @@ var _ = Describe("Config", func() {
 			// EnableLabeling should match whether or not SELinux is enabled on the host
 			gomega.Expect(defaultConfig.Containers.EnableLabeling).To(gomega.Equal(selinux.GetEnabled()))
 			gomega.Expect(defaultConfig.Containers.EnableLabeledUsers).To(gomega.BeFalse())
+		})
+
+		It("Check podmansh timeout settings", func() {
+			// Note: Podmansh.Timeout must be preferred over Engine.PodmanshTimeout
+
+			// Given
+			defaultConfig, _ := NewConfig("")
+			// When
+			defaultConfig.Engine.PodmanshTimeout = 30
+			defaultConfig.Podmansh.Timeout = 0
+
+			// Then
+			gomega.Expect(defaultConfig.PodmanshTimeout()).To(gomega.Equal(uint(30)))
+
+			// When
+			defaultConfig.Engine.PodmanshTimeout = 0
+			defaultConfig.Podmansh.Timeout = 42
+
+			// Then
+			gomega.Expect(defaultConfig.PodmanshTimeout()).To(gomega.Equal(uint(42)))
+
+			// When
+			defaultConfig.Engine.PodmanshTimeout = 300
+			defaultConfig.Podmansh.Timeout = 42
+
+			// Then
+			gomega.Expect(defaultConfig.PodmanshTimeout()).To(gomega.Equal(uint(42)))
 		})
 	})
 
@@ -305,8 +335,11 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir.Get()).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
 			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
-			gomega.Expect(defaultConfig.Machine.Volumes.Get()).To(gomega.BeEquivalentTo(volumes))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(300))
+			gomega.Expect(defaultConfig.Machine.Volumes.Get()).To(gomega.BeEquivalentTo(volumes))
+			gomega.Expect(defaultConfig.Podmansh.Timeout).To(gomega.BeEquivalentTo(42))
+			gomega.Expect(defaultConfig.Podmansh.Shell).To(gomega.Equal("/bin/zsh"))
+			gomega.Expect(defaultConfig.Podmansh.Container).To(gomega.BeEquivalentTo("podmansh-1"))
 			gomega.Expect(defaultConfig.Engine.HealthcheckEvents).To(gomega.BeFalse())
 			newV, err := defaultConfig.MachineVolumes()
 			if newVolumes[0] == ":" {
