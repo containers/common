@@ -1024,6 +1024,7 @@ var _ = Describe("Config", func() {
 		})
 
 		It("create bridge with dns", func() {
+			SkipIfNoDnsname()
 			network := types.Network{
 				Driver:     "bridge",
 				DNSEnabled: true,
@@ -1212,6 +1213,7 @@ var _ = Describe("Config", func() {
 		})
 
 		It("network create internal and dns", func() {
+			SkipIfNoDnsname()
 			network := types.Network{
 				Driver:     "bridge",
 				Internal:   true,
@@ -1737,12 +1739,12 @@ func grepNotFile(path, match string) {
 
 func grepFile(not bool, path, match string) {
 	data, err := os.ReadFile(path)
-	ExpectWithOffset(1, err).ToNot(HaveOccurred())
+	ExpectWithOffset(2, err).ToNot(HaveOccurred())
 	matcher := ContainSubstring(match)
 	if not {
 		matcher = Not(matcher)
 	}
-	ExpectWithOffset(1, string(data)).To(matcher)
+	ExpectWithOffset(2, string(data)).To(matcher)
 }
 
 // HaveNetworkName is a custom GomegaMatcher to match a network name

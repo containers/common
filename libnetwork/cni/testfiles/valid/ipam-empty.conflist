@@ -22,13 +22,6 @@
       },
       {
          "type": "tuning"
-      },
-      {
-         "type": "dnsname",
-         "domainName": "dns.podman",
-         "capabilities": {
-            "aliases": true
-         }
       }
    ]
 }
