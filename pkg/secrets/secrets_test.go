@@ -166,6 +166,20 @@ func TestAddReplaceSecretName(t *testing.T) {
 
 	_, err = manager.Store("mysecret", []byte("mydata.diff"), drivertype, storeOpts)
 	require.NoError(t, err)
+
+	_, data, err := manager.LookupSecretData("mysecret")
+	require.NoError(t, err)
+	require.Equal(t, string(data), "mydata.diff")
+
+	_, err = manager.Store("nonexistingsecret", []byte("mydata"), drivertype, storeOpts)
+	require.NoError(t, err)
+
+	storeOpts.Replace = false
+	_, err = manager.Store("nonexistingsecret", []byte("newdata"), drivertype, storeOpts)
+	require.Error(t, err)
+
+	_, err = manager.Delete("nonexistingsecret")
+	require.NoError(t, err)
 }
 
 func TestAddSecretPrefix(t *testing.T) {
