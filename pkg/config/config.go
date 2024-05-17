@@ -713,9 +713,19 @@ func (c *Config) CheckCgroupsAndAdjustConfig() {
 		return
 	}
 
-	session := os.Getenv("DBUS_SESSION_BUS_ADDRESS")
-	hasSession := session != ""
-	if hasSession {
+	hasSession := false
+
+	session, found := os.LookupEnv("DBUS_SESSION_BUS_ADDRESS")
+	if !found {
+		sessionAddr := filepath.Join(os.Getenv("XDG_RUNTIME_DIR"), "bus")
+		if err := fileutils.Exists(sessionAddr); err == nil {
+			sessionAddr, err = filepath.EvalSymlinks(sessionAddr)
+			if err == nil {
+				os.Setenv("DBUS_SESSION_BUS_ADDRESS", "unix:path="+sessionAddr)
+				hasSession = true
+			}
+		}
+	} else {
 		for _, part := range strings.Split(session, ",") {
 			if strings.HasPrefix(part, "unix:path=") {
 				err := fileutils.Exists(strings.TrimPrefix(part, "unix:path="))
