@@ -188,14 +188,13 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.53.1-0.20240410101114-dfdc6bf225fa
-## explicit; go 1.20
+# github.com/containers/storage v1.54.0
+## explicit; go 1.21
 github.com/containers/storage
 github.com/containers/storage/drivers
 github.com/containers/storage/drivers/aufs
 github.com/containers/storage/drivers/btrfs
 github.com/containers/storage/drivers/copy
-github.com/containers/storage/drivers/devmapper
 github.com/containers/storage/drivers/overlay
 github.com/containers/storage/drivers/overlayutils
 github.com/containers/storage/drivers/quota
@@ -211,9 +210,7 @@ github.com/containers/storage/pkg/chunked/dump
 github.com/containers/storage/pkg/chunked/internal
 github.com/containers/storage/pkg/chunked/toc
 github.com/containers/storage/pkg/config
-github.com/containers/storage/pkg/devicemapper
 github.com/containers/storage/pkg/directory
-github.com/containers/storage/pkg/dmesg
 github.com/containers/storage/pkg/fileutils
 github.com/containers/storage/pkg/fsutils
 github.com/containers/storage/pkg/fsverity
@@ -227,7 +224,6 @@ github.com/containers/storage/pkg/longpath
 github.com/containers/storage/pkg/loopback
 github.com/containers/storage/pkg/mount
 github.com/containers/storage/pkg/parsers
-github.com/containers/storage/pkg/parsers/kernel
 github.com/containers/storage/pkg/pools
 github.com/containers/storage/pkg/promise
 github.com/containers/storage/pkg/reexec
@@ -447,9 +443,6 @@ github.com/manifoldco/promptui/screenbuf
 # github.com/mattn/go-runewidth v0.0.15
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
-# github.com/mattn/go-shellwords v1.0.12
-## explicit; go 1.13
-github.com/mattn/go-shellwords
 # github.com/mattn/go-sqlite3 v1.14.22
 ## explicit; go 1.19
 github.com/mattn/go-sqlite3

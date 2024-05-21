@@ -14,7 +14,7 @@ require (
 	github.com/containernetworking/plugins v1.5.0
 	github.com/containers/image/v5 v5.30.1
 	github.com/containers/ocicrypt v1.1.10
-	github.com/containers/storage v1.53.1-0.20240410101114-dfdc6bf225fa
+	github.com/containers/storage v1.54.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.2.5
 	github.com/davecgh/go-spew v1.1.1
@@ -107,7 +107,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mistifyio/go-zfs/v3 v3.0.1 // indirect
