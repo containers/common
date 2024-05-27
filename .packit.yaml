@@ -2,14 +2,15 @@
 # See the documentation for more information:
 # https://packit.dev/docs/configuration/
 
-downstream_package_name: containers-common
 upstream_tag_template: v{version}
 
 packages:
   containers-common-fedora:
+    downstream_package_name: containers-common
     pkg_tool: fedpkg
     specfile_path: rpm/containers-common.spec
   containers-common-centos:
+    downstream_package_name: containers-common
     pkg_tool: centpkg
     specfile_path: rpm/containers-common.spec
 
@@ -56,7 +57,6 @@ jobs:
 
   - job: propose_downstream
     trigger: release
-    update_release: false
     packages: [containers-common-fedora]
     dist_git_branches:
       - fedora-development
@@ -64,7 +64,6 @@ jobs:
 
   - job: propose_downstream
     trigger: release
-    update_release: false
     packages: [containers-common-centos]
     dist_git_branches:
       - c10s
