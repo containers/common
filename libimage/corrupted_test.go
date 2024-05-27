@@ -32,7 +32,7 @@ func TestCorruptedLayers(t *testing.T) {
 	require.Len(t, pulledImages, 1)
 	image := pulledImages[0]
 
-	// Inpsecting a healthy image should work.
+	// Inspecting a healthy image should work.
 	_, err = image.Inspect(ctx, nil)
 	require.NoError(t, err, "inspecting healthy image should work")
 
