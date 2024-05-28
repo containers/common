@@ -816,3 +816,24 @@ func TestInstanceByImageAndFiles(t *testing.T) {
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, []string{}, noFiles)
 }
+
+// TestAddIndexOfArtifacts ensures that we don't fail to preserve artifactType
+// fields in artifact manifests when added from one list to another.
+func TestAddIndexOfArtifacts(t *testing.T) {
+	ctx := context.Background()
+
+	absPath, err := filepath.Abs(filepath.Join("..", "..", "pkg", "manifests", "testdata", "artifacts", "index"))
+	require.NoError(t, err)
+	rawPath := "oci:" + absPath
+	ref, err := alltransports.ParseImageName(rawPath)
+	require.NoErrorf(t, err, "ParseImageName(%q)", rawPath)
+
+	cookedList := Create()
+	_, err = cookedList.Add(ctx, sys, ref, true)
+	assert.NoError(t, err, "list.Add()")
+
+	cooked := cookedList.OCIv1()
+	for _, instance := range cooked.Manifests {
+		assert.NotEmpty(t, instance.ArtifactType, "lost the artifactType field")
+	}
+}
