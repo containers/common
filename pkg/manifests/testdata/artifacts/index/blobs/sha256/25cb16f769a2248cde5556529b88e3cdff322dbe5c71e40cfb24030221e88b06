@@ -1,0 +1,15 @@
+{
+  "layers": [
+    {
+      "digest": "sha256:e6304a473c65ecd0ccffbd2f5925a8f51c44b11f59b66cfcc055e4bb911b8fa0",
+      "mediaType": "application/octet-stream",
+      "size": 500,
+      "annotations": {
+        "org.opencontainers.image.ref.name": "five-hundred"
+      }
+    }
+  ],
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "artifactType": "application/vnd.reproducer+bar",
+  "schemaVersion": 2
+}
