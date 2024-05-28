@@ -10,7 +10,10 @@
 %global storage_branch main
 %global shortnames_branch main
 
-%global github_containers https://raw.githubusercontent.com/containers
+%global project containers
+%global repo common
+
+%global raw_github_url https://raw.githubusercontent.com/%{project}
 
 %if %{defined copr_username}
 %define copr_build 1
@@ -40,21 +43,22 @@ BuildRequires: go-md2man
 Provides: skopeo-containers = %{epoch}:%{version}-%{release}
 Requires: (container-selinux >= 2:2.162.1 if selinux-policy)
 Suggests: fuse-overlayfs
-Source0: %{git0}/archive/v%{version_no_tilde}.tar.gz
-Source1: %{github_containers}/image/%{image_branch}/docs/containers-auth.json.5.md
-Source2: %{github_containers}/image/%{image_branch}/docs/containers-certs.d.5.md
-Source3: %{github_containers}/image/%{image_branch}/docs/containers-policy.json.5.md
-Source4: %{github_containers}/image/%{image_branch}/docs/containers-registries.conf.5.md
-Source5: %{github_containers}/image/%{image_branch}/docs/containers-registries.conf.d.5.md
-Source6: %{github_containers}/image/%{image_branch}/docs/containers-registries.d.5.md
-Source7: %{github_containers}/image/%{image_branch}/docs/containers-signature.5.md
-Source8: %{github_containers}/image/%{image_branch}/docs/containers-transports.5.md
-Source9: %{github_containers}/storage/%{storage_branch}/docs/containers-storage.conf.5.md
-Source10: %{github_containers}/shortnames/%{shortnames_branch}/shortnames.conf
-Source11: %{github_containers}/image/%{image_branch}/default.yaml
-Source12: %{github_containers}/image/%{image_branch}/default-policy.json
-Source13: %{github_containers}/image/%{image_branch}/registries.conf
-Source14: %{github_containers}/storage/%{storage_branch}/storage.conf
+URL: https://github.com/%{project}/%{repo}
+Source0: %{url}/archive/v%{version_no_tilde}.tar.gz
+Source1: %{raw_github_url}/image/%{image_branch}/docs/containers-auth.json.5.md
+Source2: %{raw_github_url}/image/%{image_branch}/docs/containers-certs.d.5.md
+Source3: %{raw_github_url}/image/%{image_branch}/docs/containers-policy.json.5.md
+Source4: %{raw_github_url}/image/%{image_branch}/docs/containers-registries.conf.5.md
+Source5: %{raw_github_url}/image/%{image_branch}/docs/containers-registries.conf.d.5.md
+Source6: %{raw_github_url}/image/%{image_branch}/docs/containers-registries.d.5.md
+Source7: %{raw_github_url}/image/%{image_branch}/docs/containers-signature.5.md
+Source8: %{raw_github_url}/image/%{image_branch}/docs/containers-transports.5.md
+Source9: %{raw_github_url}/storage/%{storage_branch}/docs/containers-storage.conf.5.md
+Source10: %{raw_github_url}/shortnames/%{shortnames_branch}/shortnames.conf
+Source11: %{raw_github_url}/image/%{image_branch}/default.yaml
+Source12: %{raw_github_url}/image/%{image_branch}/default-policy.json
+Source13: %{raw_github_url}/image/%{image_branch}/registries.conf
+Source14: %{raw_github_url}/storage/%{storage_branch}/storage.conf
 # Fetch RPM-GPG-KEY-redhat-release from the authoritative source instead of storing
 # a copy in repo or dist-git. Depending on distribution-gpg-keys rpm is also
 # not an option because that package doesn't exist on CentOS Stream.
@@ -92,22 +96,22 @@ This subpackage will handle dependencies common to Podman and Buildah which are
 not required by Skopeo.
 
 %prep
-%autosetup -Sgit %{name}-%{version_no_tilde}
+%autosetup -Sgit -n %{repo}-%{version_no_tilde}
 
 # Fine-grain distro- and release-specific tuning of config files,
 # e.g., seccomp, composefs, registries on different RHEL/Fedora versions
 bash rpm/update-config-files.sh
 
 %build
-mv %{SOURCE1} docs/.
-mv %{SOURCE2} docs/.
-mv %{SOURCE3} docs/.
-mv %{SOURCE4} docs/.
-mv %{SOURCE5} docs/.
-mv %{SOURCE6} docs/.
-mv %{SOURCE7} docs/.
-mv %{SOURCE8} docs/.
-mv %{SOURCE9} docs/.
+cp %{SOURCE1} docs/.
+cp %{SOURCE2} docs/.
+cp %{SOURCE3} docs/.
+cp %{SOURCE4} docs/.
+cp %{SOURCE5} docs/.
+cp %{SOURCE6} docs/.
+cp %{SOURCE7} docs/.
+cp %{SOURCE8} docs/.
+cp %{SOURCE9} docs/.
 
 mkdir -p man5
 for i in docs/*.5.md; do
