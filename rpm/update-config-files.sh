@@ -32,7 +32,6 @@ ensure storage.conf                 mountopt            \"nodev,metacopy=on\"
 
 ensure pkg/config/containers.conf   runtime             \"crun\"
 ensure pkg/config/containers.conf   log_driver          \"journald\"
-ensure pkg/config/containers.conf   compression_format  \"zstd:chunked\"
 
 # Enable seccomp support keyctl and socketcall
 grep -q \"keyctl\", pkg/seccomp/seccomp.json || sed -i '/\"kill\",/i \
@@ -59,6 +58,7 @@ fi
 # Set these on Fedora Rawhide (41+), RHEL 10+, and on all COPR builds
 # regardless of distro
 if [[ -n "$COPR" ]] || [[ "$FEDORA" -gt 40 ]] || [[ "$RHEL" -ge 10 ]]; then
+    ensure pkg/config/containers.conf   compression_format  \"zstd:chunked\"
     ensure storage.conf pull_options    \{enable_partial_images\ =\ \"true\",\ use_hard_links\ =\ \"false\",\ ostree_repos=\"\",\ convert_images\ =\ \"false\"\}
     # Leave composefs disabled
     ensure storage.conf use_composefs   \"false\"
