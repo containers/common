@@ -98,11 +98,7 @@ not required by Skopeo.
 %prep
 %autosetup -Sgit -n %{repo}-%{version_no_tilde}
 
-# Fine-grain distro- and release-specific tuning of config files,
-# e.g., seccomp, composefs, registries on different RHEL/Fedora versions
-bash rpm/update-config-files.sh
-
-%build
+# Copy manpages to docs subdir in builddir to build before installing.
 cp %{SOURCE1} docs/.
 cp %{SOURCE2} docs/.
 cp %{SOURCE3} docs/.
@@ -113,6 +109,18 @@ cp %{SOURCE7} docs/.
 cp %{SOURCE8} docs/.
 cp %{SOURCE9} docs/.
 
+# Copy config files to builddir to patch them before installing.
+# Currently, only registries.conf and storage.conf files are patched before
+# installing.
+cp %{SOURCE10} shortnames.conf
+cp %{SOURCE13} registries.conf
+cp %{SOURCE14} storage.conf
+
+# Fine-grain distro- and release-specific tuning of config files,
+# e.g., seccomp, composefs, registries on different RHEL/Fedora versions
+bash rpm/update-config-files.sh
+
+%build
 mkdir -p man5
 for i in docs/*.5.md; do
     go-md2man -in $i -out man5/$(basename $i .md)
@@ -129,11 +137,11 @@ touch %{buildroot}%{_prefix}/lib/containers/storage/overlay-images/images.lock
 install -dp -m 700 %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers
 touch %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers/layers.lock
 
-install -Dp -m0644 %{SOURCE10} %{buildroot}%{_sysconfdir}/containers/registries.conf.d/000-shortnames.conf
+install -Dp -m0644 shortnames.conf %{buildroot}%{_sysconfdir}/containers/registries.conf.d/000-shortnames.conf
 install -Dp -m0644 %{SOURCE11} %{buildroot}%{_sysconfdir}/containers/registries.d/default.yaml
 install -Dp -m0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/containers/policy.json
-install -Dp -m0644 %{SOURCE13} %{buildroot}%{_sysconfdir}/containers/registries.conf
-install -Dp -m0644 %{SOURCE14} %{buildroot}%{_datadir}/containers/storage.conf
+install -Dp -m0644 registries.conf %{buildroot}%{_sysconfdir}/containers/registries.conf
+install -Dp -m0644 storage.conf %{buildroot}%{_datadir}/containers/storage.conf
 
 # RPM-GPG-KEY-redhat-release already exists on rhel envs, install only on
 # fedora and centos
