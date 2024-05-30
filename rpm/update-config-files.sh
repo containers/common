@@ -5,6 +5,10 @@
 set -exo pipefail
 
 ensure() {
+  if [[ ! -f $1 ]]; then
+      echo "File not found:" $1
+      exit 1
+  fi
   if grep ^$2[[:blank:]].*= $1 > /dev/null
   then
     sed -i "s;^$2[[:blank:]]=.*;$2 = $3;" $1
