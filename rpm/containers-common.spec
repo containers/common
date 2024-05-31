@@ -179,6 +179,7 @@ ln -s ../../../..%{_sysconfdir}/yum.repos.d/redhat.repo %{buildroot}%{_datadir}/
 %dir %{_sysconfdir}/containers/registries.conf.d
 %dir %{_sysconfdir}/containers/registries.d
 %dir %{_sysconfdir}/containers/systemd
+%dir %{_prefix}/lib/containers
 %dir %{_prefix}/lib/containers/storage
 %dir %{_prefix}/lib/containers/storage/overlay-images
 %dir %{_prefix}/lib/containers/storage/overlay-layers
@@ -207,6 +208,7 @@ ln -s ../../../..%{_sysconfdir}/yum.repos.d/redhat.repo %{buildroot}%{_datadir}/
 %{_datadir}/containers/containers.conf
 %{_datadir}/containers/mounts.conf
 %{_datadir}/containers/seccomp.json
+%dir %{_datadir}/rhel
 %dir %{_datadir}/rhel/secrets
 %{_datadir}/rhel/secrets/*
 
