@@ -459,9 +459,8 @@ and "$graphroot/networks" as rootless.
 
 The firewall driver to be used by netavark.
 The default is empty which means netavark will pick one accordingly. Current supported
-drivers are "iptables", "none" (no firewall rules will be created) and "firewalld" (firewalld is
-experimental at the moment and not recommend outside of testing). In the future we are
-planning to add support for a "nftables" driver.
+drivers are "iptables", "nftables", "none" (no firewall rules will be created) and "firewalld" (firewalld is
+experimental at the moment and not recommend outside of testing).
 
 **dns_bind_port**=53
 
