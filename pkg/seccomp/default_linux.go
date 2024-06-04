@@ -316,7 +316,6 @@ func DefaultProfile() *Seccomp {
 				"pwritev2",
 				"read",
 				"readahead",
-				"readdir",
 				"readlink",
 				"readlinkat",
 				"readv",
