@@ -647,6 +647,20 @@
 		},
 		{
 			"names": [
+				"riscv_flush_icache"
+			],
+			"action": "SCMP_ACT_ALLOW",
+			"args": [],
+			"comment": "",
+			"includes": {
+				"arches": [
+					"riscv64"
+				]
+			},
+			"excludes": {}
+		},
+		{
+			"names": [
 				"open_by_handle_at"
 			],
 			"action": "SCMP_ACT_ALLOW",

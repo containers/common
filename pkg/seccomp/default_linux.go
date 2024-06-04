@@ -582,6 +582,16 @@ func DefaultProfile() *Seccomp {
 		},
 		{
 			Names: []string{
+				"riscv_flush_icache",
+			},
+			Action: ActAllow,
+			Args:   []*Arg{},
+			Includes: Filter{
+				Arches: []string{"riscv64"},
+			},
+		},
+		{
+			Names: []string{
 				"open_by_handle_at",
 			},
 			Action: ActAllow,
