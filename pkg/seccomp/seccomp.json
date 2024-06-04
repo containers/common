@@ -55,9 +55,16 @@
 		{
 			"names": [
 				"bdflush",
+				"cachestat",
+				"futex_requeue",
+				"futex_wait",
+				"futex_waitv",
+				"futex_wake",
 				"io_pgetevents",
+				"io_pgetevents_time64",
 				"kexec_file_load",
 				"kexec_load",
+				"map_shadow_stack",
 				"migrate_pages",
 				"move_pages",
 				"nfsservctl",
@@ -675,6 +682,7 @@
 				"lookup_dcookie",
 				"perf_event_open",
 				"quotactl",
+				"quotactl_fd",
 				"setdomainname",
 				"sethostname",
 				"setns"
@@ -696,6 +704,7 @@
 				"lookup_dcookie",
 				"perf_event_open",
 				"quotactl",
+				"quotactl_fd",
 				"setdomainname",
 				"sethostname",
 				"setns"
