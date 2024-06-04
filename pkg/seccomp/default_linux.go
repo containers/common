@@ -430,7 +430,6 @@ func DefaultProfile() *Seccomp {
 				"timer_gettime64",
 				"timer_settime",
 				"timer_settime64",
-				"timerfd",
 				"timerfd_create",
 				"timerfd_gettime",
 				"timerfd_gettime64",
