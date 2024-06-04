@@ -712,7 +712,6 @@
 		},
 		{
 			"names": [
-				"bpf",
 				"fanotify_init",
 				"lookup_dcookie",
 				"perf_event_open",
@@ -1062,6 +1061,37 @@
 			"includes": {
 				"caps": [
 					"CAP_AUDIT_WRITE"
+				]
+			},
+			"excludes": {}
+		},
+		{
+			"names": [
+				"bpf"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"args": [],
+			"comment": "",
+			"includes": {},
+			"excludes": {
+				"caps": [
+					"CAP_SYS_ADMIN",
+					"CAP_BPF"
+				]
+			},
+			"errnoRet": 1,
+			"errno": "EPERM"
+		},
+		{
+			"names": [
+				"bpf"
+			],
+			"action": "SCMP_ACT_ALLOW",
+			"args": [],
+			"comment": "",
+			"includes": {
+				"caps": [
+					"CAP_BPF"
 				]
 			},
 			"excludes": {}

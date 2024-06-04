@@ -631,7 +631,6 @@ func DefaultProfile() *Seccomp {
 		},
 		{
 			Names: []string{
-				"bpf",
 				"fanotify_init",
 				"lookup_dcookie",
 				"perf_event_open",
@@ -897,6 +896,28 @@ func DefaultProfile() *Seccomp {
 			Action: ActAllow,
 			Includes: Filter{
 				Caps: []string{"CAP_AUDIT_WRITE"},
+			},
+		},
+		{
+			Names: []string{
+				"bpf",
+			},
+			Action:   ActErrno,
+			Errno:    "EPERM",
+			ErrnoRet: &eperm,
+			Args:     []*Arg{},
+			Excludes: Filter{
+				Caps: []string{"CAP_SYS_ADMIN", "CAP_BPF"},
+			},
+		},
+		{
+			Names: []string{
+				"bpf",
+			},
+			Action: ActAllow,
+			Args:   []*Arg{},
+			Includes: Filter{
+				Caps: []string{"CAP_BPF"},
 			},
 		},
 	}
