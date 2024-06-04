@@ -693,7 +693,6 @@
 				"bpf",
 				"fanotify_init",
 				"lookup_dcookie",
-				"perf_event_open",
 				"quotactl",
 				"quotactl_fd",
 				"setdomainname",
@@ -1092,6 +1091,37 @@
 			"includes": {
 				"caps": [
 					"CAP_BPF"
+				]
+			},
+			"excludes": {}
+		},
+		{
+			"names": [
+				"perf_event_open"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"args": [],
+			"comment": "",
+			"includes": {},
+			"excludes": {
+				"caps": [
+					"CAP_SYS_ADMIN",
+					"CAP_BPF"
+				]
+			},
+			"errnoRet": 1,
+			"errno": "EPERM"
+		},
+		{
+			"names": [
+				"perf_event_open"
+			],
+			"action": "SCMP_ACT_ALLOW",
+			"args": [],
+			"comment": "",
+			"includes": {
+				"caps": [
+					"CAP_PERFMON"
 				]
 			},
 			"excludes": {}
