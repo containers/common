@@ -75,7 +75,6 @@ func DefaultProfile() *Seccomp {
 				"pciconfig_write",
 				"sgetmask",
 				"ssetmask",
-				"swapcontext",
 				"swapoff",
 				"swapon",
 				"sysfs",
@@ -526,6 +525,7 @@ func DefaultProfile() *Seccomp {
 		{
 			Names: []string{
 				"sync_file_range2",
+				"swapcontext",
 			},
 			Action: ActAllow,
 			Args:   []*Arg{},
