@@ -102,6 +102,28 @@ func TestInspectManifestListWithAnnotations(t *testing.T) {
 	require.Equal(t, inspectReport.Manifests[0].Annotations["hello"], annotations["hello"])
 	require.Equal(t, inspectReport.Annotations, indexAnnotations)
 	require.Equal(t, inspectReport.Subject.MediaType, imgspecv1.MediaTypeImageManifest)
+
+	// verify that we can clear the variant field by not setting it when we set the arch
+	annotateOptions = ManifestListAnnotateOptions{
+		Architecture: "arm64",
+		Variant:      "v8",
+	}
+	err = list.AnnotateInstance(digest, &annotateOptions)
+	require.NoError(t, err)
+	inspectReport, err = list.Inspect()
+	require.NoError(t, err)
+	require.Equal(t, "arm64", inspectReport.Manifests[0].Platform.Architecture)
+	require.Equal(t, "v8", inspectReport.Manifests[0].Platform.Variant)
+
+	annotateOptions = ManifestListAnnotateOptions{
+		Architecture: "arm64",
+	}
+	err = list.AnnotateInstance(digest, &annotateOptions)
+	require.NoError(t, err)
+	inspectReport, err = list.Inspect()
+	require.NoError(t, err)
+	require.Equal(t, "arm64", inspectReport.Manifests[0].Platform.Architecture)
+	require.Equal(t, "", inspectReport.Manifests[0].Platform.Variant)
 }
 
 // Following test ensure that `Tag` tags the manifest list instead of resolved image.

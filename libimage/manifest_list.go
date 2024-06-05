@@ -483,23 +483,23 @@ func (m *ManifestList) AddArtifact(ctx context.Context, options *ManifestListAdd
 
 // Options for annotating a manifest list.
 type ManifestListAnnotateOptions struct {
-	// Add the specified annotations to the added image.
+	// Add the specified annotations to the added image.  Empty values are ignored.
 	Annotations map[string]string
-	// Add the specified architecture to the added image.
+	// Add the specified architecture to the added image.  Empty values are ignored.
 	Architecture string
-	// Add the specified features to the added image.
+	// Add the specified features to the added image.  Empty values are ignored.
 	Features []string
-	// Add the specified OS to the added image.
+	// Add the specified OS to the added image.  Empty values are ignored.
 	OS string
-	// Add the specified OS features to the added image.
+	// Add the specified OS features to the added image.  Empty values are ignored.
 	OSFeatures []string
-	// Add the specified OS version to the added image.
+	// Add the specified OS version to the added image.  Empty values are ignored.
 	OSVersion string
-	// Add the specified variant to the added image.
+	// Add the specified variant to the added image.  Empty values are ignored unless Architecture is set to a non-empty value.
 	Variant string
-	// Add the specified annotations to the index itself.
+	// Add the specified annotations to the index itself.  Empty values are ignored.
 	IndexAnnotations map[string]string
-	// Set the subject to which the index refers.
+	// Set the subject to which the index refers.  Empty values are ignored.
 	Subject string
 }
 
@@ -536,7 +536,7 @@ func (m *ManifestList) AnnotateInstance(d digest.Digest, options *ManifestListAn
 			return err
 		}
 	}
-	if len(options.Variant) > 0 {
+	if len(options.Architecture) != 0 || len(options.Variant) > 0 {
 		if err := m.list.SetVariant(d, options.Variant); err != nil {
 			return err
 		}
