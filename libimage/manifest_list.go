@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"time"
 
@@ -20,7 +21,6 @@ import (
 	structcopier "github.com/jinzhu/copier"
 	"github.com/opencontainers/go-digest"
 	imgspecv1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"golang.org/x/exp/maps"
 )
 
 // NOTE: the abstractions and APIs here are a first step to further merge
@@ -238,9 +238,7 @@ func (m *ManifestList) Inspect() (*define.ManifestListData, error) {
 	for i, manifest := range ociFormat.Manifests {
 		inspectList.Manifests[i].Annotations = manifest.Annotations
 		inspectList.Manifests[i].ArtifactType = manifest.ArtifactType
-		if manifest.URLs != nil {
-			inspectList.Manifests[i].URLs = slices.Clone(manifest.URLs)
-		}
+		inspectList.Manifests[i].URLs = slices.Clone(manifest.URLs)
 		inspectList.Manifests[i].Data = manifest.Data
 		inspectList.Manifests[i].Files, err = m.list.Files(manifest.Digest)
 		if err != nil {
@@ -252,10 +250,7 @@ func (m *ManifestList) Inspect() (*define.ManifestListData, error) {
 		if platform == nil {
 			platform = &imgspecv1.Platform{}
 		}
-		var osFeatures []string
-		if platform.OSFeatures != nil {
-			osFeatures = slices.Clone(platform.OSFeatures)
-		}
+		osFeatures := slices.Clone(platform.OSFeatures)
 		inspectList.Subject = &define.ManifestListDescriptor{
 			Platform: manifest.Schema2PlatformSpec{
 				OS:           platform.OS,
