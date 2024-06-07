@@ -20,7 +20,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.8.3+incompatible
-	github.com/docker/docker v26.1.3+incompatible
+	github.com/docker/docker v26.1.4+incompatible
 	github.com/docker/go-units v0.5.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
