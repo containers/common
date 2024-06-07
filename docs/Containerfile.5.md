@@ -82,7 +82,7 @@ A Containerfile is similar to a Makefile.
   -- If no digest is given to the **FROM** instruction, container engines apply the
   `latest` tag. If the used tag does not exist, an error is returned.
 
-  -- A name can be assigned to a build stage by adding **AS name** to the instruction. 
+  -- A name can be assigned to a build stage by adding **AS name** to the instruction.
   The name can be referenced later in the Containerfile using the **FROM** or **COPY --from=<name>** instructions.
 
 **MAINTAINER**
@@ -109,7 +109,7 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
 
        e.g.
 
-       mount=type=bind,source=/path/on/host,destination=/path/in/container
+       mount=type=bind,source=/path/on/host,destination=/path/in/container,relabel=shared
 
        mount=type=tmpfs,tmpfs-size=512M,destination=/path/in/container
 
@@ -117,45 +117,57 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
 
        Common Options:
 
-              · src, source: mount source spec for bind and volume. Mandatory for bind. If `from` is specified, `src` is the subpath in the `from` field.
+	      · src, source: mount source spec for bind and volume. Mandatory for bind. If `from` is specified, `src` is the subpath in the `from` field.
 
-              · dst, destination, target: mount destination spec.
+	      · dst, destination, target: mount destination spec.
 
-              · ro, read-only: true (default) or false.
+	      · ro, read-only: true (default) or false.
 
        Options specific to bind:
 
-              · bind-propagation: shared, slave, private, rshared, rslave, or rprivate(default). See also mount(2).
+	      · bind-propagation: shared, slave, private, rshared, rslave, or rprivate(default). See also mount(2).
 
-              . bind-nonrecursive: do not setup a recursive bind mount.  By default it is recursive.
+	      . bind-nonrecursive: do not setup a recursive bind mount.  By default it is recursive.
 
-              · from: stage or image name for the root of the source. Defaults to the build context.
+	      · from: stage or image name for the root of the source. Defaults to the build context.
 
-              · rw, read-write: allows writes on the mount.
+	      · relabel=shared, z: Relabels src content with a shared label.
+
+	      . relabel=private, Z: Relabels src content with a private label.
+
+	      Labeling systems like SELinux require proper labels on the bind mounted content mounted into a container. Without a label, the security system might prevent the processes running in side the container from using the content. By default, container engines do not change the labels set by the OS. The relabel flag tells the engine to relabel file objects on the shared mountz.
+
+	      The relabel=shared and z options tell the engine that two or more containers will share the mount content. The engine labels the content with a shared content label.
+
+	      The relabel=private and Z options tell the engine to label the content with a private unshared label. Only the current container can use a private mount.
+
+	      Relabeling walks the file system under the mount and changes the label on each file, if the mount has thousands of inodes, this process takes a long time, delaying the start of the container.
+	      
+	      · rw, read-write: allows writes on the mount.
 
        Options specific to tmpfs:
 
-              · tmpfs-size: Size of the tmpfs mount in bytes. Unlimited by default in Linux.
+	      · tmpfs-size: Size of the tmpfs mount in bytes. Unlimited by default in Linux.
 
-              · tmpfs-mode: File mode of the tmpfs in octal. (e.g. 700 or 0700.) Defaults to 1777 in Linux.
+	      · tmpfs-mode: File mode of the tmpfs in octal. (e.g. 700 or 0700.) Defaults to 1777 in Linux.
 
-              · tmpcopyup: Path that is shadowed by the tmpfs mount is recursively copied up to the tmpfs itself.
+	      · tmpcopyup: Path that is shadowed by the tmpfs mount is recursively copied up to the tmpfs itself.
 
 	Options specific to cache:
 
-              · id: Create a separate cache directory for a particular id.
+	      · id: Create a separate cache directory for a particular id.
 
-              · mode: File mode for new cache directory in octal. Default 0755.
+	      · mode: File mode for new cache directory in octal. Default 0755.
 
-              · ro, readonly: read only cache if set.
+	      · ro, readonly: read only cache if set.
 
-              · uid: uid for cache directory.
+	      · uid: uid for cache directory.
 
-              · gid: gid for cache directory.
+	      · gid: gid for cache directory.
 
-              · from: stage name for the root of the source. Defaults to host cache directory.
+	      · from: stage name for the root of the source. Defaults to host cache directory.
 
-              · rw, read-write: allows writes on the mount.
+	      · rw, read-write: allows writes on the mount.
 
 **RUN --network**
 
