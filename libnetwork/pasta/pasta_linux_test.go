@@ -251,6 +251,20 @@ func Test_createPastaArgs(t *testing.T) {
 			},
 			wantDnsForward: []string{dnsForwardIpv4},
 		},
+		{
+			name: "Add verbose logging",
+			input: makeSetupOptions(
+				nil,
+				[]string{"--log-file=/tmp/log", "--trace", "--debug"},
+				nil,
+			),
+			wantArgs: []string{
+				"--config-net", "--log-file=/tmp/log", "--trace", "--debug",
+				"--dns-forward", dnsForwardIpv4, "-t", "none", "-u", "none", "-T", "none", "-U", "none",
+				"--no-map-gw", "--netns", "netns123",
+			},
+			wantDnsForward: []string{dnsForwardIpv4},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
