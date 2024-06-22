@@ -117,7 +117,7 @@ Options are:
 
 **cgroupns**="private"
 
-Default way to to create a cgroup namespace for the container.
+Default way to create a cgroup namespace for the container.
 Options are:
 `private` Create private Cgroup Namespace for the container.
 `host`    Share host Cgroup Namespace with the container.
@@ -235,7 +235,7 @@ Options are:
 
 **ipcns**="shareable"
 
-Default way to to create a IPC namespace for the container.
+Default way to create a IPC namespace for the container.
 Options are:
   `host`     Share host IPC Namespace with the container.
   `none`     Create shareable IPC Namespace for the container without a private /dev/shm.
@@ -282,7 +282,7 @@ Example:  [ "type=bind,source=/var/lib/foobar,destination=/var/lib/foobar,ro", ]
 
 **netns**="private"
 
-Default way to to create a NET namespace for the container.
+Default way to create a NET namespace for the container.
 Options are:
   `private` Create private NET Namespace for the container.
   `host`    Share host NET Namespace with the container.
@@ -299,7 +299,7 @@ Tune the host's OOM preferences for containers (accepts values from -1000 to 100
 
 **pidns**="private"
 
-Default way to to create a PID namespace for the container.
+Default way to create a PID namespace for the container.
 Options are:
   `private` Create private PID Namespace for the container.
   `host`    Share host PID Namespace with the container.
@@ -352,14 +352,14 @@ Sets umask inside the container.
 
 **userns**="host"
 
-Default way to to create a USER namespace for the container.
+Default way to create a USER namespace for the container.
 Options are:
   `private` Create private USER Namespace for the container.
   `host`    Share host USER Namespace with the container.
 
 **utsns**="private"
 
-Default way to to create a UTS namespace for the container.
+Default way to create a UTS namespace for the container.
 Options are:
   `private` Create private UTS Namespace for the container.
   `host`    Share host UTS Namespace with the container.
