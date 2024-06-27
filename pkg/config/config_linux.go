@@ -25,4 +25,5 @@ var defaultHelperBinariesDir = []string{
 	"/usr/local/lib/podman",
 	"/usr/libexec/podman",
 	"/usr/lib/podman",
+	"/usr/libexec",
 }
