@@ -19,6 +19,14 @@
 %define copr_build 1
 %endif
 
+# See https://github.com/containers/netavark/blob/main/rpm/netavark.spec
+# for netavark epoch
+%if %{defined copr_build}
+%define netavark_epoch 102
+%else
+%define netavark_epoch 2
+%endif
+
 Name: containers-common
 %if %{defined copr_build}
 Epoch: 102
@@ -81,7 +89,7 @@ Conflicts: podman < 5:5.0.0~rc4-1
 Recommends: composefs
 Recommends: crun
 Requires: (crun if fedora-release-identity-server)
-Requires: netavark >= 1.10.3-1
+Requires: netavark >= %{netavark_epoch}:1.10.3-1
 Suggests: slirp4netns
 Requires: passt
 Requires: iptables
