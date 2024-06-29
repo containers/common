@@ -6,6 +6,7 @@ approvers:
   - TomSweeneyRedHat
   - giuseppe
   - vrothberg
+  - jnovy
   - jwhonce
   - edsantiago
   - Luap99
@@ -19,6 +20,7 @@ reviewers:
   - TomSweeneyRedHat
   - giuseppe
   - vrothberg
+  - jnovy
   - jwhonce
   - edsantiago
   - Luap99
