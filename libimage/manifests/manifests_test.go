@@ -37,12 +37,12 @@ var (
 const (
 	listImageName = "foo"
 
-	otherListImage          = "docker://k8s.gcr.io/pause:3.1"
+	otherListImage          = "docker://registry.k8s.io/pause:3.1"
 	otherListDigest         = "sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea"
 	otherListAmd64Digest    = "sha256:59eec8837a4d942cc19a52b8c09ea75121acc38114a2c68b98983ce9356b8610"
 	otherListArm64Digest    = "sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39"
 	otherListPpc64Digest    = "sha256:bcf9771c0b505e68c65440474179592ffdfa98790eb54ffbf129969c5e429990"
-	otherListInstanceDigest = "docker://k8s.gcr.io/pause@sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39"
+	otherListInstanceDigest = "docker://registry.k8s.io/pause@sha256:f365626a556e58189fc21d099fc64603db0f440bff07f77c740989515c544a39"
 )
 
 func TestSaveLoad(t *testing.T) {
