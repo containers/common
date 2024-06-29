@@ -303,7 +303,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions.Get()).To(gomega.HaveLen(0))
 			gomega.Expect(defaultConfig.Engine.HelperBinariesDir.Get()).To(gomega.Equal(helperDirs))
 			gomega.Expect(defaultConfig.Engine.ServiceTimeout).To(gomega.BeEquivalentTo(300))
-			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("k8s.gcr.io/pause:3.4.1"))
+			gomega.Expect(defaultConfig.Engine.InfraImage).To(gomega.BeEquivalentTo("registry.k8s.io/pause:3.4.1"))
 			gomega.Expect(defaultConfig.Machine.Volumes.Get()).To(gomega.BeEquivalentTo(volumes))
 			gomega.Expect(defaultConfig.Engine.PodmanshTimeout).To(gomega.BeEquivalentTo(300))
 			newV, err := defaultConfig.MachineVolumes()
