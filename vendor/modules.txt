@@ -189,7 +189,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.54.1-0.20240626141655-3b6406632da1
+# github.com/containers/storage v1.54.1-0.20240627145511-52b643e1ff51
 ## explicit; go 1.21
 github.com/containers/storage
 github.com/containers/storage/drivers
