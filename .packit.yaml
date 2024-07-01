@@ -29,8 +29,7 @@ jobs:
         message: "Ephemeral COPR build failed. @containers/packit-build please check."
     enable_net: true
     targets:
-      fedora-development: {}
-      fedora-latest: {}
+      fedora-all: {}
       fedora-eln:
         # Need this to fetch go-md2man which is present in koji envs but not by
         # default on copr envs. Also helps to avoid bundling go-md2man in
