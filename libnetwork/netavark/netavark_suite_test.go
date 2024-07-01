@@ -14,12 +14,18 @@ import (
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/libnetwork/util"
 	"github.com/containers/common/pkg/config"
+	"github.com/containers/storage/pkg/unshare"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	gomegaTypes "github.com/onsi/gomega/types"
 )
 
 func TestNetavark(t *testing.T) {
+	// commit 26fc823c27 added a check for the userns env var in the network interface code,
+	// it does not actually check the uid
+	if unshare.IsRootless() {
+		t.Setenv(unshare.UsernsEnvName, "done")
+	}
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Netavark Suite")
 }

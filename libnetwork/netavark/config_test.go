@@ -1750,6 +1750,19 @@ var _ = Describe("Config", func() {
 		Expect(err.Error()).To(Equal("route gateway nil"))
 	})
 
+	It("create macvlan config with metric option", func() {
+		network := types.Network{
+			Driver: "macvlan",
+			Options: map[string]string{
+				"metric": "99",
+			},
+		}
+		network1, err := libpodNet.NetworkCreate(network, nil)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(network1.Options).To(HaveLen(1))
+		Expect(network1.Options["metric"]).To(Equal("99"))
+	})
+
 	It("create bridge config with no_default_route", func() {
 		network := types.Network{
 			Driver: "bridge",
