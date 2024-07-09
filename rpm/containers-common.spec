@@ -85,19 +85,21 @@ Summary: Extra dependencies for Podman and Buildah
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: container-network-stack
 Requires: oci-runtime
+Requires: nftables
+Requires: passt
+%if %{defined fedora}
+Requires: iptables
 Conflicts: podman < 5:5.0.0~rc4-1
 Recommends: composefs
 Recommends: crun
 Requires: (crun if fedora-release-identity-server)
 Requires: netavark >= %{netavark_epoch}:1.10.3-1
 Suggests: slirp4netns
-Requires: passt
-Requires: iptables
-Requires: nftables
 Recommends: qemu-user-static
 Requires: (qemu-user-static-aarch64 if fedora-release-identity-server)
 Requires: (qemu-user-static-arm if fedora-release-identity-server)
 Requires: (qemu-user-static-x86 if fedora-release-identity-server)
+%endif
 
 %description extra
 This subpackage will handle dependencies common to Podman and Buildah which are
