@@ -9,7 +9,7 @@ Containerfile(Dockerfile) - automate the steps of creating a container image
 The **Containerfile** is a configuration file that automates the steps of creating a container image. It is similar to a Makefile. Container engines (Podman, Buildah, Docker) read instructions from the **Containerfile** to automate the steps otherwise performed manually to create an image. To build an image, create a file called **Containerfile**.
 
 The **Containerfile** describes the steps taken to assemble the image. When the
-**Containerfile** has been created, call the `buildah bud`, `podman build`, `docker build` command,
+**Containerfile** has been created, call the `buildah build`, `podman build`, `docker build` command,
 using the path of context directory that contains **Containerfile** as the argument. Podman and Buildah default to **Containerfile** and will fall back to **Dockerfile**. Docker only will search for **Dockerfile** in the context directory.
 
 
@@ -31,7 +31,7 @@ A Containerfile is similar to a Makefile.
 # USAGE
 
   ```
-  buildah bud .
+  buildah build .
   podman build .
   ```
 
@@ -40,7 +40,7 @@ A Containerfile is similar to a Makefile.
   build.
 
   ```
-  buildah bud -t repository/tag .
+  buildah build -t repository/tag .
   podman build -t repository/tag .
   ```
 
@@ -219,7 +219,7 @@ Container engines pass secret the secret file into the build using the `--secret
 
 **--mount**=*type=secret,TYPE-SPECIFIC-OPTION[,...]*
 
-- `id` is the identifier for the secret passed into the `buildah bud --secret` or `podman build --secret`. This identifier is associated with the RUN --mount identifier to use in the Containerfile.
+- `id` is the identifier for the secret passed into the `buildah build --secret` or `podman build --secret`. This identifier is associated with the RUN --mount identifier to use in the Containerfile.
 
 - `dst`|`target`|`destination` rename the secret file to a specific file in the Containerfile RUN command to use.
 
@@ -236,7 +236,7 @@ RUN --mount=type=secret,id=mysecret,dst=/foobar cat /foobar
 The secret needs to be passed to the build using the --secret flag. The final image built does not container the secret file:
 
 ```
- buildah bud --no-cache --secret id=mysecret,src=mysecret.txt .
+ buildah build --no-cache --secret id=mysecret,src=mysecret.txt .
 ```
 
   -- The **RUN** instruction executes any commands in a new layer on top of the current
