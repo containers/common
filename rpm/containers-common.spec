@@ -27,6 +27,13 @@
 %define netavark_epoch 2
 %endif
 
+# CentOS Stream 10 / RHEL 10 will not have go-md2man so we'll need to
+# pre-generate manpages using Packit actions for these envs and not build them
+# in rpmbuild process.
+%if %{defined copr_build} || !%{defined rhel}
+%define build_manpages 1
+%endif
+
 Name: containers-common
 %if %{defined copr_build}
 Epoch: 102
@@ -47,7 +54,10 @@ BuildArch: noarch
 ExclusiveArch: %{golang_arches} noarch
 Summary: Common configuration and documentation for containers
 BuildRequires: git-core
+#
+%if %{defined build_manpages}
 BuildRequires: go-md2man
+%endif
 Provides: skopeo-containers = %{epoch}:%{version}-%{release}
 Requires: (container-selinux >= 2:2.162.1 if selinux-policy)
 Suggests: fuse-overlayfs
@@ -131,10 +141,9 @@ cp %{SOURCE14} storage.conf
 bash rpm/update-config-files.sh
 
 %build
-mkdir -p man5
-for i in docs/*.5.md; do
-    go-md2man -in $i -out man5/$(basename $i .md)
-done
+%if %{defined build_manpages}
+bash rpm/generate-manpages.sh
+%endif
 
 %install
 # install config and policy files for registries
