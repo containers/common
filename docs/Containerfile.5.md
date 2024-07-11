@@ -142,7 +142,7 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
 	      The relabel=private and Z options tell the engine to label the content with a private unshared label. Only the current container can use a private mount.
 
 	      Relabeling walks the file system under the mount and changes the label on each file, if the mount has thousands of inodes, this process takes a long time, delaying the start of the container.
-	      
+
 	      · rw, read-write: allows writes on the mount.
 
        Options specific to tmpfs:
@@ -475,7 +475,7 @@ The secret needs to be passed to the build using the --secret flag. The final im
   In the above example, the output of the **pwd** command is **a/b/c**.
 
 **ARG**
-   -- ARG <name>[=<default value>]
+   -- `ARG <name>[=<default value>]`
 
   The `ARG` instruction defines a variable that users can pass at build-time to
   the builder with the `podman build` and `buildah build` commands using the
