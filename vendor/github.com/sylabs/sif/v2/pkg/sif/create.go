@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2024, Sylabs Inc. All rights reserved.
 // Copyright (c) 2017, SingularityWare, LLC. All rights reserved.
 // Copyright (c) 2017, Yannick Cote <yhcote@gmail.com> All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the
@@ -55,6 +55,20 @@ func writeDataObjectAt(ws io.WriteSeeker, offsetUnaligned int64, di DescriptorIn
 	return nil
 }
 
+// calculatedDataSize calculates the size of the data section based on the in-use descriptors.
+func (f *FileImage) calculatedDataSize() int64 {
+	dataEnd := f.DataOffset()
+
+	f.WithDescriptors(func(d Descriptor) bool {
+		if objectEnd := d.Offset() + d.Size(); dataEnd < objectEnd {
+			dataEnd = objectEnd
+		}
+		return false
+	})
+
+	return dataEnd - f.DataOffset()
+}
+
 var (
 	errInsufficientCapacity = errors.New("insufficient descriptor capacity to add data object(s) to image")
 	errPrimaryPartition     = errors.New("image already contains a primary partition")
@@ -79,6 +93,8 @@ func (f *FileImage) writeDataObject(i int, di DescriptorInput, t time.Time) erro
 
 	d := &f.rds[i]
 	d.ID = uint32(i) + 1
+
+	f.h.DataSize = f.calculatedDataSize()
 
 	if err := writeDataObjectAt(f.rw, f.h.DataOffset+f.h.DataSize, di, t, d); err != nil {
 		return err
