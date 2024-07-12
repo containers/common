@@ -9,7 +9,7 @@ Containerfile(Dockerfile) - automate the steps of creating a container image
 The **Containerfile** is a configuration file that automates the steps of creating a container image. It is similar to a Makefile. Container engines (Podman, Buildah, Docker) read instructions from the **Containerfile** to automate the steps otherwise performed manually to create an image. To build an image, create a file called **Containerfile**.
 
 The **Containerfile** describes the steps taken to assemble the image. When the
-**Containerfile** has been created, call the `buildah bud`, `podman build`, `docker build` command,
+**Containerfile** has been created, call the `buildah build`, `podman build`, `docker build` command,
 using the path of context directory that contains **Containerfile** as the argument. Podman and Buildah default to **Containerfile** and will fall back to **Dockerfile**. Docker only will search for **Dockerfile** in the context directory.
 
 
@@ -31,7 +31,7 @@ A Containerfile is similar to a Makefile.
 # USAGE
 
   ```
-  buildah bud .
+  buildah build .
   podman build .
   ```
 
@@ -40,7 +40,7 @@ A Containerfile is similar to a Makefile.
   build.
 
   ```
-  buildah bud -t repository/tag .
+  buildah build -t repository/tag .
   podman build -t repository/tag .
   ```
 
@@ -142,7 +142,7 @@ Current supported mount TYPES are bind, cache, secret and tmpfs.
 	      The relabel=private and Z options tell the engine to label the content with a private unshared label. Only the current container can use a private mount.
 
 	      Relabeling walks the file system under the mount and changes the label on each file, if the mount has thousands of inodes, this process takes a long time, delaying the start of the container.
-	      
+
 	      · rw, read-write: allows writes on the mount.
 
        Options specific to tmpfs:
@@ -219,7 +219,7 @@ Container engines pass secret the secret file into the build using the `--secret
 
 **--mount**=*type=secret,TYPE-SPECIFIC-OPTION[,...]*
 
-- `id` is the identifier for the secret passed into the `buildah bud --secret` or `podman build --secret`. This identifier is associated with the RUN --mount identifier to use in the Containerfile.
+- `id` is the identifier for the secret passed into the `buildah build --secret` or `podman build --secret`. This identifier is associated with the RUN --mount identifier to use in the Containerfile.
 
 - `dst`|`target`|`destination` rename the secret file to a specific file in the Containerfile RUN command to use.
 
@@ -236,7 +236,7 @@ RUN --mount=type=secret,id=mysecret,dst=/foobar cat /foobar
 The secret needs to be passed to the build using the --secret flag. The final image built does not container the secret file:
 
 ```
- buildah bud --no-cache --secret id=mysecret,src=mysecret.txt .
+ buildah build --no-cache --secret id=mysecret,src=mysecret.txt .
 ```
 
   -- The **RUN** instruction executes any commands in a new layer on top of the current
@@ -475,7 +475,7 @@ The secret needs to be passed to the build using the --secret flag. The final im
   In the above example, the output of the **pwd** command is **a/b/c**.
 
 **ARG**
-   -- ARG <name>[=<default value>]
+   -- `ARG <name>[=<default value>]`
 
   The `ARG` instruction defines a variable that users can pass at build-time to
   the builder with the `podman build` and `buildah build` commands using the
@@ -605,6 +605,56 @@ The secret needs to be passed to the build using the --secret flag. The final im
   ```
   $ podman build --build-arg HTTPS_PROXY=https://my-proxy.example.com .
   ```
+
+**Platform/OS/Arch ARG**
+   -- `ARG <name>`
+
+  When building multi-arch manifest-lists or images for a foreign-architecture,
+  it's often helpful to have access to platform details within the `Containerfile`.
+  For example, when using a `RUN curl ...` command to install OS/Arch specific
+  binary into the image.  Or, if certain `RUN` operations are known incompatible
+  or non-performant when emulating a specific architecture.
+
+  There are several named `ARG` variables available. The purpose of each should be
+  self-evident by its name.  _However_, in all cases these ARG values are **not**
+  automatically populated.  You must always declare them within each `FROM` section
+  of the `Containerfile`.
+
+  The available `ARG <name>` variables are available with two prefixes:
+
+  * `TARGET...` variable names represent details about the currently running build
+    context (i.e. "inside" the container).  These are often the most useful:
+    * `TARGETOS`: For example `linux`
+    * `TARGETARCH`: For example `amd64`
+    * `TARGETPLATFORM`: For example `linux/amd64`
+    * `TARGETVARIANT`: Uncommonly used, specific to `TARGETARCH`
+  * `BUILD...` variable names signify details about the _host_ performing the build
+    (i.e. "outside" the container):
+    * `BUILDOS`: OS of host performing the build
+    * `BUILDARCH`: Arch of host performing the build
+    * `BUILDPLATFORM`: Combined OS/Arch of host performing the build
+    * `BUILDVARIANT`: Uncommonly used, specific to `BUILDARCH`
+
+  An example `Containerfile` that uses `TARGETARCH` to fetch an arch-specific binary could be:
+
+  ```
+  FROM busybox
+  ARG TARGETARCH
+  RUN curl -sSf -O https://example.com/downloads/bin-${TARGETARCH}.zip
+  ```
+
+  Assuming the host platform is `linux/amd64` and foreign-architecture emulation
+  enabled (e.g. `qemu-user-static`), then running the command:
+
+  ```
+  $ podman build --platform linux/s390x .
+  ```
+
+  Would end up running `curl` on `https://example.com/downloads/bin-s390x.zip` and producing
+  a container image suited for the the `linux/s390x` platform.  **Note:** Emulation isn't
+  strictly required, these special build-args will also function when building using
+  `podman farm build`.
+
 
 **ONBUILD**
   -- `ONBUILD [INSTRUCTION]`
