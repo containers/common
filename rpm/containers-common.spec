@@ -27,6 +27,10 @@
 %define netavark_epoch 2
 %endif
 
+%if %{defined fedora} || %{defined centos}
+%define install_gpg_key 1
+%endif
+
 Name: containers-common
 %if %{defined copr_build}
 Epoch: 102
@@ -195,13 +199,12 @@ ln -s ../../../..%{_sysconfdir}/yum.repos.d/redhat.repo %{buildroot}%{_datadir}/
 %dir %{_prefix}/lib/containers/storage/overlay-layers
 %{_prefix}/lib/containers/storage/overlay-images/images.lock
 %{_prefix}/lib/containers/storage/overlay-layers/layers.lock
-
 %config(noreplace) %{_sysconfdir}/containers/policy.json
 %config(noreplace) %{_sysconfdir}/containers/registries.conf
 %config(noreplace) %{_sysconfdir}/containers/registries.conf.d/000-shortnames.conf
-%if 0%{?fedora} || 0%{?centos}
-%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-%endif
+# This file is owned by redhat-release on RHEL and early testing on RHEL will
+# need packages built on CentOS Stream so it's best ghosted
+%ghost %{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 %config(noreplace) %{_sysconfdir}/containers/registries.d/default.yaml
 %config(noreplace) %{_sysconfdir}/containers/registries.d/registry.redhat.io.yaml
 %config(noreplace) %{_sysconfdir}/containers/registries.d/registry.access.redhat.com.yaml
