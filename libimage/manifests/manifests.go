@@ -676,14 +676,14 @@ func (l *list) Add(ctx context.Context, sys *types.SystemContext, ref types.Imag
 
 // This should provide for all of the ways to construct a manifest outlined in
 // https://github.com/opencontainers/image-spec/blob/main/manifest.md#guidelines-for-artifact-usage
-// * no blobs ￫ set ManifestArtifactType
-// * blobs, no configuration ￫ set ManifestArtifactType and possibly LayerMediaType, and provide file names
-// * blobs and configuration ￫ set ManifestArtifactType, possibly LayerMediaType, and ConfigDescriptor, and provide file names
+//   - no blobs ￫ set ManifestArtifactType
+//   - blobs, no configuration ￫ set ManifestArtifactType and possibly LayerMediaType, and provide file names
+//   - blobs and configuration ￫ set ManifestArtifactType, possibly LayerMediaType, and ConfigDescriptor, and provide file names
 //
 // The older style of describing artifacts:
-// * leave ManifestArtifactType blank
-// * specify a zero-length application/vnd.oci.image.config.v1+json config blob
-// * set LayerMediaType to a custom type
+//   - leave ManifestArtifactType blank
+//   - specify a zero-length application/vnd.oci.image.config.v1+json config blob
+//   - set LayerMediaType to a custom type
 //
 // When reading data produced elsewhere, note that newer tooling will produce
 // manifests with ArtifactType set.  If the manifest's ArtifactType is not set,
