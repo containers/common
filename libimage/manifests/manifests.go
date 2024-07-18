@@ -342,8 +342,7 @@ func (l *list) Reference(store storage.Store, multiple cp.ImageListSelection, in
 				}
 			}
 			// write the index that refers to this one artifact image
-			tag := "latest"
-			indexFile := filepath.Join(tmp, "index.json")
+			indexFile := filepath.Join(tmp, v1.ImageIndexFile)
 			index := v1.Index{
 				Versioned: imgspec.Versioned{
 					SchemaVersion: 2,
@@ -353,9 +352,6 @@ func (l *list) Reference(store storage.Store, multiple cp.ImageListSelection, in
 					MediaType: v1.MediaTypeImageManifest,
 					Digest:    artifactManifestDigest,
 					Size:      int64(len(contents)),
-					Annotations: map[string]string{
-						v1.AnnotationRefName: tag,
-					},
 				}},
 			}
 			indexBytes, err := json.Marshal(&index)
@@ -366,12 +362,16 @@ func (l *list) Reference(store storage.Store, multiple cp.ImageListSelection, in
 				return nil, fmt.Errorf("writing image index for OCI layout: %w", err)
 			}
 			// write the layout file
-			layoutFile := filepath.Join(tmp, "oci-layout")
-			if err := os.WriteFile(layoutFile, []byte(`{"imageLayoutVersion": "1.0.0"}`), 0o644); err != nil {
+			layoutFile := filepath.Join(tmp, v1.ImageLayoutFile)
+			layoutBytes, err := json.Marshal(v1.ImageLayout{Version: v1.ImageLayoutVersion})
+			if err != nil {
+				return nil, fmt.Errorf("encoding image layout for OCI layout: %w", err)
+			}
+			if err := os.WriteFile(layoutFile, layoutBytes, 0o644); err != nil {
 				return nil, fmt.Errorf("writing oci-layout file: %w", err)
 			}
 			// build the reference to this artifact image's oci layout
-			ref, err := ocilayout.NewReference(tmp, tag)
+			ref, err := ocilayout.NewReference(tmp, "")
 			if err != nil {
 				return nil, fmt.Errorf("creating ImageReference for artifact with files %q: %w", symlinkedFiles, err)
 			}
