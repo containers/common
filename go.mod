@@ -9,7 +9,7 @@ require (
 	github.com/checkpoint-restore/checkpointctl v1.2.1
 	github.com/checkpoint-restore/go-criu/v7 v7.1.0
 	github.com/containerd/containerd v1.7.18
-	github.com/containernetworking/cni v1.2.2
+	github.com/containernetworking/cni v1.2.3
 	github.com/containernetworking/plugins v1.5.1
 	github.com/containers/image/v5 v5.31.1-0.20240709200354-a857d09b5599
 	github.com/containers/ocicrypt v1.2.0
