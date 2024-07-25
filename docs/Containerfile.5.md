@@ -61,7 +61,7 @@ A Containerfile is similar to a Makefile.
   `FROM image@digest [AS <name>]`
 
   -- The **FROM** instruction sets the base image for subsequent instructions. A
-  valid Containerfile must have either **ARG** or *FROM** as its first instruction.
+  valid Containerfile must have either **ARG** or **FROM** as its first instruction.
   If **FROM** is not the first instruction in the file, it may only be preceded by
   one or more ARG instructions, which declare arguments that are used in the next FROM line in the Containerfile.
   The image can be any valid image. It is easy to start by pulling an image from the public
