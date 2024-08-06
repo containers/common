@@ -512,14 +512,14 @@ func (n *Netns) mountCNIVarDir() error {
 	return nil
 }
 
-func (n *Netns) runInner(toRun func() error) (err error) {
+func (n *Netns) runInner(toRun func() error, cleanup bool) (err error) {
 	nsRef, newNs, err := n.getOrCreateNetns()
 	if err != nil {
 		return err
 	}
 	defer nsRef.Close()
-	// If a new netns was created make sure to clean it up again on an error to not leak it.
-	if newNs {
+	// If a new netns was created make sure to clean it up again on an error to not leak it if requested.
+	if newNs && cleanup {
 		defer func() {
 			if err != nil {
 				if err := n.cleanup(); err != nil {
@@ -555,7 +555,7 @@ func (n *Netns) runInner(toRun func() error) (err error) {
 }
 
 func (n *Netns) Setup(nets int, toRun func() error) error {
-	err := n.runInner(toRun)
+	err := n.runInner(toRun, true)
 	if err != nil {
 		return err
 	}
@@ -564,7 +564,7 @@ func (n *Netns) Setup(nets int, toRun func() error) error {
 }
 
 func (n *Netns) Teardown(nets int, toRun func() error) error {
-	err := n.runInner(toRun)
+	err := n.runInner(toRun, true)
 	if err != nil {
 		return err
 	}
@@ -601,7 +601,7 @@ func (n *Netns) Run(lock *lockfile.LockFile, toRun func() error) error {
 		return err
 	}
 
-	inErr := n.runInner(inner)
+	inErr := n.runInner(inner, false)
 	// make sure to always reset the ref counter afterwards
 	count, err := refCount(n.dir, -1)
 	if err != nil {
@@ -611,9 +611,8 @@ func (n *Netns) Run(lock *lockfile.LockFile, toRun func() error) error {
 		logrus.Errorf("Failed to decrement ref count: %v", err)
 		return inErr
 	}
-	// runInner() already cleans up the netns when it created a new one on errors
-	// so we only need to do that if there was no error.
-	if inErr == nil && count == 0 {
+
+	if count == 0 {
 		err = n.cleanup()
 		if err != nil {
 			return wrapError("cleanup", err)
