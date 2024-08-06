@@ -564,25 +564,22 @@ func (n *Netns) Setup(nets int, toRun func() error) error {
 }
 
 func (n *Netns) Teardown(nets int, toRun func() error) error {
-	var multiErr *multierror.Error
-	count, countErr := refCount(n.dir, -nets)
-	if countErr != nil {
-		multiErr = multierror.Append(multiErr, countErr)
-	}
 	err := n.runInner(toRun)
 	if err != nil {
-		multiErr = multierror.Append(multiErr, err)
+		return err
+	}
+	// decrement only if teardown didn't fail, podman will call us again on errors so we should not double decrement
+	count, err := refCount(n.dir, -nets)
+	if err != nil {
+		return err
 	}
 
-	// only cleanup if the ref count did not throw an error
-	if count == 0 && countErr == nil {
-		err = n.cleanup()
-		if err != nil {
-			multiErr = multierror.Append(multiErr, wrapError("cleanup", err))
-		}
+	// cleanup when ref count is 0
+	if count == 0 {
+		return n.cleanup()
 	}
 
-	return multiErr.ErrorOrNil()
+	return nil
 }
 
 // Run any long running function in the userns.
