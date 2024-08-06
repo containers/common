@@ -181,7 +181,7 @@ func (n *Netns) cleanup() error {
 	if err := n.cleanupRootlessNetns(); err != nil {
 		multiErr = multierror.Append(multiErr, wrapError("kill network process", err))
 	}
-	if err := os.RemoveAll(n.dir); err != nil {
+	if err := os.RemoveAll(n.dir); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		multiErr = multierror.Append(multiErr, wrapError("remove rootless netns dir", err))
 	}
 
@@ -280,6 +280,11 @@ func (n *Netns) setupSlirp4netns(nsPath string) error {
 func (n *Netns) cleanupRootlessNetns() error {
 	pidFile := n.getPath(rootlessNetNsConnPidFile)
 	pid, err := readPidFile(pidFile)
+	// do not hard error if the file dos not exists, cleanup should be idempotent
+	if errors.Is(err, fs.ErrNotExist) {
+		logrus.Debugf("Rootless netns conn pid file does not exists %s", pidFile)
+		return nil
+	}
 	if err == nil {
 		// kill the slirp/pasta process so we do not leak it
 		err = unix.Kill(pid, unix.SIGTERM)
