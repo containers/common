@@ -85,10 +85,8 @@ Summary: Extra dependencies for Podman and Buildah
 Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: container-network-stack
 Requires: oci-runtime
-Requires: nftables
 Requires: passt
 %if %{defined fedora}
-Requires: iptables
 Conflicts: podman < 5:5.0.0~rc4-1
 Recommends: composefs
 Recommends: crun
