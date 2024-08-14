@@ -41,7 +41,6 @@ grep -q \"socket\", pkg/seccomp/seccomp.json || sed -i '/\"socketcall\",/i \
 
 FEDORA=$(rpm --eval '%{?fedora}')
 RHEL=$(rpm --eval '%{?rhel}')
-COPR=$(rpm --eval '%{?copr_username}')
 
 # Set search registries
 if [[ -n "$FEDORA" ]]; then
@@ -55,9 +54,9 @@ if [[ -n "$FEDORA" ]] || [[ "$RHEL" -ge 10 ]]; then
     sed -i -e '/^additionalimagestores\ =\ \[/a "\/usr\/lib\/containers\/storage",' storage.conf
 fi
 
-# Set these on Fedora Rawhide (41+), RHEL 10+, and on all COPR builds
+# Set these on Fedora Rawhide (41+) and RHEL 10+
 # regardless of distro
-if [[ -n "$COPR" ]] || [[ "$FEDORA" -gt 40 ]] || [[ "$RHEL" -ge 10 ]]; then
+if [[ "$FEDORA" -gt 40 ]] || [[ "$RHEL" -ge 10 ]]; then
     ensure pkg/config/containers.conf   compression_format  \"zstd:chunked\"
     ensure storage.conf pull_options    \{enable_partial_images\ =\ \"true\",\ use_hard_links\ =\ \"false\",\ ostree_repos=\"\",\ convert_images\ =\ \"false\"\}
     # Leave composefs disabled
