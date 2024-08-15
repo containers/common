@@ -3,6 +3,7 @@
 package libimage
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/reexec"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,6 +58,13 @@ func testNewRuntime(t *testing.T, options ...testNewRuntimeOptions) *Runtime {
 	return runtime
 }
 
+func testRuntimePullImage(t *testing.T, r *Runtime, ctx context.Context, imageName string) {
+	pullOptions := &PullOptions{}
+	pullOptions.Writer = os.Stdout
+	_, err := r.Pull(ctx, imageName, config.PullPolicyMissing, pullOptions)
+	require.NoError(t, err)
+}
+
 func TestTmpdir(t *testing.T) {
 	tmpStr := "TMPDIR"
 	tmp, tmpSet := os.LookupEnv(tmpStr)
@@ -92,5 +101,45 @@ func TestTmpdir(t *testing.T) {
 		os.Setenv(tmpStr, tmp)
 	} else {
 		os.Unsetenv(tmpStr)
+	}
+}
+
+func TestRuntimeListImagesAllImages(t *testing.T) {
+	runtime := testNewRuntime(t)
+	ctx := context.Background()
+
+	// Prefetch alpine, busybox.
+	testRuntimePullImage(t, runtime, ctx, "docker.io/library/alpine:latest")
+	testRuntimePullImage(t, runtime, ctx, "docker.io/library/busybox:latest")
+
+	images, err := runtime.ListImages(ctx, nil, nil)
+	require.NoError(t, err)
+
+	require.Len(t, images, 2)
+	var image_names []string
+	for _, i := range images {
+		image_names = append(image_names, i.Names()...)
+	}
+	assert.ElementsMatch(t,
+		image_names,
+		[]string{"docker.io/library/alpine:latest", "docker.io/library/busybox:latest"},
+	)
+}
+
+func TestRuntimeListImagesOneImage(t *testing.T) {
+	runtime := testNewRuntime(t)
+	ctx := context.Background()
+
+	// Prefetch alpine, busybox.
+	testRuntimePullImage(t, runtime, ctx, "docker.io/library/alpine:latest")
+	testRuntimePullImage(t, runtime, ctx, "docker.io/library/busybox:latest")
+
+	images, err := runtime.ListImages(ctx, []string{"alpine"}, nil)
+	require.NoError(t, err)
+
+	require.Len(t, images, 1)
+	for _, i := range images {
+		image_names := i.Names()
+		require.Contains(t, image_names, "docker.io/library/alpine:latest")
 	}
 }
