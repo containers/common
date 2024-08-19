@@ -25,6 +25,7 @@ import (
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
+	"github.com/landlock-lsm/go-landlock/landlock"
 	digest "github.com/opencontainers/go-digest"
 	ociSpec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sirupsen/logrus"
@@ -71,6 +72,38 @@ func (r *Runtime) Pull(ctx context.Context, name string, pullPolicy config.PullP
 	if err != nil {
 		return nil, err
 	}
+	rwDirs := func() []string {
+		rw := []string{}
+		for _, d := range []string{
+			r.store.RunRoot(),
+			r.store.GraphRoot(),
+			"/tmp",
+			"/var/tmp",
+			defaultConfig.Engine.ImageCopyTmpDir,
+			defaultConfig.Engine.TmpDir,
+		} {
+			if _, err := os.Stat(d); err == nil {
+				rw = append(rw, d)
+			}
+		}
+		return rw
+	}
+
+	if err := landlock.V5.BestEffort().RestrictPaths(
+		landlock.RODirs("/"),
+		landlock.RWDirs(rwDirs()...),
+	); err != nil {
+		return nil, err
+	}
+	defer func() {
+		err := landlock.V5.BestEffort().RestrictPaths(
+			landlock.RWDirs("/"),
+		)
+		if err != nil {
+			logrus.Errorf("failed to reset landlock to read/write: %v", err)
+		}
+	}()
+
 	if options.MaxRetries == nil {
 		options.MaxRetries = &defaultConfig.Engine.Retry
 	}

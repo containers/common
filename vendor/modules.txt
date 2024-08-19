@@ -412,6 +412,10 @@ github.com/klauspost/pgzip
 # github.com/kr/fs v0.1.0
 ## explicit
 github.com/kr/fs
+# github.com/landlock-lsm/go-landlock v0.0.0-20240715193425-db0c8d6f1dff
+## explicit; go 1.18
+github.com/landlock-lsm/go-landlock/landlock
+github.com/landlock-lsm/go-landlock/landlock/syscall
 # github.com/letsencrypt/boulder v0.0.0-20240418210053-89b07f4543e0
 ## explicit; go 1.21
 github.com/letsencrypt/boulder/core
@@ -842,6 +846,9 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
+# kernel.org/pub/linux/libs/security/libcap/psx v1.2.70
+## explicit; go 1.11
+kernel.org/pub/linux/libs/security/libcap/psx
 # sigs.k8s.io/yaml v1.4.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
