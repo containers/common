@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/containerd/containerd/platforms"
+	"github.com/containerd/platforms"
 	"github.com/containers/common/libimage/platform"
 	"github.com/containers/image/v5/docker/reference"
 	"github.com/containers/image/v5/manifest"
