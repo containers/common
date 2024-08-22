@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/containerd/containerd/platforms"
+	"github.com/containerd/platforms"
 	"github.com/containers/common/pkg/manifests"
 	cp "github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/directory"
