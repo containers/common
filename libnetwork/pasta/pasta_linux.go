@@ -50,16 +50,16 @@ type SetupOptions struct {
 	ExtraOptions []string
 }
 
-func Setup(opts *SetupOptions) error {
-	_, err := Setup2(opts)
-	return err
+// Setup2 alias for Setup()
+func Setup2(opts *SetupOptions) (*SetupResult, error) {
+	return Setup(opts)
 }
 
-// Setup2 start the pasta process for the given netns.
+// Setup start the pasta process for the given netns.
 // The pasta binary is looked up in the HelperBinariesDir and $PATH.
 // Note that there is no need for any special cleanup logic, the pasta
 // process will automatically exit when the netns path is deleted.
-func Setup2(opts *SetupOptions) (*SetupResult, error) {
+func Setup(opts *SetupOptions) (*SetupResult, error) {
 	path, err := opts.Config.FindHelperBinary(BinaryName, true)
 	if err != nil {
 		return nil, fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
