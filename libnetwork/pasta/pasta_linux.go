@@ -72,23 +72,38 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 
 	logrus.Debugf("pasta arguments: %s", strings.Join(cmdArgs, " "))
 
-	// pasta forks once ready, and quits once we delete the target namespace
-	out, err := exec.Command(path, cmdArgs...).CombinedOutput()
-	if err != nil {
-		exitErr := &exec.ExitError{}
-		if errors.As(err, &exitErr) {
-			return nil, fmt.Errorf("pasta failed with exit code %d:\n%s",
-				exitErr.ExitCode(), string(out))
+	for {
+		// pasta forks once ready, and quits once we delete the target namespace
+		out, err := exec.Command(path, cmdArgs...).CombinedOutput()
+		if err != nil {
+			exitErr := &exec.ExitError{}
+			if errors.As(err, &exitErr) {
+				// special backwards compat check, --map-guest-addr was added in pasta version 20240814 so we
+				// cannot hard require it yet. Once we are confident that the update is most distros we can remove it.
+				if exitErr.ExitCode() == 1 &&
+					strings.Contains(string(out), "unrecognized option '"+mapGuestAddrOpt) &&
+					len(mapGuestAddrIPs) == 1 && mapGuestAddrIPs[0] == mapGuestAddrIpv4 {
+					// we did add the default --map-guest-addr option, if users set something different we want
+					// to get to the error below. We have to unset mapGuestAddrIPs here to avoid a infinite loop.
+					mapGuestAddrIPs = nil
+					// Trim off last two args which are --map-guest-addr 169.254.1.2.
+					cmdArgs = cmdArgs[:len(cmdArgs)-2]
+					continue
+				}
+				return nil, fmt.Errorf("pasta failed with exit code %d:\n%s",
+					exitErr.ExitCode(), string(out))
+			}
+			return nil, fmt.Errorf("failed to start pasta: %w", err)
 		}
-		return nil, fmt.Errorf("failed to start pasta: %w", err)
-	}
 
-	if len(out) > 0 {
-		// TODO: This should be warning but right now pasta still prints
-		// things with --quiet that we do not care about.
-		// For now info is fine and we can bump it up later, it is only a
-		// nice to have.
-		logrus.Infof("pasta logged warnings: %q", string(out))
+		if len(out) > 0 {
+			// TODO: This should be warning but right now pasta still prints
+			// things with --quiet that we do not care about.
+			// For now info is fine and we can bump it up later, it is only a
+			// nice to have.
+			logrus.Infof("pasta logged warnings: %q", string(out))
+		}
+		break
 	}
 
 	var ipv4, ipv6 bool
@@ -244,7 +259,7 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, []string, error) {
 
 	cmdArgs = append(cmdArgs, "--netns", opts.Netns)
 
-	// do this as last arg
+	// do this as last arg so we can easily trim them off in the error case when we have an older version
 	if len(mapGuestAddrIPs) == 0 {
 		// the user did not request custom --map-guest-addr so add our own so that we can use this
 		// for our own host.containers.internal host entry.
