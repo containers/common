@@ -26,11 +26,16 @@ import (
 )
 
 const (
-	dnsForwardOpt = "--dns-forward"
+	dnsForwardOpt   = "--dns-forward"
+	mapGuestAddrOpt = "--map-guest-addr"
 
 	// dnsForwardIpv4 static ip used as nameserver address inside the netns,
 	// given this is a "link local" ip it should be very unlikely that it causes conflicts
 	dnsForwardIpv4 = "169.254.1.1"
+
+	// mapGuestAddrIpv4 static ip used as forwarder address inside the netns to reach the host,
+	// given this is a "link local" ip it should be very unlikely that it causes conflicts
+	mapGuestAddrIpv4 = "169.254.1.2"
 )
 
 type SetupOptions struct {
@@ -60,7 +65,7 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 		return nil, fmt.Errorf("could not find pasta, the network namespace can't be configured: %w", err)
 	}
 
-	cmdArgs, dnsForwardIPs, err := createPastaArgs(opts)
+	cmdArgs, dnsForwardIPs, mapGuestAddrIPs, err := createPastaArgs(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -112,19 +117,27 @@ func Setup2(opts *SetupOptions) (*SetupResult, error) {
 	}
 
 	result.IPv6 = ipv6
-	for _, ip := range dnsForwardIPs {
-		ipp := net.ParseIP(ip)
-		// add the namesever ip only if the address family matches
-		if ipv4 && util.IsIPv4(ipp) || ipv6 && util.IsIPv6(ipp) {
-			result.DNSForwardIPs = append(result.DNSForwardIPs, ip)
-		}
-	}
+	result.DNSForwardIPs = filterIpFamily(dnsForwardIPs, ipv4, ipv6)
+	result.MapGuestAddrIPs = filterIpFamily(mapGuestAddrIPs, ipv4, ipv6)
 
 	return result, nil
 }
 
-// createPastaArgs creates the pasta arguments, it returns the args to be passed to pasta(1) and as second arg the dns forward ips used.
-func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
+func filterIpFamily(ips []string, ipv4, ipv6 bool) []string {
+	var result []string
+	for _, ip := range ips {
+		ipp := net.ParseIP(ip)
+		// add the ip only if the address family matches
+		if ipv4 && util.IsIPv4(ipp) || ipv6 && util.IsIPv6(ipp) {
+			result = append(result, ip)
+		}
+	}
+	return result
+}
+
+// createPastaArgs creates the pasta arguments, it returns the args to be passed to pasta(1)
+// and as second arg the dns forward ips used. As third arg the map guest addr ips used.
+func createPastaArgs(opts *SetupOptions) ([]string, []string, []string, error) {
 	noTCPInitPorts := true
 	noUDPInitPorts := true
 	noTCPNamespacePorts := true
@@ -149,6 +162,7 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 	})
 
 	var dnsForwardIPs []string
+	var mapGuestAddrIPs []string
 	for i, opt := range cmdArgs {
 		switch opt {
 		case "-t", "--tcp-ports":
@@ -165,6 +179,10 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 			// if there is no arg after it pasta will likely error out anyway due invalid cli args
 			if len(cmdArgs) > i+1 {
 				dnsForwardIPs = append(dnsForwardIPs, cmdArgs[i+1])
+			}
+		case mapGuestAddrOpt:
+			if len(cmdArgs) > i+1 {
+				mapGuestAddrIPs = append(mapGuestAddrIPs, cmdArgs[i+1])
 			}
 		}
 	}
@@ -186,7 +204,7 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 				noUDPInitPorts = false
 				cmdArgs = append(cmdArgs, "-u")
 			default:
-				return nil, nil, fmt.Errorf("can't forward protocol: %s", protocol)
+				return nil, nil, nil, fmt.Errorf("can't forward protocol: %s", protocol)
 			}
 
 			arg := fmt.Sprintf("%s%d-%d:%d-%d", addr,
@@ -226,5 +244,13 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, error) {
 
 	cmdArgs = append(cmdArgs, "--netns", opts.Netns)
 
-	return cmdArgs, dnsForwardIPs, nil
+	// do this as last arg
+	if len(mapGuestAddrIPs) == 0 {
+		// the user did not request custom --map-guest-addr so add our own so that we can use this
+		// for our own host.containers.internal host entry.
+		cmdArgs = append(cmdArgs, mapGuestAddrOpt, mapGuestAddrIpv4)
+		mapGuestAddrIPs = append(mapGuestAddrIPs, mapGuestAddrIpv4)
+	}
+
+	return cmdArgs, dnsForwardIPs, mapGuestAddrIPs, nil
 }

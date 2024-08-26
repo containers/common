@@ -20,11 +20,12 @@ func makeSetupOptions(configArgs, extraArgs []string, ports []types.PortMapping)
 
 func Test_createPastaArgs(t *testing.T) {
 	tests := []struct {
-		name           string
-		input          *SetupOptions
-		wantArgs       []string
-		wantDnsForward []string
-		wantErr        string
+		name             string
+		input            *SetupOptions
+		wantArgs         []string
+		wantDnsForward   []string
+		wantMapGuestAddr []string
+		wantErr          string
 	}{
 		{
 			name: "default options",
@@ -36,8 +37,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "--dns-forward", dnsForwardIpv4, "-t", "none", "-u", "none",
 				"-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "basic port",
@@ -49,8 +52,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-t", "80-80:80-80", "--dns-forward", dnsForwardIpv4, "-u", "none",
 				"-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "port range",
@@ -62,8 +67,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-t", "80-82:80-82", "--dns-forward", dnsForwardIpv4, "-u", "none",
 				"-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "different host and container port",
@@ -75,8 +82,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-t", "80-80:60-60", "--dns-forward", dnsForwardIpv4, "-u", "none",
 				"-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "tcp and udp port",
@@ -91,8 +100,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-t", "80-80:60-60", "-u", "100-100:100-100", "--dns-forward",
 				dnsForwardIpv4, "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "two tcp ports",
@@ -107,8 +118,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-t", "80-80:60-60", "-t", "100-100:100-100", "--dns-forward",
 				dnsForwardIpv4, "-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "invalid port",
@@ -131,8 +144,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-i", "eth0", "-n", "24", "--dns-forward", dnsForwardIpv4,
 				"-t", "none", "-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "config options before extra options",
@@ -144,8 +159,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-i", "eth0", "-n", "24", "--dns-forward", dnsForwardIpv4,
 				"-t", "none", "-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "-T option",
@@ -157,8 +174,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-T", "80", "--dns-forward", dnsForwardIpv4,
 				"-t", "none", "-u", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "--tcp-ns option",
@@ -170,8 +189,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "--tcp-ns", "80", "--dns-forward", dnsForwardIpv4,
 				"-t", "none", "-u", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "--map-gw option",
@@ -183,8 +204,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "--dns-forward", dnsForwardIpv4, "-t", "none",
 				"-u", "none", "-T", "none", "-U", "none", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			// https://github.com/containers/podman/issues/22477
@@ -196,8 +219,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-T", "80", "--dns-forward", dnsForwardIpv4,
 				"-t", "none", "-u", "none", "-U", "none", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "two --map-gw",
@@ -209,8 +234,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-T", "80", "--dns-forward", dnsForwardIpv4,
 				"-t", "none", "-u", "none", "-U", "none", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "--dns-forward option",
@@ -222,8 +249,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "--dns-forward", "192.168.255.255", "-t", "none",
 				"-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{"192.168.255.255"},
+			wantDnsForward:   []string{"192.168.255.255"},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "two --dns-forward options",
@@ -235,8 +264,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "--dns-forward", "192.168.255.255", "--dns-forward", "::1", "-t", "none",
 				"-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{"192.168.255.255", "::1"},
+			wantDnsForward:   []string{"192.168.255.255", "::1"},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "port and custom opt",
@@ -248,8 +279,10 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "-i", "eth0", "-t", "80-80:80-80", "--dns-forward", dnsForwardIpv4,
 				"-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+				mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
 		},
 		{
 			name: "Add verbose logging",
@@ -261,14 +294,45 @@ func Test_createPastaArgs(t *testing.T) {
 			wantArgs: []string{
 				"--config-net", "--log-file=/tmp/log", "--trace", "--debug",
 				"--dns-forward", dnsForwardIpv4, "-t", "none", "-u", "none", "-T", "none", "-U", "none",
-				"--no-map-gw", "--netns", "netns123",
+				"--no-map-gw", "--netns", "netns123", mapGuestAddrOpt, mapGuestAddrIpv4,
 			},
-			wantDnsForward: []string{dnsForwardIpv4},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{mapGuestAddrIpv4},
+		},
+		{
+			name: "--map-guest-addr option",
+			input: makeSetupOptions(
+				nil,
+				[]string{mapGuestAddrOpt, "192.168.255.255"},
+				nil,
+			),
+			wantArgs: []string{
+				"--config-net", mapGuestAddrOpt, "192.168.255.255", dnsForwardOpt, dnsForwardIpv4,
+				"-t", "none", "-u", "none", "-T", "none", "-U", "none", "--no-map-gw", "--quiet",
+				"--netns", "netns123",
+			},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{"192.168.255.255"},
+		},
+		{
+			name: "two --map-guest-addr options",
+			input: makeSetupOptions(
+				nil,
+				[]string{mapGuestAddrOpt, "192.168.255.255", mapGuestAddrOpt, "::1"},
+				nil,
+			),
+			wantArgs: []string{
+				"--config-net", mapGuestAddrOpt, "192.168.255.255", mapGuestAddrOpt, "::1",
+				dnsForwardOpt, dnsForwardIpv4, "-t", "none", "-u", "none", "-T", "none",
+				"-U", "none", "--no-map-gw", "--quiet", "--netns", "netns123",
+			},
+			wantDnsForward:   []string{dnsForwardIpv4},
+			wantMapGuestAddr: []string{"192.168.255.255", "::1"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			args, dnsForward, err := createPastaArgs(tt.input)
+			args, dnsForward, mapGuestAddr, err := createPastaArgs(tt.input)
 			if tt.wantErr != "" {
 				assert.EqualError(t, err, tt.wantErr, "createPastaArgs error")
 				return
@@ -276,6 +340,7 @@ func Test_createPastaArgs(t *testing.T) {
 			assert.NoError(t, err, "expect no createPastaArgs error")
 			assert.Equal(t, tt.wantArgs, args, "check arguments")
 			assert.Equal(t, tt.wantDnsForward, dnsForward, "check dns forward")
+			assert.Equal(t, tt.wantMapGuestAddr, mapGuestAddr, "check map guest addr")
 		})
 	}
 }
