@@ -97,7 +97,7 @@ func TestFilterReference(t *testing.T) {
 		listOptions := &ListImagesOptions{
 			Filters: filters,
 		}
-		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		listedImages, err := runtime.ListImages(ctx, listOptions)
 		require.NoError(t, err, "%v", test)
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
 	}
@@ -134,12 +134,12 @@ func TestFilterDigest(t *testing.T) {
 		listOptions := &ListImagesOptions{
 			Filters: []string{"digest=" + test.filter},
 		}
-		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		listedImages, err := runtime.ListImages(ctx, listOptions)
 		require.NoError(t, err, "%v", test)
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filter, listedImages)
 		require.Equal(t, listedImages[0].ID(), test.id)
 	}
-	_, err = runtime.ListImages(ctx, nil, &ListImagesOptions{
+	_, err = runtime.ListImages(ctx, &ListImagesOptions{
 		Filters: []string{"digest=this-is-not-a-digest"},
 	})
 	assert.Error(t, err)
@@ -176,7 +176,7 @@ func TestFilterID(t *testing.T) {
 		listOptions := &ListImagesOptions{
 			Filters: []string{"id=" + test.filter},
 		}
-		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		listedImages, err := runtime.ListImages(ctx, listOptions)
 		require.NoError(t, err, "%v", test)
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filter, listedImages)
 		require.Equal(t, listedImages[0].ID(), test.id)
@@ -229,7 +229,7 @@ func TestFilterManifest(t *testing.T) {
 		listOptions := &ListImagesOptions{
 			Filters: test.filters,
 		}
-		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		listedImages, err := runtime.ListImages(ctx, listOptions)
 		require.NoError(t, err, "%v", test)
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
 	}
@@ -281,7 +281,7 @@ func TestFilterAfterSinceBeforeUntil(t *testing.T) {
 		listOptions := &ListImagesOptions{
 			Filters: test.filters,
 		}
-		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		listedImages, err := runtime.ListImages(ctx, listOptions)
 		require.NoError(t, err, "%v", test)
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
 	}
@@ -326,7 +326,7 @@ func TestFilterIdLabel(t *testing.T) {
 		listOptions := &ListImagesOptions{
 			Filters: test.filters,
 		}
-		listedImages, err := runtime.ListImages(ctx, nil, listOptions)
+		listedImages, err := runtime.ListImages(ctx, listOptions)
 		require.NoError(t, err, "%v", test)
 		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
 	}

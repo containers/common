@@ -31,7 +31,7 @@ type ImageDiskUsage struct {
 // storage.  Note that a single image may yield multiple usage reports, one for
 // each repository tag.
 func (r *Runtime) DiskUsage(ctx context.Context) ([]ImageDiskUsage, int64, error) {
-	images, err := r.ListImages(ctx, nil, nil)
+	images, err := r.ListImages(ctx, nil)
 	if err != nil {
 		return nil, -1, err
 	}

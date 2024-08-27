@@ -479,7 +479,7 @@ func (r *Runtime) lookupImageInDigestsAndRepoTags(name string, possiblyUnqualifi
 		return nil, "", fmt.Errorf("%s: %w (could not cast to tagged)", originalName, storage.ErrImageUnknown)
 	}
 
-	allImages, err := r.ListImages(context.Background(), nil, nil)
+	allImages, err := r.ListImages(context.Background(), nil)
 	if err != nil {
 		return nil, "", err
 	}
@@ -567,30 +567,34 @@ type ListImagesOptions struct {
 	SetListData bool
 }
 
-// ListImages lists images in the local container storage.  If names are
-// specified, only images with the specified names are looked up and filtered.
-func (r *Runtime) ListImages(ctx context.Context, names []string, options *ListImagesOptions) ([]*Image, error) {
+// ListImagesByNames lists the images in the local container storage by specified names
+// The name lookups use the LookupImage semantics.
+func (r *Runtime) ListImagesByNames(names []string) ([]*Image, error) {
+	images := []*Image{}
+	for _, name := range names {
+		image, _, err := r.LookupImage(name, nil)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, image)
+	}
+	return images, nil
+}
+
+// ListImages lists the images in the local container storage and filter the images by ListImagesOptions
+func (r *Runtime) ListImages(ctx context.Context, options *ListImagesOptions) ([]*Image, error) {
 	if options == nil {
 		options = &ListImagesOptions{}
 	}
 
 	var images []*Image
-	if len(names) > 0 {
-		for _, name := range names {
-			image, _, err := r.LookupImage(name, nil)
-			if err != nil {
-				return nil, err
-			}
-			images = append(images, image)
-		}
-	} else {
-		storageImages, err := r.store.Images()
-		if err != nil {
-			return nil, err
-		}
-		for i := range storageImages {
-			images = append(images, r.storageToImage(&storageImages[i], nil))
-		}
+
+	storageImages, err := r.store.Images()
+	if err != nil {
+		return nil, err
+	}
+	for i := range storageImages {
+		images = append(images, r.storageToImage(&storageImages[i], nil))
 	}
 
 	filtered, err := r.filterImages(ctx, images, options)
@@ -753,7 +757,7 @@ func (r *Runtime) RemoveImages(ctx context.Context, names []string, options *Rem
 			IsExternalContainerFunc: options.IsExternalContainerFunc,
 			Filters:                 options.Filters,
 		}
-		filteredImages, err := r.ListImages(ctx, nil, options)
+		filteredImages, err := r.ListImages(ctx, options)
 		if err != nil {
 			appendError(err)
 			return nil, rmErrors

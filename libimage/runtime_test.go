@@ -112,7 +112,7 @@ func TestRuntimeListImagesAllImages(t *testing.T) {
 	testRuntimePullImage(t, runtime, ctx, "docker.io/library/alpine:latest")
 	testRuntimePullImage(t, runtime, ctx, "docker.io/library/busybox:latest")
 
-	images, err := runtime.ListImages(ctx, nil, nil)
+	images, err := runtime.ListImages(ctx, nil)
 	require.NoError(t, err)
 
 	require.Len(t, images, 2)
@@ -126,7 +126,7 @@ func TestRuntimeListImagesAllImages(t *testing.T) {
 	)
 }
 
-func TestRuntimeListImagesOneImage(t *testing.T) {
+func TestRuntimeListImagesByNames(t *testing.T) {
 	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
@@ -134,12 +134,18 @@ func TestRuntimeListImagesOneImage(t *testing.T) {
 	testRuntimePullImage(t, runtime, ctx, "docker.io/library/alpine:latest")
 	testRuntimePullImage(t, runtime, ctx, "docker.io/library/busybox:latest")
 
-	images, err := runtime.ListImages(ctx, []string{"alpine"}, nil)
-	require.NoError(t, err)
-
-	require.Len(t, images, 1)
-	for _, i := range images {
-		image_names := i.Names()
-		require.Contains(t, image_names, "docker.io/library/alpine:latest")
+	for _, test := range []struct {
+		name     string
+		fullName string
+	}{
+		{"alpine", "docker.io/library/alpine:latest"},
+		{"busybox", "docker.io/library/busybox:latest"},
+	} {
+		images, err := runtime.ListImagesByNames([]string{test.name})
+		require.NoError(t, err)
+		require.Len(t, images, 1)
+		require.Contains(t, images[0].Names(), test.fullName)
 	}
+	_, err := runtime.ListImagesByNames([]string{""})
+	require.Error(t, err)
 }

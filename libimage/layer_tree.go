@@ -98,7 +98,7 @@ func (r *Runtime) layerTree(ctx context.Context, images []*Image) (*layerTree, e
 	}
 
 	if images == nil {
-		images, err = r.ListImages(ctx, nil, nil)
+		images, err = r.ListImages(ctx, nil)
 		if err != nil {
 			return nil, err
 		}

@@ -101,7 +101,7 @@ func TestSave(t *testing.T) {
 		if strings.HasSuffix(test.format, "-dir") {
 			continue
 		}
-		_, err = runtime.ListImages(ctx, namesAndTags, nil)
+		_, err = runtime.ListImagesByNames(namesAndTags)
 		require.NoError(t, err, "%v", test)
 	}
 }
