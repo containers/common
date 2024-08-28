@@ -161,6 +161,23 @@ func (r *Runtime) storageToImage(storageImage *storage.Image, ref types.ImageRef
 	}
 }
 
+// getImagesAndLayers obtains consistent slices of Image and storage.Layer
+func (r *Runtime) getImagesAndLayers() ([]*Image, []storage.Layer, error) {
+	snapshot, err := r.store.MultiList(
+		storage.MultiListOptions{
+			Images: true,
+			Layers: true,
+		})
+	if err != nil {
+		return nil, nil, err
+	}
+	images := []*Image{}
+	for i := range snapshot.Images {
+		images = append(images, r.storageToImage(&snapshot.Images[i], nil))
+	}
+	return images, snapshot.Layers, nil
+}
+
 // Exists returns true if the specified image exists in the local containers
 // storage.  Note that it may return false if an image corrupted.
 func (r *Runtime) Exists(name string) (bool, error) {
@@ -617,7 +634,7 @@ func (r *Runtime) ListImages(ctx context.Context, options *ListImagesOptions) ([
 
 	var tree *layerTree
 	if needsLayerTree {
-		tree, err = r.layerTree(ctx, images)
+		tree, err = r.newLayerTreeFromData(images, snapshot.Layers)
 		if err != nil {
 			return nil, err
 		}
