@@ -587,23 +587,26 @@ func (r *Runtime) ListImages(ctx context.Context, options *ListImagesOptions) ([
 		options = &ListImagesOptions{}
 	}
 
-	var images []*Image
-
-	storageImages, err := r.store.Images()
-	if err != nil {
-		return nil, err
-	}
-	for i := range storageImages {
-		images = append(images, r.storageToImage(&storageImages[i], nil))
-	}
-
-	filtered, err := r.filterImages(ctx, images, options)
+	filters, needsLayerTree, err := r.compileImageFilters(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	if !options.SetListData {
-		return filtered, nil
+	if options.SetListData {
+		needsLayerTree = true
+	}
+
+	snapshot, err := r.store.MultiList(
+		storage.MultiListOptions{
+			Images: true,
+			Layers: needsLayerTree,
+		})
+	if err != nil {
+		return nil, err
+	}
+	images := []*Image{}
+	for i := range snapshot.Images {
+		images = append(images, r.storageToImage(&snapshot.Images[i], nil))
 	}
 
 	// If explicitly requested by the user, pre-compute and cache the
@@ -612,9 +615,21 @@ func (r *Runtime) ListImages(ctx context.Context, options *ListImagesOptions) ([
 	// as the layer tree will computed once for all instead of once for
 	// each individual image (see containers/podman/issues/17828).
 
-	tree, err := r.layerTree(ctx, images)
+	var tree *layerTree
+	if needsLayerTree {
+		tree, err = r.layerTree(ctx, images)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	filtered, err := r.filterImages(ctx, images, filters, tree)
 	if err != nil {
 		return nil, err
+	}
+
+	if !options.SetListData {
+		return filtered, nil
 	}
 
 	for i := range filtered {
