@@ -97,11 +97,12 @@ func Setup(opts *SetupOptions) (*SetupResult, error) {
 		}
 
 		if len(out) > 0 {
-			// TODO: This should be warning but right now pasta still prints
-			// things with --quiet that we do not care about.
-			// For now info is fine and we can bump it up later, it is only a
+			// TODO: This should be warning but as of August 2024 pasta still prints
+			// things with --quiet that we do not care about. In podman CI I still see
+			// "Couldn't get any nameserver address" so until this is fixed we cannot
+			// enable it. For now info is fine and we can bump it up later, it is only a
 			// nice to have.
-			logrus.Infof("pasta logged warnings: %q", string(out))
+			logrus.Infof("pasta logged warnings: %q", strings.TrimSpace(string(out)))
 		}
 		break
 	}
