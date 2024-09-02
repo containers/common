@@ -30,7 +30,7 @@ const (
 
 	// dnsForwardIpv4 static ip used as nameserver address inside the netns,
 	// given this is a "link local" ip it should be very unlikely that it causes conflicts
-	dnsForwardIpv4 = "169.254.0.1"
+	dnsForwardIpv4 = "169.254.1.1"
 )
 
 type SetupOptions struct {
