@@ -22,6 +22,10 @@ type HostContainersInternalOptions struct {
 	// Exclude are then ips that should not be returned, this is
 	// useful to prevent returning the same ip as in the container.
 	Exclude []net.IP
+	// PreferIP is a ip that should be used if set but it has a
+	// lower priority than the containers.conf config option.
+	// This is used for the pasta --map-guest-addr ip.
+	PreferIP string
 }
 
 // GetHostContainersInternalIP returns the host.containers.internal ip
@@ -38,6 +42,12 @@ func GetHostContainersInternalIP(opts HostContainersInternalOptions) string {
 	default:
 		return opts.Conf.Containers.HostContainersInternalIP
 	}
+
+	// caller has a specific ip it prefers
+	if opts.PreferIP != "" {
+		return opts.PreferIP
+	}
+
 	ip := ""
 	// Only use the bridge ip when root, as rootless the interfaces are created
 	// inside the special netns and not the host so we cannot use them.
