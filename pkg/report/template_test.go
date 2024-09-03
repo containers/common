@@ -56,7 +56,6 @@ func TestNormalizeFormat(t *testing.T) {
 	}
 
 	for _, tc := range testCase {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, tc.expected, NormalizeFormat(tc.input))
@@ -75,7 +74,6 @@ func TestTemplate_Parse(t *testing.T) {
 
 	var buf bytes.Buffer
 	for _, tc := range testCase {
-		tc := tc
 		t.Run(tc, func(t *testing.T) {
 			tmpl, e := NewTemplate("TestTemplate").Parse(tc)
 			assert.NoError(t, e)

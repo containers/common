@@ -33,7 +33,6 @@ func TestIsJSON(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		label := "JSONFormat/" + strings.ReplaceAll(tc.input, " ", "_")
 		t.Run(label, func(t *testing.T) {
 			t.Parallel()

@@ -290,7 +290,6 @@ func TestNew(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			baseHostFile := tt.baseFileName
 			if !tt.noWriteBaseFile {
@@ -364,7 +363,6 @@ func TestAdd(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.CreateTemp(t.TempDir(), "hosts")
 			assert.NoErrorf(t, err, "failed to create base host file: %v", err)
@@ -460,7 +458,6 @@ func TestAddIfExists(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.CreateTemp(t.TempDir(), "hosts")
 			assert.NoErrorf(t, err, "failed to create base host file: %v", err)
@@ -523,7 +520,6 @@ func TestRemove(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.CreateTemp(t.TempDir(), "hosts")
 			assert.NoErrorf(t, err, "failed to create base host file: %v", err)

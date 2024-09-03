@@ -35,7 +35,6 @@ func TestGenerateFilterFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			for _, entry := range tt.args.keys {
 				if _, err := createFilterFuncs(entry, tt.args.labels); err != nil {

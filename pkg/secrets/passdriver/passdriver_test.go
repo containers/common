@@ -60,7 +60,6 @@ func TestStoreAndLookup(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			driver := setupDriver(t)
 			err := driver.Store(tc.key, tc.value)
@@ -113,7 +112,6 @@ func TestLookup(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			val, err := driver.Lookup(tc.key)
 			if tc.expErr == nil {
@@ -162,7 +160,6 @@ func TestDelete(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			err := driver.Delete(tc.key)
 			if tc.expErr != nil {

@@ -209,7 +209,7 @@ func testStringSlice(t *testing.T, values [][]string, set func(List, digest.Dige
 	}
 }
 
-func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Digest, map[string]string) error, clear func(List, *digest.Digest) error, get func(List, *digest.Digest) (map[string]string, error)) {
+func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Digest, map[string]string) error, clearFunc func(List, *digest.Digest) error, get func(List, *digest.Digest) (map[string]string, error)) {
 	bytes, err := os.ReadFile(ociFixture)
 	if err != nil {
 		t.Fatalf("error loading blob: %v", err)
@@ -221,7 +221,7 @@ func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Di
 	instance := expectedInstance
 	for _, instanceDigest := range []*digest.Digest{nil, &instance} {
 		for _, testMap := range values {
-			if err = clear(list, instanceDigest); err != nil {
+			if err = clearFunc(list, instanceDigest); err != nil {
 				t.Fatalf("error clearing %v: %v", testMap, err)
 			}
 			if err = set(list, instanceDigest, testMap); err != nil {
@@ -247,7 +247,7 @@ func testMap(t *testing.T, values []map[string]string, set func(List, *digest.Di
 					t.Fatalf("expected map value %q=%q, got %q", k, v, values[k])
 				}
 			}
-			if err = clear(list, instanceDigest); err != nil {
+			if err = clearFunc(list, instanceDigest); err != nil {
 				t.Fatalf("error clearing %v: %v", testMap, err)
 			}
 			values, err = get(list, instanceDigest)

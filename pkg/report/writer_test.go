@@ -18,7 +18,6 @@ func TestNewWriter(t *testing.T) {
 
 	var buf bytes.Buffer
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			w, err := NewWriter(&buf, 4, 8, 1, ':', 0)
 			assert.NoError(t, err)

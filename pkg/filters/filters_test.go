@@ -74,7 +74,6 @@ func TestMatchLabelFilters(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := MatchLabelFilters(tt.args.filterValues, tt.args.labels); got != tt.want {
 				t.Errorf("MatchLabelFilters() = %v, want %v", got, tt.want)
@@ -148,7 +147,6 @@ func TestMatchNegatedLabelFilters(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := MatchNegatedLabelFilters(tt.args.filterValues, tt.args.labels); got != tt.want {
 				t.Errorf("MatchNegatedLabelFilters() = %v, want %v", got, tt.want)
@@ -180,7 +178,6 @@ func TestComputeUntilTimestamp(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := ComputeUntilTimestamp(tt.args)
 			if (err != nil) != tt.wantErr {
