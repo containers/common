@@ -63,8 +63,8 @@ github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 h1:Qzk5C6cYgle
 github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01/go.mod h1:9rfv8iPl1ZP7aqh9YA68wnZv2NUDbXdcdPHVz0pFbPY=
 github.com/containers/ocicrypt v1.2.0 h1:X14EgRK3xNFvJEfI5O4Qn4T3E25ANudSOZz/sirVuPM=
 github.com/containers/ocicrypt v1.2.0/go.mod h1:ZNviigQajtdlxIZGibvblVuIFBKIuUI2M0QM12SD31U=
-github.com/containers/storage v1.55.1-0.20240821103551-8ec73cadc730 h1:rFhDkjeR52VGko+lUd7veRbfdfMhnNBL0cniGudunCM=
-github.com/containers/storage v1.55.1-0.20240821103551-8ec73cadc730/go.mod h1:oDe+z/9gI/Fa4NKfTTaPGVAaRbDJnHWwtR3yntqYz8M=
+github.com/containers/storage v1.55.1-0.20240829103427-8bc8379af275 h1:jqkuDH4uJv7bKzmIpDXjY56KYiTi+sRspozP9+9V/eY=
+github.com/containers/storage v1.55.1-0.20240829103427-8bc8379af275/go.mod h1:oDe+z/9gI/Fa4NKfTTaPGVAaRbDJnHWwtR3yntqYz8M=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
