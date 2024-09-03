@@ -53,7 +53,7 @@ func TestNextSubnet(t *testing.T) {
 }
 
 func TestGetRandomIPv6Subnet(t *testing.T) {
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		t.Run(fmt.Sprintf("GetRandomIPv6Subnet %d", i), func(t *testing.T) {
 			sub, err := getRandomIPv6Subnet()
 			if err != nil {

@@ -393,7 +393,7 @@ var _ = Describe("IPAM", func() {
 			Expect(err).ToNot(HaveOccurred())
 		}
 
-		for i := 0; i < 30; i++ {
+		for i := range 30 {
 			opts := types.NetworkOptions{
 				ContainerID: fmt.Sprintf("id-%d", i),
 				Networks: map[string]types.PerNetworkOptions{

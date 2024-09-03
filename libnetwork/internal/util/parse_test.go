@@ -45,7 +45,6 @@ func TestParseMTU(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseMTU(tt.args.mtuOption)
 			if (err != nil) != tt.wantErr {
@@ -113,7 +112,6 @@ func TestParseVlan(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseVlan(tt.args.vlanOption)
 			if (err != nil) != tt.wantErr {
@@ -202,7 +200,6 @@ func TestParseIsolate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseIsolate(tt.args.isolateOption)
 			if (err != nil) != tt.wantErr {

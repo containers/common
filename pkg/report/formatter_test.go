@@ -88,7 +88,6 @@ func TestFormatter_ParseTable(t *testing.T) {
 	}
 
 	for loop, tc := range testCase {
-		tc := tc
 		name := fmt.Sprintf("Loop#%d", loop)
 		t.Run(name, func(t *testing.T) {
 			buf := new(bytes.Buffer)

@@ -124,7 +124,6 @@ func TestNew(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			base := filepath.Join(t.TempDir(), "resolv.conf")
 			target := filepath.Join(t.TempDir(), "new-resolv.conf")
@@ -185,7 +184,6 @@ options edns0
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resolvPath := filepath.Join(t.TempDir(), "resolv.conf")
 			err := os.WriteFile(resolvPath, []byte(tt.content), 0o644)
@@ -228,7 +226,6 @@ options edns0
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			resolvPath := filepath.Join(t.TempDir(), "resolv.conf")
 			err := os.WriteFile(resolvPath, []byte(tt.content), 0o644)

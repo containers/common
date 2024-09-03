@@ -520,7 +520,6 @@ var _ = Describe("Config", func() {
 		})
 
 		for _, driver := range []string{"macvlan", "ipvlan"} {
-			driver := driver
 			It(fmt.Sprintf("create %s config with none ipam driver", driver), func() {
 				network := types.Network{
 					Driver: driver,
