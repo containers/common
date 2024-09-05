@@ -70,8 +70,7 @@ jobs:
     trigger: release
     packages: [containers-common-fedora]
     dist_git_branches:
-      - fedora-development
-      - fedora-latest
+      - fedora-all
 
   - job: propose_downstream
     trigger: release
