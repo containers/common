@@ -9,8 +9,7 @@ run:
     - exclude_graphdriver_devicemapper
     - containers_image_openpgp
     - cni
-  concurrency: 6
-  deadline: 5m
+  timeout: 5m
 linters:
   enable-all: true
   disable:
