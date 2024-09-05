@@ -54,11 +54,10 @@ if [[ -n "$FEDORA" ]] || [[ "$RHEL" -ge 10 ]]; then
     sed -i -e '/^additionalimagestores\ =\ \[/a "\/usr\/lib\/containers\/storage",' storage.conf
 fi
 
-# Set these on Fedora Rawhide (41+) and RHEL 10+
+# Set these on Fedora 41+ and RHEL 10+
 # regardless of distro
 if [[ "$FEDORA" -gt 40 ]] || [[ "$RHEL" -ge 10 ]]; then
     ensure pkg/config/containers.conf   compression_format  \"zstd:chunked\"
-    ensure storage.conf pull_options    \{enable_partial_images\ =\ \"true\",\ use_hard_links\ =\ \"false\",\ ostree_repos=\"\",\ convert_images\ =\ \"false\"\}
     # Leave composefs disabled
     ensure storage.conf use_composefs   \"false\"
 fi
