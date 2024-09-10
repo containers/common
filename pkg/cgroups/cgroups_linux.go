@@ -633,11 +633,30 @@ func createCgroupv2Path(path string) (deferredError error) {
 						// If the file itself is missing, return the original error.
 						return err
 					}
-					for _, ctr := range ctrs {
-						// Try to enable each controller individually, at least we can give a better error message if any fails.
-						if err := os.WriteFile(subtreeControl, []byte(fmt.Sprintf("+%s\n", ctr)), 0o755); err != nil {
-							return fmt.Errorf("enabling controller %s: %w", ctr, err)
+					repeatAttempts := 1000
+					for repeatAttempts > 0 {
+						// store the controllers that failed to be enabled, so we can retry them
+						newCtrs := [][]byte{}
+						for _, ctr := range ctrs {
+							// Try to enable each controller individually, at least we can give a better error message if any fails.
+							if err := os.WriteFile(subtreeControl, []byte(fmt.Sprintf("+%s\n", ctr)), 0o755); err != nil {
+								// The kernel can return EBUSY when a process was moved to a sub-cgroup
+								// and the controllers are enabled in its parent cgroup.  Retry a few times when
+								// it happens.
+								if errors.Is(err, unix.EBUSY) {
+									newCtrs = append(newCtrs, ctr)
+								} else {
+									return fmt.Errorf("enabling controller %s: %w", ctr, err)
+								}
+							}
 						}
+						if len(newCtrs) == 0 {
+							err = nil
+							break
+						}
+						ctrs = newCtrs
+						repeatAttempts--
+						time.Sleep(time.Millisecond)
 					}
 					if err != nil {
 						return err
