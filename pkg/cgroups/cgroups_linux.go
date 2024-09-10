@@ -625,8 +625,24 @@ func createCgroupv2Path(path string) (deferredError error) {
 		// We enable the controllers for all the path components except the last one.  It is not allowed to add
 		// PIDs if there are already enabled controllers.
 		if i < len(elements[3:])-1 {
-			if err := os.WriteFile(filepath.Join(current, "cgroup.subtree_control"), res, 0o755); err != nil {
-				return err
+			subtreeControl := filepath.Join(current, "cgroup.subtree_control")
+			if err := os.WriteFile(subtreeControl, res, 0o755); err != nil {
+				// The kernel returns ENOENT either if the file itself is missing, or a controller
+				if errors.Is(err, os.ErrNotExist) {
+					if err2 := fileutils.Exists(subtreeControl); err2 != nil {
+						// If the file itself is missing, return the original error.
+						return err
+					}
+					for _, ctr := range ctrs {
+						// Try to enable each controller individually, at least we can give a better error message if any fails.
+						if err := os.WriteFile(subtreeControl, []byte(fmt.Sprintf("+%s\n", ctr)), 0o755); err != nil {
+							return fmt.Errorf("enabling controller %s: %w", ctr, err)
+						}
+					}
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
