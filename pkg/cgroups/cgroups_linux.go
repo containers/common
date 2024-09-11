@@ -95,7 +95,8 @@ func init() {
 func getAvailableControllers(exclude map[string]controllerHandler, cgroup2 bool) ([]controller, error) {
 	if cgroup2 {
 		controllers := []controller{}
-		controllersFile := cgroupRoot + "/cgroup.controllers"
+		controllersFile := filepath.Join(cgroupRoot, "cgroup.controllers")
+
 		// rootless cgroupv2: check available controllers for current user, systemd or servicescope will inherit
 		if unshare.IsRootless() {
 			userSlice, err := getCgroupPathForCurrentProcess()
@@ -104,7 +105,7 @@ func getAvailableControllers(exclude map[string]controllerHandler, cgroup2 bool)
 			}
 			// userSlice already contains '/' so not adding here
 			basePath := cgroupRoot + userSlice
-			controllersFile = basePath + "/cgroup.controllers"
+			controllersFile = filepath.Join(basePath, "cgroup.controllers")
 		}
 		controllersFileBytes, err := os.ReadFile(controllersFile)
 		if err != nil {
@@ -597,7 +598,7 @@ func createCgroupv2Path(path string) (deferredError error) {
 	if !strings.HasPrefix(path, cgroupRoot+"/") {
 		return fmt.Errorf("invalid cgroup path %s", path)
 	}
-	content, err := os.ReadFile(cgroupRoot + "/cgroup.controllers")
+	content, err := os.ReadFile(filepath.Join(cgroupRoot, "cgroup.controllers"))
 	if err != nil {
 		return err
 	}
