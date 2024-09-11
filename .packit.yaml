@@ -16,6 +16,9 @@ packages:
   containers-common-rhel:
     downstream_package_name: containers-common
     specfile_path: rpm/containers-common.spec
+  containers-common-eln:
+    downstream_package_name: containers-common
+    specfile_path: rpm/containers-common.spec
 
 actions:
   pre-sync: "bash rpm/update-lib-versions.sh"
@@ -29,7 +32,14 @@ jobs:
         message: "Ephemeral COPR build failed. @containers/packit-build please check."
     enable_net: true
     targets:
-      fedora-all: {}
+      - fedora-all
+
+  - job: copr_build
+    trigger: pull_request
+    packages: [containers-common-eln]
+    notifications: *ephemeral_build_failure_notification
+    enable_net: true
+    targets:
       fedora-eln:
         # Need this to fetch go-md2man which is present in koji envs but not by
         # default on copr envs. Also helps to avoid bundling go-md2man in
@@ -69,7 +79,7 @@ jobs:
   - job: propose_downstream
     trigger: release
     packages: [containers-common-fedora]
-    dist_git_branches:
+    dist_git_branches: &fedora_targets
       - fedora-all
 
   - job: propose_downstream
@@ -87,5 +97,4 @@ jobs:
     # Ref: https://packit.dev/docs/fedora-releases-guide/releasing-multiple-packages
     dependents:
       - podman
-    dist_git_branches:
-      - fedora-all
+    dist_git_branches: *fedora_targets
