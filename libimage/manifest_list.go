@@ -26,6 +26,12 @@ import (
 // NOTE: the abstractions and APIs here are a first step to further merge
 // `libimage/manifests` into `libimage`.
 
+// Copier is a simple interface declaration for the existing copier
+type Copier interface {
+	Copy(ctx context.Context, source, destination types.ImageReference) ([]byte, error)
+	Close() error
+}
+
 // ErrNotAManifestList indicates that an image was found in the local
 // containers storage but it is not a manifest list as requested.
 var ErrNotAManifestList = errors.New("image is not a manifest list")
@@ -632,11 +638,11 @@ func (m *ManifestList) Push(ctx context.Context, destination string, options *Ma
 	// NOTE: we're using the logic in copier to create a proper
 	// types.SystemContext. This prevents us from having an error prone
 	// code duplicate here.
-	copier, err := m.image.runtime.newCopier(&options.CopyOptions)
+	copier, err := m.image.runtime.NewCopier(&options.CopyOptions)
 	if err != nil {
 		return "", err
 	}
-	defer copier.close()
+	defer copier.Close()
 
 	pushOptions := manifests.PushOptions{
 		AddCompression:                   options.AddCompression,
