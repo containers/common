@@ -8,7 +8,7 @@ require (
 	github.com/containerd/containerd v1.6.15
 	github.com/containernetworking/cni v1.1.2
 	github.com/containernetworking/plugins v1.2.0
-	github.com/containers/image/v5 v5.24.0
+	github.com/containers/image/v5 v5.24.3
 	github.com/containers/ocicrypt v1.1.7
 	github.com/containers/storage v1.45.3
 	github.com/coreos/go-systemd/v22 v22.5.0
@@ -141,3 +141,7 @@ retract (
 )
 
 replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.1-0.20220617142545-8b9452f75cbc
+
+// Work around for indirect dependency no longer being available
+// Lifted from https://github.com/containerd/containerd/pull/10011
+exclude github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f

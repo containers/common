@@ -472,12 +472,22 @@ func (c *dockerClient) makeRequest(ctx context.Context, method, path string, hea
 		return nil, err
 	}
 
-	urlString := fmt.Sprintf("%s://%s%s", c.scheme, c.registry, path)
-	requestURL, err := url.Parse(urlString)
+	requestURL, err := c.resolveRequestURL(path)
 	if err != nil {
 		return nil, err
 	}
 	return c.makeRequestToResolvedURL(ctx, method, requestURL, headers, stream, -1, auth, extraScope)
+}
+
+// resolveRequestURL turns a path for c.makeRequest into a full URL.
+// Most users should call makeRequest directly, this exists basically to make the URL available for debug logs.
+func (c *dockerClient) resolveRequestURL(path string) (*url.URL, error) {
+	urlString := fmt.Sprintf("%s://%s%s", c.scheme, c.registry, path)
+	res, err := url.Parse(urlString)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // Checks if the auth headers in the response contain an indication of a failed
@@ -871,6 +881,8 @@ func (c *dockerClient) detectProperties(ctx context.Context) error {
 	return c.detectPropertiesError
 }
 
+// fetchManifest fetches a manifest for (the repo of ref) + tagOrDigest.
+// The caller is responsible for ensuring tagOrDigest uses the expected format.
 func (c *dockerClient) fetchManifest(ctx context.Context, ref dockerReference, tagOrDigest string) ([]byte, string, error) {
 	path := fmt.Sprintf(manifestPath, reference.Path(ref.ref), tagOrDigest)
 	headers := map[string][]string{
@@ -953,6 +965,9 @@ func (c *dockerClient) getBlob(ctx context.Context, ref dockerReference, info ty
 		}
 	}
 
+	if err := info.Digest.Validate(); err != nil { // Make sure info.Digest.String() does not contain any unexpected characters
+		return nil, 0, err
+	}
 	path := fmt.Sprintf(blobsPath, reference.Path(ref.ref), info.Digest.String())
 	logrus.Debugf("Downloading %s", path)
 	res, err := c.makeRequest(ctx, http.MethodGet, path, nil, nil, v2Auth, nil)
@@ -965,7 +980,14 @@ func (c *dockerClient) getBlob(ctx context.Context, ref dockerReference, info ty
 		return nil, 0, fmt.Errorf("fetching blob: %w", err)
 	}
 	cache.RecordKnownLocation(ref.Transport(), bicTransportScope(ref), info.Digest, newBICLocationReference(ref))
-	return res.Body, getBlobSize(res), nil
+	blobSize := getBlobSize(res)
+
+	reconnectingReader, err := newBodyReader(ctx, c, path, res.Body)
+	if err != nil {
+		res.Body.Close()
+		return nil, 0, err
+	}
+	return reconnectingReader, blobSize, nil
 }
 
 // getOCIDescriptorContents returns the contents a blob spcified by descriptor in ref, which must fit within limit.
@@ -1008,7 +1030,10 @@ func isManifestUnknownError(err error) bool {
 // digest in ref.
 // It returns (nil, nil) if the manifest does not exist.
 func (c *dockerClient) getSigstoreAttachmentManifest(ctx context.Context, ref dockerReference, digest digest.Digest) (*manifest.OCI1, error) {
-	tag := sigstoreAttachmentTag(digest)
+	tag, err := sigstoreAttachmentTag(digest)
+	if err != nil {
+		return nil, err
+	}
 	sigstoreRef, err := reference.WithTag(reference.TrimNamed(ref.ref), tag)
 	if err != nil {
 		return nil, err
@@ -1041,6 +1066,9 @@ func (c *dockerClient) getSigstoreAttachmentManifest(ctx context.Context, ref do
 // getExtensionsSignatures returns signatures from the X-Registry-Supports-Signatures API extension,
 // using the original data structures.
 func (c *dockerClient) getExtensionsSignatures(ctx context.Context, ref dockerReference, manifestDigest digest.Digest) (*extensionSignatureList, error) {
+	if err := manifestDigest.Validate(); err != nil { // Make sure manifestDigest.String() does not contain any unexpected characters
+		return nil, err
+	}
 	path := fmt.Sprintf(extensionsSignaturePath, reference.Path(ref.ref), manifestDigest)
 	res, err := c.makeRequest(ctx, http.MethodGet, path, nil, nil, v2Auth, nil)
 	if err != nil {
@@ -1064,6 +1092,9 @@ func (c *dockerClient) getExtensionsSignatures(ctx context.Context, ref dockerRe
 }
 
 // sigstoreAttachmentTag returns a sigstore attachment tag for the specified digest.
-func sigstoreAttachmentTag(d digest.Digest) string {
-	return strings.Replace(d.String(), ":", "-", 1) + ".sig"
+func sigstoreAttachmentTag(d digest.Digest) (string, error) {
+	if err := d.Validate(); err != nil { // Make sure d.String() doesn’t contain any unexpected characters
+		return "", err
+	}
+	return strings.Replace(d.String(), ":", "-", 1) + ".sig", nil
 }

@@ -81,7 +81,7 @@ github.com/containernetworking/cni/pkg/version
 # github.com/containernetworking/plugins v1.2.0
 ## explicit; go 1.17
 github.com/containernetworking/plugins/pkg/ns
-# github.com/containers/image/v5 v5.24.0
+# github.com/containers/image/v5 v5.24.3
 ## explicit; go 1.17
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory
