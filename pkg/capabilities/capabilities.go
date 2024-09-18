@@ -41,10 +41,6 @@ func getCapName(c capability.Cap) string {
 
 func init() {
 	last := capability.CAP_LAST_CAP
-	// hack for RHEL6 which has no /proc/sys/kernel/cap_last_cap
-	if last == capability.Cap(63) {
-		last = capability.CAP_BLOCK_SUSPEND
-	}
 	for _, cap := range capability.List() {
 		if cap > last {
 			continue
