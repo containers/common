@@ -206,13 +206,17 @@ func getDockerAuthConfig(name, passwd, creds, idToken string) (*types.DockerAuth
 	}
 }
 
+// NewCopier is a simple, exported wrapper for newCopier
+func NewCopier(options *CopyOptions, sc *types.SystemContext) (*copier, error) {
+	return newCopier(options, sc)
+}
+
 // newCopier creates a copier.  Note that fields in options *may* overwrite the
 // counterparts of the specified system context.  Please make sure to call
 // `(*copier).close()`.
-func (r *Runtime) newCopier(options *CopyOptions) (*copier, error) {
+func newCopier(options *CopyOptions, sc *types.SystemContext) (*copier, error) {
 	c := copier{extendTimeoutSocket: options.extendTimeoutSocket}
-	c.systemContext = r.systemContextCopy()
-
+	c.systemContext = sc
 	if options.SourceLookupReferenceFunc != nil {
 		c.sourceLookup = options.SourceLookupReferenceFunc
 	}
@@ -325,14 +329,22 @@ func (r *Runtime) newCopier(options *CopyOptions) (*copier, error) {
 	return &c, nil
 }
 
-// close open resources.
-func (c *copier) close() error {
+// newCopier creates a copier.  Note that fields in options *may* overwrite the
+// counterparts of the specified system context.  Please make sure to call
+// `(*copier).close()`.
+func (r *Runtime) newCopier(options *CopyOptions) (*copier, error) {
+	sc := r.systemContextCopy()
+	return newCopier(options, sc)
+}
+
+// Close open resources.
+func (c *copier) Close() error {
 	return c.policyContext.Destroy()
 }
 
-// copy the source to the destination.  Returns the bytes of the copied
+// Copy the source to the destination.  Returns the bytes of the copied
 // manifest which may be used for digest computation.
-func (c *copier) copy(ctx context.Context, source, destination types.ImageReference) ([]byte, error) {
+func (c *copier) Copy(ctx context.Context, source, destination types.ImageReference) ([]byte, error) {
 	logrus.Debugf("Copying source image %s to destination image %s", source.StringWithinTransport(), destination.StringWithinTransport())
 
 	// Avoid running out of time when running inside a systemd unit by
