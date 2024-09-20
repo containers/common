@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"sort"
 	"strings"
 	"sync"
 
@@ -47,7 +46,7 @@ func init() {
 		}
 		capsList = append(capsList, cap)
 		capabilityList = append(capabilityList, getCapName(cap))
-		sort.Strings(capabilityList)
+		slices.Sort(capabilityList)
 	}
 }
 
@@ -72,7 +71,7 @@ var boundingSet = sync.OnceValues(func() ([]string, error) {
 		}
 		r = append(r, getCapName(c))
 	}
-	sort.Strings(r)
+	slices.Sort(r)
 	return r, nil
 })
 
@@ -99,7 +98,7 @@ func NormalizeCapabilities(caps []string) ([]string, error) {
 		}
 		normalized = append(normalized, c)
 	}
-	sort.Strings(normalized)
+	slices.Sort(normalized)
 	return normalized, nil
 }
 
@@ -143,7 +142,7 @@ func MergeCapabilities(base, adds, drops []string) ([]string, error) {
 			return nil, errors.New("adding all caps and removing all caps not allowed")
 		}
 		// "Drop" all capabilities; return what's in capAdd instead
-		sort.Strings(capAdd)
+		slices.Sort(capAdd)
 		return capAdd, nil
 	}
 
@@ -183,6 +182,6 @@ func MergeCapabilities(base, adds, drops []string) ([]string, error) {
 		}
 		caps = append(caps, cap)
 	}
-	sort.Strings(caps)
+	slices.Sort(caps)
 	return caps, nil
 }
