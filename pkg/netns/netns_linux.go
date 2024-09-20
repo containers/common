@@ -91,36 +91,45 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 	// Create the directory for mounting network namespaces
 	// This needs to be a shared mountpoint in case it is mounted in to
 	// other namespaces (containers)
-	err = os.MkdirAll(nsRunDir, 0o755)
+	err = makeNetnsDir(nsRunDir)
 	if err != nil {
 		return nil, err
 	}
 
-	// Remount the namespace directory shared. This will fail if it is not
-	// already a mountpoint, so bind-mount it on to itself to "upgrade" it
-	// to a mountpoint.
-	err = unix.Mount("", nsRunDir, "none", unix.MS_SHARED|unix.MS_REC, "")
-	if err != nil {
-		if err != unix.EINVAL {
-			return nil, fmt.Errorf("mount --make-rshared %s failed: %q", nsRunDir, err)
-		}
-
-		// Recursively remount /run/netns on itself. The recursive flag is
-		// so that any existing netns bindmounts are carried over.
-		err = unix.Mount(nsRunDir, nsRunDir, "none", unix.MS_BIND|unix.MS_REC, "")
-		if err != nil {
-			return nil, fmt.Errorf("mount --rbind %s %s failed: %q", nsRunDir, nsRunDir, err)
-		}
-
-		// Now we can make it shared
-		err = unix.Mount("", nsRunDir, "none", unix.MS_SHARED|unix.MS_REC, "")
-		if err != nil {
-			return nil, fmt.Errorf("mount --make-rshared %s failed: %q", nsRunDir, err)
-		}
-	}
-
 	nsPath := path.Join(nsRunDir, name)
 	return newNSPath(nsPath)
+}
+
+func makeNetnsDir(nsRunDir string) error {
+	err := os.MkdirAll(nsRunDir, 0o755)
+	if err != nil {
+		return err
+	}
+	// Remount the namespace directory shared. This will fail with EINVAL
+	// if it is not already a mountpoint, so bind-mount it on to itself
+	// to "upgrade" it to a mountpoint.
+	err = unix.Mount("", nsRunDir, "none", unix.MS_SHARED|unix.MS_REC, "")
+	if err == nil {
+		return nil
+	}
+	if err != unix.EINVAL {
+		return fmt.Errorf("mount --make-rshared %s failed: %q", nsRunDir, err)
+	}
+
+	// Recursively remount /run/netns on itself. The recursive flag is
+	// so that any existing netns bindmounts are carried over.
+	err = unix.Mount(nsRunDir, nsRunDir, "none", unix.MS_BIND|unix.MS_REC, "")
+	if err != nil {
+		return fmt.Errorf("mount --rbind %s %s failed: %q", nsRunDir, nsRunDir, err)
+	}
+
+	// Now we can make it shared
+	err = unix.Mount("", nsRunDir, "none", unix.MS_SHARED|unix.MS_REC, "")
+	if err != nil {
+		return fmt.Errorf("mount --make-rshared %s failed: %q", nsRunDir, err)
+	}
+
+	return nil
 }
 
 func newNSPath(nsPath string) (ns.NetNS, error) {
