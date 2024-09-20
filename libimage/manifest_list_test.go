@@ -59,6 +59,32 @@ func TestCreateManifestList(t *testing.T) {
 	require.True(t, errors.Is(err, ErrNotAManifestList))
 }
 
+func TestConvertManifestList(t *testing.T) {
+	runtime := testNewRuntime(t)
+	ctx := context.Background()
+
+	images, err := runtime.Pull(ctx, "busybox", config.PullPolicyMissing, nil)
+	require.NoError(t, err)
+	_, err = runtime.LookupManifestList("busybox")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrNotAManifestList)
+
+	require.NotEmpty(t, images)
+	_, err = images[0].ToManifestList()
+	require.ErrorIs(t, err, ErrNotAManifestList)
+	isList, err := images[0].IsManifestList(ctx)
+	require.NoError(t, err)
+	require.False(t, isList, "non-list thinks it's a list")
+
+	list, err := images[0].ConvertToManifestList(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, list)
+
+	isList, err = images[0].IsManifestList(ctx)
+	require.NoError(t, err)
+	require.True(t, isList, "list thinks it's not a list")
+}
+
 // Inspect must contain both formats i.e OCIv1 and docker
 func TestInspectManifestListWithAnnotations(t *testing.T) {
 	listName := "testinspect"
