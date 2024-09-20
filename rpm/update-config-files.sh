@@ -33,12 +33,6 @@ ensure storage.conf                 mountopt            \"nodev,metacopy=on\"
 ensure pkg/config/containers.conf   runtime             \"crun\"
 ensure pkg/config/containers.conf   log_driver          \"journald\"
 
-# Enable seccomp support keyctl and socketcall
-grep -q \"keyctl\", pkg/seccomp/seccomp.json || sed -i '/\"kill\",/i \
-    "keyctl",' pkg/seccomp/seccomp.json
-grep -q \"socket\", pkg/seccomp/seccomp.json || sed -i '/\"socketcall\",/i \
-    "socket",' pkg/seccomp/seccomp.json
-
 FEDORA=$(rpm --eval '%{?fedora}')
 RHEL=$(rpm --eval '%{?rhel}')
 
