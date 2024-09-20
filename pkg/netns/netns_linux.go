@@ -105,6 +105,25 @@ func makeNetnsDir(nsRunDir string) error {
 	if err != nil {
 		return err
 	}
+	// Important, the bind mount setup is racy if two process try to set it up in parallel.
+	// This can have very bad consequences because we end up with two duplicated mounts
+	// for the netns file that then might have a different parent mounts.
+	// Also because as root netns dir is also created by ip netns we should not race against them.
+	// Use a lock on the netns dir like they do, compare the iproute2 ip netns add code.
+	// https://github.com/iproute2/iproute2/blob/8b9d9ea42759c91d950356ca43930a975d0c352b/ip/ipnetns.c#L806-L815
+
+	dirFD, err := unix.Open(nsRunDir, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
+	if err != nil {
+		return &os.PathError{Op: "open", Path: nsRunDir, Err: err}
+	}
+	// closing the fd will also unlock so we do not have to call flock(fd,LOCK_UN)
+	defer unix.Close(dirFD)
+
+	err = unix.Flock(dirFD, unix.LOCK_EX)
+	if err != nil {
+		return fmt.Errorf("failed to lock %s dir: %w", nsRunDir, err)
+	}
+
 	// Remount the namespace directory shared. This will fail with EINVAL
 	// if it is not already a mountpoint, so bind-mount it on to itself
 	// to "upgrade" it to a mountpoint.
