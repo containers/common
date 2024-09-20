@@ -60,6 +60,13 @@ type CopyOptions struct {
 	CertDirPath string
 	// Force layer compression when copying to a `dir` transport destination.
 	DirForceCompress bool
+
+	// ImageListSelection is one of CopySystemImage, CopyAllImages, or
+	// CopySpecificImages, to control whether, when the source reference is a list,
+	// copy.Image() copies only an image which matches the current runtime
+	// environment, or all images which match the supplied reference, or only
+	// specific images from the source reference.
+	ImageListSelection copy.ImageListSelection
 	// Allow contacting registries over HTTP, or HTTPS with failed TLS
 	// verification. Note that this does not affect other TLS connections.
 	InsecureSkipTLSVerify types.OptionalBool
@@ -300,6 +307,7 @@ func (r *Runtime) newCopier(options *CopyOptions) (*copier, error) {
 		c.imageCopyOptions.ProgressInterval = time.Second
 	}
 
+	c.imageCopyOptions.ImageListSelection = options.ImageListSelection
 	c.imageCopyOptions.ForceCompressionFormat = options.ForceCompressionFormat
 	c.imageCopyOptions.ForceManifestMIMEType = options.ManifestMIMEType
 	c.imageCopyOptions.SourceCtx = c.systemContext
