@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/syndtr/gocapability/capability"
+	"github.com/moby/sys/capability"
 )
 
 var (
@@ -32,21 +32,10 @@ func capName(c capability.Cap) string {
 	return "CAP_" + strings.ToUpper(c.String())
 }
 
-// capList returns all capabilities supported by the currently running kernel,
-// or an error if the list can not be obtained.
-var capList = sync.OnceValues(func() ([]capability.Cap, error) {
-	last := capability.CAP_LAST_CAP
-	list := capability.List() // All known caps.
-	return slices.DeleteFunc(list, func(c capability.Cap) bool {
-		// Remove caps not supported by the kernel.
-		return c > last
-	}), nil
-})
-
 // capStrList returns all capabilities supported by the currently running kernel,
 // or an error if the list can not be obtained.
 var capStrList = sync.OnceValues(func() ([]string, error) {
-	list, err := capList()
+	list, err := capability.ListSupported()
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +61,7 @@ var boundingSet = sync.OnceValues(func() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	list, err := capList()
+	list, err := capability.ListSupported()
 	if err != nil {
 		return nil, err
 	}
