@@ -51,38 +51,30 @@ func init() {
 	}
 }
 
-var (
-	boundingSetOnce sync.Once
-	boundingSetRet  []string
-	boundingSetErr  error
-)
-
-// BoundingSet returns the capabilities in the current bounding set
+// BoundingSet returns the capabilities in the current bounding set.
 func BoundingSet() ([]string, error) {
-	boundingSetOnce.Do(func() {
-		currentCaps, err := capability.NewPid2(0)
-		if err != nil {
-			boundingSetErr = err
-			return
-		}
-		err = currentCaps.Load()
-		if err != nil {
-			boundingSetErr = err
-			return
-		}
-		var r []string
-		for _, c := range capsList {
-			if !currentCaps.Get(capability.BOUNDING, c) {
-				continue
-			}
-			r = append(r, getCapName(c))
-		}
-		boundingSetRet = r
-		sort.Strings(boundingSetRet)
-		boundingSetErr = err
-	})
-	return boundingSetRet, boundingSetErr
+	return boundingSet()
 }
+
+var boundingSet = sync.OnceValues(func() ([]string, error) {
+	currentCaps, err := capability.NewPid2(0)
+	if err != nil {
+		return nil, err
+	}
+	err = currentCaps.Load()
+	if err != nil {
+		return nil, err
+	}
+	var r []string
+	for _, c := range capsList {
+		if !currentCaps.Get(capability.BOUNDING, c) {
+			continue
+		}
+		r = append(r, getCapName(c))
+	}
+	sort.Strings(r)
+	return r, nil
+})
 
 // AllCapabilities returns all known capabilities.
 func AllCapabilities() []string {
