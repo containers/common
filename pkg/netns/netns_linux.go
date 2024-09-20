@@ -62,27 +62,6 @@ func NewNSAtPath(nsPath string) (ns.NetNS, error) {
 // NewNS creates a new persistent (bind-mounted) network namespace and returns
 // an object representing that namespace, without switching to it.
 func NewNS() (ns.NetNS, error) {
-	for i := 0; i < 10000; i++ {
-		nsName, err := getRandomNetnsName()
-		if err != nil {
-			return nil, err
-		}
-		ns, err := NewNSWithName(nsName)
-		if err == nil {
-			return ns, nil
-		}
-		// retry when the name already exists
-		if errors.Is(err, os.ErrExist) {
-			continue
-		}
-		return nil, err
-	}
-	return nil, errNoFreeName
-}
-
-// NewNSWithName creates a new persistent (bind-mounted) network namespace and returns
-// an object representing that namespace, without switching to it.
-func NewNSWithName(name string) (ns.NetNS, error) {
 	nsRunDir, err := GetNSRunDir()
 	if err != nil {
 		return nil, err
@@ -96,8 +75,23 @@ func NewNSWithName(name string) (ns.NetNS, error) {
 		return nil, err
 	}
 
-	nsPath := path.Join(nsRunDir, name)
-	return newNSPath(nsPath)
+	for i := 0; i < 10000; i++ {
+		nsName, err := getRandomNetnsName()
+		if err != nil {
+			return nil, err
+		}
+		nsPath := path.Join(nsRunDir, nsName)
+		ns, err := newNSPath(nsPath)
+		if err == nil {
+			return ns, nil
+		}
+		// retry when the name already exists
+		if errors.Is(err, os.ErrExist) {
+			continue
+		}
+		return nil, err
+	}
+	return nil, errNoFreeName
 }
 
 // NewNSFrom creates a persistent (bind-mounted) network namespace from the
