@@ -796,7 +796,7 @@ func (m *ManifestList) Push(ctx context.Context, destination string, options *Ma
 	if err != nil {
 		return "", err
 	}
-	defer copier.Close()
+	defer copier.close()
 
 	pushOptions := manifests.PushOptions{
 		AddCompression:                   options.AddCompression,
