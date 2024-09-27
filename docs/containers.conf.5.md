@@ -486,6 +486,9 @@ Name of destination for accessing the Podman service. See SERVICE DESTINATION TA
 List of compression algorithms. If set makes sure that requested compression variant
 for each platform is added to the manifest list keeping original instance intact in
 the same manifest list on every `manifest push`. Supported values are (`gzip`, `zstd` and `zstd:chunked`).
+`zstd:chunked` is incompatible with encrypting images, and will be treated as `zstd` with a warning
+in that case.
+
 
 Note: This is different from `compression_format` which allows users to select a default
 compression format for `push` and `manifest push`, while `add_compression` is limited to
@@ -855,6 +858,8 @@ Specifies the compression format to use when pushing an image. Supported values
 are: `gzip`, `zstd` and `zstd:chunked`. This field is ignored when pushing
 images to the docker-daemon and docker-archive formats. It is also ignored
 when the manifest format is set to v2s2.
+`zstd:chunked` is incompatible with encrypting images, and will be treated as `zstd` with a warning
+in that case.
 
 **compression_level**="5"
 
