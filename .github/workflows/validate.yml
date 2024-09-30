@@ -15,12 +15,12 @@ env:
 
 jobs:
   codespell:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - name: install deps
       # Version of codespell bundled with Ubuntu is way old, so use pip.
-      run: pip install codespell
+      run: pip install --break-system-packages codespell==v2.3.0
     - name: run codespell
       run: codespell --dictionary=-
   lint:
