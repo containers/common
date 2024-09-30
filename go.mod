@@ -15,7 +15,7 @@ require (
 	github.com/containers/ocicrypt v1.2.0
 	github.com/containers/storage v1.55.1-0.20240829103427-8bc8379af275
 	github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/cyphar/filepath-securejoin v0.3.2
+	github.com/cyphar/filepath-securejoin v0.3.3
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/disiqueira/gotree/v3 v3.0.2
 	github.com/docker/distribution v2.8.3+incompatible
