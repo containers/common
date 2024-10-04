@@ -1,28 +1,15 @@
 approvers:
   - mheon
   - baude
-  - mrunalp
   - rhatdan
   - TomSweeneyRedHat
   - giuseppe
   - vrothberg
-  - jnovy
   - jwhonce
   - edsantiago
   - Luap99
   - kolyshkin 
   - mtrmac
 reviewers:
-  - mheon
-  - baude
   - mrunalp
-  - rhatdan
-  - TomSweeneyRedHat
-  - giuseppe
-  - vrothberg
   - jnovy
-  - jwhonce
-  - edsantiago
-  - Luap99
-  - kolyshkin 
-  - mtrmac
