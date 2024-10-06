@@ -120,12 +120,12 @@ var (
 	additionalHelperBinariesDir string
 
 	defaultUnixComposeProviders = []string{
-		"docker-compose",
 		"$HOME/.docker/cli-plugins/docker-compose",
 		"/usr/local/lib/docker/cli-plugins/docker-compose",
 		"/usr/local/libexec/docker/cli-plugins/docker-compose",
 		"/usr/lib/docker/cli-plugins/docker-compose",
 		"/usr/libexec/docker/cli-plugins/docker-compose",
+		"docker-compose",
 		"podman-compose",
 	}
 
