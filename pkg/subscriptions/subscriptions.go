@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -198,18 +199,19 @@ func MountsWithUIDGID(mountLabel, containerRunDir, mountFile, mountPoint string,
 	if disableFips {
 		return subscriptionMounts
 	}
-	// Add FIPS mode subscription if /etc/system-fips exists on the host
-	err := fileutils.Exists("/etc/system-fips")
-	switch {
-	case err == nil:
-		if err := addFIPSModeSubscription(&subscriptionMounts, containerRunDir, mountPoint, mountLabel, uid, gid); err != nil {
-			logrus.Errorf("Adding FIPS mode subscription to container: %v", err)
+	// Enable FIPS mode in crypto-policies if /proc/sys/crypto/fips_enabled on the host contains "1"
+	if fips_enabled, err := ioutil.ReadFile("/proc/sys/crypto/fips_enabled"); err == nil {
+		if strings.TrimSpace(string(fips_enabled)) == "1" {
+			if err := addFIPSMounts(&subscriptionMounts, containerRunDir, mountPoint, mountLabel, uid, gid); err != nil {
+				logrus.Errorf("Adding FIPS mode bind mounts to container: %v", err)
+			}
+		} else {
+			logrus.Debug("/proc/sys/crypto/fips_enabled does not contain '1', not adding FIPS mode bind mounts")
 		}
-	case errors.Is(err, os.ErrNotExist):
-		logrus.Debug("/etc/system-fips does not exist on host, not mounting FIPS mode subscription")
-	default:
-		logrus.Errorf("stat /etc/system-fips failed for FIPS mode subscription: %v", err)
+	} else {
+		logrus.Errorf("Failed to read /proc/sys/crypto/fips_enabled to determine FIPS state: %v", err)
 	}
+
 	return subscriptionMounts
 }
 
@@ -306,43 +308,80 @@ func addSubscriptionsFromMountsFile(filePath, mountLabel, containerRunDir string
 	return mounts, nil
 }
 
-// addFIPSModeSubscription adds mounts to the `mounts` slice that are needed for the container to run openssl in FIPs mode
-// (i.e: be FIPs compliant).
-// It should only be called if /etc/system-fips exists on host.
-// It primarily does two things:
-//   - creates /run/secrets/system-fips in the container root filesystem, and adds it to the `mounts` slice.
-//   - If `/etc/crypto-policies/back-ends` already exists inside of the container, it creates
-//     `/usr/share/crypto-policies/back-ends/FIPS` inside the container as well.
-//     It is done from within the container to ensure to avoid policy incompatibility between the container and host.
-func addFIPSModeSubscription(mounts *[]rspec.Mount, containerRunDir, mountPoint, mountLabel string, uid, gid int) error {
+// addFIPSMounts adds mounts to the `mounts` slice that are needed
+// for the container to run cryptographic libraries (openssl, gnutls, NSS, ...)
+// in FIPS mode (i.e: be FIPS compliant).
+// It should only be called if /proc/sys/crypto/fips_enabled on the host
+// contains '1'.
+// It does three things:
+//   - creates /run/secrets/system-fips in the container root filesystem if
+//     /etc/system-fips exists and is a symlink to /run/secrets/system-fips,
+//     and adds it to the `mounts` slice. This is, for example, the case on
+//     RHEL 8, but not on newer RHEL, since /etc/system-fips is deprecated.
+//   - Bind-mounts `/usr/share/crypto-policies/back-ends/FIPS` over
+//     `/etc/crypto-policies/back-ends` if the former exists inside of the
+//     container. This is done from within the container to avoid policy
+//     incompatibility between container and host.
+//   - If a bind mount for `/etc/crypto-policies/back-ends` was created,
+//     bind-mounts `/usr/share/crypto-policies/default-fips-config` over
+//     `/etc/crypto-policies/config` if the former exists inside of the
+//     container. If it does not exist, creates a new temporary file containing
+//     "FIPS\n", and bind-mounts that over `/etc/crypto-policies/config`.
+//
+// Starting in CentOS 10 Stream, the crypto-policies package gracefully recognizes the two bind mounts
+//   /etc/crypto-policies/config -> /usr/share/crypto-policies/default-fips-config
+//   /etc/crypto-policies/back-ends/FIPS -> /usr/share/crypto-policies/back-ends/FIPS
+// and unmounts them when users manually change the policy, or removes and
+// restores the mounts when the crypto-policies package is upgraded.
+func addFIPSMounts(mounts *[]rspec.Mount, containerRunDir, mountPoint, mountLabel string, uid, gid int) error {
+	// Check whether $container/etc/system-fips exists and is a symlink to /run/secrets/system-fips
 	subscriptionsDir := "/run/secrets"
-	ctrDirOnHost := filepath.Join(containerRunDir, subscriptionsDir)
-	if err := fileutils.Exists(ctrDirOnHost); errors.Is(err, os.ErrNotExist) {
-		if err = idtools.MkdirAllAs(ctrDirOnHost, 0o755, uid, gid); err != nil { //nolint
-			return err
-		}
-		if err = label.Relabel(ctrDirOnHost, mountLabel, false); err != nil {
-			return fmt.Errorf("applying correct labels on %q: %w", ctrDirOnHost, err)
-		}
-	}
-	fipsFile := filepath.Join(ctrDirOnHost, "system-fips")
-	// In the event of restart, it is possible for the FIPS mode file to already exist
-	if err := fileutils.Exists(fipsFile); errors.Is(err, os.ErrNotExist) {
-		file, err := os.Create(fipsFile)
+	fipsFileHost := filepath.Join(mountPoint, "etc/system-fips")
+	if fileutils.Lexists(fipsFileHost) != nil {
+		fipsFileTarget, err := filepath.EvalSymlinks(fipsFileHost)
 		if err != nil {
-			return fmt.Errorf("creating system-fips file in container for FIPS mode: %w", err)
+			return fmt.Errorf("Could not evaluate symlinks of %q: %w", fipsFileHost, err)
 		}
-		file.Close()
-	}
 
-	if !mountExists(*mounts, subscriptionsDir) {
-		m := rspec.Mount{
-			Source:      ctrDirOnHost,
-			Destination: subscriptionsDir,
-			Type:        "bind",
-			Options:     []string{"bind", "rprivate"},
+		if fipsFileTarget == filepath.Join(subscriptionsDir, "system-fips") {
+			// This container contains
+			//   /etc/system-fips -> /run/secrets/system-fips
+			// and expects podman to create this file if the container should
+			// be in FIPS mode
+			ctrDirOnHost := filepath.Join(containerRunDir, subscriptionsDir)
+			if err := fileutils.Exists(ctrDirOnHost); errors.Is(err, os.ErrNotExist) {
+				if err = idtools.MkdirAllAs(ctrDirOnHost, 0o755, uid, gid); err != nil { //nolint
+					return err
+				}
+				if err = label.Relabel(ctrDirOnHost, mountLabel, false); err != nil {
+					return fmt.Errorf("applying correct labels on %q: %w", ctrDirOnHost, err)
+				}
+			}
+			fipsFile := filepath.Join(ctrDirOnHost, "system-fips")
+
+			// In the event of restart, it is possible for the FIPS mode file to already exist
+			if err := fileutils.Exists(fipsFile); errors.Is(err, os.ErrNotExist) {
+				file, err := os.Create(fipsFile)
+				if err != nil {
+					return fmt.Errorf("creating system-fips file in container for FIPS mode: %w", err)
+				}
+				file.Close()
+			}
+
+			if !mountExists(*mounts, subscriptionsDir) {
+				m := rspec.Mount{
+					Source:      ctrDirOnHost,
+					Destination: subscriptionsDir,
+					Type:        "bind",
+					Options:     []string{"bind", "rprivate"},
+				}
+				*mounts = append(*mounts, m)
+			}
+		} else {
+			logrus.Warn("/etc/system-fips exists in the container, but is not a bind-mount to /run/secrets/system-fips; not creating /run/secrets/system-fips")
 		}
-		*mounts = append(*mounts, m)
+	} else {
+		logrus.Debug("/etc/system-fips does not exist in the container, not creating /run/secrets/system-fips")
 	}
 
 	srcBackendDir := "/usr/share/crypto-policies/back-ends/FIPS"
@@ -370,27 +409,47 @@ func addFIPSModeSubscription(mounts *[]rspec.Mount, containerRunDir, mountPoint,
 
 	// Make sure we set the config to FIPS so that the container does not overwrite
 	// /etc/crypto-policies/back-ends when crypto-policies-scripts is reinstalled.
-	cryptoPoliciesConfigFile := filepath.Join(containerRunDir, "fips-config")
-	file, err := os.Create(cryptoPoliciesConfigFile)
+	//
+	// Starting in CentOS 10 Stream, crypto-policies provides
+	// /usr/share/crypto-policies/default-fips-config as bind mount source
+	// file and the crypto-policies tooling gracefully deals with the two bind-mounts
+	//   /etc/crypto-policies/back-ends -> /usr/share/crypto-policies/back-ends/FIPS
+	//   /etc/crypto-policies/config -> /usr/share/crypto-policies/default-fips-config
+	// if they both exist.
+	srcPolicyConfig := "/usr/share/crypto-policies/default-fips-config"
+	destPolicyConfig := "/etc/crypto-policies/config"
+	srcPolicyConfigOnHost := filepath.Join(mountPoint, srcPolicyConfig)
+
+	err := fileutils.Exists(srcPolicyConfigOnHost)
 	if err != nil {
-		return fmt.Errorf("creating fips config file in container for FIPS mode: %w", err)
-	}
-	defer file.Close()
-	if _, err := file.WriteString("FIPS\n"); err != nil {
-		return fmt.Errorf("writing fips config file in container for FIPS mode: %w", err)
-	}
-	if err = label.Relabel(cryptoPoliciesConfigFile, mountLabel, false); err != nil {
-		return fmt.Errorf("applying correct labels on fips-config file: %w", err)
-	}
-	if err := file.Chown(uid, gid); err != nil {
-		return fmt.Errorf("chown fips-config file: %w", err)
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("Could not check whether %q exists in container: %w", srcPolicyConfig, err)
+		}
+
+		// /usr/share/crypto-policies/default-fips-config does not exist, let's create it ourselves
+		cryptoPoliciesConfigFile := filepath.Join(containerRunDir, "fips-config")
+		file, err := os.Create(cryptoPoliciesConfigFile)
+		if err != nil {
+			return fmt.Errorf("creating fips config file in container for FIPS mode: %w", err)
+		}
+		defer file.Close()
+		if _, err := file.WriteString("FIPS\n"); err != nil {
+			return fmt.Errorf("writing fips config file in container for FIPS mode: %w", err)
+		}
+		if err = label.Relabel(cryptoPoliciesConfigFile, mountLabel, false); err != nil {
+			return fmt.Errorf("applying correct labels on fips-config file: %w", err)
+		}
+		if err := file.Chown(uid, gid); err != nil {
+			return fmt.Errorf("chown fips-config file: %w", err)
+		}
+
+		srcPolicyConfigOnHost = cryptoPoliciesConfigFile
 	}
 
-	policyConfig := "/etc/crypto-policies/config"
-	if !mountExists(*mounts, policyConfig) {
+	if !mountExists(*mounts, destPolicyConfig) {
 		m := rspec.Mount{
-			Source:      cryptoPoliciesConfigFile,
-			Destination: policyConfig,
+			Source:      srcPolicyConfigOnHost,
+			Destination: destPolicyConfig,
 			Type:        "bind",
 			Options:     []string{"bind", "rprivate"},
 		}
