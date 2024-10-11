@@ -231,7 +231,6 @@ func defaultConfig() (*Config, error) {
 			DNSServers:          attributedstring.Slice{},
 			DefaultCapabilities: attributedstring.NewSlice(DefaultCapabilities),
 			DefaultSysctls:      attributedstring.Slice{},
-			DefaultUlimits:      attributedstring.NewSlice(getDefaultProcessLimits()),
 			Devices:             attributedstring.Slice{},
 			EnableKeyring:       true,
 			EnableLabeling:      selinuxEnabled(),
