@@ -533,6 +533,14 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	if options.OS != runtime.GOOS {
 		lookupImageOptions.OS = options.OS
 	}
+	// FIXME: We sometimes return resolvedImageName from this function.
+	// The function documentation says this returns an image ID, resolvedImageName is frequently not an image ID.
+	//
+	// Ultimately Runtime.Pull looks up the returned name... again, possibly finding some other match
+	// than we did.
+	//
+	// This should be restructured so that the image we found here is returned to the caller of Pull
+	// directly, without another image -> name -> image round-trip and possible inconsistency.
 	localImage, resolvedImageName, err = r.LookupImage(imageName, lookupImageOptions)
 	if err != nil && !errors.Is(err, storage.ErrImageUnknown) {
 		logrus.Errorf("Looking up %s in local storage: %v", imageName, err)
