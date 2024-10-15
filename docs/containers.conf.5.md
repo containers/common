@@ -971,8 +971,14 @@ On Mac, the default volumes are:
 **provider**=""
 
 Virtualization provider to be used for running a podman-machine VM. Empty value
-is interpreted as the default provider for the current host OS. On Linux/Mac
-default is `QEMU` and on Windows it is `WSL`.
+is interpreted as the default provider for the current host OS.
+
+| Platform | Default Virtualization provider         | Optional |
+| -------- | --------------------------------------- | -------- |
+| Linux    | "" (qemu)                               | None     |
+| Windows  | "" ("wsl": Windows Subsystem for Linux) | "hyperv" (Windows Server Virtualization) |
+| Mac      | "" ("applehv": Apple Hypervisor)        | "libkrun" (Launch machine via libkrun platform, optimized for sharing GPU with the machine) |
+
 
 **rosetta**="true"
 
