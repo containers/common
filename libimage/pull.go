@@ -421,7 +421,11 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 	}
 
 	if !options.AllTags {
-		return r.copySingleImageFromRegistry(ctx, inputName, pullPolicy, options)
+		pulled, err := r.copySingleImageFromRegistry(ctx, inputName, pullPolicy, options)
+		if err != nil {
+			return nil, err
+		}
+		return []string{pulled}, nil
 	}
 
 	// Copy all tags
@@ -447,7 +451,7 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 		if err != nil {
 			return nil, err
 		}
-		pulledIDs = append(pulledIDs, pulled...)
+		pulledIDs = append(pulledIDs, pulled)
 	}
 
 	return pulledIDs, nil
@@ -503,11 +507,11 @@ func (r *Runtime) imageIDForManifest(manifestBytes []byte, sys *types.SystemCont
 
 // copySingleImageFromRegistry pulls the specified, possibly unqualified, name
 // from a registry.  On successful pull it returns the ID of the image in local
-// storage.
-func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName string, pullPolicy config.PullPolicy, options *PullOptions) ([]string, error) { //nolint:gocyclo
+// storage (or, FIXME, a name/ID? that could be resolved in local storage)
+func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName string, pullPolicy config.PullPolicy, options *PullOptions) (string, error) { //nolint:gocyclo
 	// Sanity check.
 	if err := pullPolicy.Validate(); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	var (
@@ -570,23 +574,23 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	if pullPolicy == config.PullPolicyNever {
 		if localImage != nil {
 			logrus.Debugf("Pull policy %q and %s resolved to local image %s", pullPolicy, imageName, resolvedImageName)
-			return []string{resolvedImageName}, nil
+			return resolvedImageName, nil
 		}
 		logrus.Debugf("Pull policy %q but no local image has been found for %s", pullPolicy, imageName)
-		return nil, fmt.Errorf("%s: %w", imageName, storage.ErrImageUnknown)
+		return "", fmt.Errorf("%s: %w", imageName, storage.ErrImageUnknown)
 	}
 
 	if pullPolicy == config.PullPolicyMissing && localImage != nil {
-		return []string{resolvedImageName}, nil
+		return resolvedImageName, nil
 	}
 
 	// If we looked up the image by ID, we cannot really pull from anywhere.
 	if localImage != nil && strings.HasPrefix(localImage.ID(), imageName) {
 		switch pullPolicy {
 		case config.PullPolicyAlways:
-			return nil, fmt.Errorf("pull policy is always but image has been referred to by ID (%s)", imageName)
+			return "", fmt.Errorf("pull policy is always but image has been referred to by ID (%s)", imageName)
 		default:
-			return []string{resolvedImageName}, nil
+			return resolvedImageName, nil
 		}
 	}
 
@@ -611,9 +615,9 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	resolved, err := shortnames.Resolve(sys, imageName)
 	if err != nil {
 		if localImage != nil && pullPolicy == config.PullPolicyNewer {
-			return []string{resolvedImageName}, nil
+			return resolvedImageName, nil
 		}
-		return nil, err
+		return "", err
 	}
 
 	// NOTE: Below we print the description from the short-name resolution.
@@ -645,7 +649,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	}
 	c, err := r.newCopier(&options.CopyOptions)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer c.Close()
 
@@ -655,7 +659,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		logrus.Debugf("Attempting to pull candidate %s for %s", candidateString, imageName)
 		srcRef, err := registryTransport.NewReference(candidate.Value)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		if pullPolicy == config.PullPolicyNewer && localImage != nil {
@@ -673,15 +677,15 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 
 		destRef, err := storageTransport.Transport.ParseStoreReference(r.store, candidate.Value.String())
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		if err := writeDesc(); err != nil {
-			return nil, err
+			return "", err
 		}
 		if options.Writer != nil {
 			if _, err := io.WriteString(options.Writer, fmt.Sprintf("Trying to pull %s...\n", candidateString)); err != nil {
-				return nil, err
+				return "", err
 			}
 		}
 		var manifestBytes []byte
@@ -700,18 +704,18 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		logrus.Debugf("Pulled candidate %s successfully", candidateString)
 		ids, err := r.imageIDForManifest(manifestBytes, sys)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
-		return []string{ids}, nil
+		return ids, nil
 	}
 
 	if localImage != nil && pullPolicy == config.PullPolicyNewer {
-		return []string{resolvedImageName}, nil
+		return resolvedImageName, nil
 	}
 
 	if len(pullErrors) == 0 {
-		return nil, fmt.Errorf("internal error: no image pulled (pull policy %s)", pullPolicy)
+		return "", fmt.Errorf("internal error: no image pulled (pull policy %s)", pullPolicy)
 	}
 
-	return nil, resolved.FormatPullErrors(pullErrors)
+	return "", resolved.FormatPullErrors(pullErrors)
 }
