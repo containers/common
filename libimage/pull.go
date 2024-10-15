@@ -453,53 +453,52 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 	return pulledIDs, nil
 }
 
-// imageIDsForManifest() parses the manifest of the copied image and then looks
-// up the IDs of the matching image.  There's a small slice of time, between
+// imageIDForManifest() parses the manifest of the copied image and then looks
+// up the ID of the matching image.  There's a small slice of time, between
 // when we copy the image into local storage and when we go to look for it
 // using the name that we gave it when we copied it, when the name we wanted to
 // assign to the image could have been moved, but the image's ID will remain
 // the same until it is deleted.
-func (r *Runtime) imagesIDsForManifest(manifestBytes []byte, sys *types.SystemContext) ([]string, error) {
+func (r *Runtime) imageIDForManifest(manifestBytes []byte, sys *types.SystemContext) (string, error) {
 	var imageDigest digest.Digest
 	manifestType := manifest.GuessMIMEType(manifestBytes)
 	if manifest.MIMETypeIsMultiImage(manifestType) {
 		list, err := manifest.ListFromBlob(manifestBytes, manifestType)
 		if err != nil {
-			return nil, fmt.Errorf("parsing manifest list: %w", err)
+			return "", fmt.Errorf("parsing manifest list: %w", err)
 		}
 		d, err := list.ChooseInstance(sys)
 		if err != nil {
-			return nil, fmt.Errorf("choosing instance from manifest list: %w", err)
+			return "", fmt.Errorf("choosing instance from manifest list: %w", err)
 		}
 		imageDigest = d
 	} else {
 		d, err := manifest.Digest(manifestBytes)
 		if err != nil {
-			return nil, errors.New("digesting manifest")
+			return "", errors.New("digesting manifest")
 		}
 		imageDigest = d
 	}
 	images, err := r.store.ImagesByDigest(imageDigest)
 	if err != nil {
-		return nil, fmt.Errorf("listing images by manifest digest: %w", err)
+		return "", fmt.Errorf("listing images by manifest digest: %w", err)
 	}
 
 	// If you have additionStores defined and the same image stored in
 	// both storage and additional store, it can be output twice.
-	// Fixes github.com/containers/podman/issues/18647
-	results := []string{}
-	imageMap := map[string]bool{}
-	for _, image := range images {
-		if imageMap[image.ID] {
-			continue
-		}
-		imageMap[image.ID] = true
-		results = append(results, image.ID)
+	//
+	// Worse, with zstd:chunked partial pulls, the same image can have several
+	// different IDs, depending on which layers of the image were pulled using the
+	// partial pull (are identified by TOC, not by uncompressed digest).
+	//
+	// At this point, from just the manifest digest, we can’t tell which image
+	// is the one that was actually pulled. (They should all have the same contents
+	// unless the image author is malicious.)
+	// So just return the first matching image ID.
+	if len(images) == 0 {
+		return "", fmt.Errorf("identifying new image by manifest digest: %w", storage.ErrImageUnknown)
 	}
-	if len(results) == 0 {
-		return nil, fmt.Errorf("identifying new image by manifest digest: %w", storage.ErrImageUnknown)
-	}
-	return results, nil
+	return images[0].ID, nil
 }
 
 // copySingleImageFromRegistry pulls the specified, possibly unqualified, name
@@ -699,11 +698,11 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 
 		logrus.Debugf("Pulled candidate %s successfully", candidateString)
-		ids, err := r.imagesIDsForManifest(manifestBytes, sys)
+		ids, err := r.imageIDForManifest(manifestBytes, sys)
 		if err != nil {
 			return nil, err
 		}
-		return ids, nil
+		return []string{ids}, nil
 	}
 
 	if localImage != nil && pullPolicy == config.PullPolicyNewer {
