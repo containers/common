@@ -50,7 +50,12 @@ BuildRequires: git-core
 BuildRequires: go-md2man
 Provides: skopeo-containers = %{epoch}:%{version}-%{release}
 Requires: (container-selinux >= 2:2.162.1 if selinux-policy)
+%if 0%{?fedora} && 0%{?fedora} <= 40
+Recommends: fuse-overlayfs
+Requires: (fuse-overlayfs if fedora-release-identity-server)
+%else
 Suggests: fuse-overlayfs
+%endif
 URL: https://github.com/%{project}/%{repo}
 Source0: %{url}/archive/v%{version_no_tilde}.tar.gz
 Source1: %{raw_github_url}/image/%{image_branch}/docs/containers-auth.json.5.md
