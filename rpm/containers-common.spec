@@ -50,7 +50,7 @@ BuildRequires: git-core
 BuildRequires: go-md2man
 Provides: skopeo-containers = %{epoch}:%{version}-%{release}
 Requires: (container-selinux >= 2:2.162.1 if selinux-policy)
-%if 0%{?fedora} && 0%{?fedora} <= 40
+%if 0%{?fedora}
 Recommends: fuse-overlayfs
 Requires: (fuse-overlayfs if fedora-release-identity-server)
 %else
