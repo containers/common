@@ -17,11 +17,11 @@ import (
 	dockerArchiveTransport "github.com/containers/image/v5/docker/archive"
 	dockerDaemonTransport "github.com/containers/image/v5/docker/daemon"
 	"github.com/containers/image/v5/docker/reference"
-	"github.com/containers/image/v5/manifest"
 	ociArchiveTransport "github.com/containers/image/v5/oci/archive"
 	ociTransport "github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/pkg/shortnames"
 	storageTransport "github.com/containers/image/v5/storage"
+	"github.com/containers/image/v5/transports"
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
@@ -230,7 +230,7 @@ func nameFromAnnotations(annotations map[string]string) string {
 // copyFromDefault is the default copier for a number of transports.  Other
 // transports require some specific dancing, sometimes Yoga.
 func (r *Runtime) copyFromDefault(ctx context.Context, ref types.ImageReference, options *CopyOptions) ([]string, error) {
-	c, err := r.newCopier(options)
+	c, err := r.newCopier(options, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -386,7 +386,7 @@ func (r *Runtime) copyFromDockerArchive(ctx context.Context, ref types.ImageRefe
 
 // copyFromDockerArchiveReaderReference copies the specified readerRef from reader.
 func (r *Runtime) copyFromDockerArchiveReaderReference(ctx context.Context, reader *dockerArchiveTransport.Reader, readerRef types.ImageReference, options *CopyOptions) ([]string, error) {
-	c, err := r.newCopier(options)
+	c, err := r.newCopier(options, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -454,40 +454,6 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 	}
 
 	return pulledIDs, nil
-}
-
-// imageIDForPulledImage makes a best-effort guess at an image ID for
-// a just-pulled image written to destName, where the pull returned manifestBytes
-func (r *Runtime) imageIDForPulledImage(destName reference.Named, manifestBytes []byte) (string, error) {
-	// The caller, copySingleImageFromRegistry, never triggers a multi-platform copy, so manifestBytes
-	// is always a single-platform manifest instance.
-	manifestDigest, err := manifest.Digest(manifestBytes)
-	if err != nil {
-		return "", err
-	}
-	destDigestedName, err := reference.WithDigest(reference.TrimNamed(destName), manifestDigest)
-	if err != nil {
-		return "", err
-	}
-	storeRef, err := storageTransport.Transport.NewStoreReference(r.store, destDigestedName, "")
-	if err != nil {
-		return "", err
-	}
-	// With zstd:chunked partial pulls, the same image can have several
-	// different IDs, depending on which layers of the image were pulled using the
-	// partial pull (are identified by TOC, not by uncompressed digest).
-	//
-	// At this point, from just the manifest digest, we can’t tell which image
-	// is the one that was actually pulled. (They should all have the same contents
-	// unless the image author is malicious.)
-	//
-	// FIXME: To return an accurate value, c/image would need to return the image ID,
-	// not just manifestBytes.
-	_, image, err := storageTransport.ResolveReference(storeRef)
-	if err != nil {
-		return "", fmt.Errorf("looking up a just-pulled image: %w", err)
-	}
-	return image.ID, nil
 }
 
 // copySingleImageFromRegistry pulls the specified, possibly unqualified, name
@@ -632,7 +598,8 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	if socketPath, ok := os.LookupEnv("NOTIFY_SOCKET"); ok {
 		options.extendTimeoutSocket = socketPath
 	}
-	c, err := r.newCopier(&options.CopyOptions)
+	var resolvedReference types.ImageReference
+	c, err := r.newCopier(&options.CopyOptions, &resolvedReference)
 	if err != nil {
 		return "", err
 	}
@@ -673,8 +640,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 				return "", err
 			}
 		}
-		var manifestBytes []byte
-		if manifestBytes, err = c.Copy(ctx, srcRef, destRef); err != nil {
+		if _, err := c.Copy(ctx, srcRef, destRef); err != nil {
 			logrus.Debugf("Error pulling candidate %s: %v", candidateString, err)
 			pullErrors = append(pullErrors, err)
 			continue
@@ -687,11 +653,14 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 
 		logrus.Debugf("Pulled candidate %s successfully", candidateString)
-		ids, err := r.imageIDForPulledImage(candidate.Value, manifestBytes)
-		if err != nil {
-			return "", err
+		if resolvedReference == nil { // resolvedReference should always be set for storageTransport destinations
+			return "", fmt.Errorf("internal error: After pulling %s, resolvedReference is nil", candidateString)
 		}
-		return ids, nil
+		_, image, err := storageTransport.ResolveReference(resolvedReference)
+		if err != nil {
+			return "", fmt.Errorf("resolving an already-resolved reference %q to the pulled image: %w", transports.ImageName(resolvedReference), err)
+		}
+		return image.ID, nil
 	}
 
 	if localImage != nil && pullPolicy == config.PullPolicyNewer {
