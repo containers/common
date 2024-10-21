@@ -48,4 +48,4 @@ take advantage of the tests and validation.
 
 ## Contact
 
-- IRC: #[containers](irc://irc.freenode.net:6667/#containers) on freenode.net
+https://podman.io/community
