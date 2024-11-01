@@ -33,7 +33,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/runc v1.2.0
 	github.com/opencontainers/runtime-spec v1.2.0
-	github.com/opencontainers/runtime-tools v0.9.1-0.20230914150019-408c51e934dc
+	github.com/opencontainers/runtime-tools v0.9.1-0.20241001195557-6c9570a1678f
 	github.com/opencontainers/selinux v1.11.1
 	github.com/pkg/sftp v1.13.7
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
