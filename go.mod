@@ -28,7 +28,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/moby/sys/capability v0.3.0
 	github.com/onsi/ginkgo/v2 v2.21.0
-	github.com/onsi/gomega v1.35.0
+	github.com/onsi/gomega v1.35.1
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/runc v1.2.0
