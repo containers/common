@@ -699,11 +699,10 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 
 		logrus.Debugf("Pulled candidate %s successfully", candidateString)
-		ids, err := r.imagesIDsForManifest(manifestBytes, sys)
-		if err != nil {
-			return nil, err
+		if ids, err := r.imagesIDsForManifest(manifestBytes, sys); err == nil {
+			return ids, nil
 		}
-		return ids, nil
+		return []string{candidate.Value.String()}, nil
 	}
 
 	if localImage != nil && pullPolicy == config.PullPolicyNewer {
