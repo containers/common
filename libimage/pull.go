@@ -25,6 +25,7 @@ import (
 	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
+	digest "github.com/opencontainers/go-digest"
 	ociSpec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sirupsen/logrus"
 )
@@ -456,38 +457,52 @@ func (r *Runtime) copyFromRegistry(ctx context.Context, ref types.ImageReference
 	return pulledIDs, nil
 }
 
-// imageIDForPulledImage makes a best-effort guess at an image ID for
-// a just-pulled image written to destName, where the pull returned manifestBytes
-func (r *Runtime) imageIDForPulledImage(destName reference.Named, manifestBytes []byte) (string, error) {
-	// The caller, copySingleImageFromRegistry, never triggers a multi-platform copy, so manifestBytes
-	// is always a single-platform manifest instance.
-	manifestDigest, err := manifest.Digest(manifestBytes)
-	if err != nil {
-		return "", err
+// imageIDForManifest() parses the manifest of the copied image and then looks
+// up the ID of the matching image.  There's a small slice of time, between
+// when we copy the image into local storage and when we go to look for it
+// using the name that we gave it when we copied it, when the name we wanted to
+// assign to the image could have been moved, but the image's ID will remain
+// the same until it is deleted.
+func (r *Runtime) imageIDForManifest(manifestBytes []byte, sys *types.SystemContext) (string, error) {
+	var imageDigest digest.Digest
+	manifestType := manifest.GuessMIMEType(manifestBytes)
+	if manifest.MIMETypeIsMultiImage(manifestType) {
+		list, err := manifest.ListFromBlob(manifestBytes, manifestType)
+		if err != nil {
+			return "", fmt.Errorf("parsing manifest list: %w", err)
+		}
+		d, err := list.ChooseInstance(sys)
+		if err != nil {
+			return "", fmt.Errorf("choosing instance from manifest list: %w", err)
+		}
+		imageDigest = d
+	} else {
+		d, err := manifest.Digest(manifestBytes)
+		if err != nil {
+			return "", errors.New("digesting manifest")
+		}
+		imageDigest = d
 	}
-	destDigestedName, err := reference.WithDigest(reference.TrimNamed(destName), manifestDigest)
+	images, err := r.store.ImagesByDigest(imageDigest)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("listing images by manifest digest: %w", err)
 	}
-	storeRef, err := storageTransport.Transport.NewStoreReference(r.store, destDigestedName, "")
-	if err != nil {
-		return "", err
-	}
-	// With zstd:chunked partial pulls, the same image can have several
+
+	// If you have additionStores defined and the same image stored in
+	// both storage and additional store, it can be output twice.
+	//
+	// Worse, with zstd:chunked partial pulls, the same image can have several
 	// different IDs, depending on which layers of the image were pulled using the
 	// partial pull (are identified by TOC, not by uncompressed digest).
 	//
 	// At this point, from just the manifest digest, we can’t tell which image
 	// is the one that was actually pulled. (They should all have the same contents
 	// unless the image author is malicious.)
-	//
-	// FIXME: To return an accurate value, c/image would need to return the image ID,
-	// not just manifestBytes.
-	_, image, err := storageTransport.ResolveReference(storeRef)
-	if err != nil {
-		return "", fmt.Errorf("looking up a just-pulled image: %w", err)
+	// So just return the first matching image ID.
+	if len(images) == 0 {
+		return "", fmt.Errorf("identifying new image by manifest digest: %w", storage.ErrImageUnknown)
 	}
-	return image.ID, nil
+	return images[0].ID, nil
 }
 
 // copySingleImageFromRegistry pulls the specified, possibly unqualified, name
@@ -687,7 +702,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 
 		logrus.Debugf("Pulled candidate %s successfully", candidateString)
-		ids, err := r.imageIDForPulledImage(candidate.Value, manifestBytes)
+		ids, err := r.imageIDForManifest(manifestBytes, sys)
 		if err != nil {
 			return "", err
 		}
