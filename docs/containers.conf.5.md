@@ -612,7 +612,7 @@ The default method is different based on the platform that
 Podman is being run upon.  To determine the current value,
 use this command:
 
-`podman info --format {{.Host.EventLogger}`
+`podman info --format {{.Host.EventLogger}}`
 
 Valid values are: `file`, `journald`, and `none`.
 
