@@ -136,9 +136,12 @@ type Layer struct {
 	TOCDigest digest.Digest `json:"toc-digest,omitempty"`
 
 	// UncompressedSize is the length of the blob that was last passed to
-	// ApplyDiff() or create(), after we decompressed it.  If
-	// UncompressedDigest is not set, this should be treated as if it were
-	// an uninitialized value.
+	// ApplyDiff() or create(), after we decompressed it.
+	//
+	//   - If UncompressedDigest is set, this must be set to a valid value.
+	//   - Otherwise, if TOCDigest is set, this is either valid or -1.
+	//   - If neither of this digests is set, this should be treated as if it were
+	//     an uninitialized value.
 	UncompressedSize int64 `json:"diff-size,omitempty"`
 
 	// CompressionType is the type of compression which we detected on the blob
@@ -436,7 +439,7 @@ func layerLocation(l *Layer) layerLocations {
 func copyLayer(l *Layer) *Layer {
 	return &Layer{
 		ID:                 l.ID,
-		Names:              copyStringSlice(l.Names),
+		Names:              copySlicePreferringNil(l.Names),
 		Parent:             l.Parent,
 		Metadata:           l.Metadata,
 		MountLabel:         l.MountLabel,
@@ -451,12 +454,12 @@ func copyLayer(l *Layer) *Layer {
 		CompressionType:    l.CompressionType,
 		ReadOnly:           l.ReadOnly,
 		volatileStore:      l.volatileStore,
-		BigDataNames:       copyStringSlice(l.BigDataNames),
-		Flags:              maps.Clone(l.Flags),
-		UIDMap:             copyIDMap(l.UIDMap),
-		GIDMap:             copyIDMap(l.GIDMap),
-		UIDs:               copyUint32Slice(l.UIDs),
-		GIDs:               copyUint32Slice(l.GIDs),
+		BigDataNames:       copySlicePreferringNil(l.BigDataNames),
+		Flags:              copyMapPreferringNil(l.Flags),
+		UIDMap:             copySlicePreferringNil(l.UIDMap),
+		GIDMap:             copySlicePreferringNil(l.GIDMap),
+		UIDs:               copySlicePreferringNil(l.UIDs),
+		GIDs:               copySlicePreferringNil(l.GIDs),
 	}
 }
 
@@ -1214,8 +1217,8 @@ func (r *layerStore) Size(name string) (int64, error) {
 	// We use the presence of a non-empty digest as an indicator that the size value was intentionally set, and that
 	// a zero value is not just present because it was never set to anything else (which can happen if the layer was
 	// created by a version of this library that didn't keep track of digest and size information).
-	if layer.TOCDigest != "" || layer.UncompressedDigest != "" {
-		return layer.UncompressedSize, nil
+	if layer.UncompressedDigest != "" || layer.TOCDigest != "" {
+		return layer.UncompressedSize, nil // This may return -1 if only TOCDigest is set
 	}
 	return -1, nil
 }
@@ -1403,9 +1406,9 @@ func (r *layerStore) create(id string, parentLayer *Layer, names []string, mount
 		CompressionType:    templateCompressionType,
 		UIDs:               templateUIDs,
 		GIDs:               templateGIDs,
-		Flags:              copyStringInterfaceMap(moreOptions.Flags),
-		UIDMap:             copyIDMap(moreOptions.UIDMap),
-		GIDMap:             copyIDMap(moreOptions.GIDMap),
+		Flags:              newMapFrom(moreOptions.Flags),
+		UIDMap:             copySlicePreferringNil(moreOptions.UIDMap),
+		GIDMap:             copySlicePreferringNil(moreOptions.GIDMap),
 		BigDataNames:       []string{},
 		volatileStore:      moreOptions.Volatile,
 	}
@@ -1840,7 +1843,7 @@ func (r *layerStore) BigDataNames(id string) ([]string, error) {
 	if !ok {
 		return nil, fmt.Errorf("locating layer with ID %q to retrieve bigdata names: %w", id, ErrImageUnknown)
 	}
-	return copyStringSlice(layer.BigDataNames), nil
+	return copySlicePreferringNil(layer.BigDataNames), nil
 }
 
 // Requires startReading or startWriting.
@@ -2510,7 +2513,7 @@ func (r *layerStore) applyDiffFromStagingDirectory(id string, diffOutput *driver
 		return err
 	}
 
-	if len(diffOutput.TarSplit) != 0 {
+	if diffOutput.TarSplit != nil {
 		tsdata := bytes.Buffer{}
 		compressor, err := pgzip.NewWriterLevel(&tsdata, pgzip.BestSpeed)
 		if err != nil {
