@@ -3,7 +3,9 @@
 package cgroups
 
 import (
+	"bytes"
 	"fmt"
+	"math/big"
 	"os"
 	"os/exec"
 	"strconv"
@@ -87,7 +89,7 @@ func TestResources(t *testing.T) {
 	}
 
 	// test CPU Quota adjustment.
-	u, _, _, _, _ := resourcesToProps(&resources, true)
+	u, _, b, _, _, _ := resourcesToProps(&resources, true)
 
 	val, ok := u["CPUQuotaPerSecUSec"]
 	if !ok {
@@ -95,6 +97,25 @@ func TestResources(t *testing.T) {
 	}
 	if val != 1000000 {
 		t.Fatal("CPU Quota incorrect value expected 1000000 got " + strconv.FormatUint(val, 10))
+	}
+
+	bits := new(big.Int)
+	cpuset_val := bits.SetBit(bits, 0, 1).Bytes()
+
+	cpus, ok := b["AllowedCPUs"]
+	if !ok {
+		t.Fatal("Cpuset Cpus not parsed.")
+	}
+	if !bytes.Equal(cpus, cpuset_val) {
+		t.Fatal("Cpuset Cpus incorrect value expected " + string(cpuset_val) + " got " + string(cpus))
+	}
+
+	mems, ok := b["AllowedMemoryNodes"]
+	if !ok {
+		t.Fatal("Cpuset Mems not parsed.")
+	}
+	if !bytes.Equal(mems, cpuset_val) {
+		t.Fatal("Cpuset Mems incorrect value expected " + string(cpuset_val) + " got " + string(mems))
 	}
 
 	err = os.Mkdir("/dev/foodevdir", os.ModePerm)
