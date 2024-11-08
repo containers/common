@@ -122,6 +122,18 @@ func TestNew(t *testing.T) {
 			ipv6:        true,
 			want:        "nameserver 1.1.1.1\nnameserver fd::1\n",
 		},
+		{
+			name:        "ipv6 link local must always be filtered when netns is private",
+			baseContent: "nameserver 1.1.1.1\nnameserver fe80::1%eth1\nnameserver fd::1\n",
+			ipv6:        true,
+			want:        "nameserver 1.1.1.1\nnameserver fd::1\n",
+		},
+		{
+			name:        "ipv6 link local must not be filtered when netns is host",
+			baseContent: "nameserver 1.1.1.1\nnameserver fe80::1%eth1\nnameserver fd::1\n",
+			hostns:      true,
+			want:        "nameserver 1.1.1.1\nnameserver fe80::1%eth1\nnameserver fd::1\n",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
