@@ -273,8 +273,10 @@ func UnmountNS(nsPath string) error {
 		return fmt.Errorf("failed to unmount NS: at %s: %w", nsPath, err)
 	}
 
-	for {
-		if err := os.Remove(nsPath); err != nil {
+	var err error
+	// wait for up to 60s in the loop
+	for range 6000 {
+		if err = os.Remove(nsPath); err != nil {
 			if errors.Is(err, unix.EBUSY) {
 				// mount is still busy, sleep a moment and try again to remove
 				logrus.Debugf("Netns %s still busy, try removing it again in 10ms", nsPath)
@@ -283,12 +285,12 @@ func UnmountNS(nsPath string) error {
 			}
 			// If path does not exists we can return without error.
 			if errors.Is(err, unix.ENOENT) {
-				break
+				return nil
 			}
 			return fmt.Errorf("failed to remove ns path: %w", err)
 		}
-		break
+		return nil
 	}
 
-	return nil
+	return fmt.Errorf("failed to remove ns path (timeout after 60s): %w", err)
 }
