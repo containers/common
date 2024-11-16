@@ -927,10 +927,23 @@ URI to access the Podman service
 - **rootless remote** - ssh://user@engineering.lab.company.com/run/user/1000/podman/podman.sock
 - **rootful local**  - unix:///run/podman/podman.sock
 - **rootful remote** - ssh://root@10.10.1.136:22/run/podman/podman.sock
+- **tcp/tls remote** - tcp://10.10.1.136:9443
 
 **identity="~/.ssh/id_rsa**
 
 Path to file containing ssh identity key
+
+**tls_cert_file="~/certs/podman/tls.crt"**
+
+Path to PEM file containing TLS client certificate
+
+**tls_key_file="~/certs/podman/tls.key"**
+
+Path to PEM file containing TLS client certificate private key
+
+**tls_ca_file="~/certs/podman/ca.crt"**
+
+Path to PEM file containing TLS certificate authority (CA) bundle
 
 **[engine.volume_plugins]**
 
