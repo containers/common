@@ -22,7 +22,7 @@ func TestPush(t *testing.T) {
 	// Prefetch alpine.
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
-	_, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	_, err := runtime.Pull(ctx, "quay.io/libpod/alpine:latest", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
 
 	pushOptions := &PushOptions{}
@@ -81,7 +81,7 @@ func TestPushOtherPlatform(t *testing.T) {
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
 	pullOptions.Architecture = "arm64"
-	pulledImages, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	pulledImages, err := runtime.Pull(ctx, "quay.io/libpod/alpine:latest", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
 	require.Len(t, pulledImages, 1)
 
@@ -95,7 +95,7 @@ func TestPushOtherPlatform(t *testing.T) {
 	require.NoError(t, err)
 	tmp.Close()
 	defer os.Remove(tmp.Name())
-	_, err = runtime.Push(ctx, "docker.io/library/alpine:latest", "docker-archive:"+tmp.Name(), pushOptions)
+	_, err = runtime.Push(ctx, "quay.io/libpod/alpine:latest", "docker-archive:"+tmp.Name(), pushOptions)
 	require.NoError(t, err)
 }
 
@@ -107,7 +107,7 @@ func TestPushWithForceCompression(t *testing.T) {
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
 	pullOptions.Architecture = "arm64"
-	pulledImages, err := runtime.Pull(ctx, "docker.io/library/alpine:latest", config.PullPolicyAlways, pullOptions)
+	pulledImages, err := runtime.Pull(ctx, "quay.io/libpod/alpine:latest", config.PullPolicyAlways, pullOptions)
 	require.NoError(t, err)
 	require.Len(t, pulledImages, 1)
 
@@ -121,7 +121,7 @@ func TestPushWithForceCompression(t *testing.T) {
 	pushOptions.SystemContext.DirForceDecompress = true
 	pushOptions.Writer = os.Stdout
 	dirDest := t.TempDir()
-	_, err = runtime.Push(ctx, "docker.io/library/alpine:latest", "dir:"+dirDest, pushOptions)
+	_, err = runtime.Push(ctx, "quay.io/libpod/alpine:latest", "dir:"+dirDest, pushOptions)
 	require.NoError(t, err)
 
 	// Pull uncompressed alpine from `dir:dirDest` as source.
@@ -137,7 +137,7 @@ func TestPushWithForceCompression(t *testing.T) {
 	pushOptions.OciAcceptUncompressedLayers = true
 	pushOptions.Writer = os.Stdout
 	ociDest := t.TempDir()
-	_, err = runtime.Push(ctx, "docker.io/library/alpine:latest", "oci:"+ociDest, pushOptions)
+	_, err = runtime.Push(ctx, "quay.io/libpod/alpine:latest", "oci:"+ociDest, pushOptions)
 	require.NoError(t, err)
 
 	// blobs from first push
@@ -154,7 +154,7 @@ func TestPushWithForceCompression(t *testing.T) {
 	pushOptions.Writer = os.Stdout
 	pushOptions.CompressionFormat = &compression.Gzip
 	pushOptions.ForceCompressionFormat = false
-	_, err = runtime.Push(ctx, "docker.io/library/alpine:latest", "oci:"+ociDest, pushOptions)
+	_, err = runtime.Push(ctx, "quay.io/libpod/alpine:latest", "oci:"+ociDest, pushOptions)
 	require.NoError(t, err)
 
 	// blobs from second push
@@ -175,7 +175,7 @@ func TestPushWithForceCompression(t *testing.T) {
 	pushOptions.Writer = os.Stdout
 	pushOptions.CompressionFormat = &compression.Gzip
 	pushOptions.ForceCompressionFormat = true
-	_, err = runtime.Push(ctx, "docker.io/library/alpine:latest", "oci:"+ociDest, pushOptions)
+	_, err = runtime.Push(ctx, "quay.io/libpod/alpine:latest", "oci:"+ociDest, pushOptions)
 	require.NoError(t, err)
 
 	// collect blobs from third push
