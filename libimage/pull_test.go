@@ -223,7 +223,7 @@ func TestPullOCINoReference(t *testing.T) {
 	// Exercise pulling from the OCI transport and make sure that a
 	// specified reference is preserved in the image name.
 
-	busybox := "docker.io/library/busybox:latest"
+	busybox := "quay.io/libpod/busybox:latest"
 	runtime := testNewRuntime(t)
 	ctx := context.Background()
 	pullOptions := &PullOptions{}

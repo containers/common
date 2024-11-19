@@ -391,7 +391,7 @@ func TestUntag(t *testing.T) {
 func getImageAndRuntime(t *testing.T) (*Runtime, *Image) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
-	busyboxLatest := "docker.io/library/busybox:latest"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
 
 	runtime := testNewRuntime(t)
 	ctx := context.Background()
