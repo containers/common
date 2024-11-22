@@ -215,6 +215,7 @@ image_copy_tmp_dir="storage"`
 			// prior to reading local config, shows hard coded defaults
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.BeTrue())
 			gomega.Expect(defaultConfig.Engine.HealthcheckEvents).To(gomega.BeTrue())
+			gomega.Expect(defaultConfig.Containers.ContainerNameAsHostName).To(gomega.BeFalse())
 
 			err := readConfigFromFile("testdata/containers_default.conf", defaultConfig, false)
 
@@ -322,6 +323,7 @@ image_copy_tmp_dir="storage"`
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(defaultConfig.Engine.CgroupManager).To(gomega.Equal("systemd"))
+			gomega.Expect(defaultConfig.Containers.ContainerNameAsHostName).To(gomega.BeTrue())
 			gomega.Expect(defaultConfig.Containers.Env.Get()).To(gomega.BeEquivalentTo(envs))
 			gomega.Expect(defaultConfig.Containers.Mounts.Get()).To(gomega.BeEquivalentTo(mounts))
 			gomega.Expect(defaultConfig.Containers.PidsLimit).To(gomega.BeEquivalentTo(2048))
