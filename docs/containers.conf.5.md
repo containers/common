@@ -124,6 +124,16 @@ Options are:
 `private` Create private Cgroup Namespace for the container.
 `host`    Share host Cgroup Namespace with the container.
 
+**container_name_as_hostname**=true|false
+
+When no hostname is set for a container, use the container's name, with
+characters not valid for a hostname removed, as the hostname instead of
+the first 12 characters of the container's ID. Containers not running
+in a private UTS namespace will have their hostname set to the host's
+hostname regardless of this setting.
+
+Default is false.
+
 **default_capabilities**=[]
 
 List of default capabilities for containers.
