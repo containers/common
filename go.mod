@@ -10,7 +10,7 @@ require (
 	github.com/checkpoint-restore/go-criu/v7 v7.2.0
 	github.com/containerd/platforms v0.2.1
 	github.com/containernetworking/cni v1.2.3
-	github.com/containernetworking/plugins v1.5.1
+	github.com/containernetworking/plugins v1.6.1
 	github.com/containers/image/v5 v5.33.0
 	github.com/containers/ocicrypt v1.2.0
 	github.com/containers/storage v1.56.0
