@@ -933,15 +933,15 @@ URI to access the Podman service
 
 Path to file containing ssh identity key
 
-**tls_cert_file="~/certs/podman/tls.crt"**
+**tls_cert_file="/path/to/certs/podman/tls.crt"**
 
 Path to PEM file containing TLS client certificate
 
-**tls_key_file="~/certs/podman/tls.key"**
+**tls_key_file="/path/to/certs/podman/tls.key"**
 
 Path to PEM file containing TLS client certificate private key
 
-**tls_ca_file="~/certs/podman/ca.crt"**
+**tls_ca_file="/path/to/certs/podman/ca.crt"**
 
 Path to PEM file containing TLS certificate authority (CA) bundle
 
