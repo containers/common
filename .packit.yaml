@@ -13,9 +13,6 @@ packages:
     downstream_package_name: containers-common
     pkg_tool: centpkg
     specfile_path: rpm/containers-common.spec
-  containers-common-rhel:
-    downstream_package_name: containers-common
-    specfile_path: rpm/containers-common.spec
   containers-common-eln:
     downstream_package_name: containers-common
     specfile_path: rpm/containers-common.spec
@@ -55,14 +52,6 @@ jobs:
     targets:
       - centos-stream-9
       - centos-stream-10
-
-  - job: copr_build
-    trigger: pull_request
-    packages: [containers-common-rhel]
-    notifications: *ephemeral_build_failure_notification
-    enable_net: true
-    targets:
-      - epel-9
 
   # Run on commit to main branch
   - job: copr_build
