@@ -109,8 +109,8 @@ func TestRuntimeListImagesAllImages(t *testing.T) {
 	ctx := context.Background()
 
 	// Prefetch alpine, busybox.
-	testRuntimePullImage(t, runtime, ctx, "docker.io/library/alpine:latest")
-	testRuntimePullImage(t, runtime, ctx, "docker.io/library/busybox:latest")
+	testRuntimePullImage(t, runtime, ctx, "quay.io/libpod/alpine:latest")
+	testRuntimePullImage(t, runtime, ctx, "quay.io/libpod/busybox:latest")
 
 	images, err := runtime.ListImages(ctx, nil)
 	require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestRuntimeListImagesAllImages(t *testing.T) {
 	}
 	assert.ElementsMatch(t,
 		image_names,
-		[]string{"docker.io/library/alpine:latest", "docker.io/library/busybox:latest"},
+		[]string{"quay.io/libpod/alpine:latest", "quay.io/libpod/busybox:latest"},
 	)
 }
 
@@ -131,15 +131,15 @@ func TestRuntimeListImagesByNames(t *testing.T) {
 	ctx := context.Background()
 
 	// Prefetch alpine, busybox.
-	testRuntimePullImage(t, runtime, ctx, "docker.io/library/alpine:latest")
-	testRuntimePullImage(t, runtime, ctx, "docker.io/library/busybox:latest")
+	testRuntimePullImage(t, runtime, ctx, "quay.io/libpod/alpine:latest")
+	testRuntimePullImage(t, runtime, ctx, "quay.io/libpod/busybox:latest")
 
 	for _, test := range []struct {
 		name     string
 		fullName string
 	}{
-		{"alpine", "docker.io/library/alpine:latest"},
-		{"busybox", "docker.io/library/busybox:latest"},
+		{"alpine", "quay.io/libpod/alpine:latest"},
+		{"busybox", "quay.io/libpod/busybox:latest"},
 	} {
 		images, err := runtime.ListImagesByNames([]string{test.name})
 		require.NoError(t, err)

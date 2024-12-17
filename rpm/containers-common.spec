@@ -141,7 +141,7 @@ done
 
 %install
 # install config and policy files for registries
-install -dp %{buildroot}%{_sysconfdir}/containers/{certs.d,oci/hooks.d,systemd}
+install -dp %{buildroot}%{_sysconfdir}/containers/{certs.d,oci/hooks.d,networks,systemd}
 install -dp %{buildroot}%{_sharedstatedir}/containers/sigstore
 install -dp %{buildroot}%{_datadir}/containers/systemd
 install -dp %{buildroot}%{_prefix}/lib/containers/storage
@@ -187,6 +187,7 @@ ln -s ../../../..%{_sysconfdir}/yum.repos.d/redhat.repo %{buildroot}%{_datadir}/
 %files
 %dir %{_sysconfdir}/containers
 %dir %{_sysconfdir}/containers/certs.d
+%dir %{_sysconfdir}/containers/networks
 %dir %{_sysconfdir}/containers/oci
 %dir %{_sysconfdir}/containers/oci/hooks.d
 %dir %{_sysconfdir}/containers/registries.conf.d

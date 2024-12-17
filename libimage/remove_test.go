@@ -14,7 +14,7 @@ import (
 func TestRemoveImages(t *testing.T) {
 	// Note: this will resolve pull from the GCR registry (see
 	// testdata/registries.conf).
-	busyboxLatest := "docker.io/library/busybox:latest"
+	busyboxLatest := "quay.io/libpod/busybox:latest"
 
 	runtime := testNewRuntime(t)
 	ctx := context.Background()
