@@ -28,13 +28,14 @@ jobs:
       failure_comment:
         message: "Ephemeral COPR build failed. @containers/packit-build please check."
     enable_net: true
-    targets:
-      - fedora-all
+    targets: &fedora_copr_targets
+      - fedora-all-x86_64
+      - fedora-all-aarch64
 
   - job: copr_build
     trigger: pull_request
     packages: [containers-common-eln]
-    notifications: *ephemeral_build_failure_notification
+    #notifications: *ephemeral_build_failure_notification
     enable_net: true
     targets:
       fedora-eln:
@@ -47,11 +48,13 @@ jobs:
   - job: copr_build
     trigger: pull_request
     packages: [containers-common-centos]
-    notifications: *ephemeral_build_failure_notification
+    #notifications: *ephemeral_build_failure_notification
     enable_net: true
-    targets:
-      - centos-stream-9
-      - centos-stream-10
+    targets: &centos_copr_targets
+      - centos-stream-10-x86_64
+      - centos-stream-10-aarch64
+      - centos-stream-9-x86_64
+      - centos-stream-9-aarch64
 
   # Run on commit to main branch
   - job: copr_build
@@ -64,6 +67,20 @@ jobs:
     owner: rhcontainerbot
     project: podman-next
     enable_net: true
+
+  - job: tests
+    trigger: pull_request
+    packages: [containers-common-fedora]
+    targets:
+      - fedora-rawhide
+      - fedora-42
+      - fedora-41
+    enable_net: true
+    tf_extra_params:
+      environments:
+        - artifacts:
+          - type: repository-file
+            id: https://copr.fedorainfracloud.org/coprs/rhcontainerbot/podman-next/repo/fedora-$releasever/rhcontainerbot-podman-next-fedora-$releasever.repo
 
   - job: propose_downstream
     trigger: release
