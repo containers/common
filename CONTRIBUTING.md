@@ -18,6 +18,7 @@ This documented is primarily aimed at the following repositories:
 - [storage](https://github.com/containers/storage)
 - [libhvee](https://github.com/containers/libhvee)
 - [psgo](https://github.com/containers/psgo)
+- [ramalama](https://github.com/containers/ramalama)
 
 However most of the things here listed are very generic when contributing to public projects
 
