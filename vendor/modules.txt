@@ -185,7 +185,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.56.2-0.20250121150636-c2cdd500e4ef
+# github.com/containers/storage v1.57.1
 ## explicit; go 1.22.0
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -623,7 +623,7 @@ github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
-# github.com/vbatts/tar-split v0.11.6
+# github.com/vbatts/tar-split v0.11.7
 ## explicit; go 1.17
 github.com/vbatts/tar-split/archive/tar
 github.com/vbatts/tar-split/tar/asm
