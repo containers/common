@@ -82,6 +82,7 @@ func TestSaveLoad(t *testing.T) {
 	}()
 
 	list := Create()
+	//nolint:errcheck
 	list.(listPtr).artifacts.Detached[otherListDigest] = "relative-path-names-are-messy" // set to check that this data is recorded
 	assert.NotNil(t, list, "Create() returned nil?")
 
@@ -104,6 +105,7 @@ func TestSaveLoad(t *testing.T) {
 	assert.NoError(t, err, "LoadFromImage(3)")
 	assert.NotNilf(t, list, "LoadFromImage(3)")
 
+	//nolint:errcheck
 	assert.Equal(t, list.(listPtr).artifacts.Detached[otherListDigest], "relative-path-names-are-messy") // check that this data is loaded
 }
 
