@@ -1,17 +1,14 @@
 package config
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMachineVolumes(t *testing.T) {
-	t.Parallel()
-
-	os.Setenv("env1", "/test1")
-	os.Setenv("env2", "/test2")
+	t.Setenv("env1", "/test1")
+	t.Setenv("env2", "/test2")
 	for _, tc := range []struct {
 		msg     string
 		volumes []string

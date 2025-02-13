@@ -28,10 +28,9 @@ func TestSave(t *testing.T) {
 	// reload the images for each test.
 	saveOptions := &SaveOptions{}
 	saveOptions.Writer = os.Stdout
-	imageCache, err := os.CreateTemp("", "saveimagecache")
+	imageCache, err := os.CreateTemp(t.TempDir(), "saveimagecache")
 	require.NoError(t, err)
 	imageCache.Close()
-	defer os.Remove(imageCache.Name())
 	err = runtime.Save(ctx, []string{"alpine", "busybox"}, "docker-archive", imageCache.Name(), saveOptions)
 	require.NoError(t, err)
 

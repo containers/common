@@ -97,10 +97,8 @@ func TestDial(t *testing.T) {
 }
 
 func TestScp(t *testing.T) {
-	f, err := os.CreateTemp("", "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	require.Nil(t, err)
-
-	defer os.Remove(f.Name())
 
 	options := ConnectionScpOptions{
 		User:        &url.Userinfo{},
