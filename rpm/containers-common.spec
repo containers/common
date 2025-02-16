@@ -27,6 +27,11 @@
 %define netavark_epoch 2
 %endif
 
+# Pyxis config is only on official centos-stream and rhel builds, nowhere else.
+%if !%{defined fedora} && !%{defined copr_build}
+%define pyxis 1
+%endif
+
 Name: containers-common
 %if %{defined copr_build}
 Epoch: 102
@@ -76,6 +81,10 @@ Source14: %{raw_github_url}/storage/%{storage_branch}/storage.conf
 # a copy in repo or dist-git. Depending on distribution-gpg-keys rpm is also
 # not an option because that package doesn't exist on CentOS Stream.
 Source15: https://access.redhat.com/security/data/fd431d51.txt
+Source16: https://security.access.redhat.com/data/f21541eb.txt
+%if %{defined pyxis}
+Source17: pyxis.sh
+%endif
 
 %description
 This package contains common configuration files and documentation for container
@@ -133,6 +142,10 @@ cp %{SOURCE14} storage.conf
 # e.g., seccomp, composefs, registries on different RHEL/Fedora versions
 bash rpm/update-config-files.sh
 
+%if %{defined pyxis}
+bash pyxis.sh
+%endif
+
 %build
 mkdir -p man5
 for i in docs/*.5.md; do
@@ -151,6 +164,9 @@ install -dp -m 700 %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers
 touch %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers/layers.lock
 
 install -Dp -m0644 shortnames.conf %{buildroot}%{_sysconfdir}/containers/registries.conf.d/000-shortnames.conf
+%if %{defined pyxis}
+install -Dp -m0644 001-rhel-shortnames-pyxis.conf %{buildroot}%{_sysconfdir}/containers/registries.conf.d/001-rhel-shortnames-pyxis.conf
+%endif
 install -Dp -m0644 %{SOURCE11} %{buildroot}%{_sysconfdir}/containers/registries.d/default.yaml
 install -Dp -m0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/containers/policy.json
 install -Dp -m0644 registries.conf %{buildroot}%{_sysconfdir}/containers/registries.conf
@@ -160,6 +176,7 @@ install -Dp -m0644 storage.conf %{buildroot}%{_datadir}/containers/storage.conf
 # fedora and centos
 %if %{defined fedora} || %{defined centos}
 install -Dp -m0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+install -Dp -m0644 %{SOURCE16} %{buildroot}%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
 %endif
 
 install -Dp -m0644 contrib/redhat/registry.access.redhat.com.yaml -t %{buildroot}%{_sysconfdir}/containers/registries.d
@@ -203,8 +220,12 @@ ln -s ../../../..%{_sysconfdir}/yum.repos.d/redhat.repo %{buildroot}%{_datadir}/
 %config(noreplace) %{_sysconfdir}/containers/policy.json
 %config(noreplace) %{_sysconfdir}/containers/registries.conf
 %config(noreplace) %{_sysconfdir}/containers/registries.conf.d/000-shortnames.conf
+%if %{defined pyxis}
+%config(noreplace) %{_sysconfdir}/containers/registries.conf.d/001-rhel-shortnames-pyxis.conf
+%endif
 %if 0%{?fedora} || 0%{?centos}
 %{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
 %endif
 %config(noreplace) %{_sysconfdir}/containers/registries.d/default.yaml
 %config(noreplace) %{_sysconfdir}/containers/registries.d/registry.redhat.io.yaml
