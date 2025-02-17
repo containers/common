@@ -91,10 +91,9 @@ func TestPushOtherPlatform(t *testing.T) {
 
 	pushOptions := &PushOptions{}
 	pushOptions.Writer = os.Stdout
-	tmp, err := os.CreateTemp("", "")
+	tmp, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
 	tmp.Close()
-	defer os.Remove(tmp.Name())
 	_, err = runtime.Push(ctx, "quay.io/libpod/alpine:latest", "docker-archive:"+tmp.Name(), pushOptions)
 	require.NoError(t, err)
 }

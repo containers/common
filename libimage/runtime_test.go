@@ -67,41 +67,36 @@ func testRuntimePullImage(t *testing.T, r *Runtime, ctx context.Context, imageNa
 
 func TestTmpdir(t *testing.T) {
 	tmpStr := "TMPDIR"
-	tmp, tmpSet := os.LookupEnv(tmpStr)
-
 	confStr := "CONTAINERS_CONF"
-	conf, confSet := os.LookupEnv(confStr)
 
-	os.Setenv(confStr, "testdata/containers.conf")
-	_, err := config.Reload()
-	require.NoError(t, err)
+	t.Run(confStr, func(t *testing.T) {
+		// Note, Cleanup() must be called before Setenv() so it only
+		// runs after the Setenv() cleanup reset the env again.
+		t.Cleanup(func() {
+			_, err := config.Reload()
+			require.NoError(t, err)
+		})
+		t.Setenv(confStr, "testdata/containers.conf")
 
-	tmpd, err := tmpdir()
-	require.NoError(t, err)
-	require.Equal(t, "/tmp/from/containers.conf", tmpd)
+		_, err := config.Reload()
+		require.NoError(t, err)
 
-	if confSet {
-		os.Setenv(confStr, conf)
-	} else {
-		os.Unsetenv(confStr)
-	}
-	_, err = config.Reload()
-	require.NoError(t, err)
+		tmpd, err := tmpdir()
+		require.NoError(t, err)
+		require.Equal(t, "/tmp/from/containers.conf", tmpd)
+	})
 
-	os.Unsetenv(tmpStr)
-	tmpd, err = tmpdir()
-	require.NoError(t, err)
-	require.Equal(t, "/var/tmp", tmpd)
+	t.Run(tmpStr, func(t *testing.T) {
+		t.Setenv(tmpStr, "/tmp/test")
+		tmpd, err := tmpdir()
+		require.NoError(t, err)
+		require.Equal(t, "/tmp/test", tmpd)
 
-	os.Setenv(tmpStr, "/tmp/test")
-	tmpd, err = tmpdir()
-	require.NoError(t, err)
-	require.Equal(t, "/tmp/test", tmpd)
-	if tmpSet {
-		os.Setenv(tmpStr, tmp)
-	} else {
 		os.Unsetenv(tmpStr)
-	}
+		tmpd, err = tmpdir()
+		require.NoError(t, err)
+		require.Equal(t, "/var/tmp", tmpd)
+	})
 }
 
 func TestRuntimeListImagesAllImages(t *testing.T) {

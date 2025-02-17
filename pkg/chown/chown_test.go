@@ -66,9 +66,13 @@ func TestChangeHostPathOwnership(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	sys, ok := f.Sys().(*syscall.Stat_t)
+	if !ok {
+		t.Fatal("failed to cast stat to *syscall.Stat_t")
+	}
 	// Get current ownership
-	currentUID := int(f.Sys().(*syscall.Stat_t).Uid)
-	currentGID := int(f.Sys().(*syscall.Stat_t).Gid)
+	currentUID := int(sys.Uid)
+	currentGID := int(sys.Gid)
 
 	tests := []struct {
 		Path             string

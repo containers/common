@@ -378,6 +378,7 @@ func TestAddArtifacts(t *testing.T) {
 			err = list.AnnotateInstance(d, &aoptions)
 			require.NoError(t, err)
 
+			//nolint:usetesting // Test fails when using t.TempDir() because the resulting file name is to long.
 			destination, err := os.MkdirTemp(dir, "pushed")
 			require.NoError(t, err)
 

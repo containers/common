@@ -1,6 +1,7 @@
 package manifests
 
 import (
+	"maps"
 	"os"
 	"reflect"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	digest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/exp/maps"
 )
 
 const (
