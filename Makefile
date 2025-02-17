@@ -1,3 +1,5 @@
+export GOPROXY=https://proxy.golang.org
+
 GO ?= go
 GO_BUILD=$(GO) build
 BUILDTAGS := containers_image_openpgp,systemd,exclude_graphdriver_devicemapper

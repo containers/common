@@ -913,6 +913,27 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring(`vlan ID -1 must be between 0 and 4094`))
 		})
 
+		It("create two networks with vlan option and same bridge", func() {
+			networkOpts := types.Network{
+				NetworkInterface: "br0",
+				Options: map[string]string{
+					types.VLANOption: "5",
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(networkOpts, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Options).To(HaveKeyWithValue("vlan", "5"))
+
+			// set a new vlan
+			networkOpts.Options[types.VLANOption] = "99"
+
+			network2, err := libpodNet.NetworkCreate(networkOpts, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network2.Driver).To(Equal("bridge"))
+			Expect(network2.Options).To(HaveKeyWithValue("vlan", "99"))
+		})
+
 		It("create network with vrf option", func() {
 			network := types.Network{
 				Options: map[string]string{
