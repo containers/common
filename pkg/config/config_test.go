@@ -439,18 +439,21 @@ image_copy_tmp_dir="storage"`
 				},
 			}
 
-			defCaps := []string{
-				"CAP_CHOWN",
-				"CAP_DAC_OVERRIDE",
-				"CAP_FOWNER",
-				"CAP_FSETID",
-				"CAP_KILL",
-				"CAP_NET_BIND_SERVICE",
-				"CAP_SETFCAP",
-				"CAP_SETGID",
-				"CAP_SETPCAP",
-				"CAP_SETUID",
-				"CAP_SYS_CHROOT",
+			var defCaps []string
+			if runtime.GOOS == "linux" {
+				defCaps = []string{
+					"CAP_CHOWN",
+					"CAP_DAC_OVERRIDE",
+					"CAP_FOWNER",
+					"CAP_FSETID",
+					"CAP_KILL",
+					"CAP_NET_BIND_SERVICE",
+					"CAP_SETFCAP",
+					"CAP_SETGID",
+					"CAP_SETPCAP",
+					"CAP_SETUID",
+					"CAP_SYS_CHROOT",
+				}
 			}
 
 			envs := []string{
@@ -480,7 +483,8 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Engine.OCIRuntimes["runc"]).To(gomega.Equal(OCIRuntimeMap["runc"]))
 			gomega.Expect(config.Containers.CgroupConf.Get()).To(gomega.BeEmpty())
 
-			caps, _ := config.Capabilities("", nil, nil)
+			caps, err := config.Capabilities("", nil, nil)
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(caps).Should(gomega.Equal(defCaps))
 
 			if useSystemd() {
