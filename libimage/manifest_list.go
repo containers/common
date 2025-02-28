@@ -375,6 +375,7 @@ func (i *Image) IsManifestList(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer imgSrc.Close()
 	_, manifestType, err := image.UnparsedInstance(imgSrc, nil).Manifest(ctx)
 	if err != nil {
 		return false, err
