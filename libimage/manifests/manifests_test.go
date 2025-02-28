@@ -19,6 +19,7 @@ import (
 	"github.com/containers/common/pkg/manifests"
 	cp "github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/directory"
+	"github.com/containers/image/v5/image"
 	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/pkg/compression"
 	"github.com/containers/image/v5/signature"
@@ -120,8 +121,8 @@ func TestAddRemove(t *testing.T) {
 	src, err := ref.NewImageSource(ctx, sys)
 	assert.NoError(t, err, "NewImageSource(%q)", otherListImage)
 	defer assert.NoError(t, src.Close(), "ImageSource.Close()")
-	m, _, err := src.GetManifest(ctx, nil)
-	assert.NoError(t, err, "ImageSource.GetManifest()")
+	m, _, err := image.UnparsedInstance(src, nil).Manifest(ctx)
+	require.NoError(t, err, "UnparsedInstance.Manifest()")
 	assert.NoError(t, src.Close(), "ImageSource.GetManifest()")
 	listDigest, err := manifest.Digest(m)
 	assert.NoError(t, err, "manifest.Digest()")
@@ -271,7 +272,7 @@ func TestAddArtifact(t *testing.T) {
 			src, err := ref.NewImageSource(ctx, &types.SystemContext{})
 			require.NoError(t, err)
 			defer src.Close()
-			manifestBytes, manifestType, err := src.GetManifest(ctx, &instanceDigest)
+			manifestBytes, manifestType, err := image.UnparsedInstance(src, &instanceDigest).Manifest(ctx)
 			require.NoError(t, err)
 			// decode the artifact manifest
 			var m v1.Manifest
@@ -361,7 +362,7 @@ func TestAddArtifact(t *testing.T) {
 				subject, err := subjectReference.NewImageSource(ctx, &types.SystemContext{})
 				require.NoError(t, err)
 				defer subject.Close()
-				subjectManifestBytes, subjectManifestType, err := subject.GetManifest(ctx, nil)
+				subjectManifestBytes, subjectManifestType, err := image.UnparsedInstance(subject, nil).Manifest(ctx)
 				require.NoError(t, err)
 				subjectManifestDigest, err := manifest.Digest(subjectManifestBytes)
 				require.NoError(t, err)
