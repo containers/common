@@ -20,6 +20,7 @@ import (
 
 	"github.com/containers/common/pkg/config"
 	cp "github.com/containers/image/v5/copy"
+	"github.com/containers/image/v5/image"
 	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/pkg/compression"
 	"github.com/containers/image/v5/transports/alltransports"
@@ -329,7 +330,7 @@ func TestAddArtifacts(t *testing.T) {
 		src, err := ref.NewImageSource(ctx, nil)
 		require.NoError(t, err)
 		defer src.Close()
-		manifestBytes, manifestType, err := src.GetManifest(ctx, nil)
+		manifestBytes, manifestType, err := image.UnparsedInstance(src, nil).Manifest(ctx)
 		require.NoError(t, err)
 		manifestDigest, err := manifest.Digest(manifestBytes)
 		require.NoError(t, err)
@@ -390,7 +391,7 @@ func TestAddArtifacts(t *testing.T) {
 
 			src, err := ref.NewImageSource(ctx, list.image.runtime.systemContextCopy())
 			require.NoError(t, err)
-			indexManifest, indexType, err := src.GetManifest(ctx, nil)
+			indexManifest, indexType, err := image.UnparsedInstance(src, nil).Manifest(ctx)
 			require.NoError(t, err)
 			require.True(t, manifest.MIMETypeIsMultiImage(indexType))
 			var index imgspecv1.Index
@@ -401,7 +402,7 @@ func TestAddArtifacts(t *testing.T) {
 				assert.Equal(t, indexSubjectDescriptor, *index.Subject, "subject in index was not preserved")
 			}
 			for _, descriptor := range index.Manifests {
-				artifactManifest, artifactManifestType, err := src.GetManifest(ctx, &descriptor.Digest)
+				artifactManifest, artifactManifestType, err := image.UnparsedInstance(src, &descriptor.Digest).Manifest(ctx)
 				require.NoError(t, err)
 				require.False(t, manifest.MIMETypeIsMultiImage(artifactManifestType))
 				var artifact imgspecv1.Manifest
