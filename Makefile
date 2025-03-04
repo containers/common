@@ -71,8 +71,8 @@ docs:
 	$(MAKE) -C docs
 
 .PHONY: validate
-validate: build/golangci-lint
-	./build/golangci-lint run
+validate:
+	golangci-lint run
 	./tools/validate_seccomp.sh ./pkg/seccomp
 
 vendor-in-container:
@@ -85,12 +85,9 @@ vendor:
 	$(GO) mod verify
 
 .PHONY: install.tools
-install.tools: build/golangci-lint .install.md2man
+install.tools: .install.md2man
 
-build/golangci-lint: VERSION=v1.60.3
-build/golangci-lint:
-	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/$(VERSION)/install.sh | sh -s -- -b ./build $(VERSION)
-
+.PHONY: .install.md2man
 .install.md2man:
 	$(GO) install github.com/cpuguy83/go-md2man/v2@latest
 
