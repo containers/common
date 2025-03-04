@@ -31,7 +31,6 @@ linters:
     - exhaustive
     - gochecknoglobals
     - err113
-    - gomnd
     - nolintlint
     - wrapcheck
     - varnamelen
@@ -47,7 +46,6 @@ linters:
     - maintidx
     - ireturn
     - exhaustruct
-    - execinquery
     - gosec
     - godot
     - gocyclo
