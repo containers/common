@@ -2,7 +2,7 @@ export GOPROXY=https://proxy.golang.org
 
 GO ?= go
 GO_BUILD=$(GO) build
-BUILDTAGS := containers_image_openpgp,systemd,exclude_graphdriver_devicemapper
+BUILDTAGS := containers_image_openpgp,systemd
 DESTDIR ?=
 PREFIX := /usr/local
 CONFIGDIR := ${PREFIX}/share/containers
