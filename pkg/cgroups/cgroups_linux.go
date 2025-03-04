@@ -21,9 +21,8 @@ import (
 	"github.com/containers/storage/pkg/unshare"
 	systemdDbus "github.com/coreos/go-systemd/v22/dbus"
 	"github.com/godbus/dbus/v5"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"github.com/opencontainers/runc/libcontainer/cgroups/fs2"
-	"github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/opencontainers/cgroups"
+	"github.com/opencontainers/cgroups/fs2"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
 	"golang.org/x/sys/unix"
@@ -44,7 +43,7 @@ var (
 // CgroupControl controls a cgroup hierarchy
 type CgroupControl struct {
 	cgroup2 bool
-	config  *configs.Cgroup
+	config  *cgroups.Cgroup
 	systemd bool
 	// List of additional cgroup subsystems joined that
 	// do not have a custom handler.
@@ -58,7 +57,7 @@ type controller struct {
 
 type controllerHandler interface {
 	Create(*CgroupControl) (bool, error)
-	Apply(*CgroupControl, *configs.Resources) error
+	Apply(*CgroupControl, *cgroups.Resources) error
 	Destroy(*CgroupControl) error
 	Stat(*CgroupControl, *cgroups.Stats) error
 }
@@ -297,14 +296,14 @@ func readFileByKeyAsUint64(path, key string) (uint64, error) {
 }
 
 // New creates a new cgroup control
-func New(path string, resources *configs.Resources) (*CgroupControl, error) {
+func New(path string, resources *cgroups.Resources) (*CgroupControl, error) {
 	cgroup2, err := IsCgroup2UnifiedMode()
 	if err != nil {
 		return nil, err
 	}
 	control := &CgroupControl{
 		cgroup2: cgroup2,
-		config: &configs.Cgroup{
+		config: &cgroups.Cgroup{
 			Path:      path,
 			Resources: resources,
 		},
@@ -326,7 +325,7 @@ func New(path string, resources *configs.Resources) (*CgroupControl, error) {
 }
 
 // NewSystemd creates a new cgroup control
-func NewSystemd(path string, resources *configs.Resources) (*CgroupControl, error) {
+func NewSystemd(path string, resources *cgroups.Resources) (*CgroupControl, error) {
 	cgroup2, err := IsCgroup2UnifiedMode()
 	if err != nil {
 		return nil, err
@@ -334,7 +333,7 @@ func NewSystemd(path string, resources *configs.Resources) (*CgroupControl, erro
 	control := &CgroupControl{
 		cgroup2: cgroup2,
 		systemd: true,
-		config: &configs.Cgroup{
+		config: &cgroups.Cgroup{
 			Path:      path,
 			Resources: resources,
 			Rootless:  unshare.IsRootless(),
@@ -353,7 +352,7 @@ func Load(path string) (*CgroupControl, error) {
 	control := &CgroupControl{
 		cgroup2: cgroup2,
 		systemd: false,
-		config: &configs.Cgroup{
+		config: &cgroups.Cgroup{
 			Path: path,
 		},
 	}
@@ -485,7 +484,7 @@ func (c *CgroupControl) DeleteByPath(path string) error {
 }
 
 // Update updates the cgroups
-func (c *CgroupControl) Update(resources *configs.Resources) error {
+func (c *CgroupControl) Update(resources *cgroups.Resources) error {
 	for _, h := range handlers {
 		if err := h.Apply(c, resources); err != nil {
 			return err
