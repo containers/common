@@ -304,13 +304,12 @@ Specified as "type=TYPE,source=<directory-on-host>,destination=<directory-in-con
 
 Example:  [ "type=bind,source=/var/lib/foobar,destination=/var/lib/foobar,ro", ]
 
-**netns**="private"
+**netns**=""
 
 Default way to create a NET namespace for the container.
-Options are:
-  `private` Create private NET Namespace for the container.
-  `host`    Share host NET Namespace with the container.
-  `none`    Containers do not use the network.
+The option is mapped to the **--network** argument for the podman commands, it accepts the same values as that option.
+For example it can be set to `bridge`, `host`, `none`, `pasta` and more, see the [podman-create(1)](https://docs.podman.io/en/latest/markdown/podman-create.1.html#network-mode-net)
+manual for all available options.
 
 **no_hosts**=false
 
@@ -442,12 +441,17 @@ netavark_plugin_dirs = [
 
 **default_network**="podman"
 
-The network name of the default network to attach pods to.
+The name of the default network as seen in `podman network ls`. This option only effects the network assignment when
+the bridge network mode is selected, i.e. `--network bridge`. It is the default for rootful containers but not as
+rootless. To change the default network mode use the **netns** option under the `[containers]` table.
+
+Note: This should not be changed while you have any containers using this network.
 
 **default_subnet**="10.88.0.0/16"
 
 The subnet to use for the default network (named above in **default_network**).
-If the default network does not exist, it will be automatically created the first time a tool is run using this subnet.
+
+Note: This should not be changed if any containers are currently running on the default network.
 
 **default_subnet_pools**=[]
 
