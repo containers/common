@@ -2,7 +2,7 @@ module github.com/containers/common
 
 // Warning: Ensure the "go" and "toolchain" versions match exactly to prevent unwanted auto-updates
 
-go 1.22.8
+go 1.23.0
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -28,6 +28,7 @@ require (
 	github.com/moby/sys/capability v0.4.0
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
+	github.com/opencontainers/cgroups v0.0.1
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/opencontainers/runc v1.2.5
