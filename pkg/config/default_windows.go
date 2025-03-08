@@ -38,7 +38,7 @@ func getDefaultLockType() string {
 }
 
 func getLibpodTmpDir() string {
-	return "/run/libpod"
+	return "C:\\run\\libpod"
 }
 
 // getDefaultMachineVolumes returns default mounted volumes (possibly with env vars, which will be expanded)
