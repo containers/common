@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 
 	"github.com/containers/storage/pkg/fileutils"
 	"github.com/containers/storage/pkg/lockfile"
-	"golang.org/x/exp/maps"
 )
 
 // configMapsDataFile is the file where configMaps data/payload will be stored
@@ -58,9 +58,7 @@ func (d *Driver) List() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	allID := maps.Keys(configMapData)
-	sort.Strings(allID)
-	return allID, err
+	return slices.Sorted(maps.Keys(configMapData)), nil
 }
 
 // Lookup returns the bytes associated with a configMap ID

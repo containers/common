@@ -3,8 +3,10 @@ package configmaps
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -12,7 +14,6 @@ import (
 	"github.com/containers/storage/pkg/lockfile"
 	"github.com/containers/storage/pkg/regexp"
 	"github.com/containers/storage/pkg/stringid"
-	"golang.org/x/exp/maps"
 )
 
 // maxConfigMapSize is the max size for configMap data - 512kB
@@ -236,7 +237,7 @@ func (s *ConfigMapManager) List() ([]ConfigMap, error) {
 	if err != nil {
 		return nil, err
 	}
-	return maps.Values(configMaps), nil
+	return slices.Collect(maps.Values(configMaps)), nil
 }
 
 // LookupConfigMapData returns configMap metadata as well as configMap data in bytes.
