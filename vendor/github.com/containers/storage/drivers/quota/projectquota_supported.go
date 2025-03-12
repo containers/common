@@ -190,8 +190,7 @@ func NewControl(basePath string) (*Control, error) {
 }
 
 // SetQuota - assign a unique project id to directory and set the quota limits
-// for that project id.
-// targetPath must exist, must be a directory, and must be empty.
+// for that project id
 func (q *Control) SetQuota(targetPath string, quota Quota) error {
 	var projectID uint32
 	value, ok := q.quotas.Load(targetPath)
@@ -201,20 +200,10 @@ func (q *Control) SetQuota(targetPath string, quota Quota) error {
 	if !ok {
 		projectID = q.nextProjectID
 
-		// The directory we are setting an ID on must be empty, as
-		// the ID will not be propagated to pre-existing subdirectories.
-		dents, err := os.ReadDir(targetPath)
-		if err != nil {
-			return fmt.Errorf("reading directory %s: %w", targetPath, err)
-		}
-		if len(dents) > 0 {
-			return fmt.Errorf("can only set project ID on empty directories, %s is not empty", targetPath)
-		}
-
 		//
 		// assign project id to new container directory
 		//
-		err = setProjectID(targetPath, projectID)
+		err := setProjectID(targetPath, projectID)
 		if err != nil {
 			return err
 		}

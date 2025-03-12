@@ -36,6 +36,7 @@ import (
 	"github.com/containers/storage/pkg/system"
 	"github.com/containers/storage/pkg/unshare"
 	units "github.com/docker/go-units"
+	"github.com/hashicorp/go-multierror"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/opencontainers/selinux/go-selinux/label"
@@ -418,7 +419,7 @@ func Init(home string, options graphdriver.Options) (graphdriver.Driver, error) 
 
 	if !opts.skipMountHome {
 		if err := mount.MakePrivate(home); err != nil {
-			return nil, fmt.Errorf("overlay: failed to make mount private: %w", err)
+			return nil, err
 		}
 	}
 
@@ -1342,7 +1343,7 @@ func (d *Driver) recreateSymlinks() error {
 		return err
 	}
 	// Keep looping as long as we take some corrective action in each iteration
-	var errs error
+	var errs *multierror.Error
 	madeProgress := true
 	iterations := 0
 	for madeProgress {
@@ -1358,7 +1359,7 @@ func (d *Driver) recreateSymlinks() error {
 			// Read the "link" file under each layer to get the name of the symlink
 			data, err := os.ReadFile(path.Join(d.dir(dir.Name()), "link"))
 			if err != nil {
-				errs = errors.Join(errs, fmt.Errorf("reading name of symlink for %q: %w", dir.Name(), err))
+				errs = multierror.Append(errs, fmt.Errorf("reading name of symlink for %q: %w", dir.Name(), err))
 				continue
 			}
 			linkPath := path.Join(d.home, linkDir, strings.Trim(string(data), "\n"))
@@ -1367,12 +1368,12 @@ func (d *Driver) recreateSymlinks() error {
 			err = fileutils.Lexists(linkPath)
 			if err != nil && os.IsNotExist(err) {
 				if err := os.Symlink(path.Join("..", dir.Name(), "diff"), linkPath); err != nil {
-					errs = errors.Join(errs, err)
+					errs = multierror.Append(errs, err)
 					continue
 				}
 				madeProgress = true
 			} else if err != nil {
-				errs = errors.Join(errs, err)
+				errs = multierror.Append(errs, err)
 				continue
 			}
 		}
@@ -1383,7 +1384,7 @@ func (d *Driver) recreateSymlinks() error {
 		// that each symlink we have corresponds to one.
 		links, err := os.ReadDir(linkDirFullPath)
 		if err != nil {
-			errs = errors.Join(errs, err)
+			errs = multierror.Append(errs, err)
 			continue
 		}
 		// Go through all of the symlinks in the "l" directory
@@ -1391,16 +1392,16 @@ func (d *Driver) recreateSymlinks() error {
 			// Read the symlink's target, which should be "../$layer/diff"
 			target, err := os.Readlink(filepath.Join(linkDirFullPath, link.Name()))
 			if err != nil {
-				errs = errors.Join(errs, err)
+				errs = multierror.Append(errs, err)
 				continue
 			}
 			targetComponents := strings.Split(target, string(os.PathSeparator))
 			if len(targetComponents) != 3 || targetComponents[0] != ".." || targetComponents[2] != "diff" {
-				errs = errors.Join(errs, fmt.Errorf("link target of %q looks weird: %q", link, target))
+				errs = multierror.Append(errs, fmt.Errorf("link target of %q looks weird: %q", link, target))
 				// force the link to be recreated on the next pass
 				if err := os.Remove(filepath.Join(linkDirFullPath, link.Name())); err != nil {
 					if !os.IsNotExist(err) {
-						errs = errors.Join(errs, fmt.Errorf("removing link %q: %w", link, err))
+						errs = multierror.Append(errs, fmt.Errorf("removing link %q: %w", link, err))
 					} // else don’t report any error, but also don’t set madeProgress.
 					continue
 				}
@@ -1416,7 +1417,7 @@ func (d *Driver) recreateSymlinks() error {
 				// NOTE: If two or more links point to the same target, we will update linkFile
 				// with every value of link.Name(), and set madeProgress = true every time.
 				if err := os.WriteFile(linkFile, []byte(link.Name()), 0o644); err != nil {
-					errs = errors.Join(errs, fmt.Errorf("correcting link for layer %s: %w", targetID, err))
+					errs = multierror.Append(errs, fmt.Errorf("correcting link for layer %s: %w", targetID, err))
 					continue
 				}
 				madeProgress = true
@@ -1424,11 +1425,14 @@ func (d *Driver) recreateSymlinks() error {
 		}
 		iterations++
 		if iterations >= maxIterations {
-			errs = errors.Join(errs, fmt.Errorf("reached %d iterations in overlay graph driver’s recreateSymlink, giving up", iterations))
+			errs = multierror.Append(errs, fmt.Errorf("reached %d iterations in overlay graph driver’s recreateSymlink, giving up", iterations))
 			break
 		}
 	}
-	return errs
+	if errs != nil {
+		return errs.ErrorOrNil()
+	}
+	return nil
 }
 
 // Get creates and mounts the required file system for the given id and returns the mount path.
@@ -2099,16 +2103,17 @@ func (g *overlayFileGetter) Get(path string) (io.ReadCloser, error) {
 	return nil, fmt.Errorf("%s: %w", path, os.ErrNotExist)
 }
 
-func (g *overlayFileGetter) Close() (errs error) {
+func (g *overlayFileGetter) Close() error {
+	var errs *multierror.Error
 	for _, f := range g.composefsMounts {
 		if err := f.Close(); err != nil {
-			errs = errors.Join(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 		if err := unix.Rmdir(f.Name()); err != nil {
-			errs = errors.Join(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 	}
-	return errs
+	return errs.ErrorOrNil()
 }
 
 // newStagingDir creates a new staging directory and returns the path to it.
