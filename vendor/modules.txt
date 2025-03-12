@@ -98,7 +98,7 @@ github.com/containernetworking/cni/pkg/version
 # github.com/containernetworking/plugins v1.5.1
 ## explicit; go 1.20
 github.com/containernetworking/plugins/pkg/ns
-# github.com/containers/image/v5 v5.34.2-0.20250304184223-c43e62eed23a
+# github.com/containers/image/v5 v5.34.3-0.20250311194052-d84dbab374e7
 ## explicit; go 1.22.8
 github.com/containers/image/v5/copy
 github.com/containers/image/v5/directory
@@ -184,7 +184,7 @@ github.com/containers/ocicrypt/keywrap/pkcs7
 github.com/containers/ocicrypt/spec
 github.com/containers/ocicrypt/utils
 github.com/containers/ocicrypt/utils/keyprovider
-# github.com/containers/storage v1.57.2-0.20250228100055-700b765b2111
+# github.com/containers/storage v1.57.3-0.20250310120440-ab85543c3c6a
 ## explicit; go 1.22.0
 github.com/containers/storage
 github.com/containers/storage/drivers
@@ -281,7 +281,7 @@ github.com/docker/docker/client
 github.com/docker/docker/errdefs
 github.com/docker/docker/internal/lazyregexp
 github.com/docker/docker/internal/multierror
-# github.com/docker/docker-credential-helpers v0.9.1
+# github.com/docker/docker-credential-helpers v0.9.2
 ## explicit; go 1.21
 github.com/docker/docker-credential-helpers/client
 github.com/docker/docker-credential-helpers/credentials
