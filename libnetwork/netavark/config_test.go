@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/containers/common/libnetwork/netavark"
@@ -642,6 +643,35 @@ var _ = Describe("Config", func() {
 			}
 			_, err := libpodNet.NetworkCreate(network, nil)
 			Expect(err).To(HaveOccurred())
+		})
+
+		It("create network with more than max interface name size", func() {
+			name := strings.Repeat("a", types.MaxInterfaceNameLength+1)
+			network := types.Network{
+				NetworkInterface: name,
+			}
+			_, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).To(HaveOccurred(), "name %s", name)
+		})
+
+		It("should reject interface names with invalid characters", func() {
+			invalidNames := []string{
+				"eth/0",
+				"eth:0",
+				"eth 0",
+				"eth\t0",
+				"eth\n0",
+				"eth\r0",
+				"..",
+				".",
+			}
+			for _, name := range invalidNames {
+				network := types.Network{
+					NetworkInterface: name,
+				}
+				_, err := libpodNet.NetworkCreate(network, nil)
+				Expect(err).To(HaveOccurred(), "name %s", name)
+			}
 		})
 
 		It("create network with ID should fail", func() {
