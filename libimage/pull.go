@@ -225,7 +225,7 @@ func nameFromAnnotations(annotations map[string]string) string {
 // copyFromDefault is the default copier for a number of transports.  Other
 // transports require some specific dancing, sometimes Yoga.
 func (r *Runtime) copyFromDefault(ctx context.Context, ref types.ImageReference, options *CopyOptions) ([]*Image, []string, error) {
-	c, err := r.newCopier(options, nil)
+	c, err := r.newCopier(options)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -384,7 +384,7 @@ func (r *Runtime) copyFromDockerArchive(ctx context.Context, ref types.ImageRefe
 
 // copyFromDockerArchiveReaderReference copies the specified readerRef from reader.
 func (r *Runtime) copyFromDockerArchiveReaderReference(ctx context.Context, reader *dockerArchiveTransport.Reader, readerRef types.ImageReference, options *CopyOptions) ([]*Image, []string, error) {
-	c, err := r.newCopier(options, nil)
+	c, err := r.newCopier(options)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -591,7 +591,7 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	if socketPath, ok := os.LookupEnv("NOTIFY_SOCKET"); ok {
 		options.extendTimeoutSocket = socketPath
 	}
-	c, err := r.newCopier(&options.CopyOptions, nil)
+	c, err := r.newCopier(&options.CopyOptions)
 	if err != nil {
 		return nil, err
 	}

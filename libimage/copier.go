@@ -177,8 +177,8 @@ type Copier struct {
 // newCopier creates a Copier based on a runtime's system context.
 // Note that fields in options *may* overwrite the counterparts of
 // the specified system context.  Please make sure to call `(*Copier).Close()`.
-func (r *Runtime) newCopier(options *CopyOptions, reportResolvedReference *types.ImageReference) (*Copier, error) {
-	return NewCopier(options, r.SystemContext(), reportResolvedReference)
+func (r *Runtime) newCopier(options *CopyOptions) (*Copier, error) {
+	return NewCopier(options, r.SystemContext(), nil)
 }
 
 // storageAllowedPolicyScopes overrides the policy for local storage
