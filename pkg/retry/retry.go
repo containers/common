@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/containers/image/v5/docker"
 	"github.com/docker/distribution/registry/api/errcode"
 	errcodev2 "github.com/docker/distribution/registry/api/v2"
 	"github.com/hashicorp/go-multierror"
@@ -81,6 +82,13 @@ func IsErrorRetryable(err error) bool {
 			return false
 		}
 		return true
+	case *docker.UnexpectedHTTPStatusError:
+		// Retry on 5xx http server errors, they appear to be quite common in the field.
+		// https://github.com/containers/common/issues/2299
+		if e.StatusCode/100 == 5 {
+			return true
+		}
+		return false
 	case *net.OpError:
 		return IsErrorRetryable(e.Err)
 	case *url.Error: // This includes errors returned by the net/http client.
