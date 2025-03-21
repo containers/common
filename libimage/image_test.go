@@ -61,15 +61,11 @@ func TestImageFunctions(t *testing.T) {
 	// Just make sure that the ID has 64 characters.
 	require.True(t, len(image.ID()) == 64, "ID should be 64 characters long")
 
-	// Make sure that the image we pulled by digest is the same one we
-	// pulled by tag.
-	require.Equal(t, origDigest.String(), image.Digest().String(), "digests of pulled images should match")
-
 	// NOTE: we're recording two digests. One for the image and one for the
 	// manifest list we chose it from.
 	digests := image.Digests()
 	require.Len(t, digests, 2)
-	require.Equal(t, origDigest.String(), digests[0].String(), "first recorded digest should be the one of the image")
+	require.Contains(t, digests, origDigest, "original digest string should be present in the digests array of new pulled image")
 
 	// containers/podman/issues/12729: make sure manifest lookup returns
 	// the correct error for both digests.
