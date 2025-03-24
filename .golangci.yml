@@ -26,23 +26,15 @@ linters:
     - exptostd
     - fatcontext
     - forbidigo
-    - gci
     - ginkgolinter
     - gocheckcompilerdirectives
     - gochecksumtype
     - gocritic
-    - gofmt
     - gofumpt
-    - goheader
-    - goimports
-    - gomodguard
     - goprintffuncname
     - gosmopolitan
-    - grouper
     - iface
-    - importas
     - intrange
-    - loggercheck
     - makezero
     - mirror
     - misspell
@@ -52,24 +44,15 @@ linters:
     - perfsprint
     - prealloc
     - predeclared
-    - promlinter
-    - protogetter
     - reassign
     - recvcheck
     - revive
-    - rowserrcheck
-    - sloglint
-    - spancheck
-    - sqlclosecheck
-    - tagalign
-    - testableexamples
     - unconvert
     - unparam
     - usestdlibvars
     - usetesting
     - wastedassign
     - whitespace
-    - zerologlint
 
 linters-settings:
   errcheck:
