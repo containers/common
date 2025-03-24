@@ -10,55 +10,67 @@ run:
     - cni
   timeout: 5m
 linters:
-  enable-all: true
-  disable:
-    # linters explicitly disabled for the below mentioned reasons ...
-    - funlen # too aggressive/wishful size/statement limit
-    - gochecknoinits # too many hard to fix init() funcs across the code
-    - gocognit # too aggressive default
-    - wsl # useful but too opinionated
-    # others to be re-enabled one-by-one ...
-    - goconst
-    - godox
-    - lll
-    - nestif
-    - cyclop
-    - depguard
-    - errchkjson
-    - errname
-    - errorlint
-    - exhaustive
-    - gochecknoglobals
-    - err113
-    - nolintlint
-    - wrapcheck
-    - varnamelen
-    - testpackage
-    - tenv
-    - tagliatelle
-    - stylecheck
-    - paralleltest
-    - nonamedreturns
-    - nlreturn
-    - nakedret
-    - musttag
-    - maintidx
-    - ireturn
-    - exhaustruct
-    - gosec
-    - godot
-    - gocyclo
-    - dogsled
-    - tparallel
-    - thelper
-    - mnd #way to many false positives
-    - nilnil
-    - nilerr
-    - interfacebloat
-    - forcetypeassert
-    - gomoddirectives
-    - testifylint # way to many issues to fix right now, however it is a great linter for better test errors
-    - inamedparam # opinionated style
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - decorder
+    - dupl
+    - dupword
+    - durationcheck
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - gci
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocritic
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - gomodguard
+    - goprintffuncname
+    - gosmopolitan
+    - grouper
+    - iface
+    - importas
+    - intrange
+    - loggercheck
+    - makezero
+    - mirror
+    - misspell
+    - nilnesserr
+    - noctx
+    - nosprintfhostport
+    - perfsprint
+    - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - tagalign
+    - testableexamples
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+    - zerologlint
+
 linters-settings:
   errcheck:
     check-type-assertions: true
