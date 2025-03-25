@@ -132,7 +132,7 @@ func (s *ConfigMapManager) Store(name string, data []byte, driverType string, dr
 		return "", err
 	}
 
-	if !(len(data) > 0 && len(data) < maxConfigMapSize) {
+	if len(data) == 0 || len(data) >= maxConfigMapSize {
 		return "", errDataSize
 	}
 
