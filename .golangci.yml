@@ -1,5 +1,7 @@
----
+version: "2"
+
 run:
+  timeout: 5m
   build-tags:
     - apparmor
     - seccomp
@@ -8,81 +10,80 @@ run:
     - exclude_graphdriver_btrfs
     - containers_image_openpgp
     - cni
-  timeout: 5m
-linters:
-  enable-all: true
-  disable:
-    # linters explicitly disabled for the below mentioned reasons ...
-    - funlen # too aggressive/wishful size/statement limit
-    - gochecknoinits # too many hard to fix init() funcs across the code
-    - gocognit # too aggressive default
-    - wsl # useful but too opinionated
-    # others to be re-enabled one-by-one ...
-    - goconst
-    - godox
-    - lll
-    - nestif
-    - cyclop
-    - depguard
-    - errchkjson
-    - errname
-    - errorlint
-    - exhaustive
-    - gochecknoglobals
-    - err113
-    - nolintlint
-    - wrapcheck
-    - varnamelen
-    - testpackage
-    - tenv
-    - tagliatelle
-    - stylecheck
-    - paralleltest
-    - nonamedreturns
-    - nlreturn
-    - nakedret
-    - musttag
-    - maintidx
-    - ireturn
-    - exhaustruct
-    - gosec
-    - godot
-    - gocyclo
-    - dogsled
-    - tparallel
-    - thelper
-    - mnd #way to many false positives
-    - nilnil
-    - nilerr
-    - interfacebloat
-    - forcetypeassert
-    - gomoddirectives
-    - testifylint # way to many issues to fix right now, however it is a great linter for better test errors
-    - inamedparam # opinionated style
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  gocyclo:
-    min-complexity: 35
-  gofmt:
-    rewrite-rules:
-      - pattern: 'interface{}'
-        replacement: 'any'
-  revive:
-    rules:
-      - name: dot-imports
-        disabled: true
 
-issues:
-    # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - dupl
-        - perfsprint
-    # Exclude "should pass the context parameter" for libimage.LookupImage because of backward compatibility.
-    - path: "libimage"
-      text: "LookupImage"
-      linters:
-        - contextcheck
+formatters:
+  enable:
+    - gofumpt
+
+linters:
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - decorder
+    - dupl
+    - dupword
+    - durationcheck
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocritic
+    - goprintffuncname
+    - gosmopolitan
+    - iface
+    - intrange
+    - makezero
+    - mirror
+    - misspell
+    - nilnesserr
+    - noctx
+    - nosprintfhostport
+    - perfsprint
+    - prealloc
+    - predeclared
+    - reassign
+    - recvcheck
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+  settings:
+    errcheck:
+      check-type-assertions: true
+    gocyclo:
+      min-complexity: 35
+    revive:
+      rules:
+        - name: dot-imports
+          disabled: true
+    staticcheck:
+      checks:
+        - all
+        - -ST1003 # https://staticcheck.dev/docs/checks/#ST1003 Poorly chosen identifier.
+        - -QF1008 # https://staticcheck.dev/docs/checks/#QF1008 Omit embedded fields from selector expression.
+  exclusions:
+    generated: strict
+    presets:
+      - comments
+      - common-false-positives
+      - std-error-handling
+    rules:
+      - linters:
+          - dupl
+          - perfsprint
+        path: _test\.go
+      - linters:
+          - contextcheck
+        path: libimage
+        text: LookupImage

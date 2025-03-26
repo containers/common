@@ -6,7 +6,10 @@
 # The idea is to impose additional rules for newly added code only
 # (rules we can not realistically satisfy for existing code).
 
+version: "2"
+
 run:
+  timeout: 5m
   build-tags:
     - apparmor
     - seccomp
@@ -14,9 +17,13 @@ run:
     - systemd
     - exclude_graphdriver_btrfs
     - containers_image_openpgp
-  timeout: 5m
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - godot
+    - staticcheck
+  settings:
+    staticcheck:
+      checks:
+        - all

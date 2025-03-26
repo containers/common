@@ -64,7 +64,7 @@ func TestAddSecretAndLookupData(t *testing.T) {
 
 	s, _, err = manager.LookupSecretData("mysecret")
 	require.NoError(t, err)
-	if s.CreatedAt == s.UpdatedAt {
+	if s.CreatedAt.Equal(s.UpdatedAt) {
 		t.Errorf("error: secret CreatedAt should not equal UpdatedAt after a Replace")
 	}
 
