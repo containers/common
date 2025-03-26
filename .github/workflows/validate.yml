@@ -42,11 +42,10 @@ jobs:
         version: "${{ env.LINT_VERSION }}"
         args: --verbose
     # Extra linters, only checking new code from a pull request.
-    - name: Extra golangci-lint config. switcharoo
-      run: mv .golangci-extra.yml golangci.yml
     - name: lint-extra
       uses: golangci/golangci-lint-action@v6
       with:
+        args: --config=.golangci-extra.yml
         version: "${{ env.LINT_VERSION }}"
         only-new-issues: true
 
