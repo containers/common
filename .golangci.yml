@@ -1,5 +1,7 @@
----
+version: "2"
+
 run:
+  timeout: 5m
   build-tags:
     - apparmor
     - seccomp
@@ -8,7 +10,11 @@ run:
     - exclude_graphdriver_btrfs
     - containers_image_openpgp
     - cni
-  timeout: 5m
+
+formatters:
+  enable:
+    - gofumpt
+
 linters:
   enable:
     - asasalint
@@ -30,7 +36,6 @@ linters:
     - gocheckcompilerdirectives
     - gochecksumtype
     - gocritic
-    - gofumpt
     - goprintffuncname
     - gosmopolitan
     - iface
@@ -53,31 +58,32 @@ linters:
     - usetesting
     - wastedassign
     - whitespace
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  gocyclo:
-    min-complexity: 35
-  gofmt:
-    rewrite-rules:
-      - pattern: 'interface{}'
-        replacement: 'any'
-  revive:
+  settings:
+    errcheck:
+      check-type-assertions: true
+    gocyclo:
+      min-complexity: 35
+    revive:
+      rules:
+        - name: dot-imports
+          disabled: true
+    staticcheck:
+      checks:
+        - all
+        - -ST1003 # https://staticcheck.dev/docs/checks/#ST1003 Poorly chosen identifier.
+        - -QF1008 # https://staticcheck.dev/docs/checks/#QF1008 Omit embedded fields from selector expression.
+  exclusions:
+    generated: strict
+    presets:
+      - comments
+      - common-false-positives
+      - std-error-handling
     rules:
-      - name: dot-imports
-        disabled: true
-
-issues:
-    # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - dupl
-        - perfsprint
-    # Exclude "should pass the context parameter" for libimage.LookupImage because of backward compatibility.
-    - path: "libimage"
-      text: "LookupImage"
-      linters:
-        - contextcheck
+      - linters:
+          - dupl
+          - perfsprint
+        path: _test\.go
+      - linters:
+          - contextcheck
+        path: libimage
+        text: LookupImage
