@@ -30,25 +30,14 @@ import (
 // errcode.Errors slice.
 var errNoErrorsInBody = errors.New("no error details found in HTTP response body")
 
-// UnexpectedHTTPStatusError is returned when an unexpected HTTP status is
+// unexpectedHTTPStatusError is returned when an unexpected HTTP status is
 // returned when making a registry api call.
-type UnexpectedHTTPStatusError struct {
-	// StatusCode code as returned from the server, so callers can
-	// match the exact code to make certain decisions if needed.
-	StatusCode int
-	// status text as displayed in the error message, not exposed as callers should match the number.
-	status string
+type unexpectedHTTPStatusError struct {
+	Status string
 }
 
-func (e UnexpectedHTTPStatusError) Error() string {
-	return fmt.Sprintf("received unexpected HTTP status: %s", e.status)
-}
-
-func newUnexpectedHTTPStatusError(resp *http.Response) UnexpectedHTTPStatusError {
-	return UnexpectedHTTPStatusError{
-		StatusCode: resp.StatusCode,
-		status:     resp.Status,
-	}
+func (e *unexpectedHTTPStatusError) Error() string {
+	return fmt.Sprintf("received unexpected HTTP status: %s", e.Status)
 }
 
 // unexpectedHTTPResponseError is returned when an expected HTTP status code
@@ -128,7 +117,7 @@ func handleErrorResponse(resp *http.Response) error {
 	case resp.StatusCode == http.StatusUnauthorized:
 		// Check for OAuth errors within the `WWW-Authenticate` header first
 		// See https://tools.ietf.org/html/rfc6750#section-3
-		for c := range iterateAuthHeader(resp.Header) {
+		for _, c := range parseAuthHeader(resp.Header) {
 			if c.Scheme == "bearer" {
 				var err errcode.Error
 				// codes defined at https://tools.ietf.org/html/rfc6750#section-3.1
@@ -157,5 +146,5 @@ func handleErrorResponse(resp *http.Response) error {
 		}
 		return err
 	}
-	return newUnexpectedHTTPStatusError(resp)
+	return &unexpectedHTTPStatusError{Status: resp.Status}
 }
