@@ -199,7 +199,12 @@ container. The special value “none” can be specified to disable creation of
 **env**=["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"]
 
 Environment variable list for the container process, used for passing
-environment variables to the container.
+environment variables to the container. If a variable is listed without a value,
+the value is copied from the host environment.
+
+Note that this is only used when a container is created, not with subsequent
+commands like `podman exec`. This prevents variables in the config file from
+overwriting values specified on the command line when the container was created.
 
 **env_host**=false
 
