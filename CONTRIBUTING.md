@@ -1,14 +1,13 @@
-# Contributing to the Containers Group Project
+# Contributing to the Containers Projects
 
-We'd love to have you join the community! Below summarizes the processes
-that we follow.
+We'd love to have you join the community!
+Below summarizes the processes that we follow.
 
-Note the containers org is a large github organization with many different people
-working on all a lot of different tools and libraries. The steps listed here to not
-universally apply to each repository. Please make sure to read the contributing
-docs in each repository as they may do things differently.
+Note the containers org is a large github organization with many different people working on all a lot of different tools and libraries.
+The steps listed here to not universally apply to each repository.
+Please make sure to read the contributing docs in each repository as they may do things differently.
 
-This documented is primarily aimed at the following repositories:
+This document applies to the following projects:
 
 - [podman](https://github.com/containers/podman)
 - [buildah](https://github.com/containers/buildah)
@@ -18,14 +17,23 @@ This documented is primarily aimed at the following repositories:
 - [storage](https://github.com/containers/storage)
 - [libhvee](https://github.com/containers/libhvee)
 - [psgo](https://github.com/containers/psgo)
+- [netavark](https://github.com/containers/netavark)
+- [aardvark](https://github.com/containers/aardvark-dns/)
+- [podman-py](https://github.com/containers/podman-py/)
 
-However most of the things here listed are very generic when contributing to public projects
+This document is not specific to any language; language-specific guidelines are contained in other files.
+Rules specific to the Rust language can be found [here](./CONTRIBUTING_RUST.md).
+Rules specific to the Go language can be found [here](./CONTRIBUTING_GO.md).
+Rules specific to the Python language can be found [here](https://github.com/containers/podman-py/blob/main/CONTRIBUTING.md).
+We recommend you read the guidelines of the language your repository is written in after finishing with this file.
+
+This document is primarily aimed at the above-listed repositories within the Containers Github organization.
+However, most of the things here listed are very generic and apply when contributing to most public projects
 
 ## Topics
 
 * [Reporting Issues](#reporting-issues)
 * [Submitting Pull Requests](#submitting-pull-requests)
-* [Go Dependency updates](#go-dependency-updates)
 * [Find bad changes with git bisect](#find-bad-changes-with-git-bisect)
 
 ## Reporting Issues
@@ -69,7 +77,7 @@ You can find some easy tutorial online such as [this one](https://opensource.com
 and check out the official [GitHub docs](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests)
 that contain much more detail.
 
-All development happens on the `main` branch so all Prs should be submitted against that branch.
+All development happens on the `main` branch so all PRs should be submitted against that branch.
 Maintainers will take care of backporting if needed.
 
 While bug fixes can first be identified via an "issue" in Github, that is not required.
@@ -82,13 +90,12 @@ But only if those smaller ones make sense as stand-alone PRs.
 Regardless of the type of PR, all PRs should include:
 * Well-documented code changes, both through comments in the code itself and high-quality commit messages.
   A commit message should answer *why* a change was made.
-* Additional tests. Ideally, they should fail w/o your code change applied. A test can be a unit test
-  (`..._test.go` files next to the code you changed) or in a more complex suite often found in the
-  `test/` or `tests/` directory in each respective repo.
-  Sometimes it may not be possible to add a useful test (e.g. a race condition that is very hard to trigger),
-  in that case a maintainer can decide to merge without tests.
+* Additional tests. Ideally, they should fail without your code change applied. A test can be a unit test
+  (see language-specific documentation for details on these) or in a more complex suite often found in the
+  `test/` or `tests/` directory in each respective repo. Sometimes it may not be possible to add a useful
+  test (e.g. a race condition that is very hard to trigger), in that case a maintainer can decide to merge
+  without tests.
 * Documentation updates to reflect the changes made in the pull request often found in the `docs/` directory.
-  When working on go code document them according to the [go doc comment](https://go.dev/doc/comment) style.
 
 Squash your commits into logical pieces of work that might want to be reviewed separate from the rest of the PRs.
 Code changes, test and documentation updates should be part of the same commit as long as they are for the same
@@ -136,7 +143,7 @@ For example:
 
 ```
 Fixes: #00000
-Fixes: https://github.com/containers/common/issues/00000
+Fixes: https://github.com/containers/<repository>/issues/00000
 Fixes: https://issues.redhat.com/browse/RHEL-00000
 Fixes: RHEL-00000
 ```
@@ -168,10 +175,9 @@ The following git config settings can be used to add a pretty format for outputt
 
 ### Sign your PRs
 
-The sign-off is a line at the end of the explanation for the patch. Your
-signature certifies that you wrote the patch or otherwise have the right to pass
-it on as an open-source patch. The rules are simple: if you can certify
-the below (from [developercertificate.org](http://developercertificate.org/)):
+The sign-off is a line at the end of the explanation for the patch.
+Your signature certifies that you wrote the patch or otherwise have the right to pass it on as an open-source patch.
+The rules are simple: if you can certify the below (from [developercertificate.org](http://developercertificate.org/)):
 
 ```
 Developer Certificate of Origin
@@ -216,41 +222,40 @@ Then you just add a line to every git commit message:
     Signed-off-by: Joe Smith <joe.smith@email.com>
 
 Use a real name (sorry, no anonymous contributions).
-A real name does not require a legal name, nor a birth name, nor any name that appears
-on an official ID (e.g. a passport). Your real name is the name you convey to people in
-the community for them to use to identify you as you. The key concern is that your
-identification is sufficient enough to contact you if an issue were to arise in the
-future about your contribution.
+A real name does not require a legal name, nor a birth name, nor any name that appears on an official ID (e.g. a passport).
+Your real name is the name you convey to people in the community for them to use to identify you as you.
+The key concern is that your identification is sufficient enough to contact you if an issue were to arise in the future about your contribution.
 
 If you set your `user.name` and `user.email` git configs, you can sign your commit automatically with `git commit -s`.
 
 ### Code review
 
-Once the PR is submitted a reviewer will take a look at. Should nobody respond to it
-within 2 weeks please ping a maintainer, sometimes PRs are overlooked or forgotten.
+Once the PR is submitted a reviewer will take a look at.
+Should nobody respond to it within 2 weeks please ping a maintainer.
+Sometimes PRs are overlooked or forgotten.
 
-Keep an eye out for the CI results on the PR. If all is well then all tasks should succeed, on some
-repos the CI time can take several hours until the tests are finished. If something failed try to
-take a look at the logs to see if that seems related to your change or not. Then try to fix your
-code or the test depending on what you think is right. If you are unsure or think it is
-unrelated ask a maintainer, some tests are flaky and pass on a re-run.
+Keep an eye out for the CI results on the PR.
+If all is well then all tasks should succeed.
+On some repos the CI tests can take several hours to finish.
+If something failed, try to take a look at the logs to see if that seems related to your change or not.
+Then try to fix your code or the test depending on what you think is right.
+If you are unsure or think it is unrelated, ask a maintainer.
+Some tests are flaky and will pass on a re-run.
 
-After the reviewer/maintainer took a look they either write a comment stating `LGTM` (looks good to me)
-and approve the PR, in which case you do not need to do any further changes, or they write a comment
-with review feedback that you should address. Note that most changes require two reviews so only the
-second reviewer will actually merge the PR.
+After the reviewers and maintainers take a look, they will either write a comment stating `LGTM` (looks good to me) and approve the PR, in which case you do not need to do any further changes, or they write a comment with review feedback that you should address.
+Note that most changes require two reviews so only the second reviewer will actually merge the PR.
 
-If changes were requested do them locally in your branch and the amend them into the commit from the PR,
-you can use `git commit -a --amend` for that. This will add the current changes to the previous commit.
-Please do not push extra commits that say things like "apply code review" or "fix x" where x is a bug
-introduced in a commit from your PR. In that case always squash the change into the right commit to keep
-the git history clean. Our projects merge the commits as is and will will not squash them on merge to
-preserve the full original context.
+If changes were requested, make them locally in your branch and the amend them into the commit from the PR.
+You can use `git commit -a --amend` for that.
+This will add the current changes to the previous commit.
+Please do not push extra commits that say things like "apply code review" or "fix x" where x is a bug introduced in a commit from your PR.
+In that case, always squash the change into the right commit to keep the git history clean.
+Our projects merge the commits as is and will will not squash them on merge to preserve the full original context.
 
 ### Rebasing
 
-When you created a branch to work on the fix/feature it no longer will be updated with the latest changes
-from the upstream `main` branch. In order to keep your branch up to date you should rebase.
+When you create a branch to work on a fix or feature, it no longer will be updated with the latest changes from the upstream `main` branch.
+In order to keep your branch up to date you should rebase.
 
 In order to do so add the upstream repo as remote in git, i.e. for containers/common use:
 ```
@@ -267,149 +272,66 @@ And assuming you are still in your fix/feature branch:
 $ git rebase upstream/main
 ```
 
-If the PR is open longer you may have to rebase. You must rebase when there is a merge conflict,
-this means the lines that you changed were also changed after you created your branch and in this
-case git does not know what the right change is. You will need to manually resolve it, check
-[here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line)
-for more information on how to do this.
+If the PR is open longer you may have to rebase.
+You must rebase when there is a merge conflict.
+This means the lines that you changed were also changed after you created your branch.
+In this case, Git does not know which change is right.
+You will need to manually resolve it.
+Check [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line) for more information on how to do this.
 
 It is recommended to always rebase on a new push to ensure it is testing against the latest code.
-
-## Go Dependency updates
-
-To automatically keep dependencies up to date we use the [renovate](https://github.com/renovatebot/renovate) bot.
-The bot automatically opens new PRs with updates that should be merged by maintainers.
-
-However sometimes, especially during development, it can be the case that you like to update a dependency.
-
-To do so you can use the `go get` command, for example to update containers/storage to the a specific version use:
-```
-$ go get github.com/containers/storage@v1.55.1
-```
-
-Or to update it to the latest commit from main use:
-```
-$ go get github.com/containers/storage@main
-```
-
-This command will update the go.mod/go.sum files, because we use [go's vendor mechanism](https://go.dev/ref/mod#vendoring)
-you must also update the files in the vendor dir. To do so use
-```
-$ make vendor
-```
-
-Then commit the changes and open a PR. If you want to add other changes it is recommended to keep the
-dependency updates in their own commit as this makes reviewing them much easier.
-
-Note when cutting a new release always make sure we only use tagged version of our own containers/...
-dependencies to ensure all our tools use the same properly tested library versions.
-
-### Test changes in a dependent repository
-
-Sometimes it is helpful (or a maintainer asks for it) to test your library changes in the final binary, e.g. podman.
-
-Assume we like to test a containers/common PR in Podman so that we can have the full CI tests run there.
-First you need to push your containers/common changes to your github fork (if not already done).
-Now open the podman repository, create a new branch there and then use.
-```
-$ go mod edit -replace github.com/containers/common=github.com/<account name>/<fork name>@<branch name>
-```
-Replace the variable with the correct values, in my case it the reference might be `github.com/Luap99/common@netns-dir`, where
- - account name == `Luap99`
- - fork name == `common`
- - branch name that I like to test == `netns-dir`
-
-Then just run the vendor command again.
-```
-$ make vendor
-```
-
-Now do any other changes that might be needed after the update and commit the changes then push them
-to your Podman fork and open a new Podman PR, marking it as draft to make clear that this is a test
-and should not be merged. This will trigger CI to run the tests. If everything passes the
-containers/common PR did not introduce any regression which is a good.
-
-Note: You generally do not have to test all your library changes like that. However if your changes
-are big or break the API it might be a good idea to do do this to avoid regression that need to be
-fixed in follow ups or revert.
 
 ## Find bad changes with git bisect
 
 git bisect is very powerful command in order to quickly find commits that caused a regression.
 
-For example assume you did a Podman update and now something that used to work fine is no longer working,
-this is called a regression. If the change was not intentional it may be hard to find out what caused it.
-git bisect can help with that.
+For example, assume you updated Podman and now something that used to work fine is no longer working.
+This is called a regression.
+If the change was not intentional, it may be hard to identify the cause.
+A `git bisect` can help with that.
 
-First you need to know the last working version and the the new version were is stopped working and you
-should have a simple test for you behavior. Then run
+First, identify a version that you know worked (the "good version"), and a version that you know does not work (the "bad version").
+Second, ensure you have a simple test for the bug or broken behavior, so you can easily check if a version of the code is broken.
+Then, you can run:
 ```
 $ git bisect start <bad version> <good version>
 ```
 
 Now git will go through the commits between them via binary search to find the first bad commit.
-You need to compile the binary, then do your test and see if this works or not then use
+On each commit, you need to compile the binary.
+Then, perform your test to see if the commit is broken or not.
+Then, use the
 ```
 $ git bisect good
 ```
-if is is working or if it is not working:
-
+command if is is working.
+If it is not working, use this command instead:
 ```
 $ git bisect bad
 ```
 
-Then again compile and test and repeat the steps until git found only one commit left, this
-should be the first bad commit. If you file an issue this information is very useful to us
-developers to quickly see the root cause.
+Compile and test again, repeating these steps until git has only one commit left.
+This should be the first bad commit.
+If you file an issue, this bisect information is very useful to project reviewers and maintainers as it can quickly lead to the root cause.
 
 Given this can be a long manual process you can automate the bisect run if you have a good reproducer.
-For example lets assume there is regression with `podman run $IMAGE someCommand` where it fails to
-run and throws and error.
-You can automate this after the bisect start command to give the good and bad version by using
+For example, assume there is a regression with `podman run $IMAGE someCommand` where it fails to run and throws an error.
+You can automate this after the `git bisect start` command to find the first commit with the problem automatically by using:
 ```
 $ git bisect run sh -c "make podman && bin/podman run $IMAGE someCommand || exit 1"
 ```
-This will run the given command there for each command git steps through and if the command returns 0 it
-assumes good version otherwise a bad version. `make podman` here is required to recompile podman each
-time we are at a new commit. This is important as it would not test the correct binary for the given
-commit otherwise leading to very wrong results. Then after this run your test of choice. You can also
-pass complex scripts or commands as long as the exit code is 0 for the good case and > 0 for the bad
-one it will work.
+This will automatically run the given test command (the `sh -c "..."`) on each commit visited by the binary search.
+If the command returns 0, git will automatically mark the commit as good; any other exit code will mark the commit as bad.
+The `make podman` command here is required to recompile podman each time we are at a new commit.
+This is important as it would otherwise not test the correct binary for the given commit, leading to incorrect results.
+Then, after this, run your test of choice.
+You can also pass complex scripts or commands.
+As long as the exit code is 0 for the good case and > 0 for the bad case, it will work.
 
-Note git bisect is not perfect sometimes it will fail to find a bad commit. This can have many reason
-but a common is that the problem is not podman but rather some external dependency, can be a a dynamically
-linked c lib, some external program podman calls or even the kernel. In these cases pin pointing the cause
-will be more difficult.
+Sometimes `git bisect` is not perfect.
+It can fail to find a bad commit.
+There can be many reasons for this, but a common one is that the problem is not in the tool you are testing, but rather some external dependency.
+Dynamically linked external libraries, external programs called by the tool, or even the kernel could be causing the bug.
+In these cases, identifying the cause will be more difficult.
 
 There is much more useful information in the [git documentation](https://git-scm.com/docs/git-bisect) about this.
-
-### git bisect a change in a go dependency
-
-If you performed a the git bisect and the resulting commit is one that updated a library then most likely
-the problem is in that library instead. In such cases it may be needed to find the bad commit from this
-repository instead. Thankfully this is not much more difficult than the normal bisect usage.
-
-Clone the library repository locally (for this example assume we it is github.com/containers/storage),
-I assume it is in a directory next to the podman repo.
-
-Then in podman run (where you replace the path to the storage repo with your actual one)
-```
-$ go mod edit -replace github.com/containers/storage=/path/to/storage
-$ make vendor
-```
-
-Now the commit that was already found via the bisect in Podman should show you which storage version
-was changed so you can then use them as good and bad version for the bisect in storage.
-
-So use them in the storage repo for the `git bisect start BAD GOOD` command and then we need a bit
-more work for the testing as we have to compile podman in the other repo and perform the check there.
-
-The automated command can look like this:
-```
-$ git bisect run sh -c "cd /path/to/podman && make vendor && make podman && podman run $IMAGE someCommand || exit 1"
-```
-
-Compared to the normal bisect we basically just have to switch to the podman repo and then update
-the vendor directory, as this will copy the local storage repo into that so the build after it
-gets the current changes from the bisect commit. Given all works fine the result will point you
-to a single commit in storage that caused the podman problem.
