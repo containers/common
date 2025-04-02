@@ -405,6 +405,10 @@ Example:  "/db:/var/lib/db:ro".
 The `network` table contains settings pertaining to the management of CNI
 plugins.
 
+Note: If Podman is running in a virtual machine using `podman machine` (this
+includes Mac and Windows hosts), ensure that you add the configuration in the
+virtual machine by using `podman machine ssh`.
+
 **network_backend**=""
 
 Network backend determines what network driver will be used to set up and tear down container networks.
