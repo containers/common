@@ -32,6 +32,17 @@ func IsEnabled() bool {
 	return supported.NewAppArmorVerifier().IsSupported() == nil
 }
 
+// IsAppArmorAvailable returns true if the `apparmor_parser` binary is found on the host,
+// which is required to apply profiles. This function was added in parallel to IsEnabled
+// to avoid breaking existing users of IsEnabled. Prefer using IsAppArmorAvailable for
+// new implementations.
+func IsAppArmorAvailable() bool {
+	if _, err := supported.NewAppArmorVerifier().FindAppArmorParserBinary(); err != nil {
+		return false
+	}
+	return true
+}
+
 // profileData holds information about the given profile for generation.
 type profileData struct {
 	// Name is profile name.
