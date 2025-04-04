@@ -25,11 +25,10 @@ import (
 // profileDirectory is the file store for apparmor profiles and macros.
 var profileDirectory = "/etc/apparmor.d"
 
-// IsEnabled returns true if AppArmor is enabled on the host. It also checks
-// for the existence of the `apparmor_parser` binary, which will be required to
-// apply profiles.
+// IsEnabled returns true if `apparmor_parser` binary is found on the host,
+// which will be required to apply profiles.
 func IsEnabled() bool {
-	return supported.NewAppArmorVerifier().IsSupported() == nil
+	return supported.NewAppArmorVerifier().FindAppArmorParserBinary() == nil
 }
 
 // profileData holds information about the given profile for generation.
