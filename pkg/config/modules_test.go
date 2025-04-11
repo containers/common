@@ -15,28 +15,22 @@ const (
 	testBaseUsr  = "testdata/modules/usr/share"
 )
 
-func testSetModulePaths() (func(), error) {
-	oldXDG := os.Getenv("XDG_CONFIG_HOME")
-	oldEtc := moduleBaseEtc
-	oldUsr := moduleBaseUsr
+func testSetModulePaths() {
+	t := GinkgoT()
 
 	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
+	gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
-	if err := os.Setenv("XDG_CONFIG_HOME", filepath.Join(wd, testBaseHome)); err != nil {
-		return nil, err
-	}
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(wd, testBaseHome))
 
+	oldEtc := moduleBaseEtc
+	oldUsr := moduleBaseUsr
 	moduleBaseEtc = filepath.Join(wd, testBaseEtc)
 	moduleBaseUsr = filepath.Join(wd, testBaseUsr)
-
-	return func() {
-		os.Setenv("XDG_CONFIG_HOME", oldXDG)
+	DeferCleanup(func() {
 		moduleBaseEtc = oldEtc
 		moduleBaseUsr = oldUsr
-	}, nil
+	})
 }
 
 var _ = Describe("Config Modules", func() {
@@ -55,9 +49,7 @@ var _ = Describe("Config Modules", func() {
 	It("resolve modules", func() {
 		// This test makes sure that the correct module is being
 		// returned.
-		cleanUp, err := testSetModulePaths()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		defer cleanUp()
+		testSetModulePaths()
 
 		dirs, err := ModuleDirectories()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -106,9 +98,7 @@ var _ = Describe("Config Modules", func() {
 	})
 
 	It("new config with modules", func() {
-		cleanUp, err := testSetModulePaths()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		defer cleanUp()
+		testSetModulePaths()
 
 		wd, err := os.Getwd()
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -162,17 +152,10 @@ var _ = Describe("Config Modules", func() {
 	})
 
 	It("new config with modules and env variables", func() {
-		cleanUp, err := testSetModulePaths()
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		defer cleanUp()
+		testSetModulePaths()
 
-		oldOverride := os.Getenv(containersConfOverrideEnv)
-		defer func() {
-			os.Setenv(containersConfOverrideEnv, oldOverride)
-		}()
-
-		err = os.Setenv(containersConfOverrideEnv, "testdata/modules/override.conf")
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		t := GinkgoT()
+		t.Setenv(containersConfOverrideEnv, "testdata/modules/override.conf")
 
 		// Also make sure that absolute paths are loaded as is.
 		wd, err := os.Getwd()
