@@ -41,11 +41,8 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
+		t := GinkgoT()
+		validDirPath := t.TempDir()
 
 		// Given
 		defConf.Network.NetworkConfigDir = validDirPath
@@ -63,11 +60,9 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(defConf).NotTo(gomega.BeNil())
 
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
+		t := GinkgoT()
+		validDirPath := t.TempDir()
+
 		// Given
 		defConf.Network.NetworkConfigDir = validDirPath
 		defConf.Network.CNIPluginDirs.Set([]string{validDirPath})

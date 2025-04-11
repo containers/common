@@ -73,12 +73,10 @@ var _ = Describe("run netavark", func() {
 			Skip("this test needs to be run as root")
 		}
 
-		var err error
-		confDir, err = os.MkdirTemp("", "podman_netavark_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		t := GinkgoT()
+		confDir = t.TempDir()
 
+		var err error
 		netNSTest, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
@@ -91,7 +89,7 @@ var _ = Describe("run netavark", func() {
 
 		// Force iptables driver, firewalld is broken inside the extra
 		// namespace because it still connects to firewalld on the host.
-		_ = os.Setenv("NETAVARK_FW", "iptables")
+		t.Setenv("NETAVARK_FW", "iptables")
 	})
 
 	JustBeforeEach(func() {
@@ -105,15 +103,12 @@ var _ = Describe("run netavark", func() {
 	AfterEach(func() {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 		logrus.SetLevel(logrus.InfoLevel)
-		_ = os.RemoveAll(confDir)
 
 		_ = netns.UnmountNS(netNSTest.Path())
 		_ = netNSTest.Close()
 
 		_ = netns.UnmountNS(netNSContainer.Path())
 		_ = netNSContainer.Close()
-
-		_ = os.Unsetenv("NETAVARK_FW")
 	})
 
 	It("test basic setup", func() {
