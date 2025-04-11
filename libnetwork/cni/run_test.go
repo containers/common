@@ -790,8 +790,8 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 
-				os.Setenv("CNI_ARGS", "IP="+ip)
-				defer os.Unsetenv("CNI_ARGS")
+				t := GinkgoT()
+				t.Setenv("CNI_ARGS", "IP="+ip)
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
 				Expect(err).ToNot(HaveOccurred())

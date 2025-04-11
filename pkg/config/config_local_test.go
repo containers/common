@@ -391,25 +391,19 @@ var _ = Describe("Config Local", func() {
 			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		}
 		// Given we do
-		oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
-		os.Setenv(containersConfEnv, "/dev/null")
+		t := GinkgoT()
+		t.Setenv(containersConfEnv, "/dev/null")
 
 		// When
 		config, err := Default()
 
-		// Undo that
-		if envSet {
-			os.Setenv(containersConfEnv, oldContainersConf)
-		} else {
-			os.Unsetenv(containersConfEnv)
-		}
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
 		config.Containers.HTTPProxy = true
 		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
-		os.Setenv("HTTP_PROXY", "localhost")
-		os.Setenv("FOO", "BAR")
+		t.Setenv("HTTP_PROXY", "localhost")
+		t.Setenv("FOO", "BAR")
 		newenvs := []string{"HTTP_PROXY=localhost"}
 		envs = append(newenvs, envs...)
 		gomega.Expect(config.GetDefaultEnv()).To(gomega.BeEquivalentTo(envs))
