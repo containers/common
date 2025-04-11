@@ -381,7 +381,6 @@ func TestAddArtifacts(t *testing.T) {
 
 			//nolint:usetesting // Test fails when using t.TempDir() because the resulting file name is to long.
 			destination, err := os.MkdirTemp(dir, "pushed")
-			require.NoError(t, err)
 
 			_, err = list.Push(ctx, "oci:"+destination+":tag", &ManifestListPushOptions{ImageListSelection: cp.CopyAllImages})
 			require.NoError(t, err)

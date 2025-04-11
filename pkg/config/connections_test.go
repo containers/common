@@ -17,20 +17,12 @@ var _ = Describe("Connections conf", func() {
 	)
 
 	BeforeEach(func() {
-		dir := GinkgoT().TempDir()
+		t := GinkgoT()
+		dir := t.TempDir()
 		connectionsConfFile = filepath.Join(dir, "connections.json")
-		err := os.Setenv("PODMAN_CONNECTIONS_CONF", connectionsConfFile)
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		t.Setenv("PODMAN_CONNECTIONS_CONF", connectionsConfFile)
 		containersConfFile = filepath.Join(dir, "containers.conf")
-		err = os.Setenv(containersConfEnv, containersConfFile)
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-	})
-
-	AfterEach(func() {
-		err := os.Unsetenv("PODMAN_CONNECTIONS_CONF")
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		err = os.Unsetenv(containersConfEnv)
-		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		t.Setenv(containersConfEnv, containersConfFile)
 	})
 
 	It("read non existent file", func() {

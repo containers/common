@@ -28,11 +28,8 @@ var _ = Describe("Config", func() {
 	)
 
 	BeforeEach(func() {
-		var err error
-		networkConfDir, err = os.MkdirTemp("", "podman_netavark_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		t := GinkgoT()
+		networkConfDir = t.TempDir()
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
 	})
@@ -43,10 +40,6 @@ var _ = Describe("Config", func() {
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
-	})
-
-	AfterEach(func() {
-		os.RemoveAll(networkConfDir)
 	})
 
 	Context("basic network config tests", func() {

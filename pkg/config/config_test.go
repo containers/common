@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
@@ -180,30 +181,24 @@ var _ = Describe("Config", func() {
 
 	Describe("readStorageTmp", func() {
 		It("test image_copy_tmp_dir='storage'", func() {
+			t := GinkgoT()
 			// Reload from new configuration file
-			testFile := "testdata/temp.conf"
+			testFile := t.TempDir() + "/temp.conf"
 			content := `[engine]
 image_copy_tmp_dir="storage"`
 			err := os.WriteFile(testFile, []byte(content), os.ModePerm)
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
-			defer os.Remove(testFile)
 
 			config, _ := NewConfig(testFile)
 			path, err := config.ImageCopyTmpDir()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.ContainSubstring("containers/storage/tmp"))
 			// Given we do
-			oldTMPDIR, set := os.LookupEnv("TMPDIR")
-			os.Setenv("TMPDIR", "/var/tmp/foobar")
+			t.Setenv("TMPDIR", "/var/tmp/foobar")
 			path, err = config.ImageCopyTmpDir()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.BeEquivalentTo("/var/tmp/foobar"))
-			if set {
-				os.Setenv("TMPDIR", oldTMPDIR)
-			} else {
-				os.Unsetenv("TMPDIR")
-			}
 		})
 	})
 
@@ -360,27 +355,15 @@ image_copy_tmp_dir="storage"`
 				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 			}
 			httpEnvs := append([]string{"HTTP_PROXY=1.2.3.4"}, envs...)
-			oldProxy, proxyEnvSet := os.LookupEnv("HTTP_PROXY")
-			os.Setenv("HTTP_PROXY", "1.2.3.4")
-			oldFoo, fooEnvSet := os.LookupEnv("foo")
-			os.Setenv("foo", "bar")
+			t := GinkgoT()
+			t.Setenv("HTTP_PROXY", "1.2.3.4")
+			t.Setenv("foo", "bar")
 
 			defaultConfig, _ := defaultConfig()
 			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, false)).To(gomega.BeEquivalentTo(envs))
 			gomega.Expect(defaultConfig.GetDefaultEnvEx(false, true)).To(gomega.BeEquivalentTo(httpEnvs))
 			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("HTTP_PROXY"))
 			gomega.Expect(strings.Join(defaultConfig.GetDefaultEnvEx(true, true), ",")).To(gomega.ContainSubstring("foo"))
-			// Undo that
-			if proxyEnvSet {
-				os.Setenv("HTTP_PROXY", oldProxy)
-			} else {
-				os.Unsetenv("HTTP_PROXY")
-			}
-			if fooEnvSet {
-				os.Setenv("foo", oldFoo)
-			} else {
-				os.Unsetenv("foo")
-			}
 		})
 
 		It("should succeed with commented out configuration", func() {
@@ -461,16 +444,9 @@ image_copy_tmp_dir="storage"`
 			}
 
 			// Given we do
-			oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
-			os.Setenv(containersConfEnv, "/dev/null")
+			GinkgoT().Setenv(containersConfEnv, "/dev/null")
 			// When
 			config, err := NewConfig("")
-			// Undo that
-			if envSet {
-				os.Setenv(containersConfEnv, oldContainersConf)
-			} else {
-				os.Unsetenv(containersConfEnv)
-			}
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
@@ -529,16 +505,9 @@ image_copy_tmp_dir="storage"`
 
 		It("contents of passed-in file should override others", func() {
 			// Given we do
-			oldContainersConf, envSet := os.LookupEnv(containersConfEnv)
-			os.Setenv(containersConfEnv, "containers.conf")
+			GinkgoT().Setenv(containersConfEnv, "containers.conf")
 			// When
 			config, err := NewConfig("testdata/containers_override.conf")
-			// Undo that
-			if envSet {
-				os.Setenv(containersConfEnv, oldContainersConf)
-			} else {
-				os.Unsetenv(containersConfEnv)
-			}
 
 			crunWasm := "crun-wasm"
 			PlatformToOCIRuntimeMap := map[string]string{
@@ -698,24 +667,12 @@ image_copy_tmp_dir="storage"`
 	})
 
 	Describe("Service Destinations", func() {
-		ConfPath := struct {
-			Value string
-			IsSet bool
-		}{}
-
 		BeforeEach(func() {
-			ConfPath.Value, ConfPath.IsSet = os.LookupEnv(containersConfEnv)
-			conf, _ := os.CreateTemp("", "containersconf")
-			os.Setenv(containersConfEnv, conf.Name())
-		})
-
-		AfterEach(func() {
-			os.Remove(os.Getenv(containersConfEnv))
-			if ConfPath.IsSet {
-				os.Setenv(containersConfEnv, ConfPath.Value)
-			} else {
-				os.Unsetenv(containersConfEnv)
-			}
+			t := GinkgoT()
+			name := t.TempDir() + "/containersconf"
+			err := os.WriteFile(name, []byte{}, os.ModePerm)
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			t.Setenv(containersConfEnv, name)
 		})
 
 		It("test addConfigs", func() {
@@ -736,23 +693,25 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			gomega.Expect(newConfigs).To(gomega.Equal(configs))
 
-			dir, err := os.MkdirTemp("", "configTest")
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			defer os.RemoveAll(dir)
+			t := GinkgoT()
+			dir := t.TempDir()
 			file1 := tmpFilePath(dir, "b")
 			file2 := tmpFilePath(dir, "a")
 			file3 := tmpFilePath(dir, "2")
 			file4 := tmpFilePath(dir, "1")
 			// create a file in dir that is not a .conf to make sure
 			// it does not show up in configs
-			_, err = os.CreateTemp(dir, "notconf")
+			f, err := os.CreateTemp(dir, "notconf")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			subdir, err := os.MkdirTemp(dir, "")
+			f.Close()
+			subdir := filepath.Join(dir, "subdir")
+			err = os.Mkdir(subdir, 0o700)
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			// create a file in subdir, to make sure it does not
 			// show up in configs
-			_, err = os.CreateTemp(subdir, "")
+			f, err = os.CreateTemp(subdir, "")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			f.Close()
 
 			newConfigs, err = addConfigs(dir, configs)
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
@@ -786,36 +745,24 @@ image_copy_tmp_dir="storage"`
 
 	Describe("Reload", func() {
 		It("test new config from reload", func() {
+			t := GinkgoT()
 			// Default configuration
 			defaultTestFile := "testdata/containers_default.conf"
-			oldEnv, set := os.LookupEnv(containersConfEnv)
-			os.Setenv(containersConfEnv, defaultTestFile)
+			t.Setenv(containersConfEnv, defaultTestFile)
 			cfg, err := Default()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
-			if set {
-				os.Setenv(containersConfEnv, oldEnv)
-			} else {
-				os.Unsetenv(containersConfEnv)
-			}
 
 			// Reload from new configuration file
-			testFile := "testdata/temp.conf"
+			testFile := t.TempDir() + "/temp.conf"
 			content := `[containers]
 env=["foo=bar"]`
 			err = os.WriteFile(testFile, []byte(content), os.ModePerm)
-			defer os.Remove(testFile)
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
-			oldEnv, set = os.LookupEnv(containersConfEnv)
-			os.Setenv(containersConfEnv, testFile)
+			t.Setenv(containersConfEnv, testFile)
 			_, err = Reload()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			newCfg, err := Default()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
-			if set {
-				os.Setenv(containersConfEnv, oldEnv)
-			} else {
-				os.Unsetenv(containersConfEnv)
-			}
 
 			expectOldEnv := []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"}
 			expectNewEnv := []string{"foo=bar"}
@@ -837,15 +784,14 @@ env=["foo=bar"]`
 	})
 
 	It("CONTAINERS_CONF_OVERRIDE", func() {
-		os.Setenv("CONTAINERS_CONF_OVERRIDE", "testdata/containers_override.conf")
-		defer os.Unsetenv("CONTAINERS_CONF_OVERRIDE")
+		t := GinkgoT()
+		t.Setenv("CONTAINERS_CONF_OVERRIDE", "testdata/containers_override.conf")
 		config, err := NewConfig("")
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 
 		// Make sure that _OVERRIDE is loaded even when CONTAINERS_CONF is set.
-		os.Setenv(containersConfEnv, "testdata/containers_default.conf")
-		defer os.Unsetenv(containersConfEnv)
+		t.Setenv(containersConfEnv, "testdata/containers_default.conf")
 		config, err = NewConfig("")
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))

@@ -4,7 +4,6 @@ package netavark_test
 
 import (
 	"bytes"
-	"os"
 	"path/filepath"
 
 	"github.com/containers/common/libnetwork/types"
@@ -23,11 +22,8 @@ var _ = Describe("Plugins", func() {
 	)
 
 	BeforeEach(func() {
-		var err error
-		networkConfDir, err = os.MkdirTemp("", "podman_netavark_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		t := GinkgoT()
+		networkConfDir = t.TempDir()
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
 	})
@@ -38,10 +34,6 @@ var _ = Describe("Plugins", func() {
 		if err != nil {
 			Fail("Failed to create NewNetworkInterface")
 		}
-	})
-
-	AfterEach(func() {
-		os.RemoveAll(networkConfDir)
 	})
 
 	It("create plugin network", func() {
