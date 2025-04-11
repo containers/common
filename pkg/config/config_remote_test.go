@@ -11,11 +11,9 @@ import (
 
 var _ = Describe("Config Remote", func() {
 	It("should succeed on invalid CNIPluginDirs", func() {
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
+		t := GinkgoT()
+		validDirPath = t.TempDir()
+
 		// Given
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
@@ -125,11 +123,9 @@ var _ = Describe("Config Remote", func() {
 	})
 
 	It("should succeed on invalid CNIPluginDirs", func() {
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
+		t := GinkgoT()
+		validDirPath = t.TempDir()
+
 		// Given
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())
@@ -145,11 +141,9 @@ var _ = Describe("Config Remote", func() {
 	})
 
 	It("should succeed in validating invalid PluginDir", func() {
-		validDirPath, err := os.MkdirTemp("", "config-empty")
-		if err != nil {
-			panic(err)
-		}
-		defer os.RemoveAll(validDirPath)
+		t := GinkgoT()
+		validDirPath = t.TempDir()
+
 		// Given
 		defConf, err := defaultConfig()
 		gomega.Expect(err).To(gomega.BeNil())

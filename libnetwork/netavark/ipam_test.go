@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	"os"
 
 	"github.com/containers/common/libnetwork/types"
 	"github.com/containers/common/pkg/config"
@@ -23,11 +22,8 @@ var _ = Describe("IPAM", func() {
 	)
 
 	BeforeEach(func() {
-		var err error
-		networkConfDir, err = os.MkdirTemp("", "podman_netavark_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		t := GinkgoT()
+		networkConfDir = t.TempDir()
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
 	})
@@ -46,10 +42,6 @@ var _ = Describe("IPAM", func() {
 		// run network list to force a network load
 		_, err = networkInterface.NetworkList()
 		Expect(err).ToNot(HaveOccurred())
-	})
-
-	AfterEach(func() {
-		os.RemoveAll(networkConfDir)
 	})
 
 	It("simple ipam alloc", func() {

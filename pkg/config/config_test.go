@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
@@ -692,23 +693,25 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			gomega.Expect(newConfigs).To(gomega.Equal(configs))
 
-			dir, err := os.MkdirTemp("", "configTest")
-			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			defer os.RemoveAll(dir)
+			t := GinkgoT()
+			dir := t.TempDir()
 			file1 := tmpFilePath(dir, "b")
 			file2 := tmpFilePath(dir, "a")
 			file3 := tmpFilePath(dir, "2")
 			file4 := tmpFilePath(dir, "1")
 			// create a file in dir that is not a .conf to make sure
 			// it does not show up in configs
-			_, err = os.CreateTemp(dir, "notconf")
+			f, err := os.CreateTemp(dir, "notconf")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
-			subdir, err := os.MkdirTemp(dir, "")
+			f.Close()
+			subdir := filepath.Join(dir, "subdir")
+			err = os.Mkdir(subdir, 0o700)
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			// create a file in subdir, to make sure it does not
 			// show up in configs
-			_, err = os.CreateTemp(subdir, "")
+			f, err = os.CreateTemp(subdir, "")
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+			f.Close()
 
 			newConfigs, err = addConfigs(dir, configs)
 			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())

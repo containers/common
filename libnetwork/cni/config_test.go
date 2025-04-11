@@ -26,11 +26,8 @@ var _ = Describe("Config", func() {
 	)
 
 	BeforeEach(func() {
-		var err error
-		cniConfDir, err = os.MkdirTemp("", "podman_cni_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		t := GinkgoT()
+		cniConfDir = t.TempDir()
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
 		logrus.SetLevel(logrus.InfoLevel)
@@ -46,7 +43,6 @@ var _ = Describe("Config", func() {
 
 	AfterEach(func() {
 		logrus.SetLevel(logrus.InfoLevel)
-		os.RemoveAll(cniConfDir)
 	})
 
 	Context("basic network config tests", func() {
