@@ -11,7 +11,7 @@ on:
 permissions: read-all
 
 env:
-  LINT_VERSION: v2.0
+  LINT_VERSION: v2.1.1
 
 jobs:
   codespell:
