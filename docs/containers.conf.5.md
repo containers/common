@@ -30,7 +30,7 @@ container images.
 * `policy.conf` for controlling which images can be pulled to the system.
 
 Note: If Podman is running in a virtual machine using `podman machine` (this
-includes Mac and Windows hosts), ensure that you edit the configuration files in the
+includes Mac and Windows hosts), ensure that the configuration files are edited in the
 virtual machine by using `podman machine ssh`.
 
 ## ENVIRONMENT VARIABLES
