@@ -29,6 +29,10 @@ Note, container engines also use other configuration files for configuring the e
 container images.
 * `policy.conf` for controlling which images can be pulled to the system.
 
+Note: If Podman is running in a virtual machine using `podman machine` (this
+includes Mac and Windows hosts), ensure that you add the configuration in the
+virtual machine by using `podman machine ssh`.
+
 ## ENVIRONMENT VARIABLES
 If the `CONTAINERS_CONF` environment variable is set, all system and user
 config files are ignored and only the specified config file will be loaded.
@@ -404,10 +408,6 @@ Example:  "/db:/var/lib/db:ro".
 ## NETWORK TABLE
 The `network` table contains settings pertaining to the management of CNI
 plugins.
-
-Note: If Podman is running in a virtual machine using `podman machine` (this
-includes Mac and Windows hosts), ensure that you add the configuration in the
-virtual machine by using `podman machine ssh`.
 
 **network_backend**=""
 
