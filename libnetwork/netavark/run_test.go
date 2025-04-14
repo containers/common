@@ -61,17 +61,22 @@ var _ = Describe("run netavark", func() {
 			Skip("NETAVARK_BINARY not set skip run tests")
 		}
 
-		// set the logrus settings
-		logrus.SetLevel(logrus.TraceLevel)
-		// disable extra quotes so we can easily copy the netavark command
-		logrus.SetFormatter(&logrus.TextFormatter{DisableQuote: true})
-		logrus.SetOutput(os.Stderr)
 		// The tests need root privileges.
 		// Technically we could work around that by using user namespaces and
 		// the rootless cni code but this is to much work to get it right for a unit test.
 		if unshare.IsRootless() {
 			Skip("this test needs to be run as root")
 		}
+
+		// set the logrus settings
+		logrus.SetLevel(logrus.TraceLevel)
+		// disable extra quotes so we can easily copy the netavark command
+		logrus.SetFormatter(&logrus.TextFormatter{DisableQuote: true})
+		logrus.SetOutput(os.Stderr)
+		DeferCleanup(func() {
+			logrus.SetFormatter(&logrus.TextFormatter{})
+			logrus.SetLevel(logrus.InfoLevel)
+		})
 
 		t := GinkgoT()
 		confDir = t.TempDir()
@@ -81,12 +86,19 @@ var _ = Describe("run netavark", func() {
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSTest.Path())
+			_ = netNSTest.Close()
+		})
 
 		netNSContainer, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
 		}
-
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSContainer.Path())
+			_ = netNSContainer.Close()
+		})
 		// Force iptables driver, firewalld is broken inside the extra
 		// namespace because it still connects to firewalld on the host.
 		t.Setenv("NETAVARK_FW", "iptables")
@@ -103,12 +115,6 @@ var _ = Describe("run netavark", func() {
 	AfterEach(func() {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 		logrus.SetLevel(logrus.InfoLevel)
-
-		_ = netns.UnmountNS(netNSTest.Path())
-		_ = netNSTest.Close()
-
-		_ = netns.UnmountNS(netNSContainer.Path())
-		_ = netNSContainer.Close()
 	})
 
 	It("test basic setup", func() {

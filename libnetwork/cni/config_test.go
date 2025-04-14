@@ -31,6 +31,9 @@ var _ = Describe("Config", func() {
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
 		logrus.SetLevel(logrus.InfoLevel)
+		DeferCleanup(func() {
+			logrus.SetLevel(logrus.InfoLevel)
+		})
 	})
 
 	JustBeforeEach(func() {
@@ -39,10 +42,6 @@ var _ = Describe("Config", func() {
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
-	})
-
-	AfterEach(func() {
-		logrus.SetLevel(logrus.InfoLevel)
 	})
 
 	Context("basic network config tests", func() {

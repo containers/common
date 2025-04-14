@@ -86,12 +86,24 @@ var _ = Describe("run CNI", func() {
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSTest.Path())
+			_ = netNSTest.Close()
+		})
 
 		netNSContainer, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSContainer.Path())
+			_ = netNSContainer.Close()
+		})
+
 		logrus.SetLevel(logrus.WarnLevel)
+		DeferCleanup(func() {
+			logrus.SetLevel(logrus.InfoLevel)
+		})
 	})
 
 	JustBeforeEach(func() {
@@ -100,16 +112,6 @@ var _ = Describe("run CNI", func() {
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
-	})
-
-	AfterEach(func() {
-		logrus.SetLevel(logrus.InfoLevel)
-
-		_ = netns.UnmountNS(netNSTest.Path())
-		_ = netNSTest.Close()
-
-		_ = netns.UnmountNS(netNSContainer.Path())
-		_ = netNSContainer.Close()
 	})
 
 	Context("network setup test", func() {
