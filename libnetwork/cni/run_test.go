@@ -76,24 +76,34 @@ var _ = Describe("run CNI", func() {
 			Skip("this test needs to be run as root")
 		}
 
-		var err error
-		cniConfDir, err = os.MkdirTemp("", "podman_cni_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		t := GinkgoT()
+		cniConfDir = t.TempDir()
 		logBuffer = bytes.Buffer{}
 		logrus.SetOutput(&logBuffer)
 
+		var err error
 		netNSTest, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSTest.Path())
+			_ = netNSTest.Close()
+		})
 
 		netNSContainer, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSContainer.Path())
+			_ = netNSContainer.Close()
+		})
+
 		logrus.SetLevel(logrus.WarnLevel)
+		DeferCleanup(func() {
+			logrus.SetLevel(logrus.InfoLevel)
+		})
 	})
 
 	JustBeforeEach(func() {
@@ -102,17 +112,6 @@ var _ = Describe("run CNI", func() {
 		if err != nil {
 			Fail("Failed to create NewCNINetworkInterface")
 		}
-	})
-
-	AfterEach(func() {
-		logrus.SetLevel(logrus.InfoLevel)
-		_ = os.RemoveAll(cniConfDir)
-
-		_ = netns.UnmountNS(netNSTest.Path())
-		_ = netNSTest.Close()
-
-		_ = netns.UnmountNS(netNSContainer.Path())
-		_ = netNSContainer.Close()
 	})
 
 	Context("network setup test", func() {
@@ -790,8 +789,8 @@ var _ = Describe("run CNI", func() {
 					},
 				}
 
-				os.Setenv("CNI_ARGS", "IP="+ip)
-				defer os.Unsetenv("CNI_ARGS")
+				t := GinkgoT()
+				t.Setenv("CNI_ARGS", "IP="+ip)
 
 				res, err := libpodNet.Setup(netNSContainer.Path(), setupOpts)
 				Expect(err).ToNot(HaveOccurred())

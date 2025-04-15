@@ -61,11 +61,6 @@ var _ = Describe("run netavark", func() {
 			Skip("NETAVARK_BINARY not set skip run tests")
 		}
 
-		// set the logrus settings
-		logrus.SetLevel(logrus.TraceLevel)
-		// disable extra quotes so we can easily copy the netavark command
-		logrus.SetFormatter(&logrus.TextFormatter{DisableQuote: true})
-		logrus.SetOutput(os.Stderr)
 		// The tests need root privileges.
 		// Technically we could work around that by using user namespaces and
 		// the rootless cni code but this is to much work to get it right for a unit test.
@@ -73,25 +68,40 @@ var _ = Describe("run netavark", func() {
 			Skip("this test needs to be run as root")
 		}
 
-		var err error
-		confDir, err = os.MkdirTemp("", "podman_netavark_test")
-		if err != nil {
-			Fail("Failed to create tmpdir")
-		}
+		// set the logrus settings
+		logrus.SetLevel(logrus.TraceLevel)
+		// disable extra quotes so we can easily copy the netavark command
+		logrus.SetFormatter(&logrus.TextFormatter{DisableQuote: true})
+		logrus.SetOutput(os.Stderr)
+		DeferCleanup(func() {
+			logrus.SetFormatter(&logrus.TextFormatter{})
+			logrus.SetLevel(logrus.InfoLevel)
+		})
 
+		t := GinkgoT()
+		confDir = t.TempDir()
+
+		var err error
 		netNSTest, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
 		}
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSTest.Path())
+			_ = netNSTest.Close()
+		})
 
 		netNSContainer, err = netns.NewNS()
 		if err != nil {
 			Fail("Failed to create netns")
 		}
-
+		DeferCleanup(func() {
+			_ = netns.UnmountNS(netNSContainer.Path())
+			_ = netNSContainer.Close()
+		})
 		// Force iptables driver, firewalld is broken inside the extra
 		// namespace because it still connects to firewalld on the host.
-		_ = os.Setenv("NETAVARK_FW", "iptables")
+		t.Setenv("NETAVARK_FW", "iptables")
 	})
 
 	JustBeforeEach(func() {
@@ -105,15 +115,6 @@ var _ = Describe("run netavark", func() {
 	AfterEach(func() {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 		logrus.SetLevel(logrus.InfoLevel)
-		_ = os.RemoveAll(confDir)
-
-		_ = netns.UnmountNS(netNSTest.Path())
-		_ = netNSTest.Close()
-
-		_ = netns.UnmountNS(netNSContainer.Path())
-		_ = netNSContainer.Close()
-
-		_ = os.Unsetenv("NETAVARK_FW")
 	})
 
 	It("test basic setup", func() {
