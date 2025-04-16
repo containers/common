@@ -13,7 +13,7 @@ require (
 	github.com/containernetworking/plugins v1.6.2
 	github.com/containers/image/v5 v5.34.4-0.20250327193514-d3b241257363
 	github.com/containers/ocicrypt v1.2.1
-	github.com/containers/storage v1.57.3-0.20250331162343-3fc5c230951d
+	github.com/containers/storage v1.58.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/cyphar/filepath-securejoin v0.4.1
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
@@ -113,7 +113,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/sys/mountinfo v0.7.2 // indirect
-	github.com/moby/sys/user v0.3.0 // indirect
+	github.com/moby/sys/user v0.4.0 // indirect
 	github.com/moby/sys/userns v0.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
