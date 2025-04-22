@@ -185,6 +185,10 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 				if err != nil {
 					return nil, err
 				}
+				// Unset used networks here to ensure that when using vlan networks
+				// we do not error if the subnet is already in use on the host.
+				// https://github.com/containers/podman/issues/25736
+				usedNetworks = nil
 				// If there is no vlan there should be no other config with the same bridge.
 				// However with vlan we want to allow that so that you can have different
 				// configs on the same bridge but different vlans

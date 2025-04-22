@@ -957,6 +957,28 @@ var _ = Describe("Config", func() {
 			Expect(network2.Options).To(HaveKeyWithValue("vlan", "99"))
 		})
 
+		It("create two networks with vlan option and same subnet", func() {
+			subnet := "10.0.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			networkOpts := types.Network{
+				Subnets: []types.Subnet{{Subnet: n}},
+			}
+			network1, err := libpodNet.NetworkCreate(networkOpts, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.Subnets).To(HaveLen(1))
+
+			// set a new vlan on the options
+			networkOpts.Options = map[string]string{types.VLANOption: "99"}
+
+			network2, err := libpodNet.NetworkCreate(networkOpts, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network2.Driver).To(Equal("bridge"))
+			Expect(network2.Options).To(HaveKeyWithValue("vlan", "99"))
+			Expect(network2.Subnets).To(HaveLen(1))
+			Expect(network2.Subnets).To(Equal(network1.Subnets))
+		})
+
 		It("create network with vrf option", func() {
 			network := types.Network{
 				Options: map[string]string{
