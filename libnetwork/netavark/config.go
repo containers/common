@@ -209,7 +209,14 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 					return nil, errors.New("invalid vrf name")
 				}
 			case types.ModeOption:
-				if !slices.Contains(types.ValidBridgeModes, value) {
+				switch value {
+				case types.BridgeModeManaged:
+				case types.BridgeModeUnmanaged:
+					// Unset used networks here to ensure that when using unmanaged networks
+					// we do not error if the subnet is already in use on the host.
+					// https://github.com/containers/common/issues/2322
+					usedNetworks = nil
+				default:
 					return nil, fmt.Errorf("unknown bridge mode %q", value)
 				}
 			default:

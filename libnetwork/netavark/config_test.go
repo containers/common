@@ -1057,6 +1057,28 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("subnet 10.10.0.0/24 is already used on the host or by another config"))
 		})
 
+		It("create mode=unmanaged network with same subnet", func() {
+			subnet := "10.0.0.0/24"
+			n, _ := types.ParseCIDR(subnet)
+			network := types.Network{
+				Subnets: []types.Subnet{{Subnet: n}},
+			}
+			network1, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Subnets).To(HaveLen(1))
+
+			// creating an network with mode=unmanaged should not cause subnet conflict
+			network = types.Network{
+				Subnets: []types.Subnet{{Subnet: n}},
+				Options: map[string]string{
+					types.ModeOption: types.BridgeModeUnmanaged,
+				},
+			}
+			network2, err := libpodNet.NetworkCreate(network, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network2.Subnets).To(HaveLen(1))
+		})
+
 		It("create macvlan config without subnet", func() {
 			network := types.Network{Driver: "macvlan"}
 			network1, err := libpodNet.NetworkCreate(network, nil)
