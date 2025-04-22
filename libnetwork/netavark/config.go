@@ -170,7 +170,7 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 	case types.BridgeNetworkDriver:
 		internalutil.MapDockerBridgeDriverOptions(newNetwork)
 
-		var vlan int
+		checkBridgeConflict := true
 		// validate the given options,
 		for key, value := range newNetwork.Options {
 			switch key {
@@ -181,10 +181,15 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 				}
 
 			case types.VLANOption:
-				vlan, err = internalutil.ParseVlan(value)
+				_, err = internalutil.ParseVlan(value)
 				if err != nil {
 					return nil, err
 				}
+				// If there is no vlan there should be no other config with the same bridge.
+				// However with vlan we want to allow that so that you can have different
+				// configs on the same bridge but different vlans
+				// https://github.com/containers/common/issues/2095
+				checkBridgeConflict = false
 
 			case types.IsolateOption:
 				val, err := internalutil.ParseIsolate(value)
@@ -216,6 +221,8 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 					// we do not error if the subnet is already in use on the host.
 					// https://github.com/containers/common/issues/2322
 					usedNetworks = nil
+					// Also make sure we don't error if the bridge name is already used as well.
+					checkBridgeConflict = false
 				default:
 					return nil, fmt.Errorf("unknown bridge mode %q", value)
 				}
@@ -224,11 +231,6 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 			}
 		}
 
-		// If there is no vlan there should be no other config with the same bridge.
-		// However with vlan we want to allow that so that you can have different
-		// configs on the same bridge but different vlans
-		// https://github.com/containers/common/issues/2095
-		checkBridgeConflict := vlan == 0
 		err = internalutil.CreateBridge(n, newNetwork, usedNetworks, n.defaultsubnetPools, checkBridgeConflict)
 		if err != nil {
 			return nil, err

@@ -1079,6 +1079,26 @@ var _ = Describe("Config", func() {
 			Expect(network2.Subnets).To(HaveLen(1))
 		})
 
+		It("create mode=unmanaged network with same interface", func() {
+			networkOpts := types.Network{
+				NetworkInterface: "br0",
+				Options: map[string]string{
+					types.ModeOption: types.BridgeModeUnmanaged,
+				},
+			}
+			network1, err := libpodNet.NetworkCreate(networkOpts, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network1.Driver).To(Equal("bridge"))
+			Expect(network1.NetworkInterface).To(Equal("br0"))
+			Expect(network1.Options).To(HaveKeyWithValue("mode", "unmanaged"))
+
+			network2, err := libpodNet.NetworkCreate(networkOpts, nil)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(network2.Driver).To(Equal("bridge"))
+			Expect(network2.NetworkInterface).To(Equal("br0"))
+			Expect(network2.Options).To(HaveKeyWithValue("mode", "unmanaged"))
+		})
+
 		It("create macvlan config without subnet", func() {
 			network := types.Network{Driver: "macvlan"}
 			network1, err := libpodNet.NetworkCreate(network, nil)
