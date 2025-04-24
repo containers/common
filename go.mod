@@ -37,7 +37,7 @@ require (
 	github.com/opencontainers/selinux v1.12.0
 	github.com/pkg/sftp v1.13.9
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
-	github.com/seccomp/libseccomp-golang v0.10.0
+	github.com/seccomp/libseccomp-golang v0.11.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/skeema/knownhosts v1.3.1
 	github.com/spf13/cobra v1.9.1
