@@ -390,7 +390,7 @@ var _ = Describe("Config Local", func() {
 		t.Setenv(containersConfEnv, "/dev/null")
 
 		// When
-		config, err := Default()
+		config, err := New(nil)
 
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())

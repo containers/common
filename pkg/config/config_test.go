@@ -748,7 +748,15 @@ image_copy_tmp_dir="storage"`
 			t := GinkgoT()
 			// Default configuration
 			defaultTestFile := "testdata/containers_default.conf"
+			// Note this must be defined before the Setenv as cleanup happens LIFO
+			// and Reload() must be called without the custom env to reset the default config
+			DeferCleanup(func() {
+				// Reload change back to default global configuration
+				_, err := Reload()
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			})
 			t.Setenv(containersConfEnv, defaultTestFile)
+
 			cfg, err := Default()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
@@ -768,9 +776,6 @@ env=["foo=bar"]`
 			expectNewEnv := []string{"foo=bar"}
 			gomega.Expect(cfg.Containers.Env.Get()).To(gomega.Equal(expectOldEnv))
 			gomega.Expect(newCfg.Containers.Env.Get()).To(gomega.Equal(expectNewEnv))
-			// Reload change back to default global configuration
-			_, err = Reload()
-			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 	})
 
