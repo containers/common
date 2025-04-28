@@ -10,7 +10,7 @@ require (
 	github.com/checkpoint-restore/go-criu/v7 v7.2.0
 	github.com/containerd/platforms v0.2.1
 	github.com/containernetworking/cni v1.3.0
-	github.com/containernetworking/plugins v1.6.2
+	github.com/containernetworking/plugins v1.7.1
 	github.com/containers/image/v5 v5.35.0
 	github.com/containers/ocicrypt v1.2.1
 	github.com/containers/storage v1.58.0
@@ -43,7 +43,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.10.0
-	github.com/vishvananda/netlink v1.3.0
+	github.com/vishvananda/netlink v1.3.1-0.20250303224720-0e7078ed04c8
 	go.etcd.io/bbolt v1.4.0
 	golang.org/x/crypto v0.37.0
 	golang.org/x/sync v0.13.0
@@ -136,7 +136,7 @@ require (
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/vbatts/tar-split v0.12.1 // indirect
 	github.com/vbauerster/mpb/v8 v8.9.3 // indirect
-	github.com/vishvananda/netns v0.0.4 // indirect
+	github.com/vishvananda/netns v0.0.5 // indirect
 	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
