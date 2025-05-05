@@ -37,13 +37,13 @@ jobs:
         sudo apt-get -qq update
         sudo apt-get -qq install libseccomp-dev
     - name: lint
-      uses: golangci/golangci-lint-action@v7
+      uses: golangci/golangci-lint-action@v8
       with:
         version: "${{ env.LINT_VERSION }}"
         args: --verbose
     # Extra linters, only checking new code from a pull request.
     - name: lint-extra
-      uses: golangci/golangci-lint-action@v7
+      uses: golangci/golangci-lint-action@v8
       with:
         args: --config=.golangci-extra.yml
         version: "${{ env.LINT_VERSION }}"
