@@ -40,51 +40,71 @@ func TestFilterReference(t *testing.T) {
 	require.NoError(t, err)
 	err = alpine.Tag("docker.io/library/image:another-tag")
 	require.NoError(t, err)
+	err = alpine.Tag("quay.io/libpod/al:latest")
+	require.NoError(t, err)
+	err = alpine.Tag("quay.io/libpod/al:tag")
+	require.NoError(t, err)
+	err = alpine.Tag("epic.io/podlib/al:tag")
+	require.NoError(t, err)
+
+	allNames := []string{"quay.io/libpod/al:latest", "quay.io/libpod/al:tag", "epic.io/podlib/al:tag", "docker.io/library/image:another-tag", "quay.io/libpod/alpine:latest", "localhost/another-image:tag"}
 
 	for _, test := range []struct {
-		filters []string
-		matches int
+		filters       []string
+		matchedImages int
+		names         []string
 	}{
-		{[]string{"image"}, 2},
-		{[]string{"*mage*"}, 2},
-		{[]string{"image:*"}, 2},
-		{[]string{"image:tag"}, 1},
-		{[]string{"image:another-tag"}, 1},
-		{[]string{"localhost/image"}, 1},
-		{[]string{"localhost/image:tag"}, 1},
-		{[]string{"library/image"}, 1},
-		{[]string{"docker.io/library/image*"}, 1},
-		{[]string{"docker.io/library/image:*"}, 1},
-		{[]string{"docker.io/library/image:another-tag"}, 1},
-		{[]string{"localhost/*"}, 2},
-		{[]string{"localhost/image:*tag"}, 1},
-		{[]string{"localhost/*mage:*ag"}, 2},
-		{[]string{"quay.io/libpod/busybox"}, 1},
-		{[]string{"quay.io/libpod/alpine"}, 1},
-		{[]string{"quay.io/libpod"}, 0},
-		{[]string{"quay.io/libpod/*"}, 2},
-		{[]string{"busybox"}, 1},
-		{[]string{"alpine"}, 1},
-		{[]string{"alpine@" + alpine.Digest().String()}, 1},
-		{[]string{"alpine:latest@" + alpine.Digest().String()}, 1},
-		{[]string{"quay.io/libpod/alpine@" + alpine.Digest().String()}, 1},
-		{[]string{"quay.io/libpod/alpine:latest@" + alpine.Digest().String()}, 1},
+		{[]string{"image"}, 2, []string{"localhost/image:tag", "docker.io/library/image:another-tag"}},
+		{[]string{"*mage*"}, 2, []string{"localhost/image:tag", "localhost/another-image:tag", "docker.io/library/image:another-tag"}},
+		{[]string{"image:*"}, 2, []string{"localhost/image:tag", "docker.io/library/image:another-tag"}},
+		{[]string{"image:tag"}, 1, []string{"localhost/image:tag"}},
+		{[]string{"image:another-tag"}, 1, []string{"docker.io/library/image:another-tag"}},
+		{[]string{"localhost/image"}, 1, []string{"localhost/image:tag"}},
+		{[]string{"localhost/image:tag"}, 1, []string{"localhost/image:tag"}},
+		{[]string{"library/image"}, 1, []string{"docker.io/library/image:another-tag"}},
+		{[]string{"docker.io/library/image*"}, 1, []string{"docker.io/library/image:another-tag"}},
+		{[]string{"docker.io/library/image:*"}, 1, []string{"docker.io/library/image:another-tag"}},
+		{[]string{"docker.io/library/image:another-tag"}, 1, []string{"docker.io/library/image:another-tag"}},
+		{[]string{"localhost/*"}, 2, []string{"localhost/image:tag", "localhost/another-image:tag"}},
+		{[]string{"localhost/image:*tag"}, 1, []string{"localhost/image:tag"}},
+		{[]string{"localhost/*mage:*ag"}, 2, []string{"localhost/image:tag", "localhost/another-image:tag"}},
+		{[]string{"quay.io/libpod/busybox"}, 1, []string{"quay.io/libpod/busybox:latest"}},
+		{[]string{"quay.io/libpod/alpine"}, 1, []string{"quay.io/libpod/alpine:latest"}},
+		{[]string{"quay.io/libpod"}, 0, []string{}},
+		{[]string{"quay.io/libpod/*"}, 2, []string{"quay.io/libpod/busybox:latest", "quay.io/libpod/alpine:latest", "quay.io/libpod/al:latest", "quay.io/libpod/al:tag"}},
+		{[]string{"busybox"}, 1, []string{"quay.io/libpod/busybox:latest"}},
+		{[]string{"alpine"}, 1, []string{"quay.io/libpod/alpine:latest"}},
+		{[]string{"al"}, 1, []string{"quay.io/libpod/al:latest"}},
+		{[]string{"*al"}, 1, []string{"quay.io/libpod/al:latest", "quay.io/libpod/al:tag", "epic.io/podlib/al:tag"}},
+
 		// Make sure negate works as expected
-		{[]string{"!alpine"}, 1},
-		{[]string{"!alpine", "!busybox"}, 0},
-		{[]string{"!alpine", "busybox"}, 1},
-		{[]string{"alpine", "busybox"}, 2},
-		{[]string{"*test", "!*box"}, 1},
+		{[]string{"!alpine"}, 1, []string{"quay.io/libpod/busybox:latest", "localhost/image:tag"}},
+		{[]string{"!alpine", "!busybox"}, 0, []string{}},
+		{[]string{"!alpine", "busybox"}, 1, []string{"quay.io/libpod/busybox:latest"}},
+		{[]string{"alpine", "busybox"}, 2, []string{"quay.io/libpod/busybox:latest", "quay.io/libpod/alpine:latest"}},
+		{[]string{"*test", "!*box"}, 1, []string{"quay.io/libpod/alpine:latest", "quay.io/libpod/al:latest"}},
+
+		{[]string{"quay.io/libpod/alpine@" + alpine.Digest().String()}, 1, allNames},
+
+		{[]string{"alpine@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"alpine:latest@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"quay.io/libpod/alpine:latest@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"quay.io/libpod/al@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"al@" + alpine.Digest().String()}, 1, allNames},
+
 		// Make sure that tags are ignored
-		{[]string{"alpine:ignoreme@" + alpine.Digest().String()}, 1},
-		{[]string{"alpine:123@" + alpine.Digest().String()}, 1},
-		{[]string{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String()}, 1},
-		{[]string{"quay.io/libpod/alpine:456@" + alpine.Digest().String()}, 1},
+		{[]string{"alpine:ignoreme@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"alpine:123@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"quay.io/libpod/alpine:456@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"al:latest@" + alpine.Digest().String()}, 1, allNames},
+		{[]string{"quay.io/libpod/al:latest@" + alpine.Digest().String()}, 1, allNames},
+
 		// Make sure that repo and digest must match
-		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
-		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
-		{[]string{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
-		{[]string{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String()}, 0},
+		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0, []string{}},
+		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0, []string{}},
+		{[]string{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String()}, 0, []string{}},
+		{[]string{"quay.io/libpod/alpine:busyboxdigest@" + busybox.Digest().String()}, 0, []string{}},
 	} {
 		var filters []string
 		for _, filter := range test.filters {
@@ -94,12 +114,20 @@ func TestFilterReference(t *testing.T) {
 				filters = append(filters, "reference="+filter)
 			}
 		}
+
 		listOptions := &ListImagesOptions{
 			Filters: filters,
 		}
 		listedImages, err := runtime.ListImages(ctx, listOptions)
+
 		require.NoError(t, err, "%v", test)
-		require.Len(t, listedImages, test.matches, "%s -> %v", test.filters, listedImages)
+		require.Len(t, listedImages, test.matchedImages, "%s -> %v", test.filters, listedImages)
+
+		resultNames := []string{}
+		for _, image := range listedImages {
+			resultNames = append(resultNames, image.Names()...)
+		}
+		require.ElementsMatch(t, test.names, resultNames, "filters: %s ", test.filters)
 	}
 }
 
