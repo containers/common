@@ -19,15 +19,17 @@ options edns0
 
 func TestNew(t *testing.T) {
 	tests := []struct {
-		name            string
-		baseContent     string
-		nameservers     []string
-		options         []string
-		searches        []string
-		ipv6            bool
-		hostns          bool
-		keepHostServers bool
-		want            string
+		name             string
+		baseContent      string
+		nameservers      []string
+		options          []string
+		searches         []string
+		ipv6             bool
+		hostns           bool
+		keepHostServers  bool
+		keepHostSearches bool
+		keepHostOptions  bool
+		want             string
 	}{
 		{
 			name:        "simple resolv.conf",
@@ -98,7 +100,36 @@ func TestNew(t *testing.T) {
 			options:         []string{"ndots:2"},
 			searches:        []string{"test.com"},
 			keepHostServers: true,
-			want:            "search test.com example.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\nnameserver 1.1.1.1\noptions ndots:2 edns0\n",
+			want:            "search test.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\nnameserver 1.1.1.1\noptions ndots:2\n",
+		},
+		{
+			name:             "set all and keep host searches",
+			baseContent:      resolv2,
+			nameservers:      []string{"1.2.3.4", "5.6.7.8"},
+			options:          []string{"ndots:2"},
+			searches:         []string{"test.com"},
+			keepHostSearches: true,
+			want:             "search test.com example.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\noptions ndots:2\n",
+		},
+		{
+			name:            "set all and keep host options",
+			baseContent:     resolv2,
+			nameservers:     []string{"1.2.3.4", "5.6.7.8"},
+			options:         []string{"ndots:2"},
+			searches:        []string{"test.com"},
+			keepHostOptions: true,
+			want:            "search test.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\noptions ndots:2 edns0\n",
+		},
+		{
+			name:             "set all and keep all options",
+			baseContent:      resolv2,
+			nameservers:      []string{"1.2.3.4", "5.6.7.8"},
+			options:          []string{"ndots:2"},
+			searches:         []string{"test.com"},
+			keepHostServers:  true,
+			keepHostSearches: true,
+			keepHostOptions:  true,
+			want:             "search test.com example.com\nnameserver 1.2.3.4\nnameserver 5.6.7.8\nnameserver 1.1.1.1\noptions ndots:2 edns0\n",
 		},
 		{
 			name:        "localhost nameservers should be filtered and use defaults instead",
@@ -148,14 +179,16 @@ func TestNew(t *testing.T) {
 				}
 			}
 			err = New(&Params{
-				Path:            target,
-				Nameservers:     tt.nameservers,
-				Searches:        tt.searches,
-				Options:         tt.options,
-				IPv6Enabled:     tt.ipv6,
-				KeepHostServers: tt.keepHostServers,
-				Namespaces:      namespaces,
-				resolvConfPath:  base,
+				Path:             target,
+				Nameservers:      tt.nameservers,
+				Searches:         tt.searches,
+				Options:          tt.options,
+				IPv6Enabled:      tt.ipv6,
+				KeepHostServers:  tt.keepHostServers,
+				KeepHostSearches: tt.keepHostSearches,
+				KeepHostOptions:  tt.keepHostOptions,
+				Namespaces:       namespaces,
+				resolvConfPath:   base,
 			})
 			assert.NoError(t, err, "New()")
 			content, err := os.ReadFile(target)
