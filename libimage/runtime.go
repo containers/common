@@ -599,24 +599,32 @@ func (r *Runtime) ListImagesByNames(names []string) ([]*Image, error) {
 }
 
 // ListImages lists the images in the local container storage and filter the images by ListImagesOptions
+//
+// podman images consumes the output of ListImages and produces one line for each tag in each Image.Names value,
+// rather than one line for each Image with all Names, so if options.Filters contains a reference filter, it makes
+// more sense for the user to see only the corresponding names in the output, not all the names of the deduplicated
+// image; therefore, we make the corresponding names available to the caller by overwriting the actual image names
+// with the corresponding names.
+//
+// This overwriting is done only in memory and is not written to storage in any way.
 func (r *Runtime) ListImages(ctx context.Context, options *ListImagesOptions) ([]*Image, error) {
 	if options == nil {
 		options = &ListImagesOptions{}
 	}
 
-	filters, needsLayerTree, err := r.compileImageFilters(ctx, options)
+	filters, err := r.compileImageFilters(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
 	if options.SetListData {
-		needsLayerTree = true
+		filters.needsLayerTree = true
 	}
 
 	snapshot, err := r.store.MultiList(
 		storage.MultiListOptions{
 			Images: true,
-			Layers: needsLayerTree,
+			Layers: filters.needsLayerTree,
 		})
 	if err != nil {
 		return nil, err
@@ -633,7 +641,7 @@ func (r *Runtime) ListImages(ctx context.Context, options *ListImagesOptions) ([
 	// each individual image (see containers/podman/issues/17828).
 
 	var tree *layerTree
-	if needsLayerTree {
+	if filters.needsLayerTree {
 		tree, err = r.newLayerTreeFromData(images, snapshot.Layers, true)
 		if err != nil {
 			return nil, err
