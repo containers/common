@@ -111,6 +111,10 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 		}
 		logrus.Debugf("Error loading %s (%s): %v", path, transportName, err)
 		loadErrors = append(loadErrors, fmt.Errorf("%s: %v", transportName, err))
+
+		if errors.Is(err, errors.New("no space left on device")) {
+			break
+		}
 	}
 
 	// Give a decent error message if nothing above worked.
