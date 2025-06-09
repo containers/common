@@ -42,6 +42,10 @@ func TestFilterReference(t *testing.T) {
 	require.NoError(t, err)
 	err = alpine.Tag("docker.io/library/image:latest")
 	require.NoError(t, err)
+	err = busybox.Tag("localhost/aa:tag")
+	require.NoError(t, err)
+	err = busybox.Tag("localhost/a:tag")
+	require.NoError(t, err)
 
 	allAlpineNames := []string{
 		"docker.io/library/image:another-tag",
@@ -52,6 +56,8 @@ func TestFilterReference(t *testing.T) {
 	allBusyBoxNames := []string{
 		"quay.io/libpod/busybox:latest",
 		"localhost/image:tag",
+		"localhost/a:tag",
+		"localhost/aa:tag",
 	}
 	allNames := []string{}
 	allNames = append(allNames, allBusyBoxNames...)
@@ -68,11 +74,11 @@ func TestFilterReference(t *testing.T) {
 		{[]string{"image:tag"}, 1, allBusyBoxNames},
 		{[]string{"image:another-tag"}, 1, allAlpineNames},
 		{[]string{"localhost/image"}, 1, allBusyBoxNames},
-		{[]string{"localhost/image:tag"}, 1, allBusyBoxNames},
+		{[]string{"localhost/image:tag"}, 1, []string{"localhost/image:tag"}},
 		{[]string{"library/image"}, 1, allAlpineNames},
 		{[]string{"docker.io/library/image*"}, 1, allAlpineNames},
 		{[]string{"docker.io/library/image:*"}, 1, allAlpineNames},
-		{[]string{"docker.io/library/image:another-tag"}, 1, allAlpineNames},
+		{[]string{"docker.io/library/image:another-tag"}, 1, []string{"docker.io/library/image:another-tag"}},
 		{[]string{"localhost/*"}, 2, allNames},
 		{[]string{"localhost/image:*tag"}, 1, allBusyBoxNames},
 		{[]string{"localhost/*mage:*ag"}, 2, allNames},
@@ -90,18 +96,20 @@ func TestFilterReference(t *testing.T) {
 		{[]string{"alpine", "busybox"}, 2, allNames},
 		{[]string{"*test", "!*box"}, 1, allAlpineNames},
 
-		{[]string{"quay.io/libpod/alpine@" + alpine.Digest().String()}, 1, allAlpineNames},
+		{[]string{"quay.io/libpod/alpine@" + alpine.Digest().String()}, 1, []string{"quay.io/libpod/alpine:latest"}},
 
 		{[]string{"alpine@" + alpine.Digest().String()}, 1, allAlpineNames},
 		{[]string{"alpine:latest@" + alpine.Digest().String()}, 1, allAlpineNames},
-		{[]string{"quay.io/libpod/alpine:latest@" + alpine.Digest().String()}, 1, allAlpineNames},
-		{[]string{"docker.io/library/image@" + alpine.Digest().String()}, 1, allAlpineNames},
+		{[]string{"quay.io/libpod/alpine:latest@" + alpine.Digest().String()}, 1, []string{"quay.io/libpod/alpine:latest"}},
+		{[]string{"docker.io/library/image@" + alpine.Digest().String()}, 1, []string{"docker.io/library/image:latest", "docker.io/library/image:another-tag"}},
+		{[]string{"localhost/aa@" + busybox.Digest().String()}, 1, []string{"localhost/aa:tag"}},
+		{[]string{"localhost/a@" + busybox.Digest().String()}, 1, []string{"localhost/a:tag"}},
 
 		// Make sure that tags are ignored
 		{[]string{"alpine:ignoreme@" + alpine.Digest().String()}, 1, allAlpineNames},
 		{[]string{"alpine:123@" + alpine.Digest().String()}, 1, allAlpineNames},
-		{[]string{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String()}, 1, allAlpineNames},
-		{[]string{"quay.io/libpod/alpine:456@" + alpine.Digest().String()}, 1, allAlpineNames},
+		{[]string{"quay.io/libpod/alpine:hurz@" + alpine.Digest().String()}, 1, []string{"quay.io/libpod/alpine:latest"}},
+		{[]string{"quay.io/libpod/alpine:456@" + alpine.Digest().String()}, 1, []string{"quay.io/libpod/alpine:latest"}},
 
 		// Make sure that repo and digest must match
 		{[]string{"alpine:busyboxdigest@" + busybox.Digest().String()}, 0, []string{}},
