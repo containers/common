@@ -151,6 +151,14 @@ func TestAddSecretDupName(t *testing.T) {
 	storeOpts.Replace = true
 	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
 	require.NoError(t, err)
+
+	storeOpts.IgnoreIfExists = true
+	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	require.Error(t, err)
+
+	storeOpts.Replace = false
+	_, err = manager.Store("mysecret", []byte("mydata"), drivertype, storeOpts)
+	require.NoError(t, err)
 }
 
 func TestAddReplaceSecretName(t *testing.T) {
