@@ -696,7 +696,7 @@ The default path on Windows is:
 
 Path to the OCI hooks directories for automatically executed hooks.
 
-**cdi_spec_dirs**=["/etc/cdi", ...]
+**cdi_spec_dirs**=["/etc/cdi", "/var/run/cdi", ...]
 
 Directories to scan for CDI Spec files.
 
