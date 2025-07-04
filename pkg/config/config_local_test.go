@@ -351,13 +351,13 @@ var _ = Describe("Config Local", func() {
 		config1, err := New(nil)
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(config1.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi"}))
+		gomega.Expect(config1.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi", "/var/run/cdi"}))
 
 		// Given default just get default
 		config2, err := NewConfig("testdata/containers_default.conf")
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(config2.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi"}))
+		gomega.Expect(config2.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi", "/var/run/cdi"}))
 
 		// Given override just get override
 		config3, err := NewConfig("testdata/containers_override.conf")
