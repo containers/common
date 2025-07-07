@@ -226,11 +226,10 @@ setup. Adding these internal hostnames to `/etc/hosts` is silently skipped then.
 Set this config to `none` to never add the internal hostnames to `/etc/hosts`.
 
 Note: If Podman is running in a virtual machine using `podman machine` (this
-includes Mac and Windows hosts), Podman will silently skip adding the internal
-hostnames to `/etc/hosts`, unless an IP address was configured manually. The
-internal hostnames are resolved by the gvproxy DNS resolver instead. This config
-has no effect on gvproxy. However, since `/etc/hosts` bypasses the DNS resolver,
-a manually configured IP address still takes precedence.
+includes Mac and Windows hosts), Podman resolves the `host.containers.internal`
+hostname via the podman machine (gvproxy) DNS resolver instead when it is empty.
+Also because the name will be resolved by the DNS name in gvproxy setting this
+to `none` has no effect. This option does not change the gvproxy behavior.
 
 Note: This config doesn't affect the actual network setup, it just tells Podman
 the IP address it should expect. Configuring an IP address here doesn't ensure
