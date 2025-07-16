@@ -12,7 +12,6 @@
 contrib/spec/podman.spec
 *.rpm
 *~
-build
 ./generate
 *.coverprofile
 /bin
