@@ -4,6 +4,7 @@ package sysinfo
 
 import (
 	"bytes"
+	"context"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -31,7 +32,7 @@ import "C"
 // IsCPUSharesAvailable returns whether CPUShares setting is supported.
 // We need FSS to be set as default scheduling class to support CPU Shares
 func IsCPUSharesAvailable() bool {
-	cmd := exec.Command("/usr/sbin/dispadmin", "-d")
+	cmd := exec.CommandContext(context.Background(), "/usr/sbin/dispadmin", "-d")
 	outBuf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
 	cmd.Stderr = errBuf

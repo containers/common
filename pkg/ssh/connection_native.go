@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -57,7 +58,7 @@ func nativeConnectionCreate(options ConnectionCreateOptions) error {
 
 	output := &bytes.Buffer{}
 	args = append(args, "podman", "info", "--format", "json")
-	info := exec.Command(ssh, args...)
+	info := exec.CommandContext(context.Background(), ssh, args...)
 	info.Stdout = output
 	err = info.Run()
 	if err != nil {
@@ -132,7 +133,7 @@ func nativeConnectionExec(options ConnectionExecOptions, input io.Reader) (*Conn
 		args = append(args, "-F", conf.Engine.SSHConfig)
 	}
 	args = append(args, options.Args...)
-	info := exec.Command(ssh, args...)
+	info := exec.CommandContext(context.Background(), ssh, args...)
 	info.Stdout = output
 	info.Stderr = errors
 	if input != nil {
@@ -184,7 +185,7 @@ func nativeConnectionScp(options ConnectionScpOptions) (*ConnectionScpReport, er
 		args = append(args, localPath, userString+host+":"+remotePath)
 	}
 
-	info := exec.Command(scp, args...)
+	info := exec.CommandContext(context.Background(), scp, args...)
 	err = info.Run()
 	if err != nil {
 		return nil, err

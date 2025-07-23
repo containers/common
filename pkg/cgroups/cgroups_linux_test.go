@@ -4,6 +4,7 @@ package cgroups
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math/big"
 	"os"
@@ -124,7 +125,7 @@ func TestResources(t *testing.T) {
 	}
 	defer os.RemoveAll("/dev/foodevdir")
 
-	c := exec.Command("mknod", "/dev/foodevdir/null", "b", "1", "3")
+	c := exec.CommandContext(context.Background(), "mknod", "/dev/foodevdir/null", "b", "1", "3")
 	c.Env = os.Environ()
 	c.Stderr = os.Stderr
 	c.Stdout = os.Stdout
@@ -133,7 +134,7 @@ func TestResources(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c = exec.Command("mknod", "/dev/foodevdir/bar", "b", "3", "10")
+	c = exec.CommandContext(context.Background(), "mknod", "/dev/foodevdir/bar", "b", "3", "10")
 	c.Env = os.Environ()
 	c.Stderr = os.Stderr
 	c.Stdout = os.Stdout
@@ -142,7 +143,7 @@ func TestResources(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c = exec.Command("mknod", "/dev/foodevdir/bat", "b", "5", "9")
+	c = exec.CommandContext(context.Background(), "mknod", "/dev/foodevdir/bat", "b", "5", "9")
 	c.Env = os.Environ()
 	c.Stderr = os.Stderr
 	c.Stdout = os.Stdout

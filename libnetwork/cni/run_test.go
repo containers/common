@@ -15,6 +15,7 @@ package cni_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net"
 	"os"
@@ -1372,7 +1373,8 @@ var _ = Describe("run CNI", func() {
 func runNetListener(wg *sync.WaitGroup, protocol, ip string, port int, expectedData string) {
 	switch protocol {
 	case "tcp":
-		ln, err := net.Listen(protocol, net.JoinHostPort(ip, strconv.Itoa(port)))
+		lc := &net.ListenConfig{}
+		ln, err := lc.Listen(context.Background(), protocol, net.JoinHostPort(ip, strconv.Itoa(port)))
 		Expect(err).ToNot(HaveOccurred())
 		// make sure to read in a separate goroutine to not block
 		go func() {

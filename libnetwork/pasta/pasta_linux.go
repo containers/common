@@ -11,6 +11,7 @@
 package pasta
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -69,7 +70,7 @@ func Setup(opts *SetupOptions) (*SetupResult, error) {
 
 	for {
 		// pasta forks once ready, and quits once we delete the target namespace
-		out, err := exec.Command(path, cmdArgs...).CombinedOutput()
+		out, err := exec.CommandContext(context.Background(), path, cmdArgs...).CombinedOutput()
 		if err != nil {
 			exitErr := &exec.ExitError{}
 			if errors.As(err, &exitErr) {

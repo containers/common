@@ -5,6 +5,7 @@ package apparmor
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -96,7 +97,7 @@ func InstallDefault(name string) error {
 		return fmt.Errorf("find `apparmor_parser` binary: %w", err)
 	}
 
-	cmd := exec.Command(apparmorParserPath, "-Kr")
+	cmd := exec.CommandContext(context.Background(), apparmorParserPath, "-Kr")
 	pipe, err := cmd.StdinPipe()
 	if err != nil {
 		return fmt.Errorf("execute %s: %w", apparmorParserPath, err)
@@ -181,7 +182,7 @@ func IsLoaded(name string) (bool, error) {
 
 // execAAParser runs `apparmor_parser` with the passed arguments.
 func execAAParser(apparmorParserPath, dir string, args ...string) (string, error) {
-	c := exec.Command(apparmorParserPath, args...)
+	c := exec.CommandContext(context.Background(), apparmorParserPath, args...)
 	c.Dir = dir
 
 	output, err := c.Output()

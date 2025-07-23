@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -260,7 +261,8 @@ func ValidateAndConfigure(uri *url.URL, iden string, insecureIsMachineConnection
 	} else if sock, found := os.LookupEnv("SSH_AUTH_SOCK"); found { // validate ssh information, specifically the unix file socket used by the ssh agent.
 		logrus.Debugf("Found SSH_AUTH_SOCK %q, ssh-agent signer enabled", sock)
 
-		c, err := net.Dial("unix", sock)
+		dialer := &net.Dialer{}
+		c, err := dialer.DialContext(context.Background(), "unix", sock)
 		if err != nil {
 			return nil, err
 		}

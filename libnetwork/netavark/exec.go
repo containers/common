@@ -3,6 +3,7 @@
 package netavark
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -137,7 +138,7 @@ func (n *netavarkNetwork) execBinary(path string, args []string, stdin, result a
 		logWriter = io.MultiWriter(logWriter, &logrusNetavarkWriter{})
 	}
 
-	cmd := exec.Command(path, args...)
+	cmd := exec.CommandContext(context.Background(), path, args...)
 	// connect the pipes to stdin and stdout
 	cmd.Stdin = stdinR
 	cmd.Stdout = stdoutW

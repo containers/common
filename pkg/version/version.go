@@ -2,6 +2,7 @@ package version
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -22,7 +23,7 @@ func queryPackageVersion(cmdArg ...string) string {
 	}
 	output := UnknownPackage
 	if 1 < len(cmdArg) {
-		cmd := exec.Command(cmdArg[0], cmdArg[1:]...)
+		cmd := exec.CommandContext(context.Background(), cmdArg[0], cmdArg[1:]...)
 		if outp, err := cmd.Output(); err == nil {
 			output = string(outp)
 			switch cmdArg[0] {
@@ -32,7 +33,7 @@ func queryPackageVersion(cmdArg ...string) string {
 				output = l[0]
 				r := strings.Split(output, ": ")
 				regexpFormat := `^..\s` + r[0] + `\s`
-				cmd = exec.Command(cmdArg[0], "-P", regexpFormat, "-l")
+				cmd = exec.CommandContext(context.Background(), cmdArg[0], "-P", regexpFormat, "-l")
 				cmd.Env = []string{"COLUMNS=160"} // show entire value
 				// dlocate always returns exit code 1 for list command
 				if outp, _ = cmd.Output(); len(outp) > 0 {
@@ -48,13 +49,13 @@ func queryPackageVersion(cmdArg ...string) string {
 			case "/usr/bin/dpkg":
 				r := strings.Split(output, ": ")
 				queryFormat := `${Package}_${Version}_${Architecture}`
-				cmd = exec.Command("/usr/bin/dpkg-query", "-f", queryFormat, "-W", r[0])
+				cmd = exec.CommandContext(context.Background(), "/usr/bin/dpkg-query", "-f", queryFormat, "-W", r[0])
 				if outp, err := cmd.Output(); err == nil {
 					output = string(outp)
 				}
 			case "/usr/bin/pacman":
 				pkg := strings.Trim(output, "\n")
-				cmd = exec.Command(cmdArg[0], "-Q", "--", pkg)
+				cmd = exec.CommandContext(context.Background(), cmdArg[0], "-Q", "--", pkg)
 				if outp, err := cmd.Output(); err == nil {
 					output = strings.ReplaceAll(string(outp), " ", "-")
 				}
@@ -119,7 +120,7 @@ func ProgramDnsname(name string) (string, error) {
 }
 
 func program(program string, dnsname bool) (string, error) {
-	cmd := exec.Command(program, "--version")
+	cmd := exec.CommandContext(context.Background(), program, "--version")
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout

@@ -4,6 +4,7 @@ package slirp4netns
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -96,7 +97,7 @@ func (w *logrusDebugWriter) Write(p []byte) (int, error) {
 }
 
 func checkSlirpFlags(path string) (*slirpFeatures, error) {
-	cmd := exec.Command(path, "--help")
+	cmd := exec.CommandContext(context.Background(), path, "--help")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("slirp4netns %q: %w", out, err)
@@ -296,7 +297,7 @@ func Setup(opts *SetupOptions) (*SetupResult, error) {
 
 	cmdArgs = append(cmdArgs, "--netns-type=path", opts.Netns, "tap0")
 
-	cmd := exec.Command(path, cmdArgs...)
+	cmd := exec.CommandContext(context.Background(), path, cmdArgs...)
 	logrus.Debugf("slirp4netns command: %s", strings.Join(cmd.Args, " "))
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid:   true,
@@ -574,7 +575,7 @@ func SetupRootlessPortMappingViaRLK(opts *SetupOptions, slirpSubnet *net.IPNet, 
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(path)
+	cmd := exec.CommandContext(context.Background(), path)
 	cmd.Args = []string{rootlessport.BinaryName}
 
 	// Leak one end of the pipe in rootlessport process, the other will be sent to conmon
@@ -658,7 +659,8 @@ func setupRootlessPortMappingViaSlirp(ports []types.PortMapping, cmd *exec.Cmd, 
 
 // openSlirp4netnsPort sends the slirp4netns pai quey to the given socket
 func openSlirp4netnsPort(apiSocket, proto, hostip string, hostport, guestport uint16) error {
-	conn, err := net.Dial("unix", apiSocket)
+	dialer := &net.Dialer{}
+	conn, err := dialer.DialContext(context.Background(), "unix", apiSocket)
 	if err != nil {
 		return fmt.Errorf("cannot open connection to %s: %w", apiSocket, err)
 	}
