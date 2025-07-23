@@ -44,7 +44,6 @@ linters:
     - mirror
     - misspell
     - nilnesserr
-    - noctx
     - nosprintfhostport
     - perfsprint
     - prealloc
