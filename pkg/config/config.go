@@ -847,8 +847,7 @@ func (c *EngineConfig) Validate() error {
 	}
 	// Check if the pullPolicy from containers.conf is valid
 	// if it is invalid returns the error
-	pullPolicy := strings.ToLower(c.PullPolicy)
-	if _, err := ValidatePullPolicy(pullPolicy); err != nil {
+	if _, err := ParsePullPolicy(c.PullPolicy); err != nil {
 		return fmt.Errorf("invalid pull type from containers.conf %q: %w", c.PullPolicy, err)
 	}
 
