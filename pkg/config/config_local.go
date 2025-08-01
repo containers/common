@@ -105,6 +105,18 @@ func (c *ContainersConfig) validateUmask() error {
 	return nil
 }
 
+func (c *ContainersConfig) validateLogPath() error {
+	if c.LogPath == "" {
+		return nil
+	}
+
+	if strings.ContainsAny(c.LogPath, "\x00\n\r\t") {
+		return fmt.Errorf("log_path contains invalid characters")
+	}
+
+	return nil
+}
+
 func isRemote() bool {
 	return false
 }

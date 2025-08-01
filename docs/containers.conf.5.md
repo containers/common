@@ -294,6 +294,12 @@ the user system_u, and the role system_r.
 
 Logging driver for the container. Currently available options are k8s-file, journald, none and passthrough, with json-file aliased to k8s-file for scripting compatibility.  The journald driver is used by default if the systemd journal is readable and writable.  Otherwise, the k8s-file driver is used.
 
+**log_path**=""
+
+Logging path for the container. When empty it will use the default container storage to keep
+its logging file. This feature needs the log_driver to be k8s-file. The specified 
+directory will be used for all container logging unless overridden by the --log-opt flag.
+
 **log_size_max**=-1
 
 Maximum size allowed for the container's log file. Negative numbers indicate
