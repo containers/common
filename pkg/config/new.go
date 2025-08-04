@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 
@@ -186,38 +185,24 @@ func systemConfigs() (configs []string, finalErr error) {
 }
 
 // addConfigs will search one level in the config dirPath for config files
-// If the dirPath does not exist, addConfigs will return nil
+// If the dirPath does not exist, addConfigs will return configs, nil.
 func addConfigs(dirPath string, configs []string) ([]string, error) {
-	newConfigs := []string{}
-
-	err := filepath.WalkDir(dirPath,
-		// WalkFunc to read additional configs
-		func(path string, d fs.DirEntry, err error) error {
-			switch {
-			case err != nil:
-				// return error (could be a permission problem)
-				return err
-			case d.IsDir():
-				if path != dirPath {
-					// make sure to not recurse into sub-directories
-					return filepath.SkipDir
-				}
-				// ignore directories
-				return nil
-			default:
-				// only add *.conf files
-				if strings.HasSuffix(path, ".conf") {
-					newConfigs = append(newConfigs, path)
-				}
-				return nil
-			}
-		},
-	)
-	if errors.Is(err, os.ErrNotExist) {
-		err = nil
+	// Note: ReadDir already sorts the result by filename so we do not have to sort again.
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return configs, nil
+		}
+		return nil, err
 	}
-	sort.Strings(newConfigs)
-	return append(configs, newConfigs...), err
+	newConfigs := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".conf") {
+			newConfigs = append(newConfigs, filepath.Join(dirPath, entry.Name()))
+		}
+	}
+
+	return append(configs, newConfigs...), nil
 }
 
 // readConfigFromFile reads the specified config file at `path` and attempts to
