@@ -158,7 +158,7 @@ func systemConfigs() (configs []string, finalErr error) {
 		return append(configs, path), nil
 	}
 
-	configs = append(configs, DefaultContainersConfig)
+	configs = append(configs, defaultContainersConfig)
 
 	var err error
 	path, err := overrideContainersConfigPath()
