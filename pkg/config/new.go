@@ -6,11 +6,13 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/BurntSushi/toml"
 	"github.com/containers/storage/pkg/fileutils"
+	"github.com/containers/storage/pkg/unshare"
 	"github.com/sirupsen/logrus"
 )
 
@@ -170,6 +172,25 @@ func systemConfigs() (configs []string, finalErr error) {
 	configs, err = addConfigs(path+".d", configs)
 	if err != nil {
 		return nil, err
+	}
+
+	// add rootless specific file overwrites in a global system dir
+	// /etc/containers/containers.rootless.conf
+	// /etc/containers/containers.rootless.conf.d/
+	// /etc/containers/containers.rootless.conf.d/<UID>/
+	uid := unshare.GetRootlessUID()
+	if uid > 0 {
+		rootlessOverwritePath := filepath.Join(filepath.Dir(path), "containers.rootless.conf")
+		configs = append(configs, rootlessOverwritePath)
+		rootlessOverwritePathD := rootlessOverwritePath + ".d"
+		configs, err = addConfigs(rootlessOverwritePathD, configs)
+		if err != nil {
+			return nil, err
+		}
+		configs, err = addConfigs(filepath.Join(rootlessOverwritePathD, strconv.Itoa(uid)), configs)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	path, err = userConfigPath()
