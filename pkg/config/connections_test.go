@@ -128,7 +128,7 @@ var _ = Describe("Connections conf", func() {
 		})
 
 		It("GetConnection()", func() {
-			conf, err := New(nil)
+			conf, err := newLocked(&Options{}, &paths{})
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 			con, err := conf.GetConnection("", true)
@@ -169,7 +169,7 @@ var _ = Describe("Connections conf", func() {
 		})
 
 		It("GetAllConnections()", func() {
-			conf, err := New(nil)
+			conf, err := newLocked(&Options{}, &paths{})
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 			cons, err := conf.GetAllConnections()
@@ -197,7 +197,7 @@ var _ = Describe("Connections conf", func() {
 		})
 
 		It("GetFarmConnections()", func() {
-			conf, err := New(nil)
+			conf, err := newLocked(&Options{}, &paths{})
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 			name, cons, err := conf.GetDefaultFarmConnections()
@@ -236,7 +236,7 @@ var _ = Describe("Connections conf", func() {
 		})
 
 		It("GetAllFarms()", func() {
-			conf, err := New(nil)
+			conf, err := newLocked(&Options{}, &paths{})
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 			farms, err := conf.GetAllFarms()

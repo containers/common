@@ -100,7 +100,7 @@ var _ = Describe("Config Remote", func() {
 	It("Expect Remote to be true", func() {
 		// Given
 		// When
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		// Then
 		gomega.Expect(err).To(gomega.BeNil())
 		gomega.Expect(config.Engine.Remote).To(gomega.BeTrue())
