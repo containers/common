@@ -41,6 +41,31 @@ type Options struct {
 	additionalConfigs []string
 }
 
+// paths defines the search paths used for config reading.
+type paths struct {
+	usr  string
+	etc  string
+	home string
+	uid  int
+}
+
+func defaultPaths() (*paths, error) {
+	etcPath, err := overrideContainersConfigPath()
+	if err != nil {
+		return nil, err
+	}
+	homePath, err := userConfigPath()
+	if err != nil {
+		return nil, err
+	}
+	return &paths{
+		usr:  defaultContainersConfig,
+		etc:  etcPath,
+		home: homePath,
+		uid:  unshare.GetRootlessUID(),
+	}, nil
+}
+
 // New returns a Config as described in the containers.conf(5) man page.
 func New(options *Options) (*Config, error) {
 	if options == nil {
@@ -49,7 +74,11 @@ func New(options *Options) (*Config, error) {
 		cachedConfigMutex.Lock()
 		defer cachedConfigMutex.Unlock()
 	}
-	return newLocked(options)
+	paths, err := defaultPaths()
+	if err != nil {
+		return nil, err
+	}
+	return newLocked(options, paths)
 }
 
 // Default returns the default container config.  If no default config has been
@@ -62,13 +91,17 @@ func Default() (*Config, error) {
 	if cachedConfig != nil || cachedConfigError != nil {
 		return cachedConfig, cachedConfigError
 	}
-	cachedConfig, cachedConfigError = newLocked(&Options{SetDefault: true})
+	paths, err := defaultPaths()
+	if err != nil {
+		return nil, err
+	}
+	cachedConfig, cachedConfigError = newLocked(&Options{SetDefault: true}, paths)
 	return cachedConfig, cachedConfigError
 }
 
 // A helper function for New() expecting the caller to hold the
 // cachedConfigMutex if options.SetDefault is set..
-func newLocked(options *Options) (*Config, error) {
+func newLocked(options *Options, paths *paths) (*Config, error) {
 	// Start with the built-in defaults
 	config, err := defaultConfig()
 	if err != nil {
@@ -76,7 +109,7 @@ func newLocked(options *Options) (*Config, error) {
 	}
 
 	// Now, gather the system configs and merge them as needed.
-	configs, err := systemConfigs()
+	configs, err := systemConfigs(paths)
 	if err != nil {
 		return nil, fmt.Errorf("finding config on system: %w", err)
 	}
@@ -152,7 +185,7 @@ func NewConfig(userConfigPath string) (*Config, error) {
 // Returns the list of configuration files, if they exist in order of hierarchy.
 // The files are read in order and each new file can/will override previous
 // file settings.
-func systemConfigs() (configs []string, finalErr error) {
+func systemConfigs(paths *paths) (configs []string, finalErr error) {
 	if path := os.Getenv(containersConfEnv); path != "" {
 		if err := fileutils.Exists(path); err != nil {
 			return nil, fmt.Errorf("%s file: %w", containersConfEnv, err)
@@ -160,16 +193,10 @@ func systemConfigs() (configs []string, finalErr error) {
 		return append(configs, path), nil
 	}
 
-	configs = append(configs, defaultContainersConfig)
+	configs = append(configs, paths.usr)
+	configs = append(configs, paths.etc)
 
-	var err error
-	path, err := overrideContainersConfigPath()
-	if err != nil {
-		return nil, err
-	}
-	configs = append(configs, path)
-
-	configs, err = addConfigs(path+".d", configs)
+	configs, err := addConfigs(paths.etc+".d", configs)
 	if err != nil {
 		return nil, err
 	}
@@ -178,27 +205,21 @@ func systemConfigs() (configs []string, finalErr error) {
 	// /etc/containers/containers.rootless.conf
 	// /etc/containers/containers.rootless.conf.d/
 	// /etc/containers/containers.rootless.conf.d/<UID>/
-	uid := unshare.GetRootlessUID()
-	if uid > 0 {
-		rootlessOverwritePath := filepath.Join(filepath.Dir(path), "containers.rootless.conf")
+	if paths.uid > 0 {
+		rootlessOverwritePath := filepath.Join(filepath.Dir(paths.etc), "containers.rootless.conf")
 		configs = append(configs, rootlessOverwritePath)
 		rootlessOverwritePathD := rootlessOverwritePath + ".d"
 		configs, err = addConfigs(rootlessOverwritePathD, configs)
 		if err != nil {
 			return nil, err
 		}
-		configs, err = addConfigs(filepath.Join(rootlessOverwritePathD, strconv.Itoa(uid)), configs)
+		configs, err = addConfigs(filepath.Join(rootlessOverwritePathD, strconv.Itoa(paths.uid)), configs)
 		if err != nil {
 			return nil, err
 		}
 	}
-
-	path, err = userConfigPath()
-	if err != nil {
-		return nil, err
-	}
-	configs = append(configs, path)
-	configs, err = addConfigs(path+".d", configs)
+	configs = append(configs, paths.home)
+	configs, err = addConfigs(paths.home+".d", configs)
 	if err != nil {
 		return nil, err
 	}
