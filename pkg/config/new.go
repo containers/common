@@ -125,7 +125,7 @@ func newLocked(options *Options, paths *paths) (*Config, error) {
 		logrus.Tracef("%+v", config)
 	}
 
-	modules, err := options.modules()
+	modules, err := options.modules(paths)
 	if err != nil {
 		return nil, err
 	}
