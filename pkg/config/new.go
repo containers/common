@@ -174,14 +174,6 @@ func newLocked(options *Options, paths *paths) (*Config, error) {
 	return config, nil
 }
 
-// NewConfig creates a new Config. It starts with an empty config and, if
-// specified, merges the config at `userConfigPath` path.
-//
-// Deprecated: use new instead.
-func NewConfig(userConfigPath string) (*Config, error) {
-	return New(&Options{additionalConfigs: []string{userConfigPath}})
-}
-
 // Returns the list of configuration files, if they exist in order of hierarchy.
 // The files are read in order and each new file can/will override previous
 // file settings.
