@@ -35,10 +35,6 @@ type Options struct {
 	// Set the loaded config as the default one which can later on be
 	// accessed via Default().
 	SetDefault bool
-
-	// Additional configs to load.  An internal only field to make the
-	// behavior observable and testable in unit tests.
-	additionalConfigs []string
 }
 
 // paths defines the search paths used for config reading.
@@ -131,23 +127,9 @@ func newLocked(options *Options, paths *paths) (*Config, error) {
 	}
 	config.loadedModules = modules
 
-	options.additionalConfigs = append(options.additionalConfigs, modules...)
-
-	// The _OVERRIDE variable _must_ always win.  That's a contract we need
-	// to honor (for the Podman CI).
-	if path := os.Getenv(containersConfOverrideEnv); path != "" {
-		if err := fileutils.Exists(path); err != nil {
-			return nil, fmt.Errorf("%s file: %w", containersConfOverrideEnv, err)
-		}
-		options.additionalConfigs = append(options.additionalConfigs, path)
-	}
-
 	// If the caller specified a config path to use, then we read it to
 	// override the system defaults.
-	for _, add := range options.additionalConfigs {
-		if add == "" {
-			continue
-		}
+	for _, add := range modules {
 		// readConfigFromFile reads in container config in the specified
 		// file and then merge changes with the current default.
 		if err := readConfigFromFile(add, config, false); err != nil {
@@ -156,6 +138,17 @@ func newLocked(options *Options, paths *paths) (*Config, error) {
 		logrus.Debugf("Merged additional config %q", add)
 		logrus.Tracef("%+v", config)
 	}
+
+	// The _OVERRIDE variable _must_ always win.  That's a contract we need
+	// to honor (for the Podman CI).
+	if path := os.Getenv(containersConfOverrideEnv); path != "" {
+		if err := readConfigFromFile(path, config, true); err != nil {
+			return nil, fmt.Errorf("reading %s config %q: %w", containersConfOverrideEnv, path, err)
+		}
+		logrus.Debugf("Merged %s config %q", containersConfOverrideEnv, path)
+		logrus.Tracef("%+v", config)
+	}
+
 	config.addCAPPrefix()
 
 	if err := config.Validate(); err != nil {

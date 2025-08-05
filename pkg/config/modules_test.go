@@ -103,34 +103,30 @@ var _ = Describe("Config Modules", func() {
 		options = &Options{}
 		c, err := newLocked(options, paths)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(options.additionalConfigs).To(gomega.BeEmpty()) // no module is getting loaded!
 		gomega.Expect(c).NotTo(gomega.BeNil())
-		gomega.Expect(c.LoadedModules()).To(gomega.BeEmpty())
+		gomega.Expect(c.LoadedModules()).To(gomega.BeEmpty()) // no module is getting loaded!
 
 		options = &Options{Modules: []string{"fourth.conf"}}
 		c, err = newLocked(options, paths)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
-		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		// Make sure the returned module path is absolute.
 		gomega.Expect(c.LoadedModules()).To(gomega.Equal([]string{filepath.Join(wd, "testdata/modules/etc/containers/containers.conf.modules/fourth.conf")}))
 
 		options = &Options{Modules: []string{"fourth.conf"}}
 		c, err = newLocked(options, paths)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
-		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1))
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(1)) // 1 module is getting loaded!
 
 		options = &Options{Modules: []string{"fourth.conf", "sub/share-only.conf", "sub/etc-only.conf"}}
 		c, err = newLocked(options, paths)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(3)) // 3 modules are getting loaded!
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.Containers.Env.Get()).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only"}))
 		gomega.Expect(c.Network.DefaultNetwork).To(gomega.Equal("etc only conf"))
-		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(3))
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(3)) // 3 modules are getting loaded!
 
 		options = &Options{Modules: []string{"third.conf"}}
 		c, err = newLocked(options, paths)
@@ -159,7 +155,7 @@ var _ = Describe("Config Modules", func() {
 		options := &Options{Modules: []string{"fourth.conf", "sub/share-only.conf", absConf}}
 		c, err := newLocked(options, paths)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
-		gomega.Expect(options.additionalConfigs).To(gomega.HaveLen(4)) // 2 modules + abs path + override conf are getting loaded!
+		gomega.Expect(c.LoadedModules()).To(gomega.HaveLen(3)) // 2 modules + abs path
 		gomega.Expect(c.Containers.InitPath).To(gomega.Equal("etc four"))
 		gomega.Expect(c.Containers.Env.Get()).To(gomega.Equal([]string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "usr share only", "override conf always wins"}))
 		gomega.Expect(c.Containers.Volumes.Get()).To(gomega.Equal([]string{"volume four", "home second"}))
