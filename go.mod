@@ -11,7 +11,7 @@ require (
 	github.com/containerd/platforms v0.2.1
 	github.com/containernetworking/cni v1.3.0
 	github.com/containernetworking/plugins v1.7.1
-	github.com/containers/image/v5 v5.36.0
+	github.com/containers/image/v5 v5.36.1
 	github.com/containers/ocicrypt v1.2.1
 	github.com/containers/storage v1.59.1
 	github.com/coreos/go-systemd/v22 v22.5.0
