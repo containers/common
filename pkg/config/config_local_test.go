@@ -588,4 +588,40 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Machine.Rosetta).To(gomega.BeFalse())
 	})
+	It("should validate log_path correctly", func() {
+		defConf, err := defaultConfig()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(defConf).NotTo(gomega.BeNil())
+
+		// Test empty path
+		defConf.Containers.LogPath = ""
+		err = defConf.Containers.Validate()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		// Test absolute path
+		defConf.Containers.LogPath = "/var/log/containers"
+		err = defConf.Containers.Validate()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		// Should fail on relative path
+		defConf.Containers.LogPath = "./logs"
+		err = defConf.Containers.Validate()
+		gomega.Expect(err).To(gomega.HaveOccurred())
+		gomega.Expect(err.Error()).To(gomega.ContainSubstring("absolute path"))
+
+		// Test path with null byte
+		defConf.Containers.LogPath = "/var/log\x00/containers"
+		err = defConf.Containers.Validate()
+		gomega.Expect(err).To(gomega.HaveOccurred())
+		gomega.Expect(err.Error()).To(gomega.ContainSubstring("null bytes"))
+	})
+	It("should parse log_path from config file", func() {
+		config, err := New(nil)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(config.Containers.LogPath).To(gomega.Equal(""))
+
+		config2, err := NewConfig("testdata/containers_default.conf")
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(config2.Containers.LogPath).To(gomega.Equal("/var/log/containers"))
+	})
 })
