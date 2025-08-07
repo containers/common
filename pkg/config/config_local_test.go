@@ -616,11 +616,11 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err.Error()).To(gomega.ContainSubstring("null bytes"))
 	})
 	It("should parse log_path from config file", func() {
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.LogPath).To(gomega.Equal(""))
 
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Containers.LogPath).To(gomega.Equal("/var/log/containers"))
 	})
