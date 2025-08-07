@@ -319,24 +319,16 @@ func (m *ManifestList) saveAndReload() error {
 	if err != nil {
 		return err
 	}
-
-	// Make sure to reload the image from the containers storage to fetch
-	// the latest data (e.g., new or delete digests).
-	if err := m.image.reload(); err != nil {
-		return err
-	}
-	image, list, err := m.image.runtime.lookupManifestList(newID)
-	if err != nil {
-		return err
-	}
-	m.image = image
-	m.list = list
-	return nil
+	return m.reloadID(newID)
 }
 
 // Reload the image and list instances from storage
 func (m *ManifestList) reload() error {
 	listID := m.ID()
+	return m.reloadID(listID)
+}
+
+func (m *ManifestList) reloadID(listID string) error {
 	if err := m.image.reload(); err != nil {
 		return err
 	}
