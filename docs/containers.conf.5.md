@@ -25,7 +25,7 @@ Not all options are supported in all container engines.
 Note, container engines also use other configuration files for configuring the environment.
 
 * `storage.conf` for configuration of container and images storage.
-* `registries.conf` for definition of container registries to search while pulling.
+* `registries.conf` for definition of container registries to search while pulling
 container images.
 * `policy.conf` for controlling which images can be pulled to the system.
 
