@@ -329,9 +329,6 @@ func (m *ManifestList) reload() error {
 }
 
 func (m *ManifestList) reloadID(listID string) error {
-	if err := m.image.reload(); err != nil {
-		return err
-	}
 	image, list, err := m.image.runtime.lookupManifestList(listID)
 	if err != nil {
 		return err
