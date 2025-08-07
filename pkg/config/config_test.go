@@ -22,7 +22,7 @@ var _ = Describe("Config", func() {
 		It("should succeed with default config", func() {
 			// Given
 			// When
-			defaultConfig, err := NewConfig("")
+			defaultConfig, err := newLocked(&Options{}, &paths{})
 
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -130,7 +130,7 @@ var _ = Describe("Config", func() {
 		})
 
 		It("Check SELinux settings", func() {
-			defaultConfig, _ := NewConfig("")
+			defaultConfig, _ := newLocked(&Options{}, &paths{})
 			// EnableLabeling should match whether or not SELinux is enabled on the host
 			gomega.Expect(defaultConfig.Containers.EnableLabeling).To(gomega.Equal(selinux.GetEnabled()))
 			gomega.Expect(defaultConfig.Containers.EnableLabeledUsers).To(gomega.BeFalse())
@@ -140,7 +140,7 @@ var _ = Describe("Config", func() {
 			// Note: Podmansh.Timeout must be preferred over Engine.PodmanshTimeout
 
 			// Given
-			defaultConfig, _ := NewConfig("")
+			defaultConfig, _ := newLocked(&Options{}, &paths{})
 			// When
 			defaultConfig.Engine.PodmanshTimeout = 30
 			defaultConfig.Podmansh.Timeout = 0
@@ -190,7 +190,7 @@ image_copy_tmp_dir="storage"`
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
-			config, _ := NewConfig(testFile)
+			config, _ := newLocked(&Options{}, &paths{etc: testFile})
 			path, err := config.ImageCopyTmpDir()
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(path).To(gomega.ContainSubstring("containers/storage/tmp"))
@@ -446,7 +446,7 @@ image_copy_tmp_dir="storage"`
 			// Given we do
 			GinkgoT().Setenv(containersConfEnv, "/dev/null")
 			// When
-			config, err := NewConfig("")
+			config, err := newLocked(&Options{}, &paths{})
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal(apparmor.Profile))
@@ -484,7 +484,7 @@ image_copy_tmp_dir="storage"`
 		It("should success with valid user file path", func() {
 			// Given
 			// When
-			config, err := NewConfig("testdata/containers_default.conf")
+			config, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 			// Then
 			cgroupConf := []string{
 				"memory.high=1073741824",
@@ -504,10 +504,7 @@ image_copy_tmp_dir="storage"`
 		})
 
 		It("contents of passed-in file should override others", func() {
-			// Given we do
-			GinkgoT().Setenv(containersConfEnv, "containers.conf")
-			// When
-			config, err := NewConfig("testdata/containers_override.conf")
+			config, err := newLocked(&Options{}, &paths{etc: "testdata/containers_override.conf"})
 
 			crunWasm := "crun-wasm"
 			PlatformToOCIRuntimeMap := map[string]string{
@@ -546,7 +543,7 @@ image_copy_tmp_dir="storage"`
 		It("should fail with invalid value", func() {
 			// Given
 			// When
-			config, err := NewConfig("testdata/containers_invalid.conf")
+			config, err := newLocked(&Options{}, &paths{etc: "testdata/containers_invalid.conf"})
 			// Then
 			gomega.Expect(err).To(gomega.HaveOccurred())
 			gomega.Expect(config).To(gomega.BeNil())
@@ -558,7 +555,7 @@ image_copy_tmp_dir="storage"`
 				Skip(fmt.Sprintf("capabilities not supported on %s", runtime.GOOS))
 			}
 			// When
-			config, err := NewConfig("")
+			config, err := newLocked(&Options{}, &paths{})
 			// Then
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			var addcaps, dropcaps []string
@@ -791,13 +788,13 @@ env=["foo=bar"]`
 	It("CONTAINERS_CONF_OVERRIDE", func() {
 		t := GinkgoT()
 		t.Setenv("CONTAINERS_CONF_OVERRIDE", "testdata/containers_override.conf")
-		config, err := NewConfig("")
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 
 		// Make sure that _OVERRIDE is loaded even when CONTAINERS_CONF is set.
 		t.Setenv(containersConfEnv, "testdata/containers_default.conf")
-		config, err = NewConfig("")
+		config, err = newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))

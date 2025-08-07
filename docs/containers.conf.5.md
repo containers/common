@@ -11,7 +11,9 @@ a TOML format that can be easily modified and versioned.
 
 Container engines read the __/usr/share/containers/containers.conf__,
 __/etc/containers/containers.conf__, and __/etc/containers/containers.conf.d/\*.conf__
-for global configuration that effects all users.
+for global configuration that affects all users.
+For global configuration that only affects rootless users use __/etc/containers/containers.rootless.conf__,
+__/etc/containers/containers.rootless.d/\*.conf__ and __/etc/containers/containers.rootless.d/\$UID/\*.conf__. The UID is the user's uid which podman runs under so it can be used to specify a certain config for only a single user without having to put the config into the user's home directory.
 For user specific configuration it reads __\$XDG_CONFIG_HOME/containers/containers.conf__ and
 __\$XDG_CONFIG_HOME/containers/containers.conf.d/\*.conf__ files. When `$XDG_CONFIG_HOME` is not set it falls back to using `$HOME/.config` instead.
 

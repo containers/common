@@ -90,7 +90,7 @@ var _ = Describe("Config Local", func() {
 	})
 
 	It("parse network subnet pool", func() {
-		config, err := NewConfig("testdata/containers_default.conf")
+		config, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		net1, _ := types.ParseCIDR("10.89.0.0/16")
@@ -108,11 +108,11 @@ var _ = Describe("Config Local", func() {
 
 	It("parse dns port", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Network.DNSBindPort).To(gomega.Equal(uint16(0)))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Network.DNSBindPort).To(gomega.Equal(uint16(1153)))
@@ -120,11 +120,11 @@ var _ = Describe("Config Local", func() {
 
 	It("test firewall", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Network.FirewallDriver).To(gomega.Equal(string("")))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Network.FirewallDriver).To(gomega.Equal("none"))
@@ -132,11 +132,11 @@ var _ = Describe("Config Local", func() {
 
 	It("parse pasta_options", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Network.PastaOptions.Get()).To(gomega.BeEmpty())
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Network.PastaOptions.Get()).To(gomega.Equal([]string{"-t", "auto"}))
@@ -144,11 +144,11 @@ var _ = Describe("Config Local", func() {
 
 	It("parse default_rootless_network_cmd", func() {
 		// Given
-		config, err := NewConfig("")
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("pasta"))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Network.DefaultRootlessNetworkCmd).To(gomega.Equal("slirp4netns"))
@@ -338,7 +338,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		expectedEnv := []string{"super=duper", "foo=bar"}
 		// When
-		config, err := NewConfig("testdata/containers_default.conf")
+		config, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Engine.Env.Get()).To(gomega.BeEquivalentTo(expectedEnv))
@@ -348,25 +348,25 @@ var _ = Describe("Config Local", func() {
 
 	It("should override cdi_spec_dirs if provided", func() {
 		// Given
-		config1, err := New(nil)
+		config1, err := newLocked(&Options{}, &paths{})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config1.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi", "/var/run/cdi"}))
 
 		// Given default just get default
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/etc/cdi", "/var/run/cdi"}))
 
 		// Given override just get override
-		config3, err := NewConfig("testdata/containers_override.conf")
+		config3, err := newLocked(&Options{}, &paths{etc: "testdata/containers_override.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config3.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/somepath"}))
 
 		// Given override just get override
-		config4, err := NewConfig("testdata/containers_override2.conf")
+		config4, err := newLocked(&Options{}, &paths{etc: "testdata/containers_override2.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config4.Engine.CdiSpecDirs.Get()).To(gomega.Equal([]string{"/somepath", "/some_other_path"}))
@@ -375,7 +375,7 @@ var _ = Describe("Config Local", func() {
 	It("Expect Remote to be False", func() {
 		// Given
 		// When
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Engine.Remote).To(gomega.BeFalse())
@@ -390,7 +390,7 @@ var _ = Describe("Config Local", func() {
 		t.Setenv(containersConfEnv, "/dev/null")
 
 		// When
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
@@ -412,7 +412,7 @@ var _ = Describe("Config Local", func() {
 	It("Default Umask", func() {
 		// Given
 		// When
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0022"))
@@ -420,7 +420,7 @@ var _ = Describe("Config Local", func() {
 	It("Set Umask", func() {
 		// Given
 		// When
-		config, err := NewConfig("testdata/containers_default.conf")
+		config, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.Umask).To(gomega.Equal("0002"))
@@ -442,11 +442,11 @@ var _ = Describe("Config Local", func() {
 
 	It("default netns", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Containers.NetNS).To(gomega.Equal("private"))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Containers.NetNS).To(gomega.Equal("bridge"))
@@ -456,7 +456,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		path := ""
 		// When
-		config, err := NewConfig(path)
+		config, err := newLocked(&Options{}, &paths{etc: path})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		// Then
 		gomega.Expect(config.Secrets.Driver).To(gomega.Equal("file"))
@@ -466,7 +466,7 @@ var _ = Describe("Config Local", func() {
 		// Given
 		path := "testdata/containers_override.conf"
 		// When
-		config, err := NewConfig(path)
+		config, err := newLocked(&Options{}, &paths{etc: path})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		// Then
 		gomega.Expect(config.Secrets.Driver).To(gomega.Equal("pass"))
@@ -478,11 +478,11 @@ var _ = Describe("Config Local", func() {
 
 	It("Set machine image path", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Machine.Image).To(gomega.Equal(""))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		path := "https://example.com/$OS/$ARCH/foobar.ami"
@@ -493,11 +493,11 @@ var _ = Describe("Config Local", func() {
 
 	It("CompatAPIEnforceDockerHub", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Engine.CompatAPIEnforceDockerHub).To(gomega.BeTrue())
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Engine.CompatAPIEnforceDockerHub).To(gomega.BeFalse())
@@ -505,11 +505,11 @@ var _ = Describe("Config Local", func() {
 
 	It("ComposeProviders", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Engine.ComposeProviders.Get()).To(gomega.Equal(getDefaultComposeProviders())) // no hard-coding to work on all platforms
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Engine.ComposeProviders.Get()).To(gomega.Equal([]string{"/some/thing/else", "/than/before"}))
@@ -517,11 +517,11 @@ var _ = Describe("Config Local", func() {
 
 	It("AddCompression", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Engine.AddCompression.Get()).To(gomega.BeEmpty()) // no hard-coding to work on all platforms
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Engine.AddCompression.Get()).To(gomega.Equal([]string{"zstd", "zstd:chunked"}))
@@ -529,11 +529,11 @@ var _ = Describe("Config Local", func() {
 
 	It("ComposeWarningLogs", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Engine.ComposeWarningLogs).To(gomega.BeTrue())
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Engine.ComposeWarningLogs).To(gomega.BeFalse())
@@ -541,11 +541,11 @@ var _ = Describe("Config Local", func() {
 
 	It("Set machine disk", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Machine.DiskSize).To(gomega.Equal(uint64(100)))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Machine.DiskSize).To(gomega.Equal(uint64(20)))
@@ -557,33 +557,33 @@ var _ = Describe("Config Local", func() {
 			cpus = 1
 		}
 
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Machine.CPUs).To(gomega.Equal(uint64(cpus)))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Machine.CPUs).To(gomega.Equal(uint64(1)))
 	})
 	It("Set machine memory", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Machine.Memory).To(gomega.Equal(uint64(2048)))
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Machine.Memory).To(gomega.Equal(uint64(1024)))
 	})
 	It("Get Rosetta value", func() {
 		// Given
-		config, err := New(nil)
+		config, err := newLocked(&Options{}, &paths{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config.Machine.Rosetta).To(gomega.BeTrue())
 		// When
-		config2, err := NewConfig("testdata/containers_default.conf")
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
 		// Then
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Machine.Rosetta).To(gomega.BeFalse())
