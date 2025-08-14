@@ -145,9 +145,9 @@ install -dp %{buildroot}%{_sysconfdir}/containers/{certs.d,oci/hooks.d,networks,
 install -dp %{buildroot}%{_sharedstatedir}/containers/sigstore
 install -dp %{buildroot}%{_datadir}/containers/systemd
 install -dp %{buildroot}%{_prefix}/lib/containers/storage
-install -dp -m 700 %{buildroot}%{_prefix}/lib/containers/storage/overlay-images
+install -dp -m 755 %{buildroot}%{_prefix}/lib/containers/storage/overlay-images
 touch %{buildroot}%{_prefix}/lib/containers/storage/overlay-images/images.lock
-install -dp -m 700 %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers
+install -dp -m 755 %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers
 touch %{buildroot}%{_prefix}/lib/containers/storage/overlay-layers/layers.lock
 
 install -Dp -m0644 shortnames.conf %{buildroot}%{_sysconfdir}/containers/registries.conf.d/000-shortnames.conf
