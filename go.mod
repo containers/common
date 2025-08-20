@@ -14,7 +14,7 @@ require (
 	github.com/containers/image/v5 v5.36.1
 	github.com/containers/ocicrypt v1.2.1
 	github.com/containers/storage v1.59.1
-	github.com/coreos/go-systemd/v22 v22.5.0
+	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/cyphar/filepath-securejoin v0.4.1
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/disiqueira/gotree/v3 v3.0.2
