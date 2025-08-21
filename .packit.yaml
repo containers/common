@@ -22,7 +22,7 @@ actions:
 
 jobs:
   - job: copr_build
-    trigger: pull_request
+    trigger: ignore
     packages: [containers-common-fedora]
     notifications: &ephemeral_build_failure_notification
       failure_comment:
@@ -32,7 +32,7 @@ jobs:
       - fedora-all
 
   - job: copr_build
-    trigger: pull_request
+    trigger: ignore
     packages: [containers-common-eln]
     notifications: *ephemeral_build_failure_notification
     enable_net: true
@@ -45,7 +45,7 @@ jobs:
           - https://kojipkgs.fedoraproject.org/repos/eln-build/latest/x86_64/
 
   - job: copr_build
-    trigger: pull_request
+    trigger: ignore
     packages: [containers-common-centos]
     notifications: *ephemeral_build_failure_notification
     enable_net: true
@@ -55,7 +55,7 @@ jobs:
 
   # Run on commit to main branch
   - job: copr_build
-    trigger: commit
+    trigger: ignore
     packages: [containers-common-fedora]
     notifications:
       failure_comment:
@@ -66,20 +66,20 @@ jobs:
     enable_net: true
 
   - job: propose_downstream
-    trigger: release
+    trigger: ignore
     packages: [containers-common-fedora]
     dist_git_branches: &fedora_targets
       - fedora-all
 
   - job: propose_downstream
-    trigger: release
+    trigger: ignore
     packages: [containers-common-centos]
     dist_git_branches:
       - c10s
 
   # Fedora Koji build
   - job: koji_build
-    trigger: commit
+    trigger: ignore
     packages: [containers-common-fedora]
     sidetag_group: podman-releases
     # Dependencies are not rpm dependencies, but packages that should go in the
