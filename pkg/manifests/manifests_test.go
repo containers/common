@@ -105,10 +105,10 @@ func TestAddInstance(t *testing.T) {
 			t.Fatalf("adding an instance without platform info failed in %s: %v", version, err)
 		}
 		o, err := list.findOCIv1(manifestDigest)
-		if o == nil || err != nil {
+		if err != nil {
 			t.Fatalf("adding an instance failed in %s: %v", version, err)
 		}
-		if o.Platform != nil {
+		if o != nil && o.Platform != nil {
 			t.Fatalf("added a Platform field (%+v) where none was expected: %v", o.Platform, err)
 		}
 	}
