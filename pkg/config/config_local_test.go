@@ -624,4 +624,42 @@ var _ = Describe("Config Local", func() {
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		gomega.Expect(config2.Containers.LogPath).To(gomega.Equal("/var/log/containers"))
 	})
+	It("should parse OCIRuntimesFlags from config file", func() {
+		// Given
+		config, err := newLocked(&Options{}, &paths{})
+		// Then
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(config.Engine.OCIRuntimesFlags).To(gomega.Equal(map[string][]string{}))
+
+		// Given non-empty OCIRuntimesFlags
+		config2, err := newLocked(&Options{}, &paths{etc: "testdata/containers_default.conf"})
+		// Then
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		gomega.Expect(config2.Engine.OCIRuntimesFlags).To(gomega.Equal(map[string][]string{
+			"crun": {
+				"debug",
+			},
+			"runsc": {
+				"net-raw",
+			},
+		}))
+		// When
+		err = config2.Engine.Validate()
+		// Then
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		// Given OCIRuntimesFlags with invalid runtime names
+		config2.Engine.OCIRuntimesFlags = map[string][]string{
+			"curn": {
+				"debug",
+			},
+			"does not exist": {
+				"net-raw",
+			},
+		}
+		// When
+		err = config2.Engine.Validate()
+		// Then
+		gomega.Expect(err).To(gomega.HaveOccurred())
+	})
 })
