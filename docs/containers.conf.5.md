@@ -934,6 +934,12 @@ URI to access the Podman service
 
 Path to file containing ssh identity key
 
+**[engine.runtimes_flags]**
+
+Lists of default runtime flags for each valid OCI runtime (crun, runc, kata, runsc, krun, etc).
+
+To list the supported flags, please consult the documentation of the selected container runtime.
+
 **[engine.volume_plugins]**
 
 A table of all the enabled volume plugins on the system. Volume plugins can be
