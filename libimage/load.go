@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"syscall"
 	"time"
 
 	dirTransport "github.com/containers/image/v5/directory"
@@ -111,6 +112,10 @@ func (r *Runtime) Load(ctx context.Context, path string, options *LoadOptions) (
 		}
 		logrus.Debugf("Error loading %s (%s): %v", path, transportName, err)
 		loadErrors = append(loadErrors, fmt.Errorf("%s: %v", transportName, err))
+
+		if errors.Is(err, syscall.ENOSPC) {
+			break
+		}
 	}
 
 	// Give a decent error message if nothing above worked.
