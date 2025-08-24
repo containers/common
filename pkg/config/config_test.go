@@ -15,6 +15,7 @@ import (
 	"github.com/onsi/gomega"
 	selinux "github.com/opencontainers/selinux/go-selinux"
 	"github.com/sirupsen/logrus"
+	oscaps "github.com/syndtr/gocapability/capability"
 )
 
 var _ = Describe("Config", func() {
@@ -799,6 +800,30 @@ env=["foo=bar"]`
 		gomega.Expect(config.Containers.ApparmorProfile).To(gomega.Equal("overridden-default"))
 		gomega.Expect(config.Containers.BaseHostsFile).To(gomega.Equal("/etc/hosts2"))
 		gomega.Expect(config.Containers.EnableLabeledUsers).To(gomega.BeTrue())
+	})
+
+	It("HomeDirTest", func() {
+		oldHOMEDIR, set := os.LookupEnv("HOME")
+		dir, err := os.MkdirTemp("", "configTest")
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		defer os.RemoveAll(dir)
+		os.Chmod(dir, 0o000)
+		os.Setenv("HOME", dir)
+		caps, err := oscaps.NewPid2(0)
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		if caps.Get(oscaps.EFFECTIVE, oscaps.CAP_DAC_OVERRIDE) {
+			caps.Unset(oscaps.EFFECTIVE, oscaps.CAP_DAC_OVERRIDE)
+			defer caps.Set(oscaps.EFFECTIVE, oscaps.CAP_DAC_OVERRIDE)
+		}
+
+		_, err = defaultConfig()
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		if set {
+			os.Setenv("HOME", oldHOMEDIR)
+		} else {
+			os.Unsetenv("HOME")
+		}
 	})
 
 	It("ParsePullPolicy", func() {

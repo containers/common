@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"os"
 	"path/filepath"
@@ -214,6 +215,23 @@ const (
 	DefaultVolumePluginTimeout = 5
 )
 
+func defaultSigPath() (string, error) {
+	// NOTE: For now we want Windows to use system locations.
+	// GetRootlessUID == -1 on Windows, so exclude negative range
+	if unshare.GetRootlessUID() > 0 {
+		configHome, err := homedir.GetConfigHome()
+		if err == nil {
+			sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
+			if err := fileutils.Exists(sigPath); err == nil {
+				return sigPath, nil
+			}
+		} else if !errors.Is(err, fs.ErrNotExist) {
+			return "", err
+		}
+	}
+	return DefaultSignaturePolicyPath, nil
+}
+
 // defaultConfig returns Config with builtin defaults and minimal adjustments
 // to the current host only. It does not read any config files from the host or
 // the environment.
@@ -223,22 +241,11 @@ func defaultConfig() (*Config, error) {
 		return nil, err
 	}
 
-	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-	// NOTE: For now we want Windows to use system locations.
-	// GetRootlessUID == -1 on Windows, so exclude negative range
-	if unshare.GetRootlessUID() > 0 {
-		configHome, err := homedir.GetConfigHome()
-		if err != nil {
-			return nil, err
-		}
-		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
-		defaultEngineConfig.SignaturePolicyPath = sigPath
-		if err := fileutils.Exists(sigPath); err != nil {
-			if err := fileutils.Exists(DefaultSignaturePolicyPath); err == nil {
-				defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-			}
-		}
+	sigPath, err := defaultSigPath()
+	if err != nil {
+		return nil, err
 	}
+	defaultEngineConfig.SignaturePolicyPath = sigPath
 
 	cgroupNS := "host"
 	if cgroup2, _ := cgroupv2.Enabled(); cgroup2 {
