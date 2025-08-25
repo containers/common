@@ -1,3 +1,4 @@
+// Deprecated: Use go.podman.io/common instead.
 module github.com/containers/common
 
 // Warning: Ensure the "go" and "toolchain" versions match exactly to prevent unwanted auto-updates
