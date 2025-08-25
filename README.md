@@ -1,5 +1,10 @@
 # containers/common
 
+> [!WARNING]
+> This package was moved; please update your references to use `go.podman.io/common` instead.
+> New development of this project happens on https://github.com/containers/container-libs.
+> For more information, check https://blog.podman.io/2025/08/upcoming-migration-of-three-containers-repositories-to-monorepo/.
+
 Location for shared common files and common go code to manage those files in
 github.com/containers repos.
 
