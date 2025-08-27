@@ -1,0 +1,12 @@
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto_close_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close Issue
+        uses: peter-evans/close-issue@276d7966e389d888f011539a86c8920025ea0626
+        with:
+          comment: "This repository has been migrated to https://github.com/containers/container-libs. Please open your issue there."
