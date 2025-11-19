@@ -99,9 +99,9 @@ var _ = Describe("run netavark", func() {
 			_ = netns.UnmountNS(netNSContainer.Path())
 			_ = netNSContainer.Close()
 		})
-		// Force iptables driver, firewalld is broken inside the extra
+		// Force nftables driver, firewalld is broken inside the extra
 		// namespace because it still connects to firewalld on the host.
-		t.Setenv("NETAVARK_FW", "iptables")
+		t.Setenv("NETAVARK_FW", "nftables")
 	})
 
 	JustBeforeEach(func() {

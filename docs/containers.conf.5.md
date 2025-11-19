@@ -298,9 +298,9 @@ Logging driver for the container. Currently available options are k8s-file, jour
 
 **log_path**=""
 
-Default path for container logs to be stored in. When empty, logs will be stored 
+Default path for container logs to be stored in. When empty, logs will be stored
 in the container's default storage and removed when the container is removed.
-A subdirectory named with the container ID will be created under the specified 
+A subdirectory named with the container ID will be created under the specified
 path, and the log file will have the default name `ctr.log` within that directory.
 This option can be overridden by the `--log-opt` flag.
 
@@ -426,7 +426,7 @@ The default value is empty which means that it will automatically choose CNI or 
 already containers/images or CNI networks preset it will choose CNI.
 
 Before changing this value all containers must be stopped otherwise it is likely that
-iptables rules and network interfaces might leak on the host. A reboot will fix this.
+firewall rules and network interfaces might leak on the host. A reboot will fix this.
 
 **cni_plugin_dirs**=[]
 
@@ -507,7 +507,7 @@ and "$graphroot/networks" as rootless.
 
 The firewall driver to be used by netavark.
 The default is empty which means netavark will pick one accordingly. Current supported
-drivers are "iptables", "nftables", "none" (no firewall rules will be created) and "firewalld" (firewalld is
+drivers are "nftables", "none" (no firewall rules will be created) and "firewalld" (firewalld is
 experimental at the moment and not recommend outside of testing).
 
 **dns_bind_port**=53
