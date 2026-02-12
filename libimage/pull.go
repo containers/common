@@ -501,6 +501,18 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 		}
 	}
 
+	// Images prefixed with "localhost/" (without a port) are local-only by
+	// convention and cannot be pulled from a remote registry.  Return the
+	// local image if available, or an error if not found, without ever
+	// attempting a network pull (see containers/podman/issues/28038).
+	if isLocalhostImage(imageName) {
+		if localImage != nil {
+			logrus.Debugf("Image %s is a localhost image, returning local image", imageName)
+			return localImage, nil
+		}
+		return nil, fmt.Errorf("%s: %w", imageName, storage.ErrImageUnknown)
+	}
+
 	customPlatform := len(options.Architecture)+len(options.OS)+len(options.Variant) > 0
 	if customPlatform && pullPolicy != config.PullPolicyAlways && pullPolicy != config.PullPolicyNever {
 		// Unless the pull policy is always/never, we must
@@ -658,4 +670,12 @@ func (r *Runtime) copySingleImageFromRegistry(ctx context.Context, imageName str
 	}
 
 	return nil, resolved.FormatPullErrors(pullErrors)
+}
+
+// isLocalhostImage returns true if the image name refers to a localhost-only
+// image (i.e., prefixed with "localhost/" but without a port number).
+// Images with "localhost:PORT/" are actual registry references and should
+// not be treated as local-only.
+func isLocalhostImage(name string) bool {
+	return strings.HasPrefix(name, "localhost/")
 }
