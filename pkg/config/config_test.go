@@ -326,6 +326,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(defaultConfig.Network.NetavarkPluginDirs.Get()).To(gomega.Equal([]string{"/usr/netavark"}))
 			gomega.Expect(defaultConfig.Engine.NumLocks).To(gomega.BeEquivalentTo(2048))
 			gomega.Expect(defaultConfig.Engine.OCIRuntimes).To(gomega.Equal(OCIRuntimeMap))
+			gomega.Expect(defaultConfig.Engine.Platform).To(gomega.BeEmpty())
 			gomega.Expect(defaultConfig.Engine.PlatformToOCIRuntime).To(gomega.Equal(PlatformToOCIRuntimeMap))
 			gomega.Expect(defaultConfig.Containers.HTTPProxy).To(gomega.BeFalse())
 			gomega.Expect(defaultConfig.Engine.NetworkCmdOptions.Get()).To(gomega.BeEmpty())
@@ -528,6 +529,7 @@ image_copy_tmp_dir="storage"`
 			gomega.Expect(config.Containers.Privileged).To(gomega.BeTrue())
 			gomega.Expect(config.Containers.ReadOnly).To(gomega.BeTrue())
 			gomega.Expect(config.Engine.ImageParallelCopies).To(gomega.Equal(uint(10)))
+			gomega.Expect(config.Engine.Platform).To(gomega.Equal("linux/amd64"))
 			gomega.Expect(config.Engine.PlatformToOCIRuntime).To(gomega.Equal(PlatformToOCIRuntimeMap))
 			gomega.Expect(config.Engine.ImageDefaultFormat).To(gomega.Equal("v2s2"))
 			gomega.Expect(config.Engine.CompressionFormat).To(gomega.BeEquivalentTo("zstd:chunked"))
@@ -660,6 +662,68 @@ image_copy_tmp_dir="storage"`
 			defConf.Engine.DBBackend = "blah"
 			err = defConf.Engine.Validate()
 			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+
+		It("should succeed with valid platform", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = "linux/amd64"
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = "linux/arm64/v8"
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		})
+
+		It("should succeed with empty platform", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = ""
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+		})
+
+		It("should fail with invalid platform", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = "linux"
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).To(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = "linux/amd64/"
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).To(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = "/amd64"
+			err = defConf.Engine.Validate()
+			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+
+		It("should parse platform components correctly", func() {
+			defConf, err := defaultConfig()
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			defConf.Engine.Platform = "linux/amd64"
+			os, arch, variant := defConf.Engine.PlatformComponents()
+			gomega.Expect(os).To(gomega.Equal("linux"))
+			gomega.Expect(arch).To(gomega.Equal("amd64"))
+			gomega.Expect(variant).To(gomega.Equal(""))
+
+			defConf.Engine.Platform = "linux/arm64/v8"
+			os, arch, variant = defConf.Engine.PlatformComponents()
+			gomega.Expect(os).To(gomega.Equal("linux"))
+			gomega.Expect(arch).To(gomega.Equal("arm64"))
+			gomega.Expect(variant).To(gomega.Equal("v8"))
+
+			defConf.Engine.Platform = ""
+			os, arch, variant = defConf.Engine.PlatformComponents()
+			gomega.Expect(os).To(gomega.Equal(""))
+			gomega.Expect(arch).To(gomega.Equal(""))
+			gomega.Expect(variant).To(gomega.Equal(""))
 		})
 	})
 

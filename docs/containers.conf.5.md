@@ -807,6 +807,14 @@ Locks are recycled and can be reused after the associated container, pod, or vol
 The default number available is 2048.
 If this is changed, a lock renumbering must be performed, using the `podman system renumber` command.
 
+**platform**=""
+
+Specifies the default platform for image operations such as pull, build, run,
+and create. When set, container engines will use this platform instead of the
+host's native platform. The format is `os/arch` or `os/arch/variant` (e.g.,
+`linux/amd64`, `linux/arm64/v8`). If empty (the default), the host's platform
+is used.
+
 **pod_exit_policy**="continue"
 
 Set the exit policy of the pod when the last container exits.  Supported policies are:

@@ -423,6 +423,12 @@ type EngineConfig struct {
 	// OCIRuntimes are the set of configured OCI runtimes (default is runc).
 	OCIRuntimes map[string][]string `toml:"runtimes,omitempty"`
 
+	// Platform specifies the default platform (os/arch[/variant]) for image
+	// operations such as pull, build, run, and create. If empty, the host's
+	// platform is used. Format: "os/arch" or "os/arch/variant" (e.g.,
+	// "linux/amd64", "linux/arm64/v8").
+	Platform string `toml:"platform,omitempty"`
+
 	// PlatformToOCIRuntime requests specific OCI runtime for a specified platform of image.
 	PlatformToOCIRuntime map[string]string `toml:"platform_to_oci_runtime,omitempty"`
 
@@ -731,6 +737,40 @@ func (c *EngineConfig) ImagePlatformToRuntime(os string, arch string) string {
 	return c.OCIRuntime
 }
 
+// PlatformComponents parses the Platform field and returns the individual
+// os, architecture, and variant components. Empty strings are returned for
+// unset components. If Platform is empty, all returned values are empty.
+func (c *EngineConfig) PlatformComponents() (os, arch, variant string) {
+	if c.Platform == "" {
+		return "", "", ""
+	}
+	parts := strings.SplitN(c.Platform, "/", 3)
+	switch len(parts) {
+	case 3:
+		return parts[0], parts[1], parts[2]
+	case 2:
+		return parts[0], parts[1], ""
+	default:
+		return parts[0], "", ""
+	}
+}
+
+// validatePlatform checks that the Platform field, if set, is a valid
+// os/arch or os/arch/variant string.
+func (c *EngineConfig) validatePlatform() error {
+	if c.Platform == "" {
+		return nil
+	}
+	parts := strings.SplitN(c.Platform, "/", 3)
+	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
+		return fmt.Errorf("invalid platform %q: must be in the format os/arch[/variant]", c.Platform)
+	}
+	if len(parts) == 3 && parts[2] == "" {
+		return fmt.Errorf("invalid platform %q: variant must not be empty when specified", c.Platform)
+	}
+	return nil
+}
+
 // CheckCgroupsAndAdjustConfig checks if we're running rootless with the systemd
 // cgroup manager. In case the user session isn't available, we're switching the
 // cgroup manager to cgroupfs.  Note, this only applies to rootless.
@@ -842,6 +882,10 @@ func (c *EngineConfig) findRuntime() string {
 // `nil`.
 func (c *EngineConfig) Validate() error {
 	if err := c.validatePaths(); err != nil {
+		return err
+	}
+
+	if err := c.validatePlatform(); err != nil {
 		return err
 	}
 
