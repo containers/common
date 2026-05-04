@@ -1,0 +1,132 @@
+name: test
+
+# Mirrors the PR-blocking tasks from the old .cirrus.yml
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+env:
+  LINT_VERSION: v2.4.0
+
+jobs:
+  codespell:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v5
+    - name: install deps
+      # Version of codespell bundled with Ubuntu is way old, so use pip.
+      run: pip install --break-system-packages codespell==v2.3.0
+    - name: run codespell
+      run: codespell --dictionary=-
+
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 2
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.25.x
+    - name: install deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install libseccomp-dev
+    - name: lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: "${{ env.LINT_VERSION }}"
+        args: --verbose
+    # Extra linters, only checking new code from a pull request.
+    - name: lint-extra
+      uses: golangci/golangci-lint-action@v8
+      with:
+        args: --config=.golangci-extra.yml
+        version: "${{ env.LINT_VERSION }}"
+        only-new-issues: true
+    - name: validate seccomp
+      run: ./tools/validate_seccomp.sh ./pkg/seccomp
+
+  vendor:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.25.x
+    - name: install deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install libseccomp-dev
+    - name: check vendor
+      run: |
+        make vendor
+        hack/tree_status.sh
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: vendor
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.25.x
+    - name: install deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install libseccomp-dev
+    - name: build
+      run: make build
+
+  cross:
+    runs-on: ubuntu-24.04
+    needs: vendor
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.25.x
+    - name: install deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install libseccomp-dev
+    - name: build-cross
+      run: make build-cross
+
+  unit-test:
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.25.x
+    - name: install deps
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install libseccomp-dev netavark
+    - name: generate GPG key
+      run: gpg --batch --passphrase '' --quick-gen-key tester@localhost default default never
+    - name: test
+      env:
+        NETAVARK_BINARY: /usr/libexec/podman/netavark
+      run: make test
+
+  success:
+    name: Total Success
+    needs: [codespell, lint, vendor, build, cross, unit-test]
+    runs-on: ubuntu-24.04
+    steps:
+    - name: success
+      run: echo "All CI jobs passed"
