@@ -36,6 +36,8 @@ const (
 	// mapGuestAddrIpv4 static ip used as forwarder address inside the netns to reach the host,
 	// given this is a "link local" ip it should be very unlikely that it causes conflicts
 	mapGuestAddrIpv4 = "169.254.1.2"
+
+	mapHostLoopbackOpt = "--map-host-loopback"
 )
 
 type SetupOptions struct {
@@ -274,6 +276,19 @@ func createPastaArgs(opts *SetupOptions) ([]string, []string, []string, error) {
 		// for our own host.containers.internal host entry.
 		cmdArgs = append(cmdArgs, mapGuestAddrOpt, mapGuestAddrIpv4)
 		mapGuestAddrIPs = append(mapGuestAddrIPs, mapGuestAddrIpv4)
+	}
+
+	// outbound counterpart: without this the /etc/hosts entry podman writes for
+	// host.containers.internal is unreachable from bridge containers
+	hasMapHostLoopback := false
+	for _, opt := range cmdArgs {
+		if opt == mapHostLoopbackOpt {
+			hasMapHostLoopback = true
+			break
+		}
+	}
+	if !hasMapHostLoopback {
+		cmdArgs = append(cmdArgs, mapHostLoopbackOpt, mapGuestAddrIpv4)
 	}
 
 	return cmdArgs, dnsForwardIPs, mapGuestAddrIPs, nil
