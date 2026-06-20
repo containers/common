@@ -65,10 +65,10 @@ func netavarkBackendFromConf(store storage.Store, conf *config.Config, syslog bo
 
 	// We cannot use the runroot for rootful since the network namespace is shared for all
 	// libpod instances they also have to share the same ipam db.
-	// For rootless we have our own network namespace per libpod instances,
+	// For rootless users we have our own network namespace per libpod instances,
 	// so this is not a problem there.
 	runDir := netavarkRunDir
-	if unshare.IsRootless() {
+	if isRootlessUser() {
 		runDir = filepath.Join(store.RunRoot(), "networks")
 	}
 
@@ -141,8 +141,16 @@ func defaultNetworkBackend(store storage.Store, conf *config.Config) (backend ty
 // use "/etc/containers/networks" and for rootless "$graphroot/networks". We cannot
 // use the graphroot for rootful since the network namespace is shared for all
 // libpod instances.
+func isRootlessUser() bool {
+	return rootlessModeForUser(unshare.IsRootless(), unshare.GetRootlessUID())
+}
+
+func rootlessModeForUser(isRootless bool, rootlessUID int) bool {
+	return isRootless && rootlessUID > 0
+}
+
 func getDefaultNetavarkConfigDir(store storage.Store) string {
-	if !unshare.IsRootless() {
+	if !isRootlessUser() {
 		return netavarkConfigDir
 	}
 	return filepath.Join(store.GraphRoot(), "networks")

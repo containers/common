@@ -14,7 +14,6 @@ import (
 	"github.com/containers/common/pkg/machine"
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/homedir"
-	"github.com/containers/storage/pkg/unshare"
 )
 
 const (
@@ -42,7 +41,7 @@ func getCniInterface(conf *config.Config) (types.ContainerNetwork, error) {
 }
 
 func getDefaultCNIConfigDir() (string, error) {
-	if !unshare.IsRootless() {
+	if !isRootlessUser() {
 		return cniConfigDir, nil
 	}
 
