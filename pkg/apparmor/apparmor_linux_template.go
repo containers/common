@@ -25,6 +25,14 @@ profile {{.Name}} flags=(attach_disconnected,mediate_deleted) {
   signal (receive) peer={/usr/bin/,/usr/sbin/,}runc,
   signal (receive) peer={/usr/bin/,/usr/sbin/,}crun*,
   signal (receive) peer={/usr/bin/,/usr/sbin/,}podman,
+  # Allow OCI runtimes running inside this container to assign AppArmor
+  # profiles to child containers (needed when podman socket is used from
+  # a systemd/Quadlet-launched container on kernel >= 6.17).
+  change_profile -> **,
+  # Allow OCI runtimes running inside this container to assign AppArmor
+  # profiles to child containers (needed when podman socket is used from
+  # a systemd/Quadlet-launched container on kernel >= 6.17).
+  change_profile -> **,
 {{end}}
 
   deny @{PROC}/* w,   # deny write for all files directly in /proc (not in a subdir)
