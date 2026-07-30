@@ -188,6 +188,9 @@ func TestLookupImage(t *testing.T) {
 	runtime := testNewRuntime(t)
 	ctx := context.Background()
 
+	_, _, err := runtime.LookupImage("docker://busybox", nil)
+	require.EqualError(t, err, `unsupported transport "docker" for looking up local images; remove the transport prefix to refer to an image in local storage`)
+
 	pullOptions := &PullOptions{}
 	pullOptions.Writer = os.Stdout
 
