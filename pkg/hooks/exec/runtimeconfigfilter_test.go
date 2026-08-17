@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -261,4 +263,171 @@ func TestRuntimeConfigFilter(t *testing.T) {
 			assert.Equal(t, test.expected, test.input)
 		})
 	}
+}
+
+func TestRuntimeConfigFilterOutputRedirection(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("stdout annotation redirects output and preserves round-trip", func(t *testing.T) {
+		dir := t.TempDir()
+		stdoutPath := filepath.Join(dir, "stdout.log")
+		input := &spec.Spec{
+			Version:     "1.0.0",
+			Root:        &spec.Root{Path: "rootfs"},
+			Annotations: map[string]string{AnnotationHookStdout: stdoutPath},
+		}
+		expectedJSON, err := json.Marshal(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		hooks := []spec.Hook{{Path: path, Args: []string{"sh", "-c", "cat"}}}
+		hookErr, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: hooks, Config: input, PostKillTimeout: DefaultPostKillTimeout})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if hookErr != nil {
+			t.Fatal(hookErr)
+		}
+
+		contents, err := os.ReadFile(stdoutPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, string(expectedJSON), string(contents))
+	})
+
+	t.Run("created stdout file uses 0700 permissions, matching crun", func(t *testing.T) {
+		dir := t.TempDir()
+		stdoutPath := filepath.Join(dir, "stdout.log")
+		input := &spec.Spec{
+			Version:     "1.0.0",
+			Root:        &spec.Root{Path: "rootfs"},
+			Annotations: map[string]string{AnnotationHookStdout: stdoutPath},
+		}
+
+		hooks := []spec.Hook{{Path: path, Args: []string{"sh", "-c", "cat"}}}
+		hookErr, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: hooks, Config: input, PostKillTimeout: DefaultPostKillTimeout})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if hookErr != nil {
+			t.Fatal(hookErr)
+		}
+
+		info, err := os.Stat(stdoutPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, os.FileMode(0o700), info.Mode().Perm())
+	})
+
+	t.Run("stderr annotation redirects stderr only", func(t *testing.T) {
+		dir := t.TempDir()
+		stderrPath := filepath.Join(dir, "stderr.log")
+		input := &spec.Spec{
+			Version:     "1.0.0",
+			Root:        &spec.Root{Path: "rootfs"},
+			Annotations: map[string]string{AnnotationHookStderr: stderrPath},
+		}
+
+		hooks := []spec.Hook{{Path: path, Args: []string{"sh", "-c", "echo -n stderr-content 1>&2; cat"}}}
+		hookErr, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: hooks, Config: input, PostKillTimeout: DefaultPostKillTimeout})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if hookErr != nil {
+			t.Fatal(hookErr)
+		}
+
+		contents, err := os.ReadFile(stderrPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, "stderr-content", string(contents))
+	})
+
+	t.Run("both annotations set redirect independently", func(t *testing.T) {
+		dir := t.TempDir()
+		stdoutPath := filepath.Join(dir, "stdout.log")
+		stderrPath := filepath.Join(dir, "stderr.log")
+		input := &spec.Spec{
+			Version: "1.0.0",
+			Root:    &spec.Root{Path: "rootfs"},
+			Annotations: map[string]string{
+				AnnotationHookStdout: stdoutPath,
+				AnnotationHookStderr: stderrPath,
+			},
+		}
+		expectedJSON, err := json.Marshal(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		hooks := []spec.Hook{{Path: path, Args: []string{"sh", "-c", "echo -n stderr-content 1>&2; cat"}}}
+		hookErr, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: hooks, Config: input, PostKillTimeout: DefaultPostKillTimeout})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if hookErr != nil {
+			t.Fatal(hookErr)
+		}
+
+		stdoutContents, err := os.ReadFile(stdoutPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stderrContents, err := os.ReadFile(stderrPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, string(expectedJSON), string(stdoutContents))
+		assert.Equal(t, "stderr-content", string(stderrContents))
+	})
+
+	t.Run("existing file content is preserved in append mode", func(t *testing.T) {
+		dir := t.TempDir()
+		stdoutPath := filepath.Join(dir, "stdout.log")
+		sentinel := "existing-log-line\n"
+		if err := os.WriteFile(stdoutPath, []byte(sentinel), 0o644); err != nil {
+			t.Fatal(err)
+		}
+
+		input := &spec.Spec{
+			Version:     "1.0.0",
+			Root:        &spec.Root{Path: "rootfs"},
+			Annotations: map[string]string{AnnotationHookStdout: stdoutPath},
+		}
+		expectedJSON, err := json.Marshal(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		hooks := []spec.Hook{{Path: path, Args: []string{"sh", "-c", "cat"}}}
+		hookErr, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: hooks, Config: input, PostKillTimeout: DefaultPostKillTimeout})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if hookErr != nil {
+			t.Fatal(hookErr)
+		}
+
+		contents, err := os.ReadFile(stdoutPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.True(t, strings.HasPrefix(string(contents), sentinel), "expected pre-existing content to be preserved")
+		assert.Equal(t, sentinel+string(expectedJSON), string(contents))
+	})
+
+	t.Run("invalid stdout path returns an error", func(t *testing.T) {
+		input := &spec.Spec{
+			Version:     "1.0.0",
+			Root:        &spec.Root{Path: "rootfs"},
+			Annotations: map[string]string{AnnotationHookStdout: "/no/such/directory/stdout.log"},
+		}
+		hooks := []spec.Hook{{Path: path, Args: []string{"sh", "-c", "cat"}}}
+		_, err := RuntimeConfigFilterWithOptions(ctx, RuntimeConfigFilterOptions{Hooks: hooks, Config: input, PostKillTimeout: DefaultPostKillTimeout})
+		assert.ErrorContains(t, err, "opening stdout file")
+	})
 }

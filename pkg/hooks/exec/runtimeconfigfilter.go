@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"reflect"
 	"time"
 
@@ -20,6 +22,11 @@ var spewConfig = spew.ConfigState{
 	DisableCapacities:       true,
 	SortKeys:                true,
 }
+
+const (
+	AnnotationHookStdout = "run.oci.hooks.stdout"
+	AnnotationHookStderr = "run.oci.hooks.stderr"
+)
 
 type RuntimeConfigFilterOptions struct {
 	// The hooks to run
@@ -55,9 +62,41 @@ func RuntimeConfigFilterWithOptions(ctx context.Context, options RuntimeConfigFi
 	if err != nil {
 		return nil, err
 	}
+	var stdoutFile, stderrFile *os.File
+
+	if options.Config != nil && options.Config.Annotations != nil {
+		if stdoutPath, ok := options.Config.Annotations[AnnotationHookStdout]; ok {
+			f, openErr := os.OpenFile(stdoutPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o700)
+			if openErr != nil {
+				return nil, fmt.Errorf("opening stdout file for config-filter hook: %w", openErr)
+			}
+			stdoutFile = f
+			defer stdoutFile.Close()
+		}
+
+		if stderrPath, ok := options.Config.Annotations[AnnotationHookStderr]; ok {
+			f, openErr := os.OpenFile(stderrPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o700)
+			if openErr != nil {
+				return nil, fmt.Errorf("opening stderr file for config-filter hook: %w", openErr)
+			}
+			stderrFile = f
+			defer stderrFile.Close()
+		}
+	}
 	for i, hook := range options.Hooks {
 		var stdout bytes.Buffer
-		hookErr, err = RunWithOptions(ctx, RunOptions{Hook: &hook, Dir: options.Dir, State: data, Stdout: &stdout, PostKillTimeout: options.PostKillTimeout})
+		var runStdout io.Writer = &stdout
+		var runStderr io.Writer
+
+		if stdoutFile != nil {
+			runStdout = io.MultiWriter(&stdout, stdoutFile)
+		}
+
+		if stderrFile != nil {
+			runStderr = stderrFile
+		}
+
+		hookErr, err = RunWithOptions(ctx, RunOptions{Hook: &hook, Dir: options.Dir, State: data, Stdout: runStdout, Stderr: runStderr, PostKillTimeout: options.PostKillTimeout})
 		if err != nil {
 			return hookErr, err
 		}
